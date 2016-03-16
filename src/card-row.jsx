@@ -1,8 +1,12 @@
-'use strict';
-
 import React from 'react';
 
 export class CardRow extends React.Component {
+  get propTypes() {
+    return {
+      question: React.PropTypes.string.isRequired,
+      answer: React.PropTypes.string.isRequired,
+    };
+  }
   render() {
     return (
       <tr>

@@ -1,15 +1,13 @@
-'use strict';
-
 import PouchDB from 'pouchdb';
 
-var db = new PouchDB('cards');
+const db = new PouchDB('cards');
 
 class CardDB {
   addCard(question, answer) {
-    var card = {
+    const card = {
       _id: new Date().toISOString(),
-      question: question,
-      answer: answer
+      question,
+      answer,
     };
     return db.put(card);
   }
@@ -17,7 +15,7 @@ class CardDB {
   getCards() {
     // XXX There is surely a neater way of doing this
     return new Promise((resolve, reject) => {
-      db.allDocs({include_docs: true, descending: true}).then(
+      db.allDocs({ include_docs: true, descending: true }).then(
         result => resolve(result.rows.map(row => row.doc))
       ).catch(err => reject(err));
     });
@@ -28,4 +26,4 @@ class CardDB {
   }
 }
 
-export default new CardDB()
+export default new CardDB();

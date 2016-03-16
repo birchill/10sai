@@ -1,19 +1,12 @@
-'use strict';
-
 import ReactDOM from 'react-dom';
 import React from 'react';
 import CardDB from './cards';
 import CardGrid from './card-grid.jsx';
 
-let form = document.querySelector('form.add-card');
-
-form.addEventListener('submit', function(evt) {
-  evt.preventDefault();
-  addCard();
-});
+const form = document.querySelector('form.add-card');
 
 function addCard() {
-  let [ question, answer ] =
+  const [ question, answer ] =
     [ 'question', 'answer' ].map(field => form[field].value.trim());
   if (!question.length || !answer.length) {
     console.warn('Empty question/answer');
@@ -28,10 +21,15 @@ function addCard() {
     .catch(err => console.log(err));
 }
 
+form.addEventListener('submit', evt => {
+  evt.preventDefault();
+  addCard();
+});
+
 function render() {
   CardDB.getCards().then(cards => {
     ReactDOM.render(
-      <CardGrid cards={cards}/>,
+      <CardGrid cards={cards} />,
       document.getElementById('card-grid')
     );
   });
