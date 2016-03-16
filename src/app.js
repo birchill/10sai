@@ -3,7 +3,7 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
 import CardDB from './cards';
-import CardGrid from './card-grid.jsx!';
+import CardGrid from './card-grid.jsx';
 
 let form = document.querySelector('form.add-card');
 
@@ -40,12 +40,6 @@ function render() {
 render();
 CardDB.onUpdate(() => render());
 
-// Then: Set up server as part of gulp task and do watching
-//  -- if jspm_modules changes, rebuild and copy vendor.js
-//  -- if script files change, recopy THEN relint -- beep on error
-//  -- if js/html files change, recopy
-//  -- if json files change, relint??
-// Then: Do linting as well
 // Set up package.json script aliases
 
 // Reference: http://pouchdb.com/getting-started.html
