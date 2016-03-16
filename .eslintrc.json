@@ -1,0 +1,10 @@
+{
+  "extends": "airbnb",
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "array-bracket-spacing": [ "warn", "always" ],
+    "react/prefer-stateless-function": [ "off" ]
+  }
+}
