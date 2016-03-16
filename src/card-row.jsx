@@ -1,7 +1,7 @@
 import React from 'react';
 
 export class CardRow extends React.Component {
-  get propTypes() {
+  static get propTypes() {
     return {
       question: React.PropTypes.string.isRequired,
       answer: React.PropTypes.string.isRequired,

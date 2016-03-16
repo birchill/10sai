@@ -2,7 +2,7 @@ import React from 'react';
 import CardRow from './card-row.jsx';
 
 export class CardGrid extends React.Component {
-  get propTypes() {
+  static get propTypes() {
     return { cards: React.PropTypes.array.isRequired };
   }
   render() {
