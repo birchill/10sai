@@ -7,7 +7,7 @@
     "build": "webpack --progress --colors",
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
     "start": "webpack-dev-server --progress --colors",
-    "lint": "eslint"
+    "lint": "eslint src/*.js src/*.jsx"
   },
   "devDependencies": {
     "babel-core": "^6.7.2",
