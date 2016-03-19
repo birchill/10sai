@@ -3,14 +3,21 @@
   <head>
     <meta charset=utf-8>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Toku</title>
+    <title>Tensai</title>
     <link rel="stylesheet" type="text/css" href="toku.css">
   </head>
   <body>
     <header>
-      <h1>Toku</h1>
-      <div id="sync-status" class="icon"></div>
-      <div id="settings-menu" class="icon"></div>
+      <hgroup>
+        <h1>Tensai</h1>
+        <h2 class="subject">Subject</h2>
+      </hgroup>
+      <a id="sync-settings" href="/settings#sync">
+        <div id="sync-status" class="icon"></div>
+      </a>
+      <a href="/settings">
+        <div id="settings-menu" class="icon"></div>
+      </a>
     </header>
     <form class="add-card">
       <input type="text" name="question" class="question">
