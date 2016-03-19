@@ -11,11 +11,9 @@ class CardDB {
       db.sync(this.remoteDb, {
         live: true,
         retry: true,
-      }).on('change', change => {
+      }).on('change', (/* change */) => {
         // yo, something changed!
-        if (this.updateFunc) {
-          this.updateFunc(change);
-        }
+        // TODO: Update UI?
       }).on('paused', (/* info */) => {
         // replication was paused, usually because of a lost connection
         // TODO: Update UI
@@ -49,7 +47,6 @@ class CardDB {
   }
 
   onUpdate(func) {
-    this.updateFunc = func;
     db.changes({ since: 'now', live: true }).on('change', func);
   }
 }
