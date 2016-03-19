@@ -46,7 +46,12 @@ header .icon {
 }
 #sync-status.error {
 }
-#sync-status.updating {
+#sync-status.updating::before {
+  animation: rotate 1s linear infinite;
+}
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
 }
 #sync-status.offline {
 }
