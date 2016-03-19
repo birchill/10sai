@@ -6,7 +6,7 @@ const db = new PouchDB('cards');
 class CardDB {
   constructor() {
     if (remoteDb) {
-      this.remoteDb = new PouchDb(remoteDb);
+      this.remoteDb = new PouchDB(remoteDb);
 
       db.sync(this.remoteDb, {
         live: true,
@@ -26,7 +26,7 @@ class CardDB {
         // totally unhandled error (shouldn't happen)
         // TODO: Update UI
         console.error(err);
-      })));
+      });
     }
   }
 
