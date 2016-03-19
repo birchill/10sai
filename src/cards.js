@@ -10,19 +10,19 @@ class CardDB {
 
       db.sync(this.remoteDb, {
         live: true,
-        retry: true
-      }).on('change', function (change) {
+        retry: true,
+      }).on('change', change => {
         // yo, something changed!
         if (this.updateFunc) {
-          updateFunc(change);
+          this.updateFunc(change);
         }
-      }).on('paused', function (info) {
+      }).on('paused', (/* info */) => {
         // replication was paused, usually because of a lost connection
         // TODO: Update UI
-      }).on('active', function (info) {
+      }).on('active', (/* info */) => {
         // replication was resumed
         // TODO: Update UI
-      }).on('error', function (err) {
+      }).on('error', err => {
         // totally unhandled error (shouldn't happen)
         // TODO: Update UI
         console.error(err);
