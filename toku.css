@@ -1,0 +1,43 @@
+body {
+  padding: 0;
+  margin: 0;
+  background: #f2f2f2;
+}
+header {
+  height: 35px;
+  padding: 3px 8px;
+  margin: 0;
+  margin-bottom: 8px;
+  background: white;
+  box-shadow: 0 1.5px 3px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: row;
+}
+header > * {
+  display: inline-block;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+header h1 {
+  font-size: 30px;
+  flex: 1 1 auto;
+}
+header .icon {
+  width: 25px;
+  height: 25px;
+  padding: 5px 10px;
+}
+#sync-status {
+  /* Sync icon is initially hidden until we detect a remote server is set */
+  /* visibility: hidden; */
+  background: url('img/icons.svg') left / auto 100% content-box;
+}
+#sync-status.error {
+}
+#sync-status.updating {
+}
+#sync-status.offline {
+}
+#settings-menu {
+  background: url('img/icons.svg') 100% / auto 100% content-box;
+}
