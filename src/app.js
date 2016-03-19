@@ -37,18 +37,3 @@ function render() {
 
 render();
 CardDB.onUpdate(() => render());
-
-// Set up package.json script aliases
-
-// Reference: http://pouchdb.com/getting-started.html
-// Also: http://glenmaddern.com/articles/javascript-in-2015
-// And: http://pouchdb.com/guides/updating-deleting.html
-
-// Then: Deletion
-// Then: Add keywords
-// Then: Add hash to end of ID
-// Then: Editing
-// Then: Make it pretty with JSX and CSS Modules
-
-// Then: Shared notes?
-//       Deck hierarchy?
