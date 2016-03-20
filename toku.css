@@ -78,3 +78,23 @@ header .icon {
 #settings-menu::before {
   background: url('img/icons.svg') 100% / auto 100% content-box;
 }
+
+/*
+ * Section pages
+ */
+main {
+  position: relative;
+}
+main > section {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(100%);
+  transition: transform 0.5s;
+}
+#card-list {
+  transform: translate(0%);
+}
