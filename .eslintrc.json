@@ -5,6 +5,9 @@
   ],
   "rules": {
     "array-bracket-spacing": [ "warn", "always" ],
-    "react/prefer-stateless-function": [ "off" ]
+    "react/prefer-stateless-function": [ "off" ],
+    "react/jsx-closing-bracket-location": [
+      "error", { "selfClosing": "after-props", "nonEmpty": "after-props" }
+    ]
   }
 }

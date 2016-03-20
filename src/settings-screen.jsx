@@ -11,4 +11,4 @@ export class SettingsScreen extends React.Component {
   }
 }
 
-export default CardRow;
+export default SettingsScreen;

@@ -2,9 +2,14 @@ import React from 'react';
 import CardGrid from './card-grid.jsx';
 
 export class CardOverviewScreen extends React.Component {
+  static get propTypes() {
+    return { db: React.PropTypes.object.isRequired };
+  }
+
   constructor(props) {
     super(props);
     this.state = { cards: [] };
+    this.handleAdd = this.handleAdd.bind(this);
   }
 
   componentDidMount() {
@@ -12,7 +17,7 @@ export class CardOverviewScreen extends React.Component {
       this.props.db.getCards().then(cards => {
         this.setState({ cards });
       });
-    }
+    };
     this.props.db.onUpdate(updateCards);
     updateCards();
   }
@@ -42,8 +47,7 @@ export class CardOverviewScreen extends React.Component {
     // XXX Add onchange handlers to text fields and store current state
     return (
       <section id="card-list">
-        <form className="add-card" onSubmit={e => this.handleAdd(e)}
-          ref="addForm">
+        <form className="add-card" onSubmit={this.handleAdd} ref="addForm">
           <input type="text" name="question" className="question"
             ref="question" />
           <input type="text" name="answer" className="answer"
