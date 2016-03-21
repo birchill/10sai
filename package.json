@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack --progress --colors",
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
-    "start": "webpack-dev-server --progress --colors",
+    "start": "webpack-dev-server --progress --colors --history-api-fallback",
     "lint": "eslint src/*.js src/*.jsx"
   },
   "devDependencies": {
@@ -21,8 +21,11 @@
     "webpack-dev-server": "^1.14.1"
   },
   "dependencies": {
+    "lodash": "^4.6.1",
     "pouchdb": "^5.3.0",
     "react": "^0.14.7",
-    "react-dom": "^0.14.7"
+    "react-addons-css-transition-group": "^0.14.7",
+    "react-dom": "^0.14.7",
+    "react-router": "^2.0.1"
   }
 }
