@@ -1,4 +1,4 @@
-export default function changeScreen(screen) {
+export function changeScreen(screen) {
   return {
     type: 'CHANGE_SCREEN',
     screen,

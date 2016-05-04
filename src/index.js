@@ -3,7 +3,7 @@ import React from 'react';
 import { browserHistory, Router, Route } from 'react-router';
 import { createStore } from 'redux';
 import { connect, Provider } from 'react-redux';
-import changeScreen from './actions/changeScreen.js';
+import { changeScreen } from './actions';
 import App from './App.jsx';
 
 const mapStateToProps = state => ({ screen: state.screen });
