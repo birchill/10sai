@@ -3,7 +3,7 @@ import React from 'react';
 import { browserHistory, Router, Route } from 'react-router';
 import { createStore } from 'redux';
 import { connect, Provider } from 'react-redux';
-import routeLocationDidUpdate from './actions/location.js';
+import changeScreen from './actions/changeScreen.js';
 import App from './App.jsx';
 
 const mapStateToProps = state => ({ screen: state.screen });
@@ -26,7 +26,7 @@ ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}
       onUpdate={ function onUpdate() {
-        store.dispatch(routeLocationDidUpdate(this.state));
+        store.dispatch(changeScreen(this.state.params.screen));
       } }>
       <Route path="/(:screen)" component={ConnectedApp} />
     </Router>
