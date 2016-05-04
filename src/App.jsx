@@ -1,3 +1,4 @@
+import React from 'react';
 import CardDB from './cards';
 import CardOverviewScreen from './card-overview-screen.jsx';
 import SettingsScreen from './settings-screen.jsx';
