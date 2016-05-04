@@ -47,7 +47,8 @@ header .icon {
   height: 25px;
   padding: 7px 12px;
 }
-/* We put the icon itself in a pseudo-element so we can change the background-color independently */
+/* We put the icon itself in a pseudo-element so we can change the
+ * background-color independently */
 .icon::before {
   content: "";
   display: inline-block;
@@ -89,6 +90,9 @@ main {
   overflow: hidden;
 }
 main section {
+  /* XXX This stylesheet is all kinds of messy now */
+  background: #f2f2f2;
+  border-left: 1px solid grey;
   width: 100%;
   box-sizing: padding-box;
   min-height: 100%;
@@ -97,14 +101,13 @@ main section {
   position: absolute;
   top: 0;
   left: 0;
-
-  /* Transition properties */
-  transform: translate(0%);
-  transition: transform 0.2s;
+}
+main section#sync {
+  z-index: 1;
+  transform: translate(100%);
+  transition: transform 0.1s;
   will-change: transform;
 }
-main section#sync.screen-enter,
-main section#sync.screen-leave
-{
-  transform: translate(100%);
+main section#sync.active {
+  transform: translate(0%);
 }

@@ -1,43 +1,64 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { browserHistory, Router, Route, IndexRoute, Link } from 'react-router';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import _ from 'lodash';
+import { browserHistory, Router, Route, Link } from 'react-router';
+import { createStore } from 'redux';
+import { connect, Provider } from 'react-redux';
+import routeLocationDidUpdate from './actions/location.js';
 import CardDB from './cards';
 import CardOverviewScreen from './card-overview-screen.jsx';
 import SettingsScreen from './settings-screen.jsx';
 import Navbar from './navbar.jsx';
 
 class App extends React.Component {
+  static get propTypes() {
+    return {
+      screen: React.PropTypes.string,
+    };
+  }
   render() {
     return (
       <div>
         <Navbar />
-        <ReactCSSTransitionGroup
-          component="main"
-          transitionName="screen"
-          transitionEnterTimeout={300}
-          transitionLeaveTimeout={300}>
-          { React.cloneElement(this.props.children,
-                              { key: this.props.location.pathname }) }
-        </ReactCSSTransitionGroup>
+        <main>
+          <CardOverviewScreen db={CardDB} active={!this.props.screen} />
+          <SettingsScreen active={this.props.screen === 'settings'} />
+        </main>
       </div>
     );
   }
 }
 
-function createElement(Component, props) {
-  if (Component === CardOverviewScreen) {
-    _.extend(props, { db: CardDB });
+const mapStateToProps = (state) => {
+  return {
+    screen: state.screen
   }
-  return <Component {...props} />;
 }
 
-ReactDOM.render((
-  <Router history={browserHistory} createElement={createElement}>
-    <Route path="/" component={App}>
-      <IndexRoute component={CardOverviewScreen} />
-      <Route path="settings" component={SettingsScreen} />
-    </Route>
-  </Router>
-), document.getElementById('container'));
+const WiredApp = connect(mapStateToProps)(App);
+
+const initialState = {};
+
+function app(state = initialState, action) {
+  switch (action.type) {
+    case 'CHANGE_SCREEN':
+      return { ...state, screen: action.screen };
+    default:
+      return state;
+  }
+}
+
+let store = createStore(app);
+
+// XXX Inline this below
+function updateLocation() {
+  store.dispatch(routeLocationDidUpdate(this.state));
+}
+
+ReactDOM.render(
+  <Provider store={store}>
+    <Router history={browserHistory} onUpdate={updateLocation}>
+      <Route path="/(:screen)" component={WiredApp}/>
+    </Router>
+  </Provider>,
+  document.getElementById('container')
+);
