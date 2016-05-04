@@ -3,7 +3,7 @@ import React from 'react';
 export class SettingsScreen extends React.Component {
   static get propTypes() {
     return {
-      active: React.PropTypes.boolean,
+      active: React.PropTypes.bool,
     };
   }
 
