@@ -12,7 +12,7 @@ const mapStateToProps = (state) => {
   }
 }
 
-const WiredApp = connect(mapStateToProps)(App);
+const ConnectedApp = connect(mapStateToProps)(App);
 
 const initialState = {};
 
@@ -27,15 +27,13 @@ function app(state = initialState, action) {
 
 let store = createStore(app);
 
-// XXX Inline this below
-function updateLocation() {
-  store.dispatch(routeLocationDidUpdate(this.state));
-}
-
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={browserHistory} onUpdate={updateLocation}>
-      <Route path="/(:screen)" component={WiredApp}/>
+    <Router history={browserHistory}
+      onUpdate={
+        function() { store.dispatch(routeLocationDidUpdate(this.state)) }
+      }>
+      <Route path="/(:screen)" component={ConnectedApp}/>
     </Router>
   </Provider>,
   document.getElementById('container')
