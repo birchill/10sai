@@ -1,5 +1,5 @@
 import React from 'react';
-import CardGrid from './card-grid.jsx';
+import CardGrid from './CardGrid.jsx';
 
 export class CardOverviewScreen extends React.Component {
   static get propTypes() {

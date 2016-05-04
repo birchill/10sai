@@ -1,8 +1,8 @@
 import React from 'react';
-import CardDB from './cards';
-import CardOverviewScreen from './card-overview-screen.jsx';
-import SettingsScreen from './settings-screen.jsx';
-import Navbar from './navbar.jsx';
+import CardDB from '../cards';
+import CardOverviewScreen from './CardOverviewScreen.jsx';
+import SettingsScreen from './SettingsScreen.jsx';
+import Navbar from './Navbar.jsx';
 
 export class App extends React.Component {
   static get propTypes() {
