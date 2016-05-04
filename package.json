@@ -1,8 +1,12 @@
 {
-  "name": "toku",
+  "name": "tensai",
   "description": "TODO",
   "version": "0.0.1",
   "author": "Brian Birtles",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/birtles/tensai.git"
+  },
   "scripts": {
     "build": "webpack --progress --colors",
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
