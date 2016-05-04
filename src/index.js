@@ -11,8 +11,8 @@ import App from './components/App.jsx';
 const mapStateToProps = state => ({ screen: state.screen });
 const ConnectedApp = connect(mapStateToProps)(App);
 
-const tensaiApp = combineReducers({ screen });
-let store = createStore(tensaiApp);
+const reducer = combineReducers({ screen });
+let store = createStore(reducer);
 
 ReactDOM.render(
   <Provider store={store}>
