@@ -1,12 +1,36 @@
-body {
+/*
+ * Screen layout
+ */
+
+body, html {
   padding: 0;
   margin: 0;
-  background: #f2f2f2;
+  height: 100%;
+  overflow: hidden;
+}
+#container {
+  height: 100%;
+}
+#container > div {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+main {
+  position: relative;
+  flex: 1;
+}
+main section {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  overflow: auto;
 }
 
 /*
  * Header
  */
+
 header {
   height: 39px;
   margin: 0;
@@ -48,6 +72,7 @@ header h2 { /* Subject name */
 /*
  * Toolbar icons
  */
+
 header .icon {
   width: 25px;
   height: 25px;
@@ -89,28 +114,17 @@ header .icon {
 /*
  * Section pages
  */
-main {
-  position: relative;
-  /* XXX Fix the following! */
-  min-height: calc(100vh - 49px);
-  overflow: hidden;
+
+body {
+  background: #f2f2f2;
 }
 main section {
-  /* XXX This stylesheet is all kinds of messy now */
-  top: 0;
-  left: 0;
-  margin: 0;
-  width: 100%;
   border-left: 1px solid grey;
   box-sizing: padding-box;
-  min-height: 100%;
   padding: 10px;
-  position: absolute;
-
   background: #f2f2f2;
 }
 main section#sync {
-  z-index: 1;
   transform: translate(100%);
   transition: transform 0.1s;
   will-change: transform;
