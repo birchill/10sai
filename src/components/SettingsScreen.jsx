@@ -9,9 +9,10 @@ export class SettingsScreen extends React.Component {
 
   render() {
     return (
-      <section id="sync" className={this.props.active ? 'active' : ''}>
+      <section id="settings" className={this.props.active ? 'active' : ''}>
         <h3>Sync</h3>
-        <input type="button" value="Add sync server"></input>
+        <input type="button" value="Add sync server"
+          className="link-button"></input>
       </section>
     );
   }

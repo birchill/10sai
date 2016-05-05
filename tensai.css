@@ -1,5 +1,14 @@
 /*
+ * Font settings
+ */
+body, html {
+  font-family: Arial, sans-serif;
+}
+
+/*
  * Screen layout
+ *
+ * Based on prototype here: http://codepen.io/anon/pen/EKGjGG
  */
 
 body, html {
@@ -119,16 +128,59 @@ body {
   background: #f2f2f2;
 }
 main section {
-  border-left: 1px solid grey;
   box-sizing: border-box;
   padding: 10px;
   background: #f2f2f2;
 }
-main section#sync {
-  transform: translate(100%);
-  transition: transform 0.1s;
+main section {
+  transition: all 0.2s;
+}
+main section.inactive {
+  color: grey;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+main section#settings {
+  background: white;
+  margin: 0 5%;
+  width: 90%;
+  height: 96%;
+  padding: 15px;
+  box-shadow: 0 0 6px grey;
+  border: 1px solid lightgrey;
+}
+main section#settings {
+  transform: translate(0%, -120%);
+  transform: translate(0%, calc(-100% - 80px));
+  transition: transform 0.15s;
   will-change: transform;
 }
-main section#sync.active {
+main section#settings.active {
   transform: translate(0%);
+}
+
+main section,
+main section input[type=button] {
+  font-size: 15px;
+}
+main section h3 {
+  margin-top: 0;
+  font-size: 20px;
+}
+
+main section input[type=button].link-button {
+  /*
+   * I'm not sure which is less evil: marking an <a> as rule="button" or
+   * making a button look like an <a>, but I suspect it's the latter.
+   */
+  background: none;
+  border-width: 0px;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+main section input[type=button].link-button,
+a {
+  color: #2d71e9;
 }
