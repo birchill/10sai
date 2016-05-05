@@ -120,7 +120,7 @@ body {
 }
 main section {
   border-left: 1px solid grey;
-  box-sizing: padding-box;
+  box-sizing: border-box;
   padding: 10px;
   background: #f2f2f2;
 }
