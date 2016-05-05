@@ -8,8 +8,12 @@ export class CardOverviewScreen extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { cards: [] };
-    this.handleAdd = this.handleAdd.bind(this);
+    this.state = { cards: [], question: '', answer: '' };
+
+    // Bind handlers
+    [ 'handleAdd', 'handleQuestionChange', 'handleAnswerChange' ].forEach(
+      handler => { this[handler] = this[handler].bind(this); }
+    );
   }
 
   componentDidMount() {
@@ -24,18 +28,24 @@ export class CardOverviewScreen extends React.Component {
 
   addCard() {
     const [ question, answer ] =
-      [ 'question', 'answer' ].map(field => this.refs[field].value.trim());
+      [ 'question', 'answer' ].map(field => this.state[field].trim());
     if (!question.length || !answer.length) {
-      console.warn('Empty question/answer');
       return;
     }
 
     this.props.db.addCard(question, answer)
       .then(() => {
-        console.log('saved');
-        this.refs.addForm.reset();
+        this.setState({ question: '', answer: '' });
       })
       .catch(err => console.log(err));
+  }
+
+  handleQuestionChange(e) {
+    this.setState({ question: e.target.value });
+  }
+
+  handleAnswerChange(e) {
+    this.setState({ answer: e.target.value });
   }
 
   handleAdd(e) {
@@ -44,14 +54,15 @@ export class CardOverviewScreen extends React.Component {
   }
 
   render() {
-    // XXX Add onchange handlers to text fields and store current state
     return (
       <section id="card-list">
-        <form className="add-card" onSubmit={this.handleAdd} ref="addForm">
+        <form className="add-card" onSubmit={this.handleAdd}>
           <input type="text" name="question" className="question"
-            ref="question" />
+            placeholder="Question" value={this.state.question}
+            onChange={this.handleQuestionChange} />
           <input type="text" name="answer" className="answer"
-            ref="answer" />
+            placeholder="Answer" value={this.state.answer}
+            onChange={this.handleAnswerChange} />
           <input type="submit" value="Add" />
         </form>
         <CardGrid cards={this.state.cards} />
