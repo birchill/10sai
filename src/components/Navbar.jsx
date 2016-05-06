@@ -5,13 +5,13 @@ export class Navbar extends React.Component {
   static get propTypes() {
     return {
       settingsActive: React.PropTypes.bool,
-      returnLink: React.PropTypes.string,
+      currentScreenLink: React.PropTypes.string,
     };
   }
 
   render() {
     const settingsLink = this.props.settingsActive
-                         ? this.props.returnLink
+                         ? this.props.currentScreenLink
                          : '/settings';
 
     const settingsMenuClasses = [ 'icon' ];

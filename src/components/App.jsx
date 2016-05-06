@@ -2,7 +2,7 @@ import React from 'react';
 import CardDB from '../cards';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import SettingsPopup from './SettingsPopup.jsx';
-import ActiveNavbar from './ActiveNavbar.jsx';
+import Navbar from './Navbar.jsx';
 
 export class App extends React.Component {
   static get propTypes() {
@@ -19,14 +19,17 @@ export class App extends React.Component {
     if (this.props.nav.popup) {
       popupClasses.push('active');
     }
+    const settingsActive = this.props.nav.popup === 'settings';
+    const currentScreenLink = `/${this.props.nav.screen || ''}`;
 
     return (
       <div>
-        <ActiveNavbar />
+        <Navbar settingsActive={settingsActive}
+          currentScreenLink={currentScreenLink} />
         <main>
           <CardOverviewScreen db={CardDB} />
-          <div className={ popupClasses.join(' ') } />
-          <SettingsPopup active={this.props.nav.popup === 'settings'} />
+          <div className={popupClasses.join(' ')} />
+          <SettingsPopup active={settingsActive} />
         </main>
       </div>
     );
