@@ -12,7 +12,7 @@ const mapStateToProps = state => ({ screen: state.screen });
 const ConnectedApp = connect(mapStateToProps)(App);
 
 const reducer = combineReducers({ screen });
-let store = createStore(reducer);
+const store = createStore(reducer);
 
 ReactDOM.render(
   <Provider store={store}>
