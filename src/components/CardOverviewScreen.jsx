@@ -5,7 +5,6 @@ export class CardOverviewScreen extends React.Component {
   static get propTypes() {
     return {
       db: React.PropTypes.object.isRequired,
-      active: React.PropTypes.bool,
     };
   }
 
@@ -58,8 +57,7 @@ export class CardOverviewScreen extends React.Component {
 
   render() {
     return (
-      <section id="card-list" className={this.props.active ? '' : 'inactive'}
-        aria-disabled={!this.props.active}>
+      <section id="card-list">
         <form className="add-card" onSubmit={this.handleAdd}>
           <input type="text" name="question" className="question"
             placeholder="Question" value={this.state.question}

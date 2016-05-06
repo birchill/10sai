@@ -1,23 +1,32 @@
 import React from 'react';
 import CardDB from '../cards';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
-import SettingsScreen from './SettingsScreen.jsx';
+import SettingsPopup from './SettingsPopup.jsx';
 import Navbar from './Navbar.jsx';
 
 export class App extends React.Component {
   static get propTypes() {
     return {
-      screen: React.PropTypes.string,
+      nav: React.PropTypes.shape({
+        screen: React.PropTypes.string,
+        popup: React.PropTypes.string,
+      }),
     };
   }
 
   render() {
+    const popupClasses = [ 'popup-overlay' ];
+    if (this.props.nav.popup) {
+      popupClasses.push('active');
+    }
+
     return (
       <div>
         <Navbar />
         <main>
-          <CardOverviewScreen db={CardDB} active={!this.props.screen} />
-          <SettingsScreen active={this.props.screen === 'settings'} />
+          <CardOverviewScreen db={CardDB} />
+          <div className={ popupClasses.join(' ') } />
+          <SettingsPopup active={this.props.nav.popup === 'settings'} />
         </main>
       </div>
     );

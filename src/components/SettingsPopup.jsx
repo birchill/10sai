@@ -1,6 +1,6 @@
 import React from 'react';
 
-export class SettingsScreen extends React.Component {
+export class SettingsPopup extends React.Component {
   static get propTypes() {
     return {
       active: React.PropTypes.bool,
@@ -18,4 +18,4 @@ export class SettingsScreen extends React.Component {
   }
 }
 
-export default SettingsScreen;
+export default SettingsPopup;

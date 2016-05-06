@@ -1,6 +1,6 @@
-export function changeScreen(screen) {
+export function updateLocation(screen) {
   return {
-    type: 'CHANGE_SCREEN',
+    type: 'CHANGE_LOCATION',
     screen,
   };
 }

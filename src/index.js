@@ -4,21 +4,21 @@ import { browserHistory, Router, Route } from 'react-router';
 import { createStore, combineReducers } from 'redux';
 import { connect, Provider } from 'react-redux';
 
-import { changeScreen } from './actions';
-import screen from './reducers/screen';
+import { updateLocation } from './actions';
+import nav from './reducers/nav';
 import App from './components/App.jsx';
 
-const mapStateToProps = state => ({ screen: state.screen });
+const mapStateToProps = state => ({ nav: state.nav });
 const ConnectedApp = connect(mapStateToProps)(App);
 
-const reducer = combineReducers({ screen });
+const reducer = combineReducers({ nav });
 const store = createStore(reducer);
 
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}
       onUpdate={ function onUpdate() {
-        store.dispatch(changeScreen(this.state.params.screen));
+        store.dispatch(updateLocation(this.state.params.screen));
       } }>
       <Route path="/(:screen)" component={ConnectedApp} />
     </Router>
