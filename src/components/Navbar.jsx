@@ -2,7 +2,23 @@ import React from 'react';
 import { Link } from 'react-router';
 
 export class Navbar extends React.Component {
+  static get propTypes() {
+    return {
+      settingsActive: React.PropTypes.bool,
+      returnLink: React.PropTypes.string,
+    };
+  }
+
   render() {
+    const settingsLink = this.props.settingsActive
+                         ? this.props.returnLink
+                         : '/settings';
+
+    const settingsMenuClasses = [ 'icon' ];
+    if (this.props.settingsActive) {
+      settingsMenuClasses.push('active');
+    }
+
     return (
       <header>
         <hgroup>
@@ -12,8 +28,9 @@ export class Navbar extends React.Component {
         <Link id="sync-settings" to="/settings#sync">
           <div id="sync-status" className="icon"></div>
         </Link>
-        <Link to="/settings">
-          <div id="settings-menu" className="icon"></div>
+        <Link to={settingsLink}>
+          <div id="settings-menu"
+            className={settingsMenuClasses.join(' ')}></div>
         </Link>
       </header>
     );

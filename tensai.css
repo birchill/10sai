@@ -126,8 +126,11 @@ header .icon {
 }
 #sync-status.offline {
 }
-#settings-menu:hover {
+#settings-menu.active {
   background: skyblue;
+}
+#settings-menu:hover {
+  background: linear-gradient(lightblue, skyblue 5%);
 }
 #settings-menu::before {
   background: url('img/icons.svg') 100% / auto 100% content-box;

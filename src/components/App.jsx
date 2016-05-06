@@ -2,7 +2,7 @@ import React from 'react';
 import CardDB from '../cards';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import SettingsPopup from './SettingsPopup.jsx';
-import Navbar from './Navbar.jsx';
+import ActiveNavbar from './ActiveNavbar.jsx';
 
 export class App extends React.Component {
   static get propTypes() {
@@ -22,7 +22,7 @@ export class App extends React.Component {
 
     return (
       <div>
-        <Navbar />
+        <ActiveNavbar />
         <main>
           <CardOverviewScreen db={CardDB} />
           <div className={ popupClasses.join(' ') } />
