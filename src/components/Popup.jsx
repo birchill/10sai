@@ -12,6 +12,7 @@ export class Popup extends React.Component {
   constructor(props) {
     super(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.assignPopup = elem => { this.popup = elem; };
   }
 
   componentDidMount() {
@@ -35,13 +36,18 @@ export class Popup extends React.Component {
   }
 
   activatePopup() {
-    // XXX Store active element
-    // XXX Focus first form control / popup itself
+    this.previousFocus = document.activeElement;
+    if (this.popup) {
+      this.popup.focus();
+    }
     document.addEventListener('keydown', this.handleKeyDown);
   }
 
   deactivatePopup() {
-    // XXX Restore active element
+    if (this.previousFocus) {
+      this.previousFocus.focus();
+      this.previousFocus = undefined;
+    }
     document.removeEventListener('keydown', this.handleKeyDown);
   }
 
@@ -56,7 +62,8 @@ export class Popup extends React.Component {
 
     return (
       <section className={popupClass}
-        aria-hidden={!this.props.active} aria-role="dialog">
+        aria-hidden={!this.props.active} aria-role="dialog"
+        ref={this.assignPopup}>
         {this.props.children}
       </section>
     );
