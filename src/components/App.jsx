@@ -1,4 +1,6 @@
 import React from 'react';
+import { browserHistory } from 'react-router';
+
 import CardDB from '../cards';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import Popup from './Popup.jsx';
@@ -20,6 +22,9 @@ export class App extends React.Component {
       `popup-overlay ${this.props.nav.popup ? 'active' : ''}`;
     const settingsActive = this.props.nav.popup === 'settings';
     const currentScreenLink = `/${this.props.nav.screen || ''}`;
+    const closePopup = () => {
+      browserHistory.replace(currentScreenLink);
+    };
 
     return (
       <div>
@@ -28,8 +33,7 @@ export class App extends React.Component {
         <main>
           <CardOverviewScreen db={CardDB} />
           <div className={overlayClass} />
-          <Popup active={settingsActive}
-            close={function yer() { console.log('close'); }}>
+          <Popup active={settingsActive} close={closePopup}>
             <SettingsPanel />
           </Popup>
         </main>
