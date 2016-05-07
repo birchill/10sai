@@ -52,10 +52,10 @@ export class Popup extends React.Component {
   }
 
   render() {
-    const classes = `popup ${this.props.active ? 'active' : ''}`;
+    const popupClass = `popup ${this.props.active ? 'active' : ''}`;
 
     return (
-      <section id="settings" className={classes}
+      <section className={popupClass}
         aria-hidden={!this.props.active} aria-role="dialog">
         {this.props.children}
       </section>
