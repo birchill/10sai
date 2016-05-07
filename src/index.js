@@ -1,17 +1,16 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
 import { browserHistory, Router, Route } from 'react-router';
-import { createStore, combineReducers } from 'redux';
+import { createStore } from 'redux';
 import { connect, Provider } from 'react-redux';
 
 import { updateLocation } from './actions';
-import nav from './reducers/nav';
+import reducer from './reducers/index';
 import App from './components/App.jsx';
 
 const mapStateToProps = state => ({ nav: state.nav });
 const ConnectedApp = connect(mapStateToProps)(App);
 
-const reducer = combineReducers({ nav });
 const store = createStore(reducer);
 
 ReactDOM.render(
