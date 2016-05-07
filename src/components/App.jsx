@@ -1,7 +1,8 @@
 import React from 'react';
 import CardDB from '../cards';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
-import SettingsPopup from './SettingsPopup.jsx';
+import Popup from './Popup.jsx';
+import SettingsPanel from './SettingsPanel.jsx';
 import Navbar from './Navbar.jsx';
 
 export class App extends React.Component {
@@ -15,10 +16,8 @@ export class App extends React.Component {
   }
 
   render() {
-    const popupClasses = [ 'popup-overlay' ];
-    if (this.props.nav.popup) {
-      popupClasses.push('active');
-    }
+    const overlayClass =
+      `popup-overlay ${this.props.nav.popup ? 'active' : ''}`;
     const settingsActive = this.props.nav.popup === 'settings';
     const currentScreenLink = `/${this.props.nav.screen || ''}`;
 
@@ -28,8 +27,11 @@ export class App extends React.Component {
           currentScreenLink={currentScreenLink} />
         <main>
           <CardOverviewScreen db={CardDB} />
-          <div className={popupClasses.join(' ')} />
-          <SettingsPopup active={settingsActive} />
+          <div className={overlayClass} />
+          <Popup active={settingsActive}
+            close={function yer() { console.log('close'); }}>
+            <SettingsPanel />
+          </Popup>
         </main>
       </div>
     );

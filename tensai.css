@@ -32,11 +32,21 @@ main {
 main section {
   margin-top: 10px;
 }
-main section, main div.popup-overlay {
+main section {
   height: 100%;
   width: 100%;
   position: absolute;
   overflow: auto;
+}
+
+/*
+ * Popup background
+ */
+
+main section, main div.popup-overlay {
+  height: 100%;
+  width: 100%;
+  position: absolute;
 }
 main div.popup-overlay {
   background: rgb(220, 220, 220);
@@ -152,7 +162,11 @@ main section {
   transition: all 0.2s;
 }
 
-main section#settings {
+/*
+ * Popups
+ */
+
+main section.popup {
   background: white;
   margin-left: 5%;
   margin-right: 5%;
@@ -161,14 +175,14 @@ main section#settings {
   padding: 15px 15px 30px;
   box-shadow: 0 0 6px grey;
 }
-/* Pop-in animation settings */
-main section#settings {
+main section.popup[aria-hidden=true] {
+  /* XXX Fix this */
   transform: translate(0%, -120%);
   transform: translate(0%, calc(-100% - 80px));
   transition: transform 0.15s;
   will-change: transform;
 }
-main section#settings.active {
+main section.popup {
   transform: translate(0%);
 }
 
