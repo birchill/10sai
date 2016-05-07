@@ -57,7 +57,7 @@ export class CardOverviewScreen extends React.Component {
 
   render() {
     return (
-      <section id="card-list">
+      <section id="card-list" tabIndex="-1">
         <form className="add-card" onSubmit={this.handleAdd}>
           <input type="text" name="question" className="question"
             placeholder="Question" value={this.state.question}
