@@ -13,11 +13,7 @@ export class Navbar extends React.Component {
     const settingsLink = this.props.settingsActive
                          ? this.props.currentScreenLink
                          : '/settings';
-
-    const settingsMenuClasses = [ 'icon' ];
-    if (this.props.settingsActive) {
-      settingsMenuClasses.push('active');
-    }
+    const settingsClass = `icon ${this.props.settingsActive ? 'active' : ''}`;
 
     return (
       <header>
@@ -29,8 +25,7 @@ export class Navbar extends React.Component {
           <div id="sync-status" className="icon"></div>
         </Link>
         <Link to={settingsLink}>
-          <div id="settings-menu"
-            className={settingsMenuClasses.join(' ')}></div>
+          <div id="settings-menu" className={settingsClass}></div>
         </Link>
       </header>
     );
