@@ -194,19 +194,3 @@ main section h3 {
   margin-top: 0;
   font-size: 20px;
 }
-
-main section input[type=button].link-button {
-  /*
-   * I'm not sure which is less evil: marking an <a> as rule="button" or
-   * making a button look like an <a>, but I suspect it's the latter.
-   */
-  background: none;
-  border-width: 0px;
-  padding: 0;
-  text-decoration: underline;
-  cursor: pointer;
-}
-main section input[type=button].link-button,
-a {
-  color: #2d71e9;
-}
