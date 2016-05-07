@@ -176,14 +176,14 @@ main section.popup {
   box-shadow: 0 0 6px grey;
 }
 main section.popup[aria-hidden=true] {
-  /* XXX Fix this */
   transform: translate(0%, -120%);
   transform: translate(0%, calc(-100% - 80px));
-  transition: transform 0.15s;
+  transition: transform 0.15s ease-in;
   will-change: transform;
 }
 main section.popup {
   transform: translate(0%);
+  transition-timing-function: ease;
 }
 
 main section,
