@@ -1,4 +1,4 @@
-import * as SyncStatus from '../sync-status-codes';
+import SyncStatus from '../sync-status';
 
 const initialState = { state: SyncStatus.NOT_CONFIGURED };
 

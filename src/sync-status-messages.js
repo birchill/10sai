@@ -1,4 +1,4 @@
-import * as SyncStatus from './sync-status-codes';
+import SyncStatus from './sync-status';
 
 // Eventually we'll localize this...
 export const SyncStatusMessages = [];

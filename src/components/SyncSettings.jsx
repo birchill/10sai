@@ -5,7 +5,9 @@ import SyncStatusMessages from '../sync-status-messages';
 export class SyncSettings extends React.Component {
   static get propTypes() {
     return {
-      syncState: React.PropTypes.string.isRequired,
+      // This should be 'symbol' once they are supported:
+      // https://github.com/facebook/react/issues/4917
+      syncState: React.PropTypes.any.isRequired,
     };
   }
 
