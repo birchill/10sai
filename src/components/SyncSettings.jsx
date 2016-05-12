@@ -1,6 +1,7 @@
 import React from 'react';
 
 import SyncStatusMessages from '../sync-status-messages';
+import SyncServerForm from './SyncServerForm';
 
 export class SyncSettings extends React.Component {
   static get propTypes() {
@@ -8,7 +9,28 @@ export class SyncSettings extends React.Component {
       // This should be 'symbol' once they are supported:
       // https://github.com/facebook/react/issues/4917
       syncState: React.PropTypes.any.isRequired,
+      server: React.PropTypes.string.isRequired,
     };
+  }
+
+  constructor(props) {
+    super(props);
+
+    this.state = { editingServer: false };
+
+    ['handleServerChange', 'handleServerChangeCancel'].forEach(
+      handler => { this[handler] = this[handler].bind(this); }
+    );
+  }
+
+  handleServerChange() {
+    this.setState({ editingServer: false });
+    // XXX Call passed-in action creator to set server
+    // In fact, maybe we don't even need this method?
+  }
+
+  handleServerChangeCancel() {
+    this.setState({ editingServer: false });
   }
 
   /*
@@ -53,12 +75,14 @@ export class SyncSettings extends React.Component {
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>
-          <div className="server-settings">
-            Server name:
-            <button name="change-server">Change</button>
-          </div>
-          <form name="sync-server-settings">
-          </form>
+          { this.state.editingServer
+            ? <div className="server-settings">
+                Server name:
+                <button name="change-server">Change</button>
+              </div>
+            : <SyncServerForm server={this.props.server}
+                onSubmit={this.handleServerChange}
+                onCancel={this.handleServerChangeCancel} /> }
         </div>
       </div>
     );

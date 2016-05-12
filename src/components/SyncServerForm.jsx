@@ -4,7 +4,7 @@ export class SyncServerForm extends React.Component {
   static get propTypes() {
     return {
       server: React.PropTypes.string,
-      onChange: React.PropTypes.func.isRequired,
+      onSubmit: React.PropTypes.func.isRequired,
       onCancel: React.PropTypes.func.isRequired,
     };
   }
@@ -33,7 +33,7 @@ export class SyncServerForm extends React.Component {
   }
 
   handleSubmit(e) {
-    this.props.onChange(this.state.server);
+    this.props.onSubmit(this.state.server);
   }
 
   handleCancel(e) {
