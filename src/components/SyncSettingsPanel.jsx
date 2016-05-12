@@ -3,7 +3,7 @@ import React from 'react';
 import SyncStatusMessages from '../sync-status-messages';
 import SyncServerForm from './SyncServerForm';
 
-export class SyncSettings extends React.Component {
+export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
     return {
       // This should be 'symbol' once they are supported:
@@ -89,4 +89,4 @@ export class SyncSettings extends React.Component {
   }
 }
 
-export default SyncSettings;
+export default SyncSettingsPanel;

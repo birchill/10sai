@@ -11,7 +11,7 @@ describe('<SyncServerForm />', () => {
 
   it('uses the supplied server name', () => {
     const subject =
-      shallow(<SyncServerForm server='abc' onChange={stub} onCancel={stub}/>);
+      shallow(<SyncServerForm server='abc' onSubmit={stub} onCancel={stub}/>);
 
     assert.strictEqual(subject.find('input[name="server"]').prop('value'),
                        'abc');

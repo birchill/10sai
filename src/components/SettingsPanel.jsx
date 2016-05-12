@@ -1,13 +1,13 @@
 import React from 'react';
 
-import LocalSyncSettings from './LocalSyncSettings.jsx';
+import LocalSyncSettingsPanel from './LocalSyncSettingsPanel.jsx';
 
 export class SettingsPanel extends React.Component {
   render() {
     return (
       <div>
         <h3>Sync</h3>
-        <LocalSyncSettings />
+        <LocalSyncSettingsPanel />
       </div>
     );
   }
