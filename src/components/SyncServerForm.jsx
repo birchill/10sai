@@ -13,7 +13,7 @@ export class SyncServerForm extends React.Component {
     super(props);
 
     this.state = { server: '' };
-    ['handleServerChange', 'handleSubmit', 'handleCancel'].forEach(
+    [ 'handleServerChange', 'handleSubmit', 'handleCancel' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
   }
@@ -32,11 +32,11 @@ export class SyncServerForm extends React.Component {
     this.setState({ server: e.target.value });
   }
 
-  handleSubmit(e) {
+  handleSubmit() {
     this.props.onSubmit(this.state.server);
   }
 
-  handleCancel(e) {
+  handleCancel() {
     this.setState({ server: this.props.server });
     this.onCancel();
   }

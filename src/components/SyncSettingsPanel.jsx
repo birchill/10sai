@@ -17,8 +17,7 @@ export class SyncSettingsPanel extends React.Component {
     super(props);
 
     this.state = { editingServer: false };
-
-    ['handleServerChange', 'handleServerChangeCancel'].forEach(
+    [ 'handleServerChange', 'handleServerChangeCancel' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
   }
@@ -81,8 +80,8 @@ export class SyncSettingsPanel extends React.Component {
                 <button name="change-server">Change</button>
               </div>
             : <SyncServerForm server={this.props.server}
-                onSubmit={this.handleServerChange}
-                onCancel={this.handleServerChangeCancel} /> }
+              onSubmit={this.handleServerChange}
+              onCancel={this.handleServerChangeCancel} /> }
         </div>
       </div>
     );
