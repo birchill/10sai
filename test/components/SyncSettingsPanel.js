@@ -22,7 +22,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
-          server="" onSubmit={stub} />
+          server="" onSubmit={stub} onPause={stub} />
       );
 
     assert.isAbove(subject.find('.summary').text().length, 0,
@@ -33,7 +33,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
-          server="" onSubmit={stub} />
+          server="" onSubmit={stub} onPause={stub} />
       );
 
     subject.find('button[name="edit-server"]').simulate('click');
@@ -45,7 +45,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
-          server="" onSubmit={stub} />
+          server="" onSubmit={stub} onPause={stub} />
       );
 
     subject.find('button[name="edit-server"]').simulate('click');
@@ -60,7 +60,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
-          server="" onSubmit={onSubmit} />
+          server="" onSubmit={onSubmit} onPause={stub} />
       );
 
     subject.find('button[name="edit-server"]').simulate('click');
@@ -79,7 +79,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
-          server="" onSubmit={stub} />
+          server="" onSubmit={stub} onPause={stub} />
       );
 
     assert.isAbove(subject.find('.summary').text().length, 0,
@@ -90,7 +90,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
-          server="" onSubmit={stub} />
+          server="" onSubmit={stub} onPause={stub} />
       );
 
     assert.strictEqual(subject.find('progress').length, 1);
@@ -100,7 +100,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
-          server="" onSubmit={stub} />
+          server="" onSubmit={stub} onPause={stub} />
       );
     for (const state in SyncState) {
       if (state === 'IN_PROGRESS') {
@@ -114,9 +114,28 @@ describe('<SyncSettingsPanel />', () => {
   });
 
   it('pauses syncing when the Cancel button is clicked', () => {
+    const onPause = sinon.spy();
+    const subject =
+      shallow(
+        <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
+          server="" onSubmit={stub} onPause={onPause}/>
+      );
+
+    subject.find('button[name="cancel-sync"]').simulate('click');
+
+    assert.calledOnce(onPause);
   });
 
   it('shows the editing form when the Change button is clicked', () => {
+    const subject =
+      shallow(
+        <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
+          server="" onSubmit={stub} onPause={stub}/>
+      );
+
+    subject.find('button[name="edit-server"]').simulate('click');
+
+    assert.strictEqual(subject.find('SyncServerForm').length, 1);
   });
 
   // -------------------------------------------------------------

@@ -12,6 +12,7 @@ export class SyncSettingsPanel extends React.Component {
       syncState: React.PropTypes.any.isRequired,
       server: React.PropTypes.string.isRequired,
       onSubmit: React.PropTypes.func.isRequired,
+      onPause: React.PropTypes.func.isRequired,
     };
   }
 
@@ -41,6 +42,7 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   handlePause() {
+    this.props.onPause();
   }
 
   render() {
