@@ -118,7 +118,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
-          server="" onSubmit={stub} onPause={onPause}/>
+          server="" onSubmit={stub} onPause={onPause} />
       );
 
     subject.find('button[name="cancel-sync"]').simulate('click');
@@ -130,7 +130,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
-          server="" onSubmit={stub} onPause={stub}/>
+          server="" onSubmit={stub} onPause={stub} />
       );
 
     subject.find('button[name="edit-server"]').simulate('click');
