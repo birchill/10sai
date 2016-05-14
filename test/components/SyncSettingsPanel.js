@@ -75,6 +75,50 @@ describe('<SyncSettingsPanel />', () => {
   //
   // -------------------------------------------------------------
 
+  it('has a summary label in \'in progress\' state', () => {
+    const subject =
+      shallow(
+        <SyncSettingsPanel syncState={SyncStatus.IN_PROGRESS}
+          server="" onSubmit={stub} />
+      );
+
+    assert.isAbove(subject.find('.summary').text().length, 0,
+                   'Summary label is filled-in');
+  });
+
+  it('shows a progress bar in \'in progress\' state', () => {
+    const subject =
+      shallow(
+        <SyncSettingsPanel syncState={SyncStatus.IN_PROGRESS}
+          server="" onSubmit={stub} />
+      );
+
+    assert.strictEqual(subject.find('progress').length, 1);
+  });
+
+  it('does NOT show progress bar in other states', () => {
+    const subject =
+      shallow(
+        <SyncSettingsPanel syncState={SyncStatus.IN_PROGRESS}
+          server="" onSubmit={stub} />
+      );
+    for (const status in SyncStatus) {
+      if (status === 'IN_PROGRESS') {
+        continue;
+      }
+
+      subject.setProps({ syncState: SyncStatus[status] });
+      assert.strictEqual(subject.find('progress').length, 0,
+                         `No progress bar in ${status} state`);
+    }
+  });
+
+  it('pauses syncing when the Cancel button is clicked', () => {
+  });
+
+  it('shows the editing form when the Change button is clicked', () => {
+  });
+
   // -------------------------------------------------------------
   //
   // Up to date
@@ -98,4 +142,6 @@ describe('<SyncSettingsPanel />', () => {
   // Error
   //
   // -------------------------------------------------------------
+
+  // XXX Add tests for the play/pause button and icon state
 });

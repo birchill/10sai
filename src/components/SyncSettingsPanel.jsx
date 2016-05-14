@@ -11,6 +11,7 @@ export class SyncSettingsPanel extends React.Component {
       // https://github.com/facebook/react/issues/4917
       syncState: React.PropTypes.any.isRequired,
       server: React.PropTypes.string.isRequired,
+      onSubmit: React.PropTypes.func.isRequired,
     };
   }
 
@@ -20,7 +21,8 @@ export class SyncSettingsPanel extends React.Component {
     this.state = { editingServer: false };
     [ 'handleEditServer',
       'handleServerChange',
-      'handleServerChangeCancel' ].forEach(
+      'handleServerChangeCancel',
+      'handlePause' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
   }
@@ -36,6 +38,9 @@ export class SyncSettingsPanel extends React.Component {
 
   handleServerChangeCancel() {
     this.setState({ editingServer: false });
+  }
+
+  handlePause() {
   }
 
   render() {
@@ -62,6 +67,12 @@ export class SyncSettingsPanel extends React.Component {
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>
+          { this.props.syncState === SyncStatus.IN_PROGRESS &&
+            <div>
+              <progress />
+              <button name="cancel-sync"
+                onClick={this.handlePause}>Cancel</button>
+            </div> }
           { !this.state.editingServer
             ? existingServer
             : <SyncServerForm server={this.props.server}
