@@ -7,7 +7,9 @@ export class SettingsPanel extends React.Component {
     return (
       <div>
         <h3>Sync</h3>
-        <LocalSyncSettingsPanel server="" />
+        <LocalSyncSettingsPanel server=""
+          onSubmit={function stub() {}}
+          onPause={function stub() {}} />
       </div>
     );
   }
