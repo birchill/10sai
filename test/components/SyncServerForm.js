@@ -88,5 +88,4 @@ describe('<SyncServerForm />', () => {
 
     assert.calledWith(onSubmit, { server: 'def' });
   });
-
 });
