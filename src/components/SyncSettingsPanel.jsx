@@ -1,7 +1,8 @@
 import React from 'react';
 
+import SyncStatus from '../sync-status';
 import SyncStatusMessages from '../sync-status-messages';
-import SyncServerForm from './SyncServerForm';
+import SyncServerForm from './SyncServerForm.jsx';
 
 export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
@@ -17,15 +18,20 @@ export class SyncSettingsPanel extends React.Component {
     super(props);
 
     this.state = { editingServer: false };
-    [ 'handleServerChange', 'handleServerChangeCancel' ].forEach(
+    [ 'handleEditServer',
+      'handleServerChange',
+      'handleServerChangeCancel' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
   }
 
-  handleServerChange() {
+  handleEditServer() {
+    this.setState({ editingServer: true });
+  }
+
+  handleServerChange(options) {
     this.setState({ editingServer: false });
-    // XXX Call passed-in action creator to set server
-    // In fact, maybe we don't even need this method?
+    this.props.onSubmit(options);
   }
 
   handleServerChangeCancel() {
@@ -39,7 +45,7 @@ export class SyncSettingsPanel extends React.Component {
   'Sync in progress'
     - server name (Change)
     - progress bar (Cancel)
-      (Detailed progress?)
+    - progress message
   'Sync is paused'
     - server name (Change)
     - last updated
@@ -66,6 +72,19 @@ export class SyncSettingsPanel extends React.Component {
   render() {
     const summary = SyncStatusMessages[this.props.syncState];
 
+    const existingServer =
+      this.props.syncState === SyncStatus.NOT_CONFIGURED
+      ? <p className="explanation">Adding a sync server lets you
+          access your cards from another computer, phone, or tablet.
+          <button name="edit-server"
+            onClick={this.handleEditServer}>Add a sync server</button>
+        </p>
+      : <div className="server-settings">
+          Server name: {this.props.server}
+          <button name="edit-server"
+            onClick={this.handleEditServer}>Change</button>
+        </div>;
+
     return (
       <div className="sync-settings">
         <div className="sync-overview">
@@ -74,11 +93,8 @@ export class SyncSettingsPanel extends React.Component {
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>
-          { this.state.editingServer
-            ? <div className="server-settings">
-                Server name:
-                <button name="change-server">Change</button>
-              </div>
+          { !this.state.editingServer
+            ? existingServer
             : <SyncServerForm server={this.props.server}
               onSubmit={this.handleServerChange}
               onCancel={this.handleServerChangeCancel} /> }

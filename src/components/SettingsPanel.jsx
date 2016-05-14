@@ -7,7 +7,7 @@ export class SettingsPanel extends React.Component {
     return (
       <div>
         <h3>Sync</h3>
-        <LocalSyncSettingsPanel />
+        <LocalSyncSettingsPanel server="" />
       </div>
     );
   }
