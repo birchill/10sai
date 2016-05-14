@@ -1,4 +1,4 @@
-export const SyncStatus = {
+export const SyncState = {
   OK: Symbol('OK'),
   IN_PROGRESS: Symbol('IN_PROGRESS'),
   PAUSED: Symbol('PAUSED'),
@@ -7,4 +7,4 @@ export const SyncStatus = {
   NOT_CONFIGURED: Symbol('NOT_CONFIGURED'),
 };
 
-export default SyncStatus;
+export default SyncState;

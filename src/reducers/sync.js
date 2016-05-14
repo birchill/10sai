@@ -1,6 +1,6 @@
-import SyncStatus from '../sync-status';
+import SyncState from '../sync-states';
 
-const initialState = { state: SyncStatus.NOT_CONFIGURED };
+const initialState = { state: SyncState.NOT_CONFIGURED };
 
 export default function sync(state = initialState, action) {
   switch (action.type) {

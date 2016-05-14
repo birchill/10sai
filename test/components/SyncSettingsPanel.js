@@ -4,7 +4,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import { assert } from 'chai';
 import sinon from 'sinon';
-import SyncStatus from '../../src/sync-status';
+import SyncState from '../../src/sync-states';
 import SyncSettingsPanel from '../../src/components/SyncSettingsPanel';
 
 sinon.assert.expose(assert, { prefix: '' });
@@ -21,7 +21,7 @@ describe('<SyncSettingsPanel />', () => {
   it('has a summary label in not configured state', () => {
     const subject =
       shallow(
-        <SyncSettingsPanel syncState={SyncStatus.NOT_CONFIGURED}
+        <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           server="" onSubmit={stub} />
       );
 
@@ -32,7 +32,7 @@ describe('<SyncSettingsPanel />', () => {
   it('shows the editing form when the Add button is clicked', () => {
     const subject =
       shallow(
-        <SyncSettingsPanel syncState={SyncStatus.NOT_CONFIGURED}
+        <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           server="" onSubmit={stub} />
       );
 
@@ -44,7 +44,7 @@ describe('<SyncSettingsPanel />', () => {
   it('hides the editing form when the Cancel button is clicked', () => {
     const subject =
       shallow(
-        <SyncSettingsPanel syncState={SyncStatus.NOT_CONFIGURED}
+        <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           server="" onSubmit={stub} />
       );
 
@@ -59,7 +59,7 @@ describe('<SyncSettingsPanel />', () => {
     const onSubmit = sinon.spy();
     const subject =
       shallow(
-        <SyncSettingsPanel syncState={SyncStatus.NOT_CONFIGURED}
+        <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           server="" onSubmit={onSubmit} />
       );
 
@@ -78,7 +78,7 @@ describe('<SyncSettingsPanel />', () => {
   it('has a summary label in \'in progress\' state', () => {
     const subject =
       shallow(
-        <SyncSettingsPanel syncState={SyncStatus.IN_PROGRESS}
+        <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
           server="" onSubmit={stub} />
       );
 
@@ -89,7 +89,7 @@ describe('<SyncSettingsPanel />', () => {
   it('shows a progress bar in \'in progress\' state', () => {
     const subject =
       shallow(
-        <SyncSettingsPanel syncState={SyncStatus.IN_PROGRESS}
+        <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
           server="" onSubmit={stub} />
       );
 
@@ -99,17 +99,17 @@ describe('<SyncSettingsPanel />', () => {
   it('does NOT show progress bar in other states', () => {
     const subject =
       shallow(
-        <SyncSettingsPanel syncState={SyncStatus.IN_PROGRESS}
+        <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
           server="" onSubmit={stub} />
       );
-    for (const status in SyncStatus) {
-      if (status === 'IN_PROGRESS') {
+    for (const state in SyncState) {
+      if (state === 'IN_PROGRESS') {
         continue;
       }
 
-      subject.setProps({ syncState: SyncStatus[status] });
+      subject.setProps({ syncState: SyncState[state] });
       assert.strictEqual(subject.find('progress').length, 0,
-                         `No progress bar in ${status} state`);
+        `There should be no progress bar in the ${state} state`);
     }
   });
 

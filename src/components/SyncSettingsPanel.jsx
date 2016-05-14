@@ -1,6 +1,6 @@
 import React from 'react';
 
-import SyncStatus from '../sync-status';
+import SyncState from '../sync-states';
 import SyncStatusMessages from '../sync-status-messages';
 import SyncServerForm from './SyncServerForm.jsx';
 
@@ -47,7 +47,7 @@ export class SyncSettingsPanel extends React.Component {
     const summary = SyncStatusMessages[this.props.syncState];
 
     const existingServer =
-      this.props.syncState === SyncStatus.NOT_CONFIGURED
+      this.props.syncState === SyncState.NOT_CONFIGURED
       ? <p className="explanation">Adding a sync server lets you
           access your cards from another computer, phone, or tablet.
           <button name="edit-server"
@@ -67,7 +67,7 @@ export class SyncSettingsPanel extends React.Component {
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>
-          { this.props.syncState === SyncStatus.IN_PROGRESS &&
+          { this.props.syncState === SyncState.IN_PROGRESS &&
             <div>
               <progress />
               <button name="cancel-sync"
