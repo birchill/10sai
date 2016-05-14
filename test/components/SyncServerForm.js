@@ -76,4 +76,17 @@ describe('<SyncServerForm />', () => {
     assert.calledWith(onSubmit, { server: 'abc' });
   });
 
+  it('passes the updated server to the callback when submitted', () => {
+    const onSubmit = sinon.spy();
+    const subject =
+      shallow(<SyncServerForm server="abc" onSubmit={onSubmit}
+        onCancel={stub} />);
+
+    subject.find('input[name="server"]').simulate('change',
+      { target: { value: 'def' } });
+    subject.find('form').simulate('submit');
+
+    assert.calledWith(onSubmit, { server: 'def' });
+  });
+
 });
