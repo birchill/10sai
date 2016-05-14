@@ -38,37 +38,6 @@ export class SyncSettingsPanel extends React.Component {
     this.setState({ editingServer: false });
   }
 
-  /*
-  'Sync is up-to-date'
-    - server name (Change)
-    - last updated
-  'Sync in progress'
-    - server name (Change)
-    - progress bar (Cancel)
-    - progress message
-  'Sync is paused'
-    - server name (Change)
-    - last updated
-  'Sync offline'
-    - server name (Change)
-    - last updated
-  'Sync had a problem'
-    - server name (Change)
-    - error message (date)
-  'Sync is not configured'
-    - Explanation
-    - (Add a sync server)
-
-  (Change) / (Add) button => reveals form:
-    [ Server name ] (Ok) (Cancel)
-    (Ok) => Try login (Clear disable form and display "trying")
-            success => sync in progress
-                       (triggers state change)
-            fail => re-show form
-                    (returns failure directly without triggering state change)
-    (Cancel) Hide form
-    */
-
   render() {
     const summary = SyncStatusMessages[this.props.syncState];
 
