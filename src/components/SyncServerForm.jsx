@@ -33,12 +33,12 @@ export class SyncServerForm extends React.Component {
   }
 
   handleSubmit() {
-    this.props.onSubmit(this.state.server);
+    this.props.onSubmit({ server: this.state.server });
   }
 
   handleCancel() {
     this.setState({ server: this.props.server });
-    this.onCancel();
+    this.props.onCancel();
   }
 
   render() {
@@ -46,8 +46,9 @@ export class SyncServerForm extends React.Component {
       <form name="sync-server-settings" onSubmit={this.handleSubmit}>
         <input name="server" type="text" placeholder="Server name"
           value={this.state.server} onChange={this.handleServerChange} />
-        <input type="submit" value="Ok" />
-        <input type="button" value="Cancel" onClick={this.handleCancel} />
+        <input type="submit" name="submit" value="Ok" />
+        <input type="button" name="cancel" value="Cancel"
+          onClick={this.handleCancel} />
       </form>
     );
   }
