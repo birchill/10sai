@@ -48,11 +48,11 @@ export class SyncSettingsPanel extends React.Component {
 
     const existingServer =
       this.props.syncState === SyncState.NOT_CONFIGURED
-      ? <p className="explanation">Adding a sync server lets you
-          access your cards from another computer, phone, or tablet.
-          <button name="edit-server"
-            onClick={this.handleEditServer}>Add a sync server</button>
-        </p>
+      ? [ <p className="explanation">Adding a sync server lets you
+            access your cards from another computer, phone, or tablet.
+          </p>,
+          <button name="edit-server" className="action primary"
+            onClick={this.handleEditServer}>Add a sync server</button> ]
       : <div className="server-settings">
           Server name: {this.props.server}
           <button name="edit-server"
@@ -60,10 +60,10 @@ export class SyncSettingsPanel extends React.Component {
         </div>;
 
     return (
-      <div className="sync-settings">
+      <div className="sync-settings summary-panel">
         <div className="sync-overview">
           <div className="sync-icon"></div>
-          <button name="pause">Pause / Play</button>
+          <button name="pause">Pause</button>
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>
