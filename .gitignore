@@ -1,4 +1,4 @@
 node_modules
 npm-debug.log*
-bundle.js
-tensai.css
+public/tensai.js
+public/tensai.css

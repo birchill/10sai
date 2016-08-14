@@ -10,7 +10,7 @@
   "scripts": {
     "build": "webpack --progress --colors",
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
-    "start": "webpack-dev-server --progress --colors --history-api-fallback",
+    "start": "webpack-dev-server --progress --colors --history-api-fallback --content-base public/",
     "lint": "eslint src/** test/**",
     "test": "mocha --recursive --compilers js:babel-core/register"
   },

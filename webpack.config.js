@@ -4,8 +4,8 @@ const path = require('path');
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: __dirname,
-    filename: 'bundle.js'
+    path: path.resolve(__dirname, 'public'),
+    filename: 'tensai.js'
   },
   module: {
     preLoaders: [
