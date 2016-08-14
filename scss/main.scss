@@ -1,6 +1,5 @@
-/*
- * Variables
- */
+$highlight: #2690BA;
+
 /*
  * Font settings
  */
@@ -10,76 +9,81 @@ body, html {
   box-sizing: border-box;
   font-size: 15px;
   line-height: 1.42857143;
-  color: #333; }
+  color: #333;
+}
 
 /*
  * Screen layout
  *
  * Based on prototype here: http://codepen.io/anon/pen/EKGjGG
  */
+
 body, html {
   padding: 0;
   margin: 0;
   height: 100%;
-  overflow: hidden; }
-
+  overflow: hidden;
+}
 #container {
-  height: 100%; }
-
+  height: 100%;
+}
 #container > div {
   display: flex;
   height: 100%;
-  flex-direction: column; }
-
+  flex-direction: column;
+}
 main {
   position: relative;
-  flex: 1; }
-
+  flex: 1;
+}
 main section {
-  margin-top: 10px; }
-
+  margin-top: 10px;
+}
 main section {
   height: 100%;
   width: 100%;
   position: absolute;
-  overflow: auto; }
+  overflow: auto;
+}
 
 /*
  * Popup background
  */
+
 main section, main div.popup-overlay {
   height: 100%;
   width: 100%;
-  position: absolute; }
-
+  position: absolute;
+}
 main div.popup-overlay {
-  background: gainsboro;
+  background: rgb(220, 220, 220);
   transition: opacity 0.15s;
   opacity: 0;
   will-change: opacity;
-  pointer-events: none; }
-
+  pointer-events: none;
+}
 main div.popup-overlay.active {
   opacity: 0.8;
-  pointer-events: all; }
+  pointer-events: all;
+}
 
 /*
  * Header
  */
+
 header {
   height: 39px;
   margin: 0;
   background: white;
-  box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.25);
-  display: flex; }
-
+  box-shadow: 0 1.5px 3px rgba(0,0,0,0.25);
+  display: flex;
+}
 header > * {
   display: inline-block;
   margin-top: 0;
-  margin-bottom: 0; }
-
-header hgroup {
-  /* App name and subject heading stretch to fill */
+  margin-bottom: 0;
+}
+header hgroup { /* App name and subject heading stretch to fill */
   flex: 1 1 auto;
   padding-top: 2px;
   padding-left: 10px;
@@ -88,80 +92,87 @@ header hgroup {
    * of trying every combination of flexbox under the sun I couldn't get the h2
    * to be independently resizeable so that it would work.
    */
-  overflow: hidden; }
-
+  overflow: hidden;
+}
 header hgroup > * {
   display: inline-block;
-  margin: 0; }
-
-header h1 {
-  /* App name */
+  margin: 0;
+}
+header h1 { /* App name */
   font-size: 2rem;
-  padding-right: 5px; }
-
-header h2 {
-  /* Subject name */
+  padding-right: 5px;
+}
+header h2 { /* Subject name */
   font-size: 1.2rem;
   font-weight: normal;
-  color: grey; }
+  color: grey;
+}
 
 /*
  * Toolbar icons
  */
+
 header .icon {
   width: 25px;
   height: 25px;
-  padding: 7px 12px; }
-
+  padding: 7px 12px;
+}
 /* We put the icon itself in a pseudo-element so we can change the
  * background-color independently */
 .icon::before {
   content: "";
   display: inline-block;
   width: 100%;
-  height: 100%; }
+  height: 100%;
+}
 
 #sync-status::before {
   /* Sync icon is initially hidden until we detect a remote server is set */
   /* visibility: hidden; */
   content: "";
-  background: url("img/icons.svg") left/auto 100% content-box; }
-
+  background: url('img/icons.svg') left / auto 100% content-box;
+}
+#sync-status.error {
+}
 #sync-status.updating::before {
-  animation: rotate 1s linear infinite; }
-
+  animation: rotate 1s linear infinite;
+}
 @keyframes rotate {
-  from {
-    transform: rotate(0deg); }
-  to {
-    transform: rotate(-360deg); } }
-
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+#sync-status.offline {
+}
 #settings-menu.active {
-  background: #2690BA; }
-
+  background: $highlight;
+}
 #settings-menu:hover {
-  background: linear-gradient(lightblue, #2690BA 5%); }
-
+  background: linear-gradient(lightblue, $highlight 5%);
+}
 #settings-menu::before {
-  background: url("img/icons.svg") 100%/auto 100% content-box; }
+  background: url('img/icons.svg') 100% / auto 100% content-box;
+}
 
 /*
  * Section pages
  */
-body {
-  background: #f2f2f2; }
 
+body {
+  background: #f2f2f2;
+}
 main section {
   box-sizing: border-box;
   padding: 10px;
-  background: #f2f2f2; }
-
+  background: #f2f2f2;
+}
 main section {
-  transition: all 0.2s; }
+  transition: all 0.2s;
+}
 
 /*
  * Popups
  */
+
 main section.popup {
   background: white;
   margin-left: 5%;
@@ -169,42 +180,46 @@ main section.popup {
   width: 90%;
   height: auto;
   padding: 15px 15px 30px;
-  box-shadow: 0 0 6px grey; }
-
+  box-shadow: 0 0 6px grey;
+}
 main section.popup[aria-hidden=true] {
   transform: translate(0%, -120%);
   transform: translate(0%, calc(-100% - 80px));
   transition: transform 0.15s ease-in;
-  will-change: transform; }
-
+  will-change: transform;
+}
 main section.popup {
   transform: translate(0%);
-  transition-timing-function: ease; }
+  transition-timing-function: ease;
+}
 
 main section h3 {
   margin-top: 0;
-  font-size: 1.3rem; }
+  font-size: 1.3rem;
+}
 
 /*
  * Summary panel
  *
  * Based on the empty component in spectre.css
  */
+
 .summary-panel {
   background: #f8f8f8;
   border-radius: .3rem;
   padding: 4rem;
-  text-align: center; }
-
+  text-align: center;
+}
 .summary-panel h4 {
   font-size: 1.2rem;
-  margin: 1.5rem 0 .5rem 0; }
-
+  margin: 1.5rem 0 .5rem 0;
+}
 .summary-panel p {
-  color: #888; }
-
+  color: #888;
+}
 .summary-panel .action {
-  margin-top: 1.5rem; }
+  margin-top: 1.5rem;
+}
 
 /*
  * Forms
@@ -218,12 +233,12 @@ input, button {
   padding: .3rem .7rem;
   outline: 0;
   vertical-align: top;
-  margin: 0 0.2rem; }
-
+  margin: 0 0.2rem;
+}
 input[type=button], input[type=submit], button {
   background: transparent;
-  border: 0.1rem solid #2690BA;
-  color: #2690BA;
+  border: .1rem solid $highlight;
+  color: $highlight;
   cursor: pointer;
   text-align: center;
   text-decoration: none;
@@ -232,20 +247,22 @@ input[type=button], input[type=submit], button {
   -ms-user-select: none;
   user-select: none;
   vertical-align: middle;
-  white-space: nowrap; }
-
+  white-space: nowrap;
+}
 input[type=button].primary,
 input[type=submit].primary,
 button.primary {
-  background: #2690BA;
-  color: white; }
+  background: $highlight;
+  color: white;
+}
 
 input[type=text] {
   -webkit-appearance: none;
   background: #fff;
   background-image: none;
   border: .1rem solid #c5c5c5;
-  color: #333; }
-
+  color: #333;
+}
 input[type=text]:focus {
-  border-color: #2690BA; }
+  border-color: $highlight;
+}

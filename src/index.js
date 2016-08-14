@@ -8,6 +8,8 @@ import { updateLocation } from './actions';
 import reducer from './reducers/index';
 import App from './components/App.jsx';
 
+import 'main.scss';
+
 const mapStateToProps = state => ({ nav: state.nav });
 const ConnectedApp = connect(mapStateToProps)(App);
 
