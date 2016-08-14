@@ -55,6 +55,22 @@ describe('<SyncSettingsPanel />', () => {
     assert.strictEqual(subject.find('SyncServerForm').length, 0);
   });
 
+  it('returns to the not configured state when the Cancel button is clicked',
+    () => {
+    const subject =
+      shallow(
+        <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
+          server="" onSubmit={stub} onPause={stub} />
+      );
+
+    subject.find('button[name="edit-server"]').simulate('click');
+    subject.find('SyncServerForm').prop('onCancel')();
+    subject.update();
+
+    assert.isAbove(subject.find('.summary').text().length, 0,
+                   'Summary label is filled-in');
+  });
+
   it('calls the callback when the server is edited', () => {
     const onSubmit = sinon.spy();
     const subject =
