@@ -7,9 +7,7 @@ import SyncServerForm from './SyncServerForm.jsx';
 export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
     return {
-      // This should be 'symbol' once they are supported:
-      // https://github.com/facebook/react/issues/4917
-      syncState: React.PropTypes.any.isRequired,
+      syncState: React.PropTypes.symbol.isRequired,
       server: React.PropTypes.string.isRequired,
       onSubmit: React.PropTypes.func.isRequired,
       onPause: React.PropTypes.func.isRequired,
