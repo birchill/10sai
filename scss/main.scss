@@ -264,6 +264,13 @@ button.primary {
   }
 }
 
+input[type=button].link {
+  color: $highlight;
+  border-width: 0px;
+  padding-left:  0.3rem;
+  padding-right: 0.3rem;
+}
+
 input[type=text] {
   -webkit-appearance: none;
   background: #fff;
