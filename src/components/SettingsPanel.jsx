@@ -1,18 +1,17 @@
 import React from 'react';
 
-import LocalSyncSettingsPanel from './LocalSyncSettingsPanel.jsx';
-
-export class SettingsPanel extends React.Component {
-  render() {
-    return (
-      <div>
-        <h3>Sync</h3>
-        <LocalSyncSettingsPanel server=""
-          onSubmit={function stub() {}}
-          onPause={function stub() {}} />
-      </div>
-    );
-  }
+function SettingsPanel(props) {
+  return (
+    <div className="settings-panel">
+      <h3>{props.heading}</h3>
+      {props.children}
+    </div>
+  );
 }
+
+SettingsPanel.propTypes = {
+  heading: React.PropTypes.string.isRequired,
+  children: React.PropTypes.object,
+};
 
 export default SettingsPanel;

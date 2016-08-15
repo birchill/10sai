@@ -1,20 +1,25 @@
 import React from 'react';
 import { browserHistory } from 'react-router';
+import { connect } from 'react-redux';
 
-import CardDB from '../cards';
+import { setSyncServer } from '../actions';
+
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import Popup from './Popup.jsx';
 import PopupOverlay from './PopupOverlay.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
+import LocalSyncSettingsPanel from './LocalSyncSettingsPanel.jsx';
 import Navbar from './Navbar.jsx';
 
-export class App extends React.Component {
+class App extends React.Component {
   static get propTypes() {
     return {
       nav: React.PropTypes.shape({
         screen: React.PropTypes.string,
         popup: React.PropTypes.string,
       }),
+      route: React.PropTypes.object.isRequired,
+      onSetSyncServer: React.PropTypes.func.isRequired,
     };
   }
 
@@ -40,10 +45,14 @@ export class App extends React.Component {
           currentScreenLink={this.currentScreenLink} />
         <main>
           <PopupOverlay active={!!this.props.nav.popup} close={this.closePopup}>
-            <CardOverviewScreen db={CardDB} />
+            <CardOverviewScreen db={this.props.route.cards} />
           </PopupOverlay>
           <Popup active={settingsActive} close={this.closePopup}>
-            <SettingsPanel />
+            <SettingsPanel heading="Sync">
+              <LocalSyncSettingsPanel
+                onSubmit={this.props.onSetSyncServer}
+                onPause={function stub() {}} />
+            </SettingsPanel>
           </Popup>
         </main>
       </div>
@@ -51,4 +60,15 @@ export class App extends React.Component {
   }
 }
 
-export default App;
+const mapStateToProps = state => ({ nav: state.nav });
+const mapDispatchToProps = (dispatch, ownProps) => (
+  {
+    onSetSyncServer: syncServer => {
+      dispatch(setSyncServer(syncServer,
+                             ownProps.route.settings,
+                             ownProps.route.cards));
+    },
+  });
+const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
+
+export default ConnectedApp;

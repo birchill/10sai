@@ -10,6 +10,8 @@
   ],
   "rules": {
     "array-bracket-spacing": [ "warn", "always" ],
+    "no-multi-spaces": [ "off" ],
+    "key-spacing": [ "error", { "mode": "minimum" } ],
     "react/prefer-stateless-function": [ "off" ],
     "react/jsx-closing-bracket-location": [
       "error", { "selfClosing": "after-props", "nonEmpty": "after-props" }
