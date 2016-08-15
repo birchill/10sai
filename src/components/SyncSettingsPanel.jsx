@@ -11,9 +11,10 @@ export class SyncSettingsPanel extends React.Component {
     return {
       syncState: React.PropTypes.symbol.isRequired,
       server: React.PropTypes.string.isRequired,
-      lastUpdateTime: React.PropTypes.instanceOf(Date),
       onSubmit: React.PropTypes.func.isRequired,
       onPause: React.PropTypes.func.isRequired,
+      lastUpdateTime: React.PropTypes.instanceOf(Date),
+      errorDetail: React.PropTypes.string,
     };
   }
 
@@ -74,6 +75,10 @@ export class SyncSettingsPanel extends React.Component {
             onClick={this.handleEditServer}>Change</button>
         </div>;
 
+    const errorDetail =
+      this.props.syncState !== SyncState.ERROR ||
+      <span className="error-details">{this.props.errorDetail}</span>;
+
     return (
       <div className="sync-settings summary-panel">
         <div className="sync-overview">
@@ -88,7 +93,11 @@ export class SyncSettingsPanel extends React.Component {
                 onClick={this.handlePause}>Cancel</button>
             </div> }
           { !this.state.editingServer
-            ? <div>{lastUpdated}{existingServer}</div>
+            ? <div>
+                { errorDetail }
+                { lastUpdated }
+                { existingServer }
+              </div>
             : <SyncServerForm server={this.props.server}
               onSubmit={this.handleServerChange}
               onCancel={this.handleServerChangeCancel} /> }

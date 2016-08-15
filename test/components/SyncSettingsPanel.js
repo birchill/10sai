@@ -24,15 +24,15 @@ describe('<SyncSettingsPanel />', () => {
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           server="" onSubmit={stub} onPause={stub} />
       );
-    for (const state in SyncState) {
+    for (const state of Object.keys(SyncState)) {
       subject.setProps({ syncState: SyncState[state] });
       subject.update();
       assert.isAbove(subject.find('.summary').text().length, 0,
-                     `Summary label is filled-in in ${state} state`);
+                    `Summary label is filled-in in ${state} state`);
     }
   });
 
-  it(`shows the last updated information state`, () => {
+  it('shows the last updated information state', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.OK}
@@ -43,7 +43,7 @@ describe('<SyncSettingsPanel />', () => {
       subject.setProps({ syncState: SyncState[state] });
       assert.isAbove(subject.find('LastUpdatedLabel').length, 0,
                      `Last updated information is filled-in in the ${state}` +
-                     ` state`);
+                     ' state');
     }
   });
 
@@ -54,7 +54,7 @@ describe('<SyncSettingsPanel />', () => {
   // -------------------------------------------------------------
 
   it('shows the editing form when the Add/Change button is clicked', () => {
-    for (const state in SyncState) {
+    for (const state of Object.keys(SyncState)) {
       // No edit button in 'in progress' state
       if (state === 'IN_PROGRESS') {
         continue;
@@ -122,7 +122,7 @@ describe('<SyncSettingsPanel />', () => {
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
           server="" onSubmit={stub} onPause={stub} />
       );
-    for (const state in SyncState) {
+    for (const state of Object.keys(SyncState)) {
       if (state === 'IN_PROGRESS') {
         continue;
       }
@@ -152,7 +152,17 @@ describe('<SyncSettingsPanel />', () => {
   //
   // -------------------------------------------------------------
 
-  it(`shows the error information in 'error' state`, () => {
+  it("shows the error information in 'error' state", () => {
+    const errorMessage = 'Oh dear';
+    const subject =
+      shallow(
+        <SyncSettingsPanel syncState={SyncState.ERROR}
+          server="" onSubmit={stub} onPause={stub}
+          errorDetail={errorMessage} />
+      );
+
+    assert.equal(subject.find('.error-details').text(), errorMessage,
+                  'Error message is filled-in');
   });
 
   // XXX Add tests for the play/pause button and icon state
