@@ -2,6 +2,8 @@ import React from 'react';
 
 import SyncState from '../sync-states';
 import SyncStatusMessages from '../sync-status-messages';
+
+import LastUpdatedLabel from './LastUpdatedLabel.jsx';
 import SyncServerForm from './SyncServerForm.jsx';
 
 export class SyncSettingsPanel extends React.Component {
@@ -9,6 +11,7 @@ export class SyncSettingsPanel extends React.Component {
     return {
       syncState: React.PropTypes.symbol.isRequired,
       server: React.PropTypes.string.isRequired,
+      lastUpdateTime: React.PropTypes.instanceOf(Date),
       onSubmit: React.PropTypes.func.isRequired,
       onPause: React.PropTypes.func.isRequired,
     };
@@ -48,6 +51,14 @@ export class SyncSettingsPanel extends React.Component {
                   ? 'Configure sync server'
                   : SyncStatusMessages[this.props.syncState];
 
+    const lastUpdated = [ SyncState.OK,
+                          SyncState.PAUSED,
+                          SyncState.ERROR,
+                          SyncState.OFFLINE ]
+                        .indexOf(this.props.syncState) === -1 ||
+                        <LastUpdatedLabel
+                          updateTime={this.props.lastUpdateTime} />;
+
     const existingServer =
       this.props.syncState === SyncState.NOT_CONFIGURED
       ? <div>
@@ -67,7 +78,6 @@ export class SyncSettingsPanel extends React.Component {
       <div className="sync-settings summary-panel">
         <div className="sync-overview">
           <div className="sync-icon"></div>
-          <button name="pause">Pause</button>
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>
@@ -78,7 +88,7 @@ export class SyncSettingsPanel extends React.Component {
                 onClick={this.handlePause}>Cancel</button>
             </div> }
           { !this.state.editingServer
-            ? existingServer
+            ? <div>{lastUpdated}{existingServer}</div>
             : <SyncServerForm server={this.props.server}
               onSubmit={this.handleServerChange}
               onCancel={this.handleServerChangeCancel} /> }
