@@ -1,4 +1,5 @@
 $highlight: #2690BA;
+$hover-highlight: lighten(#2690BA, 15%);
 
 /*
  * Font settings
@@ -147,7 +148,7 @@ header .icon {
   background: $highlight;
 }
 #settings-menu:hover {
-  background: linear-gradient(lightblue, $highlight 5%);
+  background: $hover-highlight;
 }
 #settings-menu::before {
   background: url('img/icons.svg') 100% / auto 100% content-box;
@@ -248,12 +249,19 @@ input[type=button], input[type=submit], button {
   user-select: none;
   vertical-align: middle;
   white-space: nowrap;
+  &:hover {
+    color: $hover-highlight;
+    border-color: $hover-highlight;
+  }
 }
 input[type=button].primary,
 input[type=submit].primary,
 button.primary {
   background: $highlight;
   color: white;
+  &:hover {
+    background: $hover-highlight;
+  }
 }
 
 input[type=text] {
