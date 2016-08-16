@@ -5,24 +5,28 @@ import { assert } from 'chai';
 import CardStore from '../src/CardStore';
 
 describe('CardStore', () => {
-  it('is initially empty', () => {
-    const subject = new CardStore({ db: memdown });
+  let subject;
 
+  beforeEach('setup new store', () => {
+    // Create a new store with an in-memory adaptor so we don't need to
+    // clean up each time.
+    subject = new CardStore({ db: memdown });
+  });
+
+  it('is initially empty', () => {
     return subject.getCards().then(cards => {
       assert.strictEqual(cards.length, 0, 'Length of getCards() result');
     });
   });
 
   it('returns added cards', () => {
-    const subject = new CardStore({ db: memdown });
-
-    subject.addCard('Question', 'Answer')
-    .then(subject.getCards)
-    .then(cards => {
-      assert.strictEqual(cards.length, 1, 'Length of getCards() result');
-      assert.strictEqual(cards[0].question, 'Question');
-      assert.strictEqual(cards[0].answer, 'Answer');
-    });
+    return subject.addCard('Question', 'Answer')
+      .then(() => subject.getCards())
+      .then(cards => {
+        assert.strictEqual(cards.length, 1, 'Length of getCards() result');
+        assert.strictEqual(cards[0].question, 'Question');
+        assert.strictEqual(cards[0].answer, 'Answer');
+      });
   });
 
   it('returns added cards in order', () => {
