@@ -1,11 +1,12 @@
 /* global define, it, describe */
 
+import memdown from 'memdown';
 import { assert } from 'chai';
 import CardStore from '../src/CardStore';
 
 describe('CardStore', () => {
   it('is initially empty', () => {
-    const subject = new CardStore();
+    const subject = new CardStore({ db: memdown });
 
     return subject.getCards().then(cards => {
       assert.strictEqual(cards.length, 0, 'Length of getCards() result');
@@ -13,7 +14,15 @@ describe('CardStore', () => {
   });
 
   it('returns added cards', () => {
-    // XXX
+    const subject = new CardStore({ db: memdown });
+
+    subject.addCard('Question', 'Answer')
+    .then(subject.getCards)
+    .then(cards => {
+      assert.strictEqual(cards.length, 1, 'Length of getCards() result');
+      assert.strictEqual(cards[0].question, 'Question');
+      assert.strictEqual(cards[0].answer, 'Answer');
+    });
   });
 
   it('returns added cards in order', () => {
@@ -42,6 +51,10 @@ describe('CardStore', () => {
 
   it('disassociates from previous remote sync server when a new one is set',
     () => {
+    // XXX
+  });
+
+  it('ignore redundant attempts to set the same remote server', () => {
     // XXX
   });
 

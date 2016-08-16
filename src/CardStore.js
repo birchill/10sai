@@ -1,8 +1,31 @@
 import PouchDB from 'pouchdb';
 
-const db = new PouchDB('cards');
+class CardStore {
+  constructor(options) {
+    this.db = new PouchDB('cards', options);
+  }
 
-class CardDB {
+  getCards() {
+    return new Promise((resolve, reject) => {
+      this.db.allDocs({ include_docs: true, descending: true }).then(
+        result => resolve(result.rows.map(row => row.doc))
+      ).catch(err => reject(err));
+    });
+  }
+
+  addCard(question, answer) {
+    const card = {
+      _id: new Date().toISOString(),
+      question,
+      answer,
+    };
+    return this.db.put(card);
+  }
+
+  onUpdate(func) {
+    this.db.changes({ since: 'now', live: true }).on('change', func);
+  }
+
   setSyncServer(syncServer, callbacks) {
     // XXX Skip this if the server hasn't, in fact, changed
     if (this.remoteSync) {
@@ -16,7 +39,7 @@ class CardDB {
     }
 
     this.remoteDb = new PouchDB(syncServer);
-    this.remoteSync = db.sync(this.remoteDb, {
+    this.remoteSync = this.db.sync(this.remoteDb, {
       live: true,
       retry: true,
     // XXX Go through and tidy up the input before passing along to the
@@ -31,27 +54,6 @@ class CardDB {
       console.log('Completed sync. What does that even mean?');
     });
   }
-
-  addCard(question, answer) {
-    const card = {
-      _id: new Date().toISOString(),
-      question,
-      answer,
-    };
-    return db.put(card);
-  }
-
-  getCards() {
-    return new Promise((resolve, reject) => {
-      db.allDocs({ include_docs: true, descending: true }).then(
-        result => resolve(result.rows.map(row => row.doc))
-      ).catch(err => reject(err));
-    });
-  }
-
-  onUpdate(func) {
-    db.changes({ since: 'now', live: true }).on('change', func);
-  }
 }
 
-export default CardDB;
+export default CardStore;
