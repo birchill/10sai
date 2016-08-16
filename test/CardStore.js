@@ -1,4 +1,4 @@
-/* global define, it, describe */
+/* global define, describe, it, beforeEach */
 
 import memdown from 'memdown';
 import { assert } from 'chai';
@@ -13,21 +13,22 @@ describe('CardStore', () => {
     subject = new CardStore({ db: memdown });
   });
 
-  it('is initially empty', () => {
-    return subject.getCards().then(cards => {
-      assert.strictEqual(cards.length, 0, 'Length of getCards() result');
-    });
-  });
+  it('is initially empty', () =>
+    subject.getCards()
+      .then(cards => {
+        assert.strictEqual(cards.length, 0, 'Length of getCards() result');
+      })
+  );
 
-  it('returns added cards', () => {
-    return subject.addCard('Question', 'Answer')
+  it('returns added cards', () =>
+    subject.addCard('Question', 'Answer')
       .then(() => subject.getCards())
       .then(cards => {
         assert.strictEqual(cards.length, 1, 'Length of getCards() result');
         assert.strictEqual(cards[0].question, 'Question');
         assert.strictEqual(cards[0].answer, 'Answer');
-      });
-  });
+      })
+  );
 
   it('returns added cards in order', () => {
     // XXX
@@ -54,7 +55,7 @@ describe('CardStore', () => {
   });
 
   it('disassociates from previous remote sync server when a new one is set',
-    () => {
+  () => {
     // XXX
   });
 
