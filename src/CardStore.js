@@ -5,6 +5,10 @@ class CardStore {
     this.db = new PouchDB('cards', options);
   }
 
+  destroy() {
+    return this.db.destroy();
+  }
+
   getCards() {
     return new Promise((resolve, reject) => {
       this.db.allDocs({ include_docs: true, descending: true }).then(
@@ -15,7 +19,8 @@ class CardStore {
 
   putCard(card) {
     // XXX Fill in _id only if not set
-    return this.db.put({ ...card, _id: new Date().toISOString() });
+    return this.db.put({ ...card, _id: new Date().toISOString() })
+      .then(result => ({ ...card, _id: result.id, _rev: result.rev }));
   }
 
   onUpdate(func) {

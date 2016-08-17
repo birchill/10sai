@@ -1,4 +1,4 @@
-/* global define, describe, it, beforeEach */
+/* global afterEach, beforeEach, define, describe, it */
 
 import memdown from 'memdown';
 import { assert } from 'chai';
@@ -8,10 +8,10 @@ describe('CardStore', () => {
   let subject;
 
   beforeEach('setup new store', () => {
-    // Create a new store with an in-memory adaptor so we don't need to
-    // clean up each time.
     subject = new CardStore({ db: memdown });
   });
+
+  afterEach('clean up store', () => subject.destroy());
 
   it('is initially empty', () =>
     subject.getCards()
@@ -31,7 +31,24 @@ describe('CardStore', () => {
   );
 
   it('returns added cards in order', () => {
-    // XXX
+    let id1;
+    let id2;
+
+    return subject.putCard({ question: 'Q1', answer: 'A1' })
+      .then(card => { id1 = card._id; })
+      .then(() => subject.putCard({ question: 'Q2', answer: 'A2' }))
+      .then(card => { id2 = card._id; })
+      .then(() => subject.getCards())
+      .then(cards => {
+        // Sanity check
+        assert.notStrictEqual(id1, id2, 'Card IDs are unique');
+
+        assert.strictEqual(cards.length, 2, 'Expected no. of cards');
+        assert.strictEqual(cards[0]._id, id2,
+                           'Card added last is returned first');
+        assert.strictEqual(cards[1]._id, id1,
+                           'Card added first is returned last');
+      });
   });
 
   it('reports added cards', () => {
