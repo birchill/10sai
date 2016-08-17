@@ -35,7 +35,7 @@ export class CardOverviewScreen extends React.Component {
       return;
     }
 
-    this.props.db.addCard(question, answer)
+    this.props.db.putCard({ question, answer })
       .then(() => {
         this.setState({ question: '', answer: '' });
       })

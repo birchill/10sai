@@ -21,7 +21,7 @@ describe('CardStore', () => {
   );
 
   it('returns added cards', () =>
-    subject.addCard('Question', 'Answer')
+    subject.putCard({ question: 'Question', answer: 'Answer' })
       .then(() => subject.getCards())
       .then(cards => {
         assert.strictEqual(cards.length, 1, 'Length of getCards() result');

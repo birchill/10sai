@@ -13,12 +13,9 @@ class CardStore {
     });
   }
 
-  addCard(question, answer) {
-    const card = {
-      _id: new Date().toISOString(),
-      question,
-      answer,
-    };
+  putCard(card) {
+    // XXX Fill in _id only if not set
+    card._id = new Date().toISOString();
     return this.db.put(card);
   }
 
