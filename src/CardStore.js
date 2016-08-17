@@ -15,8 +15,7 @@ class CardStore {
 
   putCard(card) {
     // XXX Fill in _id only if not set
-    card._id = new Date().toISOString();
-    return this.db.put(card);
+    return this.db.put({ ...card, _id: new Date().toISOString() });
   }
 
   onUpdate(func) {
