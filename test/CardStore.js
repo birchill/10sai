@@ -3,6 +3,7 @@
 import memdown from 'memdown';
 import { assert } from 'chai';
 import CardStore from '../src/CardStore';
+import { waitForEvents } from './testcommon';
 
 describe('CardStore', () => {
   let subject;
@@ -52,7 +53,21 @@ describe('CardStore', () => {
   });
 
   it('reports added cards', () => {
-    // XXX
+    let addedCard;
+    let updateInfo;
+
+    subject.onUpdate(info => { updateInfo = info });
+
+    return subject.putCard({ question: 'Q1', answer: 'A1' })
+      .then(card => { addedCard = card; })
+      // Two rounds of waiting should be enough for the update to happen
+      .then(waitForEvents)
+      .then(waitForEvents)
+      .then(() => {
+        assert.isOk(updateInfo, 'Change was recorded');
+        assert.strictEqual(updateInfo.id, addedCard._id,
+                           'Reported change has correct ID');
+      });
   });
 
   it('allows setting a remote sync server', () => {
