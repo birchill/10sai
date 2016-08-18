@@ -56,7 +56,7 @@ describe('CardStore', () => {
     let addedCard;
     let updateInfo;
 
-    subject.onUpdate(info => { updateInfo = info });
+    subject.onUpdate(info => { updateInfo = info; });
 
     return subject.putCard({ question: 'Q1', answer: 'A1' })
       .then(card => { addedCard = card; })
@@ -70,8 +70,28 @@ describe('CardStore', () => {
       });
   });
 
+  // XXX: Deletion
+  // XXX: Changes to cards
+});
+
+describe('CardStore remote sync', () => {
+  let subject;
+
+  beforeEach('setup new store', () => {
+    subject = new CardStore({ db: memdown });
+  });
+
+  afterEach('clean up stores', () => {
+    const destroyRemote = subject.getSyncServer()
+                          ? subject.getSyncServer().destroy()
+                          : Promise.resolve();
+    const destroyLocal = subject.destroy();
+    return Promise.all([ destroyRemote, destroyLocal ]);
+  });
+
   it('allows setting a remote sync server', () => {
-    // XXX
+    subject.setSyncServer('cards_remote', {});
+    assert.isOk(subject.getSyncServer());
   });
 
   it('reports an error for an invalid sync server', () => {
@@ -123,7 +143,5 @@ describe('CardStore', () => {
     // XXX
   });
 
-  // XXX: Deletion
-  // XXX: Changes to cards
   // XXX: Conflict resolution
 });

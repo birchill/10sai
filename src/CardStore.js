@@ -5,10 +5,6 @@ class CardStore {
     this.db = new PouchDB('cards', options);
   }
 
-  destroy() {
-    return this.db.destroy();
-  }
-
   getCards() {
     return new Promise((resolve, reject) => {
       this.db.allDocs({ include_docs: true, descending: true }).then(
@@ -46,15 +42,18 @@ class CardStore {
     // XXX Go through and tidy up the input before passing along to the
     // callbacks
     })
-    .on('change', callbacks.onChange || (() => {}))
-    .on('paused', callbacks.onPause  || (() => {}))
-    .on('active', callbacks.onActive || (() => {}))
-    .on('error',  callbacks.onError  || (() => {}))
-    .on('denied', callbacks.onError  || (() => {}))
-    .on('complete', () => {
-      console.log('Completed sync. What does that even mean?');
-    });
+    .on('change',   callbacks.onChange || (() => {}))
+    .on('paused',   callbacks.onPause  || (() => {}))
+    .on('active',   callbacks.onActive || (() => {}))
+    .on('error',    callbacks.onError  || (() => {}))
+    .on('denied',   callbacks.onError  || (() => {}))
+    .on('complete', callbacks.onPause  || (() => {}));
   }
+
+  // Intended for unit testing only
+
+  destroy() { return this.db.destroy(); }
+  getSyncServer() { return this.remoteDb; }
 }
 
 export default CardStore;
