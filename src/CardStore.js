@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 
 class CardStore {
   constructor(options) {
-    this.db = new PouchDB('cards', options);
+    this.db = new PouchDB('cards', { storage: 'persistant', ...options });
   }
 
   getCards() {
@@ -28,11 +28,11 @@ class CardStore {
     if (this.remoteSync) {
       this.remoteSync.cancel();
       this.remoteSync = undefined;
-      this.removeDb = undefined;
+      this.remoteDb = undefined;
     }
 
     if (!syncServer) {
-      return;
+      return Promise.resolve();
     }
 
     this.remoteDb = new PouchDB(syncServer);
@@ -48,6 +48,8 @@ class CardStore {
     .on('error',    callbacks.onError  || (() => {}))
     .on('denied',   callbacks.onError  || (() => {}))
     .on('complete', callbacks.onPause  || (() => {}));
+
+    return this.remoteDb;
   }
 
   // Intended for unit testing only

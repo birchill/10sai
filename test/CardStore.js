@@ -1,4 +1,5 @@
 /* global afterEach, beforeEach, define, describe, it */
+/* eslint arrow-body-style: [ "off" ] */
 
 import memdown from 'memdown';
 import { assert } from 'chai';
@@ -90,12 +91,29 @@ describe('CardStore remote sync', () => {
   });
 
   it('allows setting a remote sync server', () => {
-    subject.setSyncServer('cards_remote', {});
-    assert.isOk(subject.getSyncServer());
+    return subject.setSyncServer('cards_remote', {})
+      .then(() => {
+        assert.isOk(subject.getSyncServer());
+      });
   });
 
   it('reports an error for an invalid sync server', () => {
-    // XXX
+    return subject.setSyncServer('http://not.found/',
+      { onError: error => { console.log(error); } }
+    ).catch(() => {
+      // XXX Actually test for an error
+      // We should actually get an error here or somewhere--maybe calling sync()
+      // doesn't actually trigger a connection???
+    }).then(() => {
+      return subject.getSyncServer().destroy();
+    }).catch(err => {
+      // XXX This is not the error we're looking for... we should get one
+      // before now
+      assert.strictEqual(err.code, 'ENOTFOUND',
+                         'Got expected error when calling destroy()');
+    }).then(() => {
+      subject.setSyncServer(null);
+    });
   });
 
   it('allows clearing the sync server using null', () => {
