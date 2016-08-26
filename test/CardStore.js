@@ -79,21 +79,19 @@ describe('CardStore', () => {
 // XXX Split this off into a separate file
 describe('CardStore remote sync', () => {
   let subject;
+  let testRemote;
 
   beforeEach('setup new store', () => {
     subject = new CardStore({ db: memdown });
+    testRemote = new PouchDB('cards_remote', { db: memdown });
   });
 
   afterEach('clean up stores', () => {
-    const destroyRemote = subject.getSyncServer()
-                          ? subject.getSyncServer().destroy()
-                          : Promise.resolve();
-    const destroyLocal = subject.destroy();
-    return Promise.all([ destroyRemote, destroyLocal ]);
+    return Promise.all([ subject.destroy(), testRemote.destroy() ]);
   });
 
   it('allows setting a remote sync server', () => {
-    return subject.setSyncServer(new PouchDB('cards_remote'))
+    return subject.setSyncServer(testRemote)
       .then(() => {
         assert.isOk(subject.getSyncServer());
       });
@@ -124,7 +122,7 @@ describe('CardStore remote sync', () => {
   });
 
   it('allows clearing the sync server using null', () => {
-    return subject.setSyncServer(new PouchDB('cards_remote'))
+    return subject.setSyncServer(testRemote)
       .then(() => subject.setSyncServer(null))
       .then(() => {
         assert.strictEqual(subject.getSyncServer(), undefined);
@@ -132,7 +130,7 @@ describe('CardStore remote sync', () => {
   });
 
   it('allows clearing the sync server using undefined', () => {
-    return subject.setSyncServer(new PouchDB('cards_remote'))
+    return subject.setSyncServer(testRemote)
       .then(() => subject.setSyncServer())
       .then(() => {
         assert.strictEqual(subject.getSyncServer(), undefined);
@@ -140,7 +138,7 @@ describe('CardStore remote sync', () => {
   });
 
   it('allows clearing the sync server using an empty name', () => {
-    return subject.setSyncServer(new PouchDB('cards_remote'))
+    return subject.setSyncServer(testRemote)
       .then(() => subject.setSyncServer(''))
       .then(() => {
         assert.strictEqual(subject.getSyncServer(), undefined);
@@ -149,7 +147,7 @@ describe('CardStore remote sync', () => {
 
   it('allows clearing the sync server using an entirely whitespace name',
   () => {
-    return subject.setSyncServer(new PouchDB('cards_remote'))
+    return subject.setSyncServer(testRemote)
       .then(() => subject.setSyncServer('  \n '))
       .then(() => {
         assert.strictEqual(subject.getSyncServer(), undefined);
