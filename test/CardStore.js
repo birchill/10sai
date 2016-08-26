@@ -5,6 +5,7 @@ import memdown from 'memdown';
 import { assert } from 'chai';
 import CardStore from '../src/CardStore';
 import { waitForEvents } from './testcommon';
+import PouchDB from 'pouchdb';
 
 describe('CardStore', () => {
   let subject;
@@ -75,6 +76,7 @@ describe('CardStore', () => {
   // XXX: Changes to cards
 });
 
+// XXX Split this off into a separate file
 describe('CardStore remote sync', () => {
   let subject;
 
@@ -91,7 +93,7 @@ describe('CardStore remote sync', () => {
   });
 
   it('allows setting a remote sync server', () => {
-    return subject.setSyncServer('cards_remote', {})
+    return subject.setSyncServer(new PouchDB('cards_remote'))
       .then(() => {
         assert.isOk(subject.getSyncServer());
       });
@@ -101,7 +103,7 @@ describe('CardStore remote sync', () => {
     return subject.setSyncServer('http://not.found/')
       .catch(err => {
         assert.strictEqual(err.code, 'ENOTFOUND',
-                          'Got expected error when calling destroy()');
+                           'Expected error for inaccessible server');
       });
   });
 
@@ -109,31 +111,60 @@ describe('CardStore remote sync', () => {
     return subject.setSyncServer('http://not.found/',
         { onError: err => {
           assert.strictEqual(err.code, 'ENOTFOUND',
-                            'Got expected error when calling destroy()');
+                             'Expected error for inaccessible server');
         },
       }).catch(() => { /* Ignore */ });
   });
 
-  // XXX Try empty name
-  // XXX Try whitespace name (should trim -> empty)
-  // XXX Try passing some kind of object (check we pass the error on
-  // correctly)
-  // XXX Try non http/https URL
+  it('rejects a non-http/https database', () => {
+    return subject.setSyncServer('irc://irc.mozilla.org')
+      .catch(err => {
+        assert.strictEqual(err.code, 'INVALID_SERVER');
+      });
+  });
 
   it('allows clearing the sync server using null', () => {
-    // XXX
+    return subject.setSyncServer(new PouchDB('cards_remote'))
+      .then(() => subject.setSyncServer(null))
+      .then(() => {
+        assert.strictEqual(subject.getSyncServer(), undefined);
+      });
   });
 
-  it('allows clearing the sync server using an empty string', () => {
-    // XXX
+  it('allows clearing the sync server using undefined', () => {
+    return subject.setSyncServer(new PouchDB('cards_remote'))
+      .then(() => subject.setSyncServer())
+      .then(() => {
+        assert.strictEqual(subject.getSyncServer(), undefined);
+      });
   });
+
+  it('allows clearing the sync server using an empty name', () => {
+    return subject.setSyncServer(new PouchDB('cards_remote'))
+      .then(() => subject.setSyncServer(''))
+      .then(() => {
+        assert.strictEqual(subject.getSyncServer(), undefined);
+      });
+  });
+
+  it('allows clearing the sync server using an entirely whitespace name',
+  () => {
+    return subject.setSyncServer(new PouchDB('cards_remote'))
+      .then(() => subject.setSyncServer('  \n '))
+      .then(() => {
+        assert.strictEqual(subject.getSyncServer(), undefined);
+      });
+  });
+
+  // XXX Try passing some kind of object (check we pass the error on
+  // correctly)
 
   it('disassociates from previous remote sync server when a new one is set',
   () => {
     // XXX
   });
 
-  it('ignore redundant attempts to set the same remote server', () => {
+  it('ignores redundant attempts to set the same remote server', () => {
     // XXX
   });
 
