@@ -97,24 +97,28 @@ describe('CardStore remote sync', () => {
       });
   });
 
+  it('rejects for an invalid sync server', () => {
+    return subject.setSyncServer('http://not.found/')
+      .catch(err => {
+        assert.strictEqual(err.code, 'ENOTFOUND',
+                          'Got expected error when calling destroy()');
+      });
+  });
+
   it('reports an error for an invalid sync server', () => {
     return subject.setSyncServer('http://not.found/',
-      { onError: error => { console.log(error); } }
-    ).catch(() => {
-      // XXX Actually test for an error
-      // We should actually get an error here or somewhere--maybe calling sync()
-      // doesn't actually trigger a connection???
-    }).then(() => {
-      return subject.getSyncServer().destroy();
-    }).catch(err => {
-      // XXX This is not the error we're looking for... we should get one
-      // before now
-      assert.strictEqual(err.code, 'ENOTFOUND',
-                         'Got expected error when calling destroy()');
-    }).then(() => {
-      subject.setSyncServer(null);
-    });
+        { onError: err => {
+          assert.strictEqual(err.code, 'ENOTFOUND',
+                            'Got expected error when calling destroy()');
+        },
+      }).catch(() => { /* Ignore */ });
   });
+
+  // XXX Try empty name
+  // XXX Try whitespace name (should trim -> empty)
+  // XXX Try passing some kind of object (check we pass the error on
+  // correctly)
+  // XXX Try non http/https URL
 
   it('allows clearing the sync server using null', () => {
     // XXX
