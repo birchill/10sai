@@ -15,7 +15,11 @@ class CardStore {
 
   putCard(card) {
     // XXX Fill in _id only if not set
-    return this.db.put({ ...card, _id: new Date().toISOString() })
+    // XXX For the ID, subtract a Date representing the year 2016, append
+    // a random number between 1~10000, the convert the number into some
+    // alphanumeric string that still collates correctly (i.e. a base-62 number
+    // or something) -- but make it fixed-width too, covering up to 2050.
+    return this.db.put({ ...card, _id: new Date().getTime().toString() })
       .then(result => ({ ...card, _id: result.id, _rev: result.rev }));
   }
 
@@ -89,7 +93,13 @@ class CardStore {
                     ? new PouchDB(syncServer)
                     : syncServer;
 
-    return this.remoteDb
+    // PouchDB does this odd thing where it drops the 'then' member once
+    // it has been resolved once so we need to check if we have a 'then' or not.
+    const waitForRemoteDb = this.remoteDb.then
+                          ? this.remoteDb
+                          : Promise.resolve();
+
+    return waitForRemoteDb
       // Force a connection to the server so we can detect errors immediately
       .then(() => this.remoteDb.info())
       .catch(err => {
@@ -103,6 +113,7 @@ class CardStore {
         })
         // XXX Go through and tidy up the input before passing along to the
         // callbacks
+        // XXX Doesn't onUpdate above cover the 'change' case?
         .on('change',   callbacks.onChange)
         .on('paused',   callbacks.onPause)
         .on('active',   callbacks.onActive)

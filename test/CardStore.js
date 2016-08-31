@@ -121,6 +121,13 @@ describe('CardStore remote sync', () => {
       });
   });
 
+  it('rejects a non-PouchDB object', () => {
+    return subject.setSyncServer(new Date())
+      .catch(err => {
+        assert.strictEqual(err.code, 'INVALID_SERVER');
+      });
+  });
+
   it('allows clearing the sync server using null', () => {
     return subject.setSyncServer(testRemote)
       .then(() => subject.setSyncServer(null))
@@ -154,8 +161,33 @@ describe('CardStore remote sync', () => {
       });
   });
 
-  // XXX Try passing some kind of object (check we pass the error on
-  // correctly)
+  it('downloads existing cards on the remote server', () => {
+    // XXX Make an ID generating function on CardStore and call that here
+    const firstCard =  { question: 'Question 1',
+                         answer:   'Answer 1',
+                         _id: new Date().getTime().toString() + Math.random(),
+                       };
+    const secondCard = { question: 'Question 2',
+                         answer:   'Answer 2',
+                         _id: new Date().getTime().toString() + Math.random(),
+                       };
+
+    return testRemote.put(firstCard)
+      .then(result => { firstCard._rev = result.rev; })
+      .then(() => testRemote.put(secondCard))
+      .then(result => { secondCard._rev = result.rev; })
+      .then(() => subject.setSyncServer(testRemote,
+              { onChange: change => { console.log('onChange');
+                                      console.log(change); },
+                onPause:  result => { console.log('onPause');
+                                      console.log(result); },
+                onActive: result => { console.log('onActive');
+                                      console.log(result); },
+                onError:  err    => { console.log('onError');
+                                      console.log(err); },
+              }
+            ));
+  });
 
   it('disassociates from previous remote sync server when a new one is set',
   () => {
