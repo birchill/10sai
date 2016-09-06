@@ -99,19 +99,23 @@ describe('CardStore remote sync', () => {
 
   it('rejects for an invalid sync server', () => {
     return subject.setSyncServer('http://not.found/')
+      .then(() => {
+        assert.fail('Failed to reject invalid server');
+      })
       .catch(err => {
         assert.strictEqual(err.code, 'ENOTFOUND',
                            'Expected error for inaccessible server');
       });
   });
 
-  it('reports an error for an invalid sync server', () => {
-    return subject.setSyncServer('http://not.found/',
-        { onError: err => {
+  it('reports an error for an invalid sync server', done => {
+    subject.setSyncServer('http://not.found/',
+      { onError: err => {
           assert.strictEqual(err.code, 'ENOTFOUND',
                              'Expected error for inaccessible server');
+          done();
         },
-      }).catch(() => { /* Ignore */ });
+      });
   });
 
   it('rejects a non-http/https database', () => {

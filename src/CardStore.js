@@ -70,7 +70,7 @@ class CardStore {
           syncServer.constructor === PouchDB)) {
       const err = { code: 'INVALID_SERVER',
                     message: 'Unrecognized type of sync server' };
-      callbacks.onError(err);
+      setImmediate(() => { callbacks.onError(err); });
       return Promise.reject(err);
     }
 
@@ -82,7 +82,7 @@ class CardStore {
         const err = { code: 'INVALID_SERVER',
                       message: 'Only http and https remote servers are'
                               + ' recognized' };
-        callbacks.onError(err);
+        setImmediate(() => { callbacks.onError(err); });
         return Promise.reject(err);
       }
     }
@@ -106,7 +106,7 @@ class CardStore {
     return this.remoteDb.info()
       .catch(err => {
         this.remoteDb = undefined;
-        callbacks.onError(err);
+        setImmediate(() => { callbacks.onError(err); });
         throw err;
       }).then(() => {
         this.remoteSync = this.db.sync(this.remoteDb, {
