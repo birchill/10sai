@@ -102,15 +102,8 @@ class CardStore {
                     ? new PouchDB(syncServer)
                     : syncServer;
 
-    // PouchDB does this odd thing where it drops the 'then' member once
-    // it has been resolved once so we need to check if we have a 'then' or not.
-    const waitForRemoteDb = this.remoteDb.then
-                          ? this.remoteDb
-                          : Promise.resolve();
-
-    return waitForRemoteDb
-      // Force a connection to the server so we can detect errors immediately
-      .then(() => this.remoteDb.info())
+    // Force a connection to the server so we can detect errors immediately
+    return this.remoteDb.info()
       .catch(err => {
         this.remoteDb = undefined;
         callbacks.onError(err);

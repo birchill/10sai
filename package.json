@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "lodash": "^4.11.2",
-    "pouchdb": "^5.4.5",
+    "pouchdb": "^6.0.0",
     "react": "^15.3.0",
     "react-addons-test-utils": "^15.3.0",
     "react-dom": "^15.3.0",
