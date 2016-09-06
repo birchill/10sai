@@ -103,16 +103,16 @@ describe('CardStore remote sync', () => {
         assert.fail('Failed to reject invalid server');
       })
       .catch(err => {
-        assert.strictEqual(err.code, 'ENOTFOUND',
-                           'Expected error for inaccessible server');
+        assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT' ],
+                     'Expected error for inaccessible server');
       });
   });
 
   it('reports an error for an invalid sync server', done => {
     subject.setSyncServer('http://not.found/',
       { onError: err => {
-          assert.strictEqual(err.code, 'ENOTFOUND',
-                             'Expected error for inaccessible server');
+          assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT' ],
+                       'Expected error for inaccessible server');
           done();
         },
       });
