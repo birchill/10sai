@@ -162,14 +162,13 @@ describe('CardStore remote sync', () => {
   });
 
   it('downloads existing cards on the remote server', () => {
-    // XXX Make an ID generating function on CardStore and call that here
     const firstCard =  { question: 'Question 1',
                          answer:   'Answer 1',
-                         _id: new Date().getTime().toString() + Math.random(),
+                         _id: CardStore.generateCardId(),
                        };
     const secondCard = { question: 'Question 2',
                          answer:   'Answer 2',
-                         _id: new Date().getTime().toString() + Math.random(),
+                         _id: CardStore.generateCardId(),
                        };
 
     return testRemote.put(firstCard)

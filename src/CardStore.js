@@ -15,12 +15,21 @@ class CardStore {
 
   putCard(card) {
     // XXX Fill in _id only if not set
-    // XXX For the ID, subtract a Date representing the year 2016, append
-    // a random number between 1~10000, the convert the number into some
-    // alphanumeric string that still collates correctly (i.e. a base-62 number
-    // or something) -- but make it fixed-width too, covering up to 2050.
-    return this.db.put({ ...card, _id: new Date().getTime().toString() })
+    return this.db.put({ ...card, _id: CardStore.generateCardId() })
       .then(result => ({ ...card, _id: result.id, _rev: result.rev }));
+  }
+
+  static generateCardId() {
+    const id =
+      // Start off with the number of milliseconds since 1 Jan 2016 converted
+      // to base 36, and zero-padded so it collates correctly for at least
+      // 50 years...
+      ("0" + (Date.now() - Date.UTC(2016, 0, 1)).toString(36)).slice(-8)
+      // ...then add a random 3-digit sequence to the end in case we create
+      // more than one card per millisecond (as may happen if we're doing a
+      // batch import).
+      + ("00" + Math.floor(Math.random() * 46656).toString(36)).slice(-3);
+    return id;
   }
 
   onUpdate(func) {
