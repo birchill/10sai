@@ -71,9 +71,8 @@ describe('CardStore', () => {
 
     return subject.putCard({ question: 'Q1', answer: 'A1' })
       .then(card => { addedCard = card; })
-      // Two rounds of waiting should be enough for the update to happen
-      .then(waitForEvents)
-      .then(waitForEvents)
+      // Wait for a few rounds of events so the update can take place
+      .then(() => waitForEvents(3))
       .then(() => {
         assert.isOk(updateInfo, 'Change was recorded');
         assert.strictEqual(updateInfo.id, addedCard._id,
@@ -187,6 +186,8 @@ describe('CardStore remote sync', () => {
     const expectedCards = [ firstCard, secondCard ];
 
     subject.onUpdate(info => {
+      // XXX These errors are getting swallowed by PouchDB -- need to look
+      // up Mocha docs to see how to get to get these out
       assert.deepEqual(info.doc, expectedCards.shift());
     });
 
@@ -206,15 +207,27 @@ describe('CardStore remote sync', () => {
       });
   });
 
-  // XXX Reports an appropriate error when the remote server hasn't enabled CORS
-  // support
-
-  // XXX Reports an appropriate error when the remote server doesn't have
-  // the specified database
-
   it('disassociates from previous remote sync server when a new one is set',
   () => {
-    // XXX
+    const card =  { question: 'Question',
+                    answer:   'Answer',
+                    _id: CardStore.generateCardId(),
+                  };
+
+    const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
+
+    // XXX As above, the following assertion will get swallowed by pouchdb
+    subject.onUpdate(() => {
+      assert.fail('Did not expect update to be called on the previous remote');
+    });
+
+    return subject.setSyncServer(testRemote)
+      .then(() => subject.setSyncServer(alternateRemote))
+      .then(() => testRemote.put(card))
+      .then(() => waitForEvents(20))
+      .then(() => {
+        alternateRemote.destroy();
+      });
   });
 
   it('ignores redundant attempts to set the same remote server', () => {
@@ -257,6 +270,12 @@ describe('CardStore remote sync', () => {
   it('reports an error when the remote server goes offline', () => {
     // XXX
   });
+
+  // XXX Reports an appropriate error when the remote server hasn't enabled CORS
+  // support
+
+  // XXX Reports an appropriate error when the remote server doesn't have
+  // the specified database
 
   // XXX: Conflict resolution
 });
