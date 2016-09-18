@@ -36,7 +36,7 @@ describe('CardStore', () => {
   it('generates unique ascending IDs', () => {
     let prevId = '';
     for (let i = 0; i < 100; i++) {
-      let id = CardStore.generateCardId();
+      const id = CardStore.generateCardId();
       assert.isAbove(id, prevId);
       prevId = id;
     }
@@ -174,7 +174,7 @@ describe('CardStore remote sync', () => {
       });
   });
 
-  it('downloads existing cards on the remote server', () => {
+  it('downloads existing cards on the remote server', done => {
     const firstCard =  { question: 'Question 1',
                          answer:   'Answer 1',
                          _id: CardStore.generateCardId(),
@@ -184,22 +184,33 @@ describe('CardStore remote sync', () => {
                          _id: CardStore.generateCardId(),
                        };
 
-    return testRemote.put(firstCard)
+    const expectedCards = [ firstCard, secondCard ];
+
+    subject.onUpdate(info => {
+      assert.deepEqual(info.doc, expectedCards.shift());
+    });
+
+    testRemote.put(firstCard)
       .then(result => { firstCard._rev = result.rev; })
       .then(() => testRemote.put(secondCard))
       .then(result => { secondCard._rev = result.rev; })
-      .then(() => subject.setSyncServer(testRemote,
-              { onChange: change => { console.log('onChange');
-                                      console.log(change); },
-                onPause:  result => { console.log('onPause');
-                                      console.log(result); },
-                onActive: result => { console.log('onActive');
-                                      console.log(result); },
-                onError:  err    => { console.log('onError');
-                                      console.log(err); },
-              }
-            ));
+      .then(() => subject.setSyncServer(testRemote))
+      .then(() => {
+        (function waitForUpdates() {
+          if (expectedCards.length) {
+            setImmediate(waitForUpdates);
+          } else {
+            done();
+          }
+        }());
+      });
   });
+
+  // XXX Reports an appropriate error when the remote server hasn't enabled CORS
+  // support
+
+  // XXX Reports an appropriate error when the remote server doesn't have
+  // the specified database
 
   it('disassociates from previous remote sync server when a new one is set',
   () => {
@@ -207,11 +218,7 @@ describe('CardStore remote sync', () => {
   });
 
   it('ignores redundant attempts to set the same remote server', () => {
-    // XXX
-  });
-
-  it('downloads existing cards on the remote server', () => {
-    // XXX
+    // XXX (Actually do we want this? How do we tell it to retry?)
   });
 
   it('uploads existing local cards', () => {
@@ -224,6 +231,7 @@ describe('CardStore remote sync', () => {
 
   it('reports when syncing resumes', () => {
     // XXX
+    // -- Should get onActive callbacks... with approprite direction
   });
 
   it('reports when syncing pauses', () => {
@@ -232,6 +240,18 @@ describe('CardStore remote sync', () => {
 
   it('reports sync progress', () => {
     // XXX
+    // -- Should get onChange callbacks with appropriate change record, e.g.
+    // { direction: 'pull',
+    //   change:
+    //    { ok: true,
+    //      start_time: '2016-09-18T07:01:40.305Z',
+    //      docs_read: 2,
+    //      docs_written: 2,
+    //      doc_write_failures: 0,
+    //      errors: [],
+    //      last_seq: 2,
+    //      docs: [ [Object], [Object] ] } }
+    //    });
   });
 
   it('reports an error when the remote server goes offline', () => {

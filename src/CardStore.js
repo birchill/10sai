@@ -47,7 +47,9 @@ class CardStore {
   }
 
   onUpdate(func) {
-    this.db.changes({ since: 'now', live: true }).on('change', func);
+    this.db.changes({ since: 'now',
+                      live: true,
+                      include_docs: true }).on('change', func);
   }
 
   // Sets a server for synchronizing with an begins live synchonization.
