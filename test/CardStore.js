@@ -33,6 +33,15 @@ describe('CardStore', () => {
       })
   );
 
+  it('generates unique ascending IDs', () => {
+    let prevId = '';
+    for (let i = 0; i < 100; i++) {
+      let id = CardStore.generateCardId();
+      assert.isAbove(id, prevId);
+      prevId = id;
+    }
+  });
+
   it('returns added cards in order', () => {
     let id1;
     let id2;
@@ -103,7 +112,7 @@ describe('CardStore remote sync', () => {
         assert.fail('Failed to reject invalid server');
       })
       .catch(err => {
-        assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT' ],
+        assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT', 'ECONNREFUSED' ],
                      'Expected error for inaccessible server');
       });
   });
@@ -111,7 +120,7 @@ describe('CardStore remote sync', () => {
   it('reports an error for an invalid sync server', done => {
     subject.setSyncServer('http://not.found/',
       { onError: err => {
-          assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT' ],
+          assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT', 'ECONNREFUSED' ],
                        'Expected error for inaccessible server');
           done();
         },
