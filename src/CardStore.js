@@ -38,11 +38,11 @@ class CardStore {
     const id =
       // We take the timestamp, converted to base 36, and zero-pad it so it
       // collates correctly for at least 50 years...
-      ("0" + timestamp.toString(36)).slice(-8)
+      (`0${timestamp.toString(36)}`).slice(-8)
       // ...then add a random 3-digit sequence to the end in case we
       // simultaneously add a card on another device at precisely the same
       // millisecond.
-      + ("00" + Math.floor(Math.random() * 46656).toString(36)).slice(-3);
+      + (`00${Math.floor(Math.random() * 46656).toString(36)}`).slice(-3);
     return id;
   }
 
