@@ -80,7 +80,64 @@ describe('CardStore', () => {
       });
   });
 
-  // XXX: Deletion
+  it('does not return deleted cards', () =>
+    subject.putCard({ question: 'Question', answer: 'Answer' })
+      .then(card => subject.deleteCard(card))
+      .then(() => subject.getCards())
+      .then(cards => {
+        assert.strictEqual(cards.length, 0, 'Length of getCards() result');
+      })
+  );
+
+  it('deletes the specified card', () => {
+    let firstCard;
+    return subject.putCard({ question: 'Question 1',
+                             answer: 'Answer 1' })
+      .then(card => { firstCard = card; })
+      .then(() => subject.putCard({ question: 'Question 2',
+                                    answer: 'Answer 2' }))
+      .then(() => subject.deleteCard(firstCard))
+      .then(() => subject.getCards())
+      .then(cards => {
+        assert.strictEqual(cards.length, 1, 'Length of getCards() result');
+        assert.strictEqual(cards[0].question, 'Question 2');
+        assert.strictEqual(cards[0].answer, 'Answer 2');
+      });
+  });
+
+  it('reports an error when the card to be deleted cannot be found', () =>
+    subject.deleteCard({ _id: 'abc' })
+      .then(() => {
+        assert.fail('Should have reported an error for missing card');
+      })
+      .catch(err => {
+        assert.strictEqual(err.status, 404);
+        assert.strictEqual(err.name, 'not_found');
+        assert.strictEqual(err.message, 'missing');
+        assert.strictEqual(err.reason, 'deleted');
+      })
+  );
+
+  it('reports deleted cards', () => {
+    let addedCard;
+    let updateInfo;
+
+    subject.onUpdate(info => { updateInfo = info; });
+
+    return subject.putCard({ question: 'Question', answer: 'Answer' })
+      .then(card => { addedCard = card; })
+      .then(() => subject.deleteCard(addedCard))
+      .then(() => waitForEvents(3))
+      .then(() => {
+        assert.strictEqual(updateInfo.id, addedCard._id,
+                           'Reported change has correct ID');
+        assert.isOk(updateInfo.deleted,
+                    'Reported change is a delete record');
+      });
+  });
+
+  // XXX Test that we still delete, even when the revision is old
+
   // XXX: Changes to cards
 });
 
@@ -244,7 +301,7 @@ describe('CardStore remote sync', () => {
 
   it('reports when syncing resumes', () => {
     // XXX
-    // -- Should get onActive callbacks... with approprite direction
+    // -- Should get onActive callbacks... with appropriate direction
   });
 
   it('reports when syncing pauses', () => {

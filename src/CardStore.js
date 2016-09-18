@@ -21,6 +21,10 @@ class CardStore {
       .then(result => ({ ...card, _id: result.id, _rev: result.rev }));
   }
 
+  deleteCard(card) {
+    return this.db.remove(card);
+  }
+
   static generateCardId() {
     // Start off with the number of milliseconds since 1 Jan 2016.
     let timestamp = Date.now() - Date.UTC(2016, 0, 1);
