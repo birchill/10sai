@@ -120,11 +120,11 @@ describe('CardStore remote sync', () => {
   it('reports an error for an invalid sync server', done => {
     subject.setSyncServer('http://not.found/',
       { onError: err => {
-          assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT', 'ECONNREFUSED' ],
-                       'Expected error for inaccessible server');
-          done();
-        },
-      });
+        assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT', 'ECONNREFUSED' ],
+                      'Expected error for inaccessible server');
+        done();
+      },
+    });
   });
 
   it('rejects a non-http/https database', () => {
