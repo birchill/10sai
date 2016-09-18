@@ -63,6 +63,20 @@ describe('CardStore', () => {
       });
   });
 
+  it('does not overwrite ID if provided', () =>
+    subject.putCard({ question: 'Question', answer: 'Answer',
+                      _id: 'abc' })
+      .then(card => {
+        assert.strictEqual(card._id, 'abc',
+                           'ID returned from putCard is the one specified');
+      })
+      .then(() => subject.getCards())
+      .then(cards => {
+        assert.strictEqual(cards[0]._id, 'abc',
+                           'ID returned from getCards is the one specified');
+      })
+  );
+
   it('reports added cards', () => {
     let addedCard;
     let updateInfo;
@@ -137,6 +151,7 @@ describe('CardStore', () => {
   });
 
   // XXX Test that we still delete, even when the revision is old
+  // (probably requires we implement change handling first)
 
   // XXX: Changes to cards
 });

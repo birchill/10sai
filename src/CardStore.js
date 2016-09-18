@@ -16,8 +16,7 @@ class CardStore {
   }
 
   putCard(card) {
-    // XXX Fill in _id only if not set
-    return this.db.put({ ...card, _id: CardStore.generateCardId() })
+    return this.db.put({ _id: CardStore.generateCardId(), ...card })
       .then(result => ({ ...card, _id: result.id, _rev: result.rev }));
   }
 
