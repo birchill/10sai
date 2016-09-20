@@ -2,7 +2,7 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import memdown from 'memdown';
-import { assert } from 'chai';
+import { assert, AssertionError } from 'chai';
 import CardStore from '../src/CardStore';
 import { waitForEvents } from './testcommon';
 import PouchDB from 'pouchdb';
@@ -160,13 +160,43 @@ describe('CardStore', () => {
 describe('CardStore remote sync', () => {
   let subject;
   let testRemote;
+  let failedAssertion;
 
   beforeEach('setup new store', () => {
     subject = new CardStore({ db: memdown });
+
+    // PouchDB swallows exceptions thrown from the on 'changes' callback which,
+    // unfortunately, includes exceptions which are failed assertions. The
+    // |throwError| method for directly passing the failed assertion to mocha
+    // also only appears to be in the browser-based version (not the CLI
+    // version) so we can't use that. Instead, we just wrap the callback set
+    // using |onUpdate| to set a global variable if an assertion fails and then
+    // re-throw when the test shuts down.
+    failedAssertion = undefined;
+    const originalOnUpdate = subject.onUpdate;
+    subject.onUpdate = fn => {
+      const wrappedFn = info => {
+        try {
+          fn(info);
+        } catch (e) {
+          if (e instanceof AssertionError) {
+            failedAssertion = e;
+          } else {
+            throw e;
+          }
+        }
+      };
+      originalOnUpdate.call(subject, wrappedFn);
+    };
+
     testRemote = new PouchDB('cards_remote', { db: memdown });
   });
 
   afterEach('clean up stores', () => {
+    if (failedAssertion) {
+      throw failedAssertion;
+    }
+
     return Promise.all([ subject.destroy(), testRemote.destroy() ]);
   });
 
@@ -258,8 +288,6 @@ describe('CardStore remote sync', () => {
     const expectedCards = [ firstCard, secondCard ];
 
     subject.onUpdate(info => {
-      // XXX These errors are getting swallowed by PouchDB -- need to look
-      // up Mocha docs to see how to get to get these out
       assert.deepEqual(info.doc, expectedCards.shift());
     });
 
@@ -288,7 +316,6 @@ describe('CardStore remote sync', () => {
 
     const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
 
-    // XXX As above, the following assertion will get swallowed by pouchdb
     subject.onUpdate(() => {
       assert.fail('Did not expect update to be called on the previous remote');
     });
