@@ -154,6 +154,14 @@ describe('CardStore', () => {
   // (probably requires we implement change handling first)
 
   // XXX: Changes to cards
+  it('updates the specified field of cards', () => {
+  });
+
+  it('reports changes to cards', () => {
+  });
+
+  it('updates cards even when the revision is old', () => {
+  });
 });
 
 // XXX Split this off into a separate file
@@ -230,6 +238,9 @@ describe('CardStore remote sync', () => {
 
   it('rejects a non-http/https database', () => {
     return subject.setSyncServer('irc://irc.mozilla.org')
+      .then(() => {
+        assert.fail('Failed to reject invalid server');
+      })
       .catch(err => {
         assert.strictEqual(err.code, 'INVALID_SERVER');
       });
@@ -237,10 +248,15 @@ describe('CardStore remote sync', () => {
 
   it('rejects a non-PouchDB object', () => {
     return subject.setSyncServer(new Date())
+      .then(() => {
+        assert.fail('Failed to reject invalid server');
+      })
       .catch(err => {
         assert.strictEqual(err.code, 'INVALID_SERVER');
       });
   });
+
+  // XXX Stand up a PouchDB server and test for a missing database here
 
   it('allows clearing the sync server using null', () => {
     return subject.setSyncServer(testRemote)
@@ -339,6 +355,7 @@ describe('CardStore remote sync', () => {
 
   it('reports additions to the remote server', () => {
     // XXX
+    // -- Should get onActive callbacks... with appropriate direction
   });
 
   it('reports when syncing resumes', () => {
@@ -348,6 +365,7 @@ describe('CardStore remote sync', () => {
 
   it('reports when syncing pauses', () => {
     // XXX
+    // -- Should get onActive callbacks... with appropriate direction
   });
 
   it('reports sync progress', () => {
