@@ -1,5 +1,7 @@
 import PouchDB from 'pouchdb';
 
+PouchDB.plugin(require('pouchdb-upsert'));
+
 let prevTimeStamp = 0;
 
 class CardStore {
@@ -16,8 +18,14 @@ class CardStore {
   }
 
   putCard(card) {
-    return this.db.put({ _id: CardStore.generateCardId(), ...card })
-      .then(result => ({ ...card, _id: result.id, _rev: result.rev }));
+    if (!card._id) {
+      return this.db.put({ _id: CardStore.generateCardId(), ...card })
+        .then(result => ({ ...card, _id: result.id, _rev: result.rev }));
+    }
+
+    return this.db.upsert(card._id, doc => ({ ...doc, ...card }))
+      // XXX Should we just fix upsert to pass include_docs for us?
+      .then(() => this.db.get(card._id));
   }
 
   deleteCard(card) {

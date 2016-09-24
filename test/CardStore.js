@@ -62,6 +62,9 @@ describe('CardStore', () => {
       });
   });
 
+  // XXX Is this actually the behaviour we want? If we do this we won't be
+  // able to distinguish between when we try to update a doc that has been
+  // deleted and when we want to add a new doc with a specified ID.
   it('does not overwrite ID if provided', () => {
     return subject.putCard({ question: 'Question', answer: 'Answer',
                              _id: 'abc' })
@@ -152,13 +155,62 @@ describe('CardStore', () => {
   // XXX Test that we still delete, even when the revision is old
   // (probably requires we implement change handling first)
 
-  // XXX: Changes to cards
   it('updates the specified field of cards', () => {
+    return subject.putCard({ question: 'Original question', answer: 'Answer' })
+      .then(card => subject.putCard({ _id: card._id,
+                                      _rev: card._rev,
+                                      question: 'Updated question' }))
+      .then(card => {
+        assert.strictEqual(card.question, 'Updated question');
+        assert.strictEqual(card.answer, 'Answer');
+      })
+      .then(() => subject.getCards())
+      .then(cards => {
+        assert.strictEqual(cards.length, 1, 'Length of getCards() result');
+        assert.strictEqual(cards[0].question, 'Updated question');
+        assert.strictEqual(cards[0].answer, 'Answer');
+      });
   });
 
-  it('reports changes to cards', () => {
+  it('updates cards even without a revision', () => {
+    return subject.putCard({ question: 'Original question', answer: 'Answer' })
+      .then(card => subject.putCard({ _id: card._id,
+                                      question: 'Updated question' }))
+      .then(card => {
+        assert.strictEqual(card.question, 'Updated question');
+        assert.strictEqual(card.answer, 'Answer');
+      })
+      .then(() => subject.getCards())
+      .then(cards => {
+        assert.strictEqual(cards.length, 1, 'Length of getCards() result');
+        assert.strictEqual(cards[0].question, 'Updated question');
+        assert.strictEqual(cards[0].answer, 'Answer');
+      });
   });
 
   it('updates cards even when the revision is old', () => {
+    let oldRevision;
+
+    return subject.putCard({ question: 'Original question', answer: 'Answer' })
+      .then(card => {
+        oldRevision = card._rev;
+        return subject.putCard({ _id: card._id,
+                                 question: 'Updated question' }); })
+      .then(card => subject.putCard({ _id: card._id,
+                                      _rev: oldRevision,
+                                      answer: 'Updated answer' }))
+      .then(() => subject.getCards())
+      .then(cards => {
+        assert.strictEqual(cards.length, 1, 'Length of getCards() result');
+        assert.strictEqual(cards[0].question, 'Updated question');
+        assert.strictEqual(cards[0].answer, 'Updated answer');
+      });
+  });
+
+  // XXX What should we do if the specified ID doesn't exist?? Need a test for
+  // this
+
+  it('reports changes to cards', () => {
+    // XXX
   });
 });
