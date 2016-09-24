@@ -63,8 +63,8 @@ class CardStore {
   // - A PouchDB instance (for unit testing -- we should have have waited on
   //   then() before calling this since PouchDB seems to drop then() after
   //   calling it. Odd.)
-  // - Null / undefined / empty string to clear the associated with the existing
-  //   remote server, if any.
+  // - Null / undefined / empty string to clear the association with the
+  //   existing remote server, if any.
   //
   // |callbacks| is an optional object argument which may provide the following
   // callback functions:

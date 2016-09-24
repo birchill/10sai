@@ -15,22 +15,22 @@ describe('CardStore', () => {
 
   afterEach('clean up store', () => subject.destroy());
 
-  it('is initially empty', () =>
-    subject.getCards()
+  it('is initially empty', () => {
+    return subject.getCards()
       .then(cards => {
         assert.strictEqual(cards.length, 0, 'Length of getCards() result');
-      })
-  );
+      });
+  });
 
-  it('returns added cards', () =>
-    subject.putCard({ question: 'Question', answer: 'Answer' })
+  it('returns added cards', () => {
+    return subject.putCard({ question: 'Question', answer: 'Answer' })
       .then(() => subject.getCards())
       .then(cards => {
         assert.strictEqual(cards.length, 1, 'Length of getCards() result');
         assert.strictEqual(cards[0].question, 'Question');
         assert.strictEqual(cards[0].answer, 'Answer');
-      })
-  );
+      });
+  });
 
   it('generates unique ascending IDs', () => {
     let prevId = '';
@@ -62,9 +62,9 @@ describe('CardStore', () => {
       });
   });
 
-  it('does not overwrite ID if provided', () =>
-    subject.putCard({ question: 'Question', answer: 'Answer',
-                      _id: 'abc' })
+  it('does not overwrite ID if provided', () => {
+    return subject.putCard({ question: 'Question', answer: 'Answer',
+                             _id: 'abc' })
       .then(card => {
         assert.strictEqual(card._id, 'abc',
                            'ID returned from putCard is the one specified');
@@ -73,8 +73,8 @@ describe('CardStore', () => {
       .then(cards => {
         assert.strictEqual(cards[0]._id, 'abc',
                            'ID returned from getCards is the one specified');
-      })
-  );
+      });
+  });
 
   it('reports added cards', () => {
     let addedCard;
@@ -93,14 +93,14 @@ describe('CardStore', () => {
       });
   });
 
-  it('does not return deleted cards', () =>
-    subject.putCard({ question: 'Question', answer: 'Answer' })
+  it('does not return deleted cards', () => {
+    return subject.putCard({ question: 'Question', answer: 'Answer' })
       .then(card => subject.deleteCard(card))
       .then(() => subject.getCards())
       .then(cards => {
         assert.strictEqual(cards.length, 0, 'Length of getCards() result');
-      })
-  );
+      });
+  });
 
   it('deletes the specified card', () => {
     let firstCard;
@@ -118,8 +118,8 @@ describe('CardStore', () => {
       });
   });
 
-  it('reports an error when the card to be deleted cannot be found', () =>
-    subject.deleteCard({ _id: 'abc' })
+  it('reports an error when the card to be deleted cannot be found', () => {
+    return subject.deleteCard({ _id: 'abc' })
       .then(() => {
         assert.fail('Should have reported an error for missing card');
       })
@@ -128,8 +128,8 @@ describe('CardStore', () => {
         assert.strictEqual(err.name, 'not_found');
         assert.strictEqual(err.message, 'missing');
         assert.strictEqual(err.reason, 'deleted');
-      })
-  );
+      });
+  });
 
   it('reports deleted cards', () => {
     let addedCard;

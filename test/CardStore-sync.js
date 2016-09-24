@@ -98,8 +98,6 @@ describe('CardStore remote sync', () => {
       });
   });
 
-  // XXX Stand up a PouchDB server and test for a missing database here
-
   it('allows clearing the sync server using null', () => {
     return subject.setSyncServer(testRemote)
       .then(() => subject.setSyncServer(null))
