@@ -140,7 +140,7 @@ describe('CardStore', () => {
     return subject.putCard({ question: 'Question', answer: 'Answer' })
       .then(card => { addedCard = card; })
       .then(() => subject.deleteCard(addedCard))
-      .then(() => waitForEvents(3))
+      .then(() => waitForEvents(5))
       .then(() => {
         assert.strictEqual(updateInfo.id, addedCard._id,
                            'Reported change has correct ID');
