@@ -62,23 +62,6 @@ describe('CardStore', () => {
       });
   });
 
-  // XXX Is this actually the behaviour we want? If we do this we won't be
-  // able to distinguish between when we try to update a doc that has been
-  // deleted and when we want to add a new doc with a specified ID.
-  it('does not overwrite ID if provided', () => {
-    return subject.putCard({ question: 'Question', answer: 'Answer',
-                             _id: 'abc' })
-      .then(card => {
-        assert.strictEqual(card._id, 'abc',
-                           'ID returned from putCard is the one specified');
-      })
-      .then(() => subject.getCards())
-      .then(cards => {
-        assert.strictEqual(cards[0]._id, 'abc',
-                           'ID returned from getCards is the one specified');
-      });
-  });
-
   it('reports added cards', () => {
     let addedCard;
     let updateInfo;
@@ -207,8 +190,17 @@ describe('CardStore', () => {
       });
   });
 
-  // XXX What should we do if the specified ID doesn't exist?? Need a test for
-  // this
+  it('returns an error when trying to update a missing card', () => {
+    return subject.putCard({ _id: 'abc', question: 'Question' })
+      .then(() => {
+        assert.fail('Should have reported an error for missing card');
+      })
+      .catch(err => {
+        assert.strictEqual(err.status, 404);
+        assert.strictEqual(err.name, 'not_found');
+        assert.strictEqual(err.message, 'missing');
+      });
+  });
 
   it('reports changes to cards', () => {
     // XXX

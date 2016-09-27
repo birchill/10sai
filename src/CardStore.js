@@ -18,14 +18,43 @@ class CardStore {
   }
 
   putCard(card) {
+    // New card
     if (!card._id) {
-      return this.db.put({ _id: CardStore.generateCardId(), ...card })
-        .then(result => ({ ...card, _id: result.id, _rev: result.rev }));
+      // eslint-disable-next-line no-shadow
+      return (function tryPutNewCard(card, db) {
+        return db.put({ _id: CardStore.generateCardId(), ...card })
+          .then(
+            result => ({ ...card, _id: result.id, _rev: result.rev }),
+            err => {
+              if (err.status !== 409) {
+                throw err;
+              }
+              // If we put the card and there was a conflict, it must mean we
+              // chose an overlapping ID. Just keep trying until it succeeds.
+              return tryPutNewCard(card, db);
+            }
+          );
+      }(card, this.db));
     }
 
-    return this.db.upsert(card._id, doc => ({ ...doc, ...card }))
-      // XXX Should we just fix upsert to pass include_docs for us?
-      .then(() => this.db.get(card._id));
+    // Delta update to an existing card
+    let completeCard;
+    return this.db.upsert(card._id, doc => {
+      // Doc was not found -- must have been deleted
+      if (!doc._id) {
+        return false;
+      }
+      completeCard = { ...doc, ...card };
+      return completeCard;
+    }).then(res => {
+      if (!res.updated) {
+        const err = new Error('missing');
+        err.status = 404;
+        err.name = 'not_found';
+        throw err;
+      }
+      return completeCard;
+    });
   }
 
   deleteCard(card) {
