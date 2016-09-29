@@ -219,6 +219,17 @@ describe('CardStore', () => {
   });
 
   it('reports changes to cards', () => {
-    // XXX
+    const updates = [];
+    subject.onUpdate(info => { updates.push(info); });
+
+    return subject.putCard({ question: 'Question', answer: 'Answer' })
+      .then(card => subject.putCard({ ...card, question: 'Updated question' }))
+      // Wait for a few rounds of events so the update records can happen
+      .then(() => waitForEvents(3))
+      .then(() => {
+        assert.strictEqual(updates.length, 2,
+                           'Should get two change records: add, update');
+        assert.strictEqual(updates[1].doc.question, 'Updated question');
+      });
   });
 });
