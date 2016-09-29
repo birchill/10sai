@@ -202,6 +202,22 @@ describe('CardStore', () => {
       });
   });
 
+  it('returns an error when trying to update a deleted card', () => {
+    let id;
+    return subject.putCard({ question: 'Question', answer: 'Answer' })
+      .then(card => { id = card._id; return card; })
+      .then(card => subject.deleteCard(card))
+      .then(() => subject.putCard({ _id: id, question: 'Updated question' }))
+      .then(() => {
+        assert.fail('Should have reported an error for deleted card');
+      })
+      .catch(err => {
+        assert.strictEqual(err.status, 404);
+        assert.strictEqual(err.name, 'not_found');
+        assert.strictEqual(err.message, 'missing');
+      });
+  });
+
   it('reports changes to cards', () => {
     // XXX
   });
