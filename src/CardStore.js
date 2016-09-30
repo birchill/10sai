@@ -1,3 +1,5 @@
+/* eslint-disable no-shadow */
+
 import PouchDB from 'pouchdb';
 
 PouchDB.plugin(require('pouchdb-upsert'));
@@ -20,7 +22,6 @@ class CardStore {
   putCard(card) {
     // New card
     if (!card._id) {
-      // eslint-disable-next-line no-shadow
       return (function tryPutNewCard(card, db) {
         return db.put({ _id: CardStore.generateCardId(), ...card })
           .then(
@@ -58,7 +59,16 @@ class CardStore {
   }
 
   deleteCard(card) {
-    return this.db.remove(card);
+    return (function tryToDeleteCard(card, db) {
+      return db.remove(card)
+        .catch(err => {
+          if (err.status !== 409) {
+            throw err;
+          }
+          // If there is a conflict, just keep trying
+          return db.get(card._id).then(card => { tryToDeleteCard(card, db); });
+        });
+    }(card, this.db));
   }
 
   static generateCardId() {

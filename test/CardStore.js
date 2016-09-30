@@ -117,6 +117,19 @@ describe('CardStore', () => {
       });
   });
 
+  it('deletes the specified card even when the revision is old', () => {
+    let card;
+    return subject.putCard({ question: 'Question 1',
+                             answer: 'Answer 1' })
+      .then(result => { card = result; })
+      .then(() => subject.putCard({ ...card, question: 'Updated question' }))
+      .then(() => subject.deleteCard(card))
+      .then(() => subject.getCards())
+      .then(cards => {
+        assert.strictEqual(cards.length, 0, 'Length of getCards() result');
+      });
+  });
+
   it('reports deleted cards', () => {
     let addedCard;
     let updateInfo;
@@ -134,9 +147,6 @@ describe('CardStore', () => {
                     'Reported change is a delete record');
       });
   });
-
-  // XXX Test that we still delete, even when the revision is old
-  // (probably requires we implement change handling first)
 
   it('updates the specified field of cards', () => {
     return subject.putCard({ question: 'Original question', answer: 'Answer' })
