@@ -6,6 +6,14 @@ import SyncStatusMessages from '../sync-status-messages';
 import LastUpdatedLabel from './LastUpdatedLabel.jsx';
 import SyncServerForm from './SyncServerForm.jsx';
 
+function translateError(error) {
+  if (error instanceof SyntaxError) {
+    return 'Couldn\'t understand server\'s response. Not a sync server?';
+  }
+
+  return 'Unknown error';
+}
+
 export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
     return {
@@ -14,7 +22,7 @@ export class SyncSettingsPanel extends React.Component {
       onSubmit: React.PropTypes.func.isRequired,
       onPause: React.PropTypes.func.isRequired,
       lastUpdateTime: React.PropTypes.instanceOf(Date),
-      errorDetail: React.PropTypes.string,
+      errorDetail: React.PropTypes.object,
     };
   }
 
@@ -77,7 +85,8 @@ export class SyncSettingsPanel extends React.Component {
 
     const errorDetail =
       this.props.syncState !== SyncState.ERROR ||
-      <span className="error-details">{this.props.errorDetail}</span>;
+      <div className="error-details">{
+        translateError(this.props.errorDetail)}</div>;
 
     return (
       <div className="sync-settings summary-panel">

@@ -27,10 +27,11 @@ export function updateSettingsFromStore(settingsStore) {
                      .then(settings => dispatch(updateSettings(settings)));
 }
 
-export function updateSyncState(state) {
+export function updateSyncState(state, errorDetail) {
   return {
     type: 'UPDATE_SYNC_STATE',
     state,
+    errorDetail,
   };
 }
 
@@ -50,7 +51,9 @@ export function setSyncServer(syncServer, settingsStore, cardStore) {
         { onChange: () => { /* XXX: Record last updated and other info */ },
           onPause:  () => dispatch(updateSyncState(SyncState.OK)),
           onActive: () => dispatch(updateSyncState(SyncState.IN_PROGRESS)),
-          onError:  () => dispatch(updateSyncState(SyncState.ERROR)) });
+          onError:  details =>
+                      dispatch(updateSyncState(SyncState.ERROR, details)),
+        });
     });
   };
 }
