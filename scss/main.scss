@@ -215,11 +215,19 @@ main section h3 {
   font-size: 1.2rem;
   margin: 1.5rem 0 .5rem 0;
 }
-.summary-panel p {
+.summary-panel p,
+.summary-panel ul {
   color: #888;
 }
 .summary-panel .action {
   margin-top: 1.5rem;
+}
+.summary-panel p + ul {
+  margin-top: -0.5em;
+}
+.summary-panel ul {
+  text-align: left;
+  display: inline-block;
 }
 
 /*

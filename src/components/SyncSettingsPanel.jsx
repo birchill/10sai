@@ -11,6 +11,23 @@ function translateError(error) {
     return 'Couldn\'t understand server\'s response. Not a sync server?';
   }
 
+  if (typeof error.status === 'number' &&
+      error.status === 0) {
+    return (<div>
+              <p>
+                Network error. Some possible causes might be:
+              </p>
+              <ul>
+                <li>The server name was misspelled</li>
+                <li>The server has not been set up to <a
+                  href="https://github.com/pouchdb/add-cors-to-couchdb">support
+                  cross-origin access</a></li>
+                <li>The server is temporarily offline</li>
+              </ul>
+            </div>);
+  }
+
+  console.log(error);
   return 'Unknown error';
 }
 
@@ -85,8 +102,11 @@ export class SyncSettingsPanel extends React.Component {
 
     const errorDetail =
       this.props.syncState !== SyncState.ERROR ||
-      <div className="error-details">{
-        translateError(this.props.errorDetail)}</div>;
+      <div className="error-panel">
+        <div className="error-details">{
+          translateError(this.props.errorDetail)}</div>
+        <button name="retry">Retry</button>
+      </div>;
 
     return (
       <div className="sync-settings summary-panel">
