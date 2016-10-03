@@ -153,7 +153,7 @@ describe('<SyncSettingsPanel />', () => {
   // -------------------------------------------------------------
 
   it("shows the error information in 'error' state", () => {
-    const errorMessage = 'Oh dear';
+    const errorMessage = { message: 'Oh dear' };
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.ERROR}
@@ -161,7 +161,7 @@ describe('<SyncSettingsPanel />', () => {
           errorDetail={errorMessage} />
       );
 
-    assert.equal(subject.find('.error-details').text(), errorMessage,
+    assert.equal(subject.find('.error-details').text(), 'Oh dear',
                   'Error message is filled-in');
   });
 

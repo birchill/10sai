@@ -7,6 +7,10 @@ import LastUpdatedLabel from './LastUpdatedLabel.jsx';
 import SyncServerForm from './SyncServerForm.jsx';
 
 function translateError(error) {
+  if (typeof error === 'undefined') {
+    return 'Unknown error';
+  }
+
   if (error instanceof SyntaxError) {
     return 'Couldn\'t understand server\'s response. Not a sync server?';
   }
@@ -25,6 +29,10 @@ function translateError(error) {
                 <li>The server is temporarily offline</li>
               </ul>
             </div>);
+  }
+
+  if (typeof error.message === 'string') {
+    return error.message;
   }
 
   console.log(error);
