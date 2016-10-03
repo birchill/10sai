@@ -2,13 +2,11 @@ import React from 'react';
 import { browserHistory } from 'react-router';
 import { connect } from 'react-redux';
 
-import { setSyncServer } from '../actions';
-
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import Popup from './Popup.jsx';
 import PopupOverlay from './PopupOverlay.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
-import LocalSyncSettingsPanel from './LocalSyncSettingsPanel.jsx';
+import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
 import Navbar from './Navbar.jsx';
 
 class App extends React.Component {
@@ -19,7 +17,6 @@ class App extends React.Component {
         popup: React.PropTypes.string,
       }),
       route: React.PropTypes.object.isRequired,
-      onSetSyncServer: React.PropTypes.func.isRequired,
     };
   }
 
@@ -49,9 +46,9 @@ class App extends React.Component {
           </PopupOverlay>
           <Popup active={settingsActive} close={this.closePopup}>
             <SettingsPanel heading="Sync">
-              <LocalSyncSettingsPanel
-                onSubmit={this.props.onSetSyncServer}
-                onPause={function stub() {}} />
+              <SyncSettingsPanelContainer
+                cards={this.props.route.cards}
+                settings={this.props.route.settings} />
             </SettingsPanel>
           </Popup>
         </main>
@@ -61,14 +58,6 @@ class App extends React.Component {
 }
 
 const mapStateToProps = state => ({ nav: state.nav });
-const mapDispatchToProps = (dispatch, ownProps) => (
-  {
-    onSetSyncServer: syncServer => {
-      dispatch(setSyncServer(syncServer,
-                             ownProps.route.settings,
-                             ownProps.route.cards));
-    },
-  });
-const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
+const ConnectedApp = connect(mapStateToProps)(App);
 
 export default ConnectedApp;

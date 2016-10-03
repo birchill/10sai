@@ -58,7 +58,8 @@ export class SyncSettingsPanel extends React.Component {
     [ 'handleEditServer',
       'handleServerChange',
       'handleServerChangeCancel',
-      'handlePause' ].forEach(
+      'handlePause',
+      'handleRetry' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
   }
@@ -78,6 +79,14 @@ export class SyncSettingsPanel extends React.Component {
 
   handlePause() {
     this.props.onPause();
+  }
+
+  handlePause() {
+    this.props.onPause();
+  }
+
+  handleRetry() {
+    this.props.onSubmit({ server: this.props.server });
   }
 
   render() {
@@ -113,7 +122,7 @@ export class SyncSettingsPanel extends React.Component {
       <div className="error-panel">
         <div className="error-details">{
           translateError(this.props.errorDetail)}</div>
-        <button name="retry">Retry</button>
+        <button name="retry" onClick={this.handleRetry}>Retry</button>
       </div>;
 
     return (
