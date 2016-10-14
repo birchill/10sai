@@ -32,7 +32,8 @@ export class SyncServerForm extends React.Component {
     this.setState({ server: e.target.value });
   }
 
-  handleSubmit() {
+  handleSubmit(e) {
+    e.preventDefault();
     this.props.onSubmit({ server: this.state.server });
   }
 
