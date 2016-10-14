@@ -45,16 +45,18 @@ export class SyncSettingsPanel extends React.Component {
       syncState: React.PropTypes.symbol.isRequired,
       server: React.PropTypes.string.isRequired,
       onSubmit: React.PropTypes.func.isRequired,
+      onEdit: React.PropTypes.func.isRequired,
+      onCancel: React.PropTypes.func.isRequired,
       onPause: React.PropTypes.func.isRequired,
       lastUpdateTime: React.PropTypes.instanceOf(Date),
       errorDetail: React.PropTypes.object,
+      editingServer: React.PropTypes.bool,
     };
   }
 
   constructor(props) {
     super(props);
 
-    this.state = { editingServer: false };
     [ 'handleEditServer',
       'handleServerChange',
       'handleServerChangeCancel',
@@ -65,20 +67,15 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   handleEditServer() {
-    this.setState({ editingServer: true });
+    this.props.onEdit();
   }
 
   handleServerChange(options) {
-    this.setState({ editingServer: false });
     this.props.onSubmit(options);
   }
 
   handleServerChangeCancel() {
-    this.setState({ editingServer: false });
-  }
-
-  handlePause() {
-    this.props.onPause();
+    this.props.onCancel();
   }
 
   handlePause() {
@@ -90,7 +87,7 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   render() {
-    const summary = this.state.editingServer
+    const summary = this.props.editingServer
                   ? 'Configure sync server'
                   : SyncStatusMessages[this.props.syncState];
 
@@ -138,7 +135,7 @@ export class SyncSettingsPanel extends React.Component {
               <button name="cancel-sync"
                 onClick={this.handlePause}>Cancel</button>
             </div> }
-          { !this.state.editingServer
+          { !this.props.editingServer
             ? <div>
                 { errorDetail }
                 { lastUpdated }

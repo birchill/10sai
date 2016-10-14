@@ -35,10 +35,21 @@ export function updateSyncState(state, errorDetail) {
   };
 }
 
+export function editServer() {
+  return {
+    type: 'EDIT_SERVER',
+  };
+}
+
+export function finishEditServer() {
+  return {
+    type: 'FINISH_EDIT_SERVER',
+  };
+}
+
 export function setSyncServer(syncServer, settingsStore, cardStore) {
   return (dispatch, getState) => {
-    dispatch(updateSyncState(SyncState.IN_PROGRESS));
-
+    // Update settings first so we don't end up in an inconsistent state
     let settingsUpdatePromise = Promise.resolve();
     if (getState().settings.syncServer !== syncServer) {
       settingsUpdatePromise = settingsStore.updateSetting('syncServer',
@@ -47,12 +58,18 @@ export function setSyncServer(syncServer, settingsStore, cardStore) {
     }
 
     settingsUpdatePromise.then(() => {
+      dispatch(finishEditServer());
+      dispatch(updateSyncState(SyncState.IN_PROGRESS));
       cardStore.setSyncServer(syncServer.server,
         { onChange: () => { /* XXX: Record last updated and other info */ },
           onPause:  () => dispatch(updateSyncState(SyncState.OK)),
           onActive: () => dispatch(updateSyncState(SyncState.IN_PROGRESS)),
           onError:  details =>
                       dispatch(updateSyncState(SyncState.ERROR, details)),
+        }).then(() => {
+          if (!cardStore.remoteDb) {
+            dispatch(updateSyncState(SyncState.NOT_CONFIGURED));
+          }
         });
     });
   };
