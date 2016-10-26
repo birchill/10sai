@@ -311,3 +311,32 @@ input[type=text]:focus {
   border-top-left-radius: 0;
   margin-left: -.2rem;
 }
+
+/*
+ * Cancelable text box
+ */
+.cancelable-textbox-group {
+  display: inline-block;
+}
+.cancelable-textbox-cancel {
+  width: 2em;
+  margin: 0;
+  margin-left: -2em;
+  border: 0;
+  transition: transform 0.3s;
+}
+.cancelable-textbox-cancel[aria-hidden=true] {
+  transform: scale(0);
+}
+.cancelable-textbox-cancel span {
+  position: absolute;
+  left: -10000px;
+}
+.cancelable-textbox-cancel::after {
+  color: lightgrey;
+  content: "X";
+  font-weight: bold;
+}
+.cancelable-textbox-cancel:hover::after {
+  color: grey;
+}

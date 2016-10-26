@@ -1,4 +1,5 @@
 import React from 'react';
+import CancelableTextbox from './CancelableTextbox.jsx';
 
 export class SyncServerForm extends React.Component {
   static get propTypes() {
@@ -28,8 +29,8 @@ export class SyncServerForm extends React.Component {
     }
   }
 
-  handleServerChange(e) {
-    this.setState({ server: e.target.value });
+  handleServerChange(value) {
+    this.setState({ server: value });
   }
 
   handleSubmit(e) {
@@ -46,7 +47,7 @@ export class SyncServerForm extends React.Component {
     return (
       <form name="sync-server-settings" onSubmit={this.handleSubmit}>
         <div className="input-group">
-          <input name="server" type="text" placeholder="Server name"
+          <CancelableTextbox name="server" type="text" placeholder="Server name"
             className="form-input" size="40"
             value={this.state.server} onChange={this.handleServerChange} />
           <input type="button" name="submit" value="Ok"
