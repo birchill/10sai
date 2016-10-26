@@ -219,7 +219,8 @@ main section h3 {
 .summary-panel ul {
   color: #888;
 }
-.summary-panel .action {
+.summary-panel .action,
+.summary-panel h4 + form {
   margin-top: 1.5rem;
 }
 .summary-panel p + ul {
@@ -288,4 +289,25 @@ input[type=text] {
 }
 input[type=text]:focus {
   border-color: $highlight;
+}
+
+.input-group {
+  display: inline-block;
+}
+.input-group .form-input:first-child:not(:last-child),
+.input-group .input-group-btn:first-child:not(:last-child) {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  border-right: none;
+}
+.input-group .form-input:not(:first-child):not(:last-child),
+.input-group .input-group-btn:not(:first-child):not(:last-child) {
+  border-radius: 0;
+  margin-left: -.2rem;
+}
+.input-group .form-input:last-child:not(:first-child),
+.input-group .input-group-btn:last-child:not(:first-child) {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  margin-left: -.2rem;
 }
