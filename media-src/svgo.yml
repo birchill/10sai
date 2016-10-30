@@ -1,0 +1,18 @@
+# svgo torii.svg -o - --config=svgo.yml
+
+multipass: true
+pretty: true
+
+plugins:
+  - cleanupAttrs: true
+  - removeTitle: true
+  - removeDesc: true
+  - convertStyleToAttrs: true
+  - cleanupIDs:
+      remove: true
+  - removeAttrs:
+      attrs: 'data.*'
+
+js2svg:
+  pretty: true
+  indent: '  '
