@@ -1,9 +1,14 @@
 $highlight: #2690BA;
 $hover-highlight: lighten(#2690BA, 15%);
 
+$err-background: #fdd;
+$err-highlight: #800;
+$err-hover-highlight: lighten(#800, 15%);
+
 /*
  * Font settings
  */
+
 body, html {
   font-family: Arial, sans-serif;
   -webkit-text-size-adjust: 100%;
@@ -151,7 +156,7 @@ header .icon {
   background: $hover-highlight;
 }
 #settings-menu::before {
-  background: url('img/icons.svg') 100% / auto 100% content-box;
+  background: url('img/icons.svg') 150px / auto 100% content-box;
 }
 
 /*
@@ -234,6 +239,7 @@ main section h3 {
 /*
  * Forms
  */
+
 input, button {
   -webkit-appearance: none;
   border-radius: .3rem;
@@ -310,6 +316,44 @@ input[type=text]:focus {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
   margin-left: -.2rem;
+}
+
+/*
+ * Error panel
+ */
+.error-panel {
+  margin: 1rem 0.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  display: table;
+  margin-left: auto;
+  margin-right: auto;
+  background: $err-background;
+  color: black;
+}
+.error-details {
+  margin-bottom: 1.2rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+.error-panel input[type=button],
+.error-panel input[type=submit],
+.error-panel button {
+  color: $err-highlight;
+  border-color: $err-highlight;
+  &:hover {
+    color: $err-hover-highlight;
+    border-color: $err-hover-highlight;
+  }
+}
+.error-panel input[type=button].primary,
+.error-panel input[type=submit].primary,
+.error-panel button.primary {
+  background: $err-highlight;
+  color: white;
+  &:hover {
+    background: $err-hover-highlight;
+  }
 }
 
 /*
