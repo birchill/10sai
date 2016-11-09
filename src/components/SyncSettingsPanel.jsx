@@ -8,11 +8,11 @@ import SyncServerForm from './SyncServerForm.jsx';
 
 function translateError(error) {
   if (typeof error === 'undefined') {
-    return 'Unknown error';
+    return <p>Unknown error</p>;
   }
 
   if (error instanceof SyntaxError) {
-    return 'Couldn\'t understand server\'s response. Not a sync server?';
+    return <p>Couldn't understand server's response. Not a sync server?</p>;
   }
 
   if (typeof error.status === 'number' &&
@@ -32,11 +32,11 @@ function translateError(error) {
   }
 
   if (typeof error.message === 'string') {
-    return error.message;
+    return <p>{error.message}</p>;
   }
 
   console.log(error);
-  return 'Unknown error';
+  return <p>Unknown error</p>;
 }
 
 export class SyncSettingsPanel extends React.Component {
@@ -87,6 +87,18 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   render() {
+    const syncClasses = [];
+    syncClasses[SyncState.OK] = 'ok';
+    syncClasses[SyncState.IN_PROGRESS] = 'in-progress';
+    syncClasses[SyncState.PAUSED] = 'paused';
+    syncClasses[SyncState.OFFLINE] = 'offline';
+    syncClasses[SyncState.ERROR] = 'error';
+    syncClasses[SyncState.NOT_CONFIGURED] = 'not-configured';
+
+    const syncClass = this.props.editingServer
+                      ? syncClasses[SyncState.NOT_CONFIGURED]
+                      : syncClasses[this.props.syncState];
+
     const summary = this.props.editingServer
                   ? 'Configure sync server'
                   : SyncStatusMessages[this.props.syncState];
@@ -123,9 +135,9 @@ export class SyncSettingsPanel extends React.Component {
       </div>;
 
     return (
-      <div className="sync-settings summary-panel">
+      <div className={ `sync-settings summary-panel ${syncClass}` }>
         <div className="sync-overview">
-          <div className="sync-icon"></div>
+          <div className="icon sync-icon"></div>
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>
