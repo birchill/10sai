@@ -39,6 +39,7 @@ export class CardOverviewScreen extends React.Component {
       .then(() => {
         this.setState({ question: '', answer: '' });
       })
+      // eslint-disable-next-line no-console
       .catch(err => console.log(err));
   }
 

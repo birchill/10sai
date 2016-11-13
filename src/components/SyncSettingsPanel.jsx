@@ -35,6 +35,7 @@ function translateError(error) {
     return <p>{error.message}</p>;
   }
 
+  // eslint-disable-next-line no-console
   console.log(error);
   return <p>Unknown error</p>;
 }
