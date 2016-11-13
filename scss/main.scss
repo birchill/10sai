@@ -152,7 +152,7 @@ header .icon {
   background: $hover-highlight;
 }
 #settings-menu::before {
-  background: url('img/icons.svg') 150px / auto 100% content-box;
+  background: url('img/icons.svg') -600% / auto 100% content-box;
 }
 
 /*
@@ -370,20 +370,20 @@ input[type=text]:focus {
  * Sync settings panel
  */
 .sync-settings .sync-icon {
-  background: url('img/icons.svg') 20rem / auto 100% content-box;
+  background: url('img/icons.svg') -800% / auto 100% content-box;
 }
 .sync-settings.in-progress .sync-icon {
   animation: rotate 1s linear infinite;
 }
 .sync-settings.paused .sync-icon {
-  background-position-x: 15rem;
+  background-position-x: -900%;
 }
 .sync-settings.offline .sync-icon {
-  background-position-x: 10rem;
+  background-position-x: -1000%;
 }
 .sync-settings.error .sync-icon {
-  background-position-x: 5rem;
+  background-position-x: -1100%;
 }
 .sync-settings.not-configured .sync-icon {
-  background-position-x: 25rem;
+  background-position-x: -700%;
 }
