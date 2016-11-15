@@ -31,6 +31,27 @@ class SettingsStore {
     });
   }
 
+  /*
+  clearSetting(key) {
+    (function tryToDeleteSetting() {
+      return db.get(key).then(doc => db.remove(doc))
+      .catch(err => {
+        // Not found, no problem
+        if (err.status === 404) {
+          return null;
+        }
+        if (err.status !== 409) {
+          // eslint-disable-next-line no-console
+          console.log(`Unexpected error removing setting: ${err}`);
+          return null;
+        }
+        // Conflict: Try again
+        return tryToDeleteSetting();
+      });
+    }());
+  }
+  */
+
   onUpdate(func) {
     db.changes({ since: 'now', live: true }).on('change', func);
   }
