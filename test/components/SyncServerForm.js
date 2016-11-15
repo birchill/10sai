@@ -15,31 +15,29 @@ describe('<SyncServerForm />', () => {
     const subject =
       shallow(<SyncServerForm server="abc" onSubmit={stub} onCancel={stub} />);
 
-    assert.strictEqual(subject.find('input[name="server"]').prop('value'),
-                       'abc');
+    assert.strictEqual(subject.find('CancelableTextbox[name="server"]')
+                       .prop('value'), 'abc');
   });
 
   it('allows the server name to be overwritten', () => {
     const subject =
       shallow(<SyncServerForm server="abc" onSubmit={stub} onCancel={stub} />);
 
-    subject.find('input[name="server"]').simulate('change',
-      { target: { value: 'def' } });
+    subject.find('CancelableTextbox[name="server"]').simulate('change', 'def');
 
-    assert.strictEqual(subject.find('input[name="server"]').prop('value'),
-                       'def');
+    assert.strictEqual(subject.find('CancelableTextbox[name="server"]')
+                       .prop('value'), 'def');
   });
 
   it('resets the entered text when the server name is updated', () => {
     const subject =
       shallow(<SyncServerForm server="abc" onSubmit={stub} onCancel={stub} />);
 
-    subject.find('input[name="server"]').simulate('change',
-      { target: { value: 'def' } });
+    subject.find('CancelableTextbox[name="server"]').simulate('change', 'def');
     subject.setProps({ server: 'ghi' });
 
-    assert.strictEqual(subject.find('input[name="server"]').prop('value'),
-                       'ghi');
+    assert.strictEqual(subject.find('CancelableTextbox[name="server"]')
+                       .prop('value'), 'ghi');
   });
 
   it('calls the callback when cancelled', () => {
@@ -57,12 +55,11 @@ describe('<SyncServerForm />', () => {
     const subject =
       shallow(<SyncServerForm server="abc" onSubmit={stub} onCancel={stub} />);
 
-    subject.find('input[name="server"]').simulate('change',
-      { target: { value: 'def' } });
+    subject.find('CancelableTextbox[name="server"]').simulate('change', 'def');
     subject.find('input[name="cancel"]').simulate('click');
 
-    assert.strictEqual(subject.find('input[name="server"]').prop('value'),
-                       'abc');
+    assert.strictEqual(subject.find('CancelableTextbox[name="server"]')
+                       .prop('value'), 'abc');
   });
 
   it('passes the server to the callback when submitted', () => {
@@ -71,7 +68,7 @@ describe('<SyncServerForm />', () => {
       shallow(<SyncServerForm server="abc" onSubmit={onSubmit}
         onCancel={stub} />);
 
-    subject.find('form').simulate('submit');
+    subject.find('form').simulate('submit', { preventDefault: stub });
 
     assert.calledWith(onSubmit, { server: 'abc' });
   });
@@ -82,9 +79,8 @@ describe('<SyncServerForm />', () => {
       shallow(<SyncServerForm server="abc" onSubmit={onSubmit}
         onCancel={stub} />);
 
-    subject.find('input[name="server"]').simulate('change',
-      { target: { value: 'def' } });
-    subject.find('form').simulate('submit');
+    subject.find('CancelableTextbox[name="server"]').simulate('change', 'def');
+    subject.find('form').simulate('submit', { preventDefault: stub });
 
     assert.calledWith(onSubmit, { server: 'def' });
   });
