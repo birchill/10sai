@@ -62,7 +62,14 @@ export function setSyncServer(syncServer, settingsStore, cardStore) {
       dispatch(updateSyncState(SyncState.IN_PROGRESS));
       cardStore.setSyncServer(syncServer.server,
         { onChange: () => { /* XXX: Record last updated and other info */ },
-          onPause:  () => dispatch(updateSyncState(SyncState.OK)),
+          onPause:  () => {
+            const updatedSyncServer = { ...getState().settings.syncServer,
+                                        lastSyncTime: Date.now() };
+            settingsStore.updateSetting('syncServer', updatedSyncServer)
+            .then(() => {
+              dispatch(updateSyncState(SyncState.OK));
+            });
+          },
           onActive: () => dispatch(updateSyncState(SyncState.IN_PROGRESS)),
           onError:  details =>
                       dispatch(updateSyncState(SyncState.ERROR, details)),

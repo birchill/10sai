@@ -38,12 +38,12 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.OK}
           server="" onEdit={stub} onSubmit={stub} onCancel={stub}
-          onPause={stub} />
+          onPause={stub} lastSyncTime={new Date()} />
       );
 
     for (const state of [ 'OK', 'PAUSED', 'ERROR', 'OFFLINE' ]) {
       subject.setProps({ syncState: SyncState[state] });
-      assert.isAbove(subject.find('LastUpdatedLabel').length, 0,
+      assert.isAbove(subject.find('.server-sync-time').length, 0,
                      `Last updated information is filled-in in the ${state}` +
                      ' state');
     }

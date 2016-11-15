@@ -12,31 +12,37 @@ describe('CardStore remote sync', () => {
   let testRemote;
   let failedAssertion;
 
+  // PouchDB swallows exceptions thrown from certain callbacks like the on
+  // 'changes' callback which, unfortunately, includes exceptions which are
+  // failed assertions. The |throwError| method for directly passing the failed
+  // assertion to mocha also only appears to be in the browser-based version
+  // (not the CLI version) so we can't use that. Instead, we just wrap such
+  // callbacks to set a global variable if an assertion fails and then re-throw
+  // when the test shuts down.
+  function wrapAssertingFunction(fn) {
+    return (...args) => {
+      try {
+        fn.apply(this, args);
+      } catch (e) {
+        if (e instanceof AssertionError) {
+          failedAssertion = e;
+        } else {
+          throw e;
+        }
+      }
+    };
+  }
+
   beforeEach('setup new store', () => {
     subject = new CardStore({ db: memdown });
 
-    // PouchDB swallows exceptions thrown from the on 'changes' callback which,
-    // unfortunately, includes exceptions which are failed assertions. The
-    // |throwError| method for directly passing the failed assertion to mocha
-    // also only appears to be in the browser-based version (not the CLI
-    // version) so we can't use that. Instead, we just wrap the callback set
-    // using |onUpdate| to set a global variable if an assertion fails and then
-    // re-throw when the test shuts down.
     failedAssertion = undefined;
+
+    // Override the onUpdate setter to automatically wrap the callback
+    // passed-in so that assertion failures are successfully rethrown.
     const originalOnUpdate = subject.onUpdate;
     subject.onUpdate = fn => {
-      const wrappedFn = info => {
-        try {
-          fn(info);
-        } catch (e) {
-          if (e instanceof AssertionError) {
-            failedAssertion = e;
-          } else {
-            throw e;
-          }
-        }
-      };
-      originalOnUpdate.call(subject, wrappedFn);
+      originalOnUpdate.call(subject, wrapAssertingFunction(fn));
     };
 
     testRemote = new PouchDB('cards_remote', { db: memdown });
@@ -185,6 +191,22 @@ describe('CardStore remote sync', () => {
       });
   });
 
+  it('does not report events from the old remote', () => {
+    const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
+    const callbacks = {
+      onPause: wrapAssertingFunction(() => {
+        assert.fail('Did not expect pause to be called on the previous remote');
+      }),
+    };
+
+    return subject.setSyncServer(testRemote, callbacks)
+      .then(() => subject.setSyncServer(alternateRemote))
+      .then(() => waitForEvents(20))
+      .then(() => {
+        alternateRemote.destroy();
+      });
+  });
+
   it('ignores redundant attempts to set the same remote server', () => {
     // XXX (Actually do we want this? How do we tell it to retry?)
   });
@@ -227,9 +249,6 @@ describe('CardStore remote sync', () => {
   it('reports an error when the remote server goes offline', () => {
     // XXX
   });
-
-  // XXX Reports an appropriate error when the remote server hasn't enabled CORS
-  // support
 
   // XXX Reports an appropriate error when the remote server doesn't have
   // the specified database

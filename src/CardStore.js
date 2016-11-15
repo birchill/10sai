@@ -102,7 +102,7 @@ class CardStore {
                       include_docs: true }).on('change', func);
   }
 
-  // Sets a server for synchronizing with an begins live synchonization.
+  // Sets a server for synchronizing with and begins live synchonization.
   //
   // |syncServer| may be any of the following:
   // - A string with the address of a remote server (beginning 'http://' or
@@ -120,13 +120,12 @@ class CardStore {
   // - onActive
   // - onError
   setSyncServer(syncServer, callbacks) {
-    // Fill out callbacks with empty functions as-needed
-    if (!callbacks) {
-      callbacks = {};
-    }
-    [ 'onChange', 'onPause', 'onActive', 'onError' ].forEach(key => {
-      callbacks[key] = callbacks[key] || (() => {});
-    });
+    // Setup an alias for error handling
+    const reportErrorAsync = err => {
+      if (callbacks && callbacks.onError) {
+        setImmediate(() => { callbacks.onError(err); });
+      }
+    };
 
     // Validate syncServer argument
     if (typeof syncServer !== 'string' &&
@@ -136,7 +135,7 @@ class CardStore {
           syncServer.constructor === PouchDB)) {
       const err = { code: 'INVALID_SERVER',
                     message: 'Unrecognized type of sync server' };
-      setImmediate(() => { callbacks.onError(err); });
+      reportErrorAsync(err);
       return Promise.reject(err);
     }
 
@@ -148,12 +147,11 @@ class CardStore {
         const err = { code: 'INVALID_SERVER',
                       message: 'Only http and https remote servers are'
                               + ' recognized' };
-        setImmediate(() => { callbacks.onError(err); });
+        reportErrorAsync(err);
         return Promise.reject(err);
       }
     }
 
-    // XXX Skip this if the server hasn't, in fact, changed
     if (this.remoteSync) {
       this.remoteSync.cancel();
       this.remoteSync = undefined;
@@ -172,28 +170,38 @@ class CardStore {
     return this.remoteDb.info()
       .catch(err => {
         this.remoteDb = undefined;
-        setImmediate(() => { callbacks.onError(err); });
+        reportErrorAsync(err);
         throw err;
       }).then(() => {
         this.remoteSync = this.db.sync(this.remoteDb, {
           live: true,
           retry: true,
-        })
-        // XXX Go through and tidy up the input before passing along to the
-        // callbacks
-        // XXX Doesn't onUpdate above cover the 'change' case?
-        .on('change',   callbacks.onChange)
-        .on('paused',   callbacks.onPause)
-        .on('active',   callbacks.onActive)
-        .on('error',    callbacks.onError)
-        .on('denied',   callbacks.onError)
-        .on('complete', callbacks.onPause);
+        });
+
+        // Wrap and set callbacks
+        const callbackMap = { change:   'onChange',
+                              paused:   'onPause',
+                              active:   'onActive',
+                              error:    'onError',
+                              denied:   'onDenied',
+                              complete: 'onPause' };
+        const originalDbName = this.remoteDb.name;
+        for (const evt in callbackMap) {
+          if (callbacks && callbacks[callbackMap[evt]]) {
+            this.remoteSync.on(evt, (...args) => {
+              // Skip events if they are from an old remote DB
+              if (originalDbName !== this.remoteDb.name) {
+                return;
+              }
+              callbacks[callbackMap[evt]].apply(this, args);
+            });
+          }
+        }
 
         // As far as I can tell, this.remoteSync is a then-able that resolves
         // when the sync finishes. However, since we specified 'live: true'
         // that's not going to happen any time soon, so we need to be careful
         // *not* to return this.remoteSync here.
-        // resolve until the sync finishes.
         return this.remoteDb;
       });
   }

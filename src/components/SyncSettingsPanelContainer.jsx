@@ -5,6 +5,10 @@ import SyncSettingsPanel from './SyncSettingsPanel.jsx';
 const mapStateToProps =
   state => ({ syncState: state.sync.state,
               server: state.settings.syncServer.server || '',
+              lastSyncTime:
+                state.settings.syncServer.lastSyncTime
+                ? new Date(state.settings.syncServer.lastSyncTime)
+                : null,
               editingServer: !!state.sync.editingServer,
               errorDetail: state.sync.errorDetail });
 const mapDispatchToProps = (dispatch, ownProps) => (

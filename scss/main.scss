@@ -238,6 +238,9 @@ main section h3 {
   height: 5rem;
   width: 5rem;
 }
+.summary-panel fieldset {
+  text-align: left;
+}
 
 /*
  * Forms
@@ -271,6 +274,7 @@ input[type=button], input[type=submit], button {
     color: $hover-highlight;
     border-color: $hover-highlight;
   }
+  margin-left: 0.8rem;
 }
 input[type=button].primary,
 input[type=submit].primary,
@@ -319,6 +323,12 @@ input[type=text]:focus {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
   margin-left: -.2rem;
+}
+fieldset {
+  border: 1px solid #bbb;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem 1rem;
 }
 
 /*
@@ -386,4 +396,12 @@ input[type=text]:focus {
 }
 .sync-settings.not-configured .sync-icon {
   background-position-x: -700%;
+}
+fieldset[name=sync-server],
+fieldset[name=sync-server] > * {
+  display: inline-block;
+  vertical-align: middle;
+}
+fieldset[name=sync-server] .server-name {
+  font-weight: bold;
 }

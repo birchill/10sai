@@ -3,7 +3,7 @@ import React from 'react';
 import SyncState from '../sync-states';
 import SyncStatusMessages from '../sync-status-messages';
 
-import LastUpdatedLabel from './LastUpdatedLabel.jsx';
+import SortOfRelativeDate from './SortOfRelativeDate.jsx';
 import SyncServerForm from './SyncServerForm.jsx';
 
 function translateError(error) {
@@ -24,7 +24,8 @@ function translateError(error) {
               <ul>
                 <li>The server name was misspelled</li>
                 <li>The server has not been set up to <a
-                  href="https://github.com/pouchdb/add-cors-to-couchdb">support
+                  href="https://github.com/pouchdb/add-cors-to-couchdb"
+                  target="_blank" rel="noopener">support
                   cross-origin access</a></li>
                 <li>The server is temporarily offline</li>
               </ul>
@@ -49,7 +50,7 @@ export class SyncSettingsPanel extends React.Component {
       onEdit: React.PropTypes.func.isRequired,
       onCancel: React.PropTypes.func.isRequired,
       onPause: React.PropTypes.func.isRequired,
-      lastUpdateTime: React.PropTypes.instanceOf(Date),
+      lastSyncTime: React.PropTypes.instanceOf(Date),
       errorDetail: React.PropTypes.object,
       editingServer: React.PropTypes.bool,
     };
@@ -104,14 +105,6 @@ export class SyncSettingsPanel extends React.Component {
                   ? 'Configure sync server'
                   : SyncStatusMessages[this.props.syncState];
 
-    const lastUpdated = [ SyncState.OK,
-                          SyncState.PAUSED,
-                          SyncState.ERROR,
-                          SyncState.OFFLINE ]
-                        .indexOf(this.props.syncState) === -1 ||
-                        <LastUpdatedLabel
-                          updateTime={this.props.lastUpdateTime} />;
-
     const existingServer =
       this.props.syncState === SyncState.NOT_CONFIGURED
       ? <div>
@@ -121,11 +114,20 @@ export class SyncSettingsPanel extends React.Component {
           <button name="edit-server" className="action primary"
             onClick={this.handleEditServer}>Add a sync server</button>
         </div>
-      : <div className="server-settings">
-          Server name: {this.props.server}
+      : <fieldset name="sync-server">
+          <legend>Sync server</legend>
+          <div className="server-summary">
+            <div className="server-name">{this.props.server}</div>
+            { this.props.lastSyncTime
+              ?  <div className="server-sync-time">
+                   Last synced <SortOfRelativeDate
+                     value={this.props.lastSyncTime} />
+                 </div>
+              : '' }
+          </div>
           <button name="edit-server"
             onClick={this.handleEditServer}>Change</button>
-        </div>;
+        </fieldset>;
 
     const errorDetail =
       this.props.syncState !== SyncState.ERROR ||
@@ -151,7 +153,6 @@ export class SyncSettingsPanel extends React.Component {
           { !this.props.editingServer
             ? <div>
                 { errorDetail }
-                { lastUpdated }
                 { existingServer }
               </div>
             : <SyncServerForm server={this.props.server}
