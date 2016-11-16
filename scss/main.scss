@@ -327,8 +327,18 @@ input[type=text]:focus {
 fieldset {
   border: 1px solid #bbb;
   border-radius: 0.5rem;
+  margin: 0 2px;
   margin-top: 1rem;
   padding: 0.5rem 1.5rem 1rem;
+}
+legend {
+  /* Normalization from normalize.css */
+  box-sizing: border-box;
+  color: inherit;
+  display: table;
+  max-width: 100%;
+  padding: 0;
+  white-space: normal;
 }
 
 /*
@@ -375,6 +385,9 @@ fieldset {
 .cancelable-textbox-cancel:hover::after {
   color: grey;
 }
+.cancelable-textbox-group input[type="text"]::-ms-clear {
+  display: none;
+}
 
 /*
  * Sync settings panel
@@ -398,7 +411,7 @@ fieldset {
   background-position-x: -700%;
 }
 fieldset[name=sync-server],
-fieldset[name=sync-server] > * {
+fieldset[name=sync-server] > :not(legend) {
   display: inline-block;
   vertical-align: middle;
 }
