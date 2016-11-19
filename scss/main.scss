@@ -329,7 +329,7 @@ fieldset {
   border-radius: 0.5rem;
   margin: 0 2px;
   margin-top: 1rem;
-  padding: 0.5rem 1.5rem 1rem;
+  padding: 1.2rem 1.8rem;
 }
 legend {
   /* Normalization from normalize.css */
@@ -417,4 +417,8 @@ fieldset[name=sync-server] > :not(legend) {
 }
 fieldset[name=sync-server] .server-name {
   font-weight: bold;
+}
+fieldset[name=sync-server] .server-sync-time {
+  /* Try to avoid resizing when the time is updated */
+  min-width: 17rem;
 }
