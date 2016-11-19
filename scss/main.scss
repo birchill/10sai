@@ -410,6 +410,10 @@ legend {
 .sync-settings.not-configured .sync-icon {
   background-position-x: -700%;
 }
+.sync-settings.in-progress progress {
+  margin-top: 1rem;
+  margin-bottom: 1.2rem;
+}
 fieldset[name=sync-server],
 fieldset[name=sync-server] > :not(legend) {
   display: inline-block;
