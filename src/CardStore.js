@@ -113,17 +113,19 @@ class CardStore {
   // - Null / undefined / empty string to clear the association with the
   //   existing remote server, if any.
   //
-  // |callbacks| is an optional object argument which may provide the following
+  // |options| is an optional object argument which may provide the following
   // callback functions:
   // - onChange
   // - onPause
   // - onActive
   // - onError
-  setSyncServer(syncServer, callbacks) {
+  // as well as the |batchSize| member for specifying the number of records
+  // to include in a batch.
+  setSyncServer(syncServer, options) {
     // Setup an alias for error handling
     const reportErrorAsync = err => {
-      if (callbacks && callbacks.onError) {
-        setImmediate(() => { callbacks.onError(err); });
+      if (options && options.onError) {
+        setImmediate(() => { options.onError(err); });
       }
     };
 
@@ -166,35 +168,89 @@ class CardStore {
                     ? new PouchDB(syncServer)
                     : syncServer;
 
-    // Force a connection to the server so we can detect errors immediately
-    return this.remoteDb.info()
-      .catch(err => {
+    // Initial sync
+    let localUpdateSeq;
+    let remoteUpdateSeq;
+    return this.db.info()
+      .then(info => {
+        localUpdateSeq = parseInt(info.update_seq, 10);
+        return this.remoteDb.info();
+      }).catch(err => {
         this.remoteDb = undefined;
         reportErrorAsync(err);
         throw err;
-      }).then(() => {
+      }).then(info => {
+        remoteUpdateSeq = parseInt(info.update_seq, 10);
+
+        const pushPullOpts = options && options.batchSize
+                             ? { batch_size: options.batchSize }
+                             : undefined;
         this.remoteSync = this.db.sync(this.remoteDb, {
           live: true,
           retry: true,
+          pull: pushPullOpts,
+          push: pushPullOpts,
         });
 
         // Wrap and set callbacks
+        const originalDbName = this.remoteDb.name;
+        const wrapCallback = (evt, callback) => {
+          return (...args) => {
+            // Skip events if they are from an old remote DB
+            if (originalDbName !== this.remoteDb.name) {
+              return;
+            }
+
+            // Calculate progress. Null means 'indeterminate' which is
+            // what we report for all but the initial sync.
+            if (evt === 'change') {
+              let progress = null;
+              if (typeof localUpdateSeq === 'number' &&
+                  typeof remoteUpdateSeq === 'number' &&
+                  args[0] && args[0].change && args[0].change.last_seq) {
+                const upper = Math.max(localUpdateSeq, remoteUpdateSeq);
+                const lower = Math.min(localUpdateSeq, remoteUpdateSeq);
+                const current = parseInt(args[0].change.last_seq, 10);
+
+                // In some cases such as when our initial sync is
+                // a bidirectional sync, we can't really produce a reliable
+                // progress value. In future we will fix this by using CouchDB
+                // 2.0's 'pending' value (once PouchDB exposes it) and possibly
+                // do a separate download then upload as part of the initial
+                // sync. For now, we just fall back to using an indeterminate
+                // progress value if we detect such a case.
+                if (current < lower || upper === lower) {
+                  localUpdateSeq = undefined;
+                  remoteUpdateSeq = undefined;
+                } else {
+                  progress = (current - lower) / (upper - lower);
+                }
+              }
+              args[0].progress = progress;
+            }
+
+            // We only report progress for the initial sync
+            if (evt === 'paused') {
+              localUpdateSeq = undefined;
+              remoteUpdateSeq = undefined;
+            }
+
+            if (callback) {
+              callback.apply(this, args);
+            }
+          };
+        };
+
         const callbackMap = { change:   'onChange',
-                              paused:   'onPause',
+                              paused:   'onIdle',
                               active:   'onActive',
                               error:    'onError',
-                              denied:   'onError',
-                              complete: 'onPause' };
-        const originalDbName = this.remoteDb.name;
-        for (const evt in callbackMap) {
-          if (callbacks && callbacks[callbackMap[evt]]) {
-            this.remoteSync.on(evt, (...args) => {
-              // Skip events if they are from an old remote DB
-              if (originalDbName !== this.remoteDb.name) {
-                return;
-              }
-              callbacks[callbackMap[evt]].apply(this, args);
-            });
+                              denied:   'onError' };
+        if (options) {
+          // eslint-disable-next-line guard-for-in
+          for (const evt in callbackMap) {
+            this.remoteSync.on(evt,
+                               wrapCallback(evt, options[callbackMap[evt]]));
           }
         }
 

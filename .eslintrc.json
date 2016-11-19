@@ -10,6 +10,7 @@
   ],
   "rules": {
     "array-bracket-spacing": [ "warn", "always" ],
+    "arrow-body-style": [ "off" ],
     "key-spacing": [ "error", { "mode": "minimum" } ],
     "no-multi-spaces": [ "off" ],
     "no-param-reassign": [ "off" ],

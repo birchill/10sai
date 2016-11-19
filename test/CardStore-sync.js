@@ -194,7 +194,7 @@ describe('CardStore remote sync', () => {
   it('does not report events from the old remote', () => {
     const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
     const callbacks = {
-      onPause: wrapAssertingFunction(() => {
+      onIdle: wrapAssertingFunction(() => {
         assert.fail('Did not expect pause to be called on the previous remote');
       }),
     };
@@ -208,50 +208,163 @@ describe('CardStore remote sync', () => {
   });
 
   it('uploads existing local cards', () => {
-    let resolvePause;
-    const pausePromise = new Promise(resolve => { resolvePause = resolve; });
+    let resolveIdle;
+    const idlePromise = new Promise(resolve => { resolveIdle = resolve; });
 
     return subject.putCard({ question: 'Question 1', answer: 'Answer 1' })
       .then(() =>
         subject.putCard({ question: 'Question 2', answer: 'Answer 2' }))
       .then(() => subject.setSyncServer(testRemote,
-                                        { onPause: () => resolvePause() }))
-      .then(() => pausePromise)
+                                        { onIdle: () => resolveIdle() }))
+      .then(() => idlePromise)
       .then(() => testRemote.allDocs({ include_docs: true, descending: true }))
       .then(remoteCards => {
         assert.strictEqual(remoteCards.rows.length, 2);
       });
   });
 
-  it('reports additions to the remote server', () => {
-    // XXX
-    // -- Should get onActive callbacks... with appropriate direction
+  it('reports when download starts and stops', done => {
+    subject.setSyncServer(testRemote, {
+      onActive: wrapAssertingFunction(info => {
+        assert.strictEqual(info.direction, 'pull');
+        done();
+      }) });
+
+    testRemote.put({ question: 'Question',
+                     answer: 'Answer',
+                     _id: CardStore.generateCardId() });
   });
 
-  it('reports when syncing resumes', () => {
-    // XXX
-    // -- Should get onActive callbacks... with appropriate direction
+  it('reports when uploads starts and stops', done => {
+    subject.setSyncServer(testRemote, {
+      onActive: wrapAssertingFunction(info => {
+        assert.strictEqual(info.direction, 'push');
+        done();
+      }) });
+
+    subject.putCard({ question: 'Question', answer: 'Answer' });
   });
 
-  it('reports when syncing pauses', () => {
-    // XXX
-    // -- Should get onActive callbacks... with appropriate direction
+  it('reports sync progress on initial download', () => {
+    const numCards = 5;
+    const docs = [];
+    for (let i = 0; i < numCards; i++) {
+      docs.push({ question: `Question ${i + 1}`,
+                  answer: `Answer ${i + 1}`,
+                  _id: CardStore.generateCardId() });
+    }
+
+    let resolveAllDone;
+    const allDone = new Promise(resolve => { resolveAllDone = resolve; });
+
+    const allChanges = [];
+    return testRemote.bulkDocs(docs)
+      .then(() =>
+        subject.setSyncServer(testRemote, {
+          onChange: changes => allChanges.push(changes),
+          onIdle: () => resolveAllDone(),
+          batchSize: 2,
+        }))
+      .then(() => allDone)
+      .then(() => {
+        assert.strictEqual(allChanges.length, 3,
+                           'Should be three batches of changes');
+        assert.deepEqual(allChanges.map(change => change.progress),
+                         [ 0.4, 0.8, 1.0 ], 'Each batch has expected progress');
+      });
   });
 
-  it('reports sync progress', () => {
-    // XXX
-    // -- Should get onChange callbacks with appropriate change record, e.g.
-    // { direction: 'pull',
-    //   change:
-    //    { ok: true,
-    //      start_time: '2016-09-18T07:01:40.305Z',
-    //      docs_read: 2,
-    //      docs_written: 2,
-    //      doc_write_failures: 0,
-    //      errors: [],
-    //      last_seq: 2,
-    //      docs: [ [Object], [Object] ] } }
-    //    });
+  it('reports sync progress on initial upload', () => {
+    const numCards = 5;
+    const putPromises = [];
+    for (let i = 0; i < numCards; i++) {
+      putPromises.push(subject.putCard({ question: `Question ${i + 1}`,
+                                         answer: `Answer ${i + 1}` }));
+    }
+
+    let resolveAllDone;
+    const allDone = new Promise(resolve => { resolveAllDone = resolve; });
+
+    const allChanges = [];
+    return Promise.all(putPromises)
+      .then(() =>
+        subject.setSyncServer(testRemote, {
+          onChange: changes => allChanges.push(changes),
+          onIdle: () => resolveAllDone(),
+          batchSize: 2,
+        }))
+      .then(() => allDone)
+      .then(() => {
+        assert.strictEqual(allChanges.length, 3,
+                           'Should be three batches of changes');
+        assert.deepEqual(allChanges.map(change => change.progress),
+                         [ 0.4, 0.8, 1.0 ], 'Each batch has expected progress');
+      });
+  });
+
+  it('reports indeterminate progress on balanced bi-directional sync', () => {
+    const localCards = 5;
+    const putPromises = [];
+    for (let i = 0; i < localCards; i++) {
+      putPromises.push(subject.putCard({ question: `Local question ${i + 1}`,
+                                         answer: `Local answer ${i + 1}` }));
+    }
+
+    const remoteCards = 5;
+    const remoteDocs = [];
+    for (let i = 0; i < remoteCards; i++) {
+      remoteDocs.push({ question: `Remote question ${i + 1}`,
+                        answer: `Remote answer ${i + 1}`,
+                        _id: CardStore.generateCardId() });
+    }
+
+    let resolveAllDone;
+    const allDone = new Promise(resolve => { resolveAllDone = resolve; });
+
+    const allChanges = [];
+    return Promise.all(putPromises)
+      .then(() => testRemote.bulkDocs(remoteDocs))
+      .then(() =>
+        subject.setSyncServer(testRemote, {
+          onChange: changes => allChanges.push(changes),
+          onIdle: () => resolveAllDone(),
+          batchSize: 2,
+        }))
+      .then(() => allDone)
+      .then(() => {
+        assert.strictEqual(allChanges.length, 6,
+                           'Should be six batches of changes');
+        assert.deepEqual(allChanges.map(change => change.progress),
+                         Array(allChanges.length).fill(null),
+                         'Each batch should have an indeterminate progress');
+      });
+  });
+
+  it('reports indeterminate sync progress on subsequent download', () => {
+    const numCards = 3;
+    const docs = [];
+    for (let i = 0; i < numCards; i++) {
+      docs.push({ question: `Question ${i + 1}`,
+                  answer: `Answer ${i + 1}`,
+                  _id: CardStore.generateCardId() });
+    }
+
+    let resolveIdle;
+    const waitForIdle = new Promise(resolve => { resolveIdle = resolve; });
+
+    const allChanges = [];
+    return subject.setSyncServer(testRemote,
+      { onChange: changes => allChanges.push(changes),
+        onIdle: () => resolveIdle(),
+        batchSize: 2 })
+      .then(() => waitForIdle)
+      .then(() => testRemote.bulkDocs(docs))
+      .then(() => new Promise(resolve => { resolveIdle = resolve; }))
+      .then(() => {
+        assert.deepEqual(allChanges.map(change => change.progress),
+                         Array(allChanges.length).fill(null),
+                         'Each batch should have an indeterminate progress');
+      });
   });
 
   it('reports an error when the remote server goes offline', () => {
