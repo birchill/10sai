@@ -6,9 +6,17 @@ const initialState = { state: SyncState.NOT_CONFIGURED,
 export default function sync(state = initialState, action) {
   switch (action.type) {
     case 'UPDATE_SYNC_STATE':
-      return { ...state,
-               state: action.state,
-               errorDetail: action.errorDetail };
+      {
+        const newState = { ...state, state: action.state };
+        if (newState.state === SyncState.ERROR) {
+          newState.errorDetail = action.detail;
+        } else if (newState.state === SyncState.IN_PROGRESS) {
+          newState.progress = typeof action.detail === 'undefined'
+                              ? null
+                              : action.detail;
+        }
+        return newState;
+      }
 
     case 'EDIT_SERVER':
       return { ...state, editingServer: true };

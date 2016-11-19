@@ -3,8 +3,8 @@ import React from 'react';
 import SyncState from '../sync-states';
 import SyncStatusMessages from '../sync-status-messages';
 
-import SortOfRelativeDate from './SortOfRelativeDate.jsx';
 import SyncServerForm from './SyncServerForm.jsx';
+import ExistingServerBox from './ExistingServerBox.jsx';
 
 function translateError(error) {
   if (typeof error === 'undefined') {
@@ -52,6 +52,7 @@ export class SyncSettingsPanel extends React.Component {
       onPause: React.PropTypes.func.isRequired,
       lastSyncTime: React.PropTypes.instanceOf(Date),
       errorDetail: React.PropTypes.object,
+      progress: React.PropTypes.number,
       editingServer: React.PropTypes.bool,
     };
   }
@@ -88,6 +89,61 @@ export class SyncSettingsPanel extends React.Component {
     this.props.onSubmit({ server: this.props.server });
   }
 
+  renderOk() {
+    return (
+      <ExistingServerBox server={this.props.server}
+        lastSyncTime={this.props.lastSyncTime}
+        onEdit={this.handleEditServer} />);
+  }
+
+  renderInProgress() {
+    return (
+      <div>
+        <progress value={this.props.progress} />
+        <div><button name="cancel-sync"
+          onClick={this.handlePause}>Cancel</button></div>
+      </div>);
+  }
+
+  renderPaused() {
+    return (
+      <ExistingServerBox server={this.props.server}
+        lastSyncTime={this.props.lastSyncTime}
+        onEdit={this.handleEditServer} />);
+  }
+
+  renderOffline() {
+    return (
+      <ExistingServerBox server={this.props.server}
+        lastSyncTime={this.props.lastSyncTime}
+        onEdit={this.handleEditServer} />);
+  }
+
+  renderNotConfigured() {
+    return (
+      <div>
+        <p className="explanation">Adding a sync server lets you
+          access your cards from another computer, phone, or tablet.
+        </p>
+        <button name="edit-server" className="action primary"
+          onClick={this.handleEditServer}>Add a sync server</button>
+      </div>);
+  }
+
+  renderError() {
+    return (
+      <div>
+        <div className="error-panel">
+          <div className="error-details">{
+            translateError(this.props.errorDetail)}</div>
+          <button name="retry" onClick={this.handleRetry}>Retry</button>
+        </div>;
+        <ExistingServerBox server={this.props.server}
+          lastSyncTime={this.props.lastSyncTime}
+          onEdit={this.handleEditServer} />
+      </div>);
+  }
+
   render() {
     const syncClasses = [];
     syncClasses[SyncState.OK] = 'ok';
@@ -105,37 +161,22 @@ export class SyncSettingsPanel extends React.Component {
                   ? 'Configure sync server'
                   : SyncStatusMessages[this.props.syncState];
 
-    const existingServer =
-      this.props.syncState === SyncState.NOT_CONFIGURED
-      ? <div>
-          <p className="explanation">Adding a sync server lets you
-            access your cards from another computer, phone, or tablet.
-          </p>
-          <button name="edit-server" className="action primary"
-            onClick={this.handleEditServer}>Add a sync server</button>
-        </div>
-      : <fieldset name="sync-server">
-          <legend>Sync server</legend>
-          <div className="server-summary">
-            <div className="server-name">{this.props.server}</div>
-            { this.props.lastSyncTime
-              ?  <div className="server-sync-time">
-                   Last synced <SortOfRelativeDate
-                     value={this.props.lastSyncTime} />
-                 </div>
-              : '' }
-          </div>
-          <button name="edit-server"
-            onClick={this.handleEditServer}>Change</button>
-        </fieldset>;
-
-    const errorDetail =
-      this.props.syncState !== SyncState.ERROR ||
-      <div className="error-panel">
-        <div className="error-details">{
-          translateError(this.props.errorDetail)}</div>
-        <button name="retry" onClick={this.handleRetry}>Retry</button>
-      </div>;
+    let body;
+    if (this.props.editingServer) {
+      body = (
+        <SyncServerForm server={this.props.server}
+          onSubmit={this.handleServerChange}
+          onCancel={this.handleServerChangeCancel} />);
+    } else {
+      const renderFns = [];
+      renderFns[SyncState.OK]             = this.renderOk;
+      renderFns[SyncState.IN_PROGRESS]    = this.renderInProgress;
+      renderFns[SyncState.PAUSED]         = this.renderPaused;
+      renderFns[SyncState.OFFLINE]        = this.renderOffline;
+      renderFns[SyncState.ERROR]          = this.renderError;
+      renderFns[SyncState.NOT_CONFIGURED] = this.renderNotConfigured;
+      body = renderFns[this.props.syncState].call(this);
+    }
 
     return (
       <div className={ `sync-settings summary-panel ${syncClass}` }>
@@ -144,20 +185,7 @@ export class SyncSettingsPanel extends React.Component {
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>
-          { this.props.syncState === SyncState.IN_PROGRESS &&
-            <div>
-              <progress />
-              <button name="cancel-sync"
-                onClick={this.handlePause}>Cancel</button>
-            </div> }
-          { !this.props.editingServer
-            ? <div>
-                { errorDetail }
-                { existingServer }
-              </div>
-            : <SyncServerForm server={this.props.server}
-              onSubmit={this.handleServerChange}
-              onCancel={this.handleServerChangeCancel} /> }
+          { body }
         </div>
       </div>
     );

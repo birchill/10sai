@@ -10,7 +10,8 @@ const mapStateToProps =
                 ? new Date(state.settings.syncServer.lastSyncTime)
                 : null,
               editingServer: !!state.sync.editingServer,
-              errorDetail: state.sync.errorDetail });
+              errorDetail: state.sync.errorDetail,
+              progress: state.sync.progress });
 const mapDispatchToProps = (dispatch, ownProps) => (
   {
     onEdit: () => {

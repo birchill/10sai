@@ -27,11 +27,11 @@ export function updateSettingsFromStore(settingsStore) {
                      .then(settings => dispatch(updateSettings(settings)));
 }
 
-export function updateSyncState(state, errorDetail) {
+export function updateSyncState(state, detail) {
   return {
     type: 'UPDATE_SYNC_STATE',
     state,
-    errorDetail,
+    detail,
   };
 }
 
@@ -60,24 +60,27 @@ export function setSyncServer(syncServer, settingsStore, cardStore) {
     settingsUpdatePromise.then(() => {
       dispatch(finishEditServer());
       dispatch(updateSyncState(SyncState.IN_PROGRESS));
-      cardStore.setSyncServer(syncServer.server,
-        { onChange: () => { /* XXX: Record last updated and other info */ },
-          onIdle:   () => {
-            const updatedSyncServer = { ...getState().settings.syncServer,
-                                        lastSyncTime: Date.now() };
-            settingsStore.updateSetting('syncServer', updatedSyncServer)
-            .then(() => {
-              dispatch(updateSyncState(SyncState.OK));
-            });
-          },
-          onActive: () => dispatch(updateSyncState(SyncState.IN_PROGRESS)),
-          onError:  details =>
-                      dispatch(updateSyncState(SyncState.ERROR, details)),
-        }).then(() => {
-          if (!cardStore.remoteDb) {
-            dispatch(updateSyncState(SyncState.NOT_CONFIGURED));
-          }
-        });
+      cardStore.setSyncServer(syncServer.server, {
+        onChange: changes => {
+          dispatch(updateSyncState(SyncState.IN_PROGRESS, changes.progress));
+        },
+        onIdle: () => {
+          const updatedSyncServer = { ...getState().settings.syncServer,
+                                      lastSyncTime: Date.now() };
+          settingsStore.updateSetting('syncServer', updatedSyncServer)
+          .then(() => {
+            dispatch(updateSyncState(SyncState.OK));
+          });
+        },
+        onActive: () => dispatch(updateSyncState(SyncState.IN_PROGRESS)),
+        onError: details =>
+                    dispatch(updateSyncState(SyncState.ERROR, details)),
+      })
+      .then(() => {
+        if (!cardStore.remoteDb) {
+          dispatch(updateSyncState(SyncState.NOT_CONFIGURED));
+        }
+      });
     });
   };
 }

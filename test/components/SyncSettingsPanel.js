@@ -29,7 +29,7 @@ describe('<SyncSettingsPanel />', () => {
       subject.setProps({ syncState: SyncState[state] });
       subject.update();
       assert.isAbove(subject.find('.summary').text().length, 0,
-                    `Summary label is filled-in in ${state} state`);
+                     `Summary label is filled-in in ${state} state`);
     }
   });
 
@@ -43,9 +43,9 @@ describe('<SyncSettingsPanel />', () => {
 
     for (const state of [ 'OK', 'PAUSED', 'ERROR', 'OFFLINE' ]) {
       subject.setProps({ syncState: SyncState[state] });
-      assert.isAbove(subject.find('.server-sync-time').length, 0,
-                     `Last updated information is filled-in in the ${state}` +
-                     ' state');
+      assert.instanceOf(
+        subject.find('ExistingServerBox').prop('lastSyncTime'), Date,
+        `Last updated information is filled-in in the ${state} state`);
     }
   });
 
@@ -56,24 +56,17 @@ describe('<SyncSettingsPanel />', () => {
   // -------------------------------------------------------------
 
   it('calls the edit callback when the Add/Change button is clicked', () => {
-    for (const state of Object.keys(SyncState)) {
-      // No edit button in 'in progress' state
-      if (state === 'IN_PROGRESS') {
-        continue;
-      }
+    const onEdit = sinon.spy();
+    const subject =
+      shallow(
+        <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
+          server="" onEdit={onEdit} onSubmit={stub} onCancel={stub}
+          onPause={stub} />
+      );
 
-      const onEdit = sinon.spy();
+    subject.find('button[name="edit-server"]').simulate('click');
 
-      const subject =
-        shallow(
-          <SyncSettingsPanel syncState={SyncState[state]}
-            server="" onEdit={onEdit} onSubmit={stub} onCancel={stub}
-            onPause={stub} />
-        );
-      subject.find('button[name="edit-server"]').simulate('click');
-
-      assert.calledOnce(onEdit);
-    }
+    assert.calledOnce(onEdit);
   });
 
   it('calls the cancel callback when the Cancel button is clicked', () => {
