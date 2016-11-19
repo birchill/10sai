@@ -78,7 +78,7 @@ describe('CardStore remote sync', () => {
     subject.setSyncServer('http://not.found/',
       { onError: err => {
         assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT', 'ECONNREFUSED' ],
-                      'Expected error for inaccessible server');
+                     'Expected error for inaccessible server');
         done();
       },
     });
@@ -207,12 +207,20 @@ describe('CardStore remote sync', () => {
       });
   });
 
-  it('ignores redundant attempts to set the same remote server', () => {
-    // XXX (Actually do we want this? How do we tell it to retry?)
-  });
-
   it('uploads existing local cards', () => {
-    // XXX
+    let resolvePause;
+    const pausePromise = new Promise(resolve => { resolvePause = resolve; });
+
+    return subject.putCard({ question: 'Question 1', answer: 'Answer 1' })
+      .then(() =>
+        subject.putCard({ question: 'Question 2', answer: 'Answer 2' }))
+      .then(() => subject.setSyncServer(testRemote,
+                                        { onPause: () => resolvePause() }))
+      .then(() => pausePromise)
+      .then(() => testRemote.allDocs({ include_docs: true, descending: true }))
+      .then(remoteCards => {
+        assert.strictEqual(remoteCards.rows.length, 2);
+      });
   });
 
   it('reports additions to the remote server', () => {

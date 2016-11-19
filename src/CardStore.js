@@ -183,7 +183,7 @@ class CardStore {
                               paused:   'onPause',
                               active:   'onActive',
                               error:    'onError',
-                              denied:   'onDenied',
+                              denied:   'onError',
                               complete: 'onPause' };
         const originalDbName = this.remoteDb.name;
         for (const evt in callbackMap) {
