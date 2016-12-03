@@ -2,7 +2,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
 
 module.exports = {
-  entry: './src/index.js',
+  entry: [ 'babel-polyfill', './src/index.js' ],
   output: {
     path: path.resolve(__dirname, 'public'),
     filename: 'tensai.js'

@@ -3,56 +3,59 @@ import React from 'react';
 import { browserHistory, Router, Route } from 'react-router';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
-import thunkMiddleware from 'redux-thunk';
+import createSagaMiddleware from 'redux-saga';
 import createLogger from 'redux-logger';
 
-import * as actions from './actions';
 import reducer from './reducers/index';
+import syncSagas from './sagas/sync';
 import SettingsStore from './SettingsStore';
 import CardStore from './CardStore';
 import App from './components/App.jsx';
 
 import 'main.scss';
 
+const sagaMiddleware = createSagaMiddleware();
 const loggerMiddleware = createLogger();
 const store = createStore(
   reducer,
   applyMiddleware(
-    thunkMiddleware,
+    sagaMiddleware,
     loggerMiddleware
   )
 );
 
-//
-// Cards store
-//
-const cards = new CardStore();
+const cardStore = new CardStore();
+const settingsStore = new SettingsStore();
 
-//
-// Settings store
-//
-const settings = new SettingsStore();
-const setSyncServer = syncServer => store.dispatch(
-                        actions.setSyncServer(syncServer, settings, cards));
-const updateSettingsFromStore = () => store.dispatch(
-                                  actions.updateSettingsFromStore(settings));
-settings.onUpdate(updateSettingsFromStore);
-
-updateSettingsFromStore().then(() => {
-  const syncServer = store.getState().settings.syncServer;
-  if (syncServer) {
-    setSyncServer(syncServer);
+const dispatchSettingUpdates = settings => {
+  for (const key in settings) {
+    if (settings.hasOwnProperty(key)) {
+      store.dispatch({ type: 'UPDATE_SETTING', key, value: settings[key] });
+    }
   }
+};
+
+settingsStore.getSettings().then(dispatchSettingUpdates);
+settingsStore.onUpdate(dispatchSettingUpdates);
+
+//
+// Sagas
+//
+
+sagaMiddleware.run(function* allSagas() {
+  yield [ syncSagas(cardStore, settingsStore, store.dispatch.bind(store)) ];
 });
 
+// XXX Do we even need cards and settings below anymore?
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}
       onUpdate={ function onUpdate() {
-        store.dispatch(actions.updateLocation(this.state.params.screen));
+        store.dispatch({ type: 'CHANGE_LOCATION',
+                         screen: this.state.params.screen });
       } }>
-      <Route path="/(:screen)" component={App} cards={cards}
-        settings={settings} />
+      <Route path="/(:screen)" component={App} cards={cardStore}
+        settings={settingsStore} />
     </Router>
   </Provider>,
   document.getElementById('container')

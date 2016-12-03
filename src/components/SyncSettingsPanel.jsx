@@ -86,7 +86,7 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   handleRetry() {
-    this.props.onSubmit({ server: this.props.server });
+    this.props.onSubmit(this.props.server);
   }
 
   renderOk() {

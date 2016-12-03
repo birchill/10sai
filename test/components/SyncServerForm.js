@@ -70,7 +70,7 @@ describe('<SyncServerForm />', () => {
 
     subject.find('form').simulate('submit', { preventDefault: stub });
 
-    assert.calledWith(onSubmit, { server: 'abc' });
+    assert.calledWith(onSubmit, 'abc');
   });
 
   it('passes the updated server to the callback when submitted', () => {
@@ -82,6 +82,6 @@ describe('<SyncServerForm />', () => {
     subject.find('CancelableTextbox[name="server"]').simulate('change', 'def');
     subject.find('form').simulate('submit', { preventDefault: stub });
 
-    assert.calledWith(onSubmit, { server: 'def' });
+    assert.calledWith(onSubmit, 'def');
   });
 });

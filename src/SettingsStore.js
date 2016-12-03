@@ -1,12 +1,16 @@
 import PouchDB from 'pouchdb';
 
-const db = new PouchDB('settings');
+PouchDB.plugin(require('pouchdb-upsert'));
 
 class SettingsStore {
+  constructor(options) {
+    this.db = new PouchDB('settings', { storage: 'persistant', ...options });
+  }
+
   getSettings() {
     return new Promise((resolve, reject) => {
       const settings = {};
-      db.allDocs({ include_docs: true, descending: true }).then(
+      this.db.allDocs({ include_docs: true, descending: true }).then(
         result => {
           result.rows.forEach(
             row => { settings[row.doc._id] = row.doc.value; });
@@ -17,24 +21,12 @@ class SettingsStore {
   }
 
   updateSetting(key, value) {
-    return new Promise((resolve, reject) => {
-      db.get(key).then(
-        doc => resolve(db.put({ _id: key, _rev: doc._rev, value }))
-      ).catch(err => {
-        if (err) {
-          if (err.name !== 'not_found') {
-            return reject(err);
-          }
-        }
-        return resolve(db.put({ _id: key, value }));
-      });
-    });
+    return this.db.upsert(key, () => ({ value }));
   }
 
-  /*
   clearSetting(key) {
-    (function tryToDeleteSetting() {
-      return db.get(key).then(doc => db.remove(doc))
+    return (function tryToDeleteSetting() {
+      return this.db.get(key).then(doc => this.db.remove(doc))
       .catch(err => {
         // Not found, no problem
         if (err.status === 404) {
@@ -48,13 +40,21 @@ class SettingsStore {
         // Conflict: Try again
         return tryToDeleteSetting();
       });
-    }());
+    }.bind(this)());
   }
-  */
 
   onUpdate(func) {
-    db.changes({ since: 'now', live: true }).on('change', func);
+    this.db.changes({ since: 'now', live: true, include_docs: true })
+        .on('change', changes => {
+          const change = {};
+          change[changes.doc._id] = changes.doc.value;
+          func(change);
+        });
   }
+
+  // Intended for unit testing only
+
+  destroy() { return this.db.destroy(); }
 }
 
 export default SettingsStore;

@@ -1,28 +1,21 @@
 import { connect } from 'react-redux';
-import { setSyncServer, editServer, finishEditServer } from '../actions';
 import SyncSettingsPanel from './SyncSettingsPanel.jsx';
 
 const mapStateToProps =
   state => ({ syncState: state.sync.state,
-              server: state.settings.syncServer.server || '',
-              lastSyncTime:
-                state.settings.syncServer.lastSyncTime
-                ? new Date(state.settings.syncServer.lastSyncTime)
-                : null,
+              server: state.sync.server || '',
+              lastSyncTime: state.sync.lastSyncTime
+                            ? new Date(state.sync.lastSyncTime)
+                            : null,
               editingServer: !!state.sync.editingServer,
               errorDetail: state.sync.errorDetail,
               progress: state.sync.progress });
-const mapDispatchToProps = (dispatch, ownProps) => (
+
+const mapDispatchToProps = dispatch => (
   {
-    onEdit: () => {
-      dispatch(editServer());
-    },
-    onCancel: () => {
-      dispatch(finishEditServer());
-    },
-    onSubmit: syncServer => {
-      dispatch(setSyncServer(syncServer, ownProps.settings, ownProps.cards));
-    },
+    onEdit: () => dispatch({ type: 'EDIT_SYNC_SERVER' }),
+    onCancel: () => dispatch({ type: 'CANCEL_EDIT_SYNC_SERVER' }),
+    onSubmit: server => dispatch({ type: 'SET_SYNC_SERVER', server }),
     onPause: () => {
       // TODO
     },
