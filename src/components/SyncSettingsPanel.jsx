@@ -137,7 +137,7 @@ export class SyncSettingsPanel extends React.Component {
           <div className="error-details">{
             translateError(this.props.errorDetail)}</div>
           <button name="retry" onClick={this.handleRetry}>Retry</button>
-        </div>;
+        </div>
         <ExistingServerBox server={this.props.server}
           lastSyncTime={this.props.lastSyncTime}
           onEdit={this.handleEditServer} />
