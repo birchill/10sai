@@ -46,9 +46,7 @@ class App extends React.Component {
           </PopupOverlay>
           <Popup active={settingsActive} close={this.closePopup}>
             <SettingsPanel heading="Sync">
-              <SyncSettingsPanelContainer
-                cards={this.props.route.cards}
-                settings={this.props.route.settings} />
+              <SyncSettingsPanelContainer />
             </SettingsPanel>
           </Popup>
         </main>

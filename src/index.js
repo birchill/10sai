@@ -46,7 +46,6 @@ sagaMiddleware.run(function* allSagas() {
   yield [ syncSagas(cardStore, settingsStore, store.dispatch.bind(store)) ];
 });
 
-// XXX Do we even need cards and settings below anymore?
 ReactDOM.render(
   <Provider store={store}>
     <Router history={browserHistory}
@@ -54,8 +53,7 @@ ReactDOM.render(
         store.dispatch({ type: 'CHANGE_LOCATION',
                          screen: this.state.params.screen });
       } }>
-      <Route path="/(:screen)" component={App} cards={cardStore}
-        settings={settingsStore} />
+      <Route path="/(:screen)" component={App} cards={cardStore} />
     </Router>
   </Provider>,
   document.getElementById('container')
