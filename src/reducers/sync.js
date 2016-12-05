@@ -1,24 +1,33 @@
 import SyncState from '../sync-states';
 
 const initialState = { state: SyncState.NOT_CONFIGURED,
-                       editingServer: false };
+                       editingServer: false,
+                       server: undefined,
+                       lastSyncTime: undefined,
+                       progress: null };
 
 export default function sync(state = initialState, action) {
   switch (action.type) {
-    // XXX Go through and probably make it delete the server/lastSyncTime
-    // entries when we clear the server.
-    // (Or would it be easier to have these always defined but possibly null?)
-    // XXX We should also make sure that when we clear the server we don't
-    // store anything in the settings database
     case 'UPDATE_SETTING':
-      if (action.key !== 'syncServer') {
-        return state;
+      {
+        if (action.key !== 'syncServer') {
+          return state;
+        }
+        const getProp = prop => (action.value ? action.value[prop] : undefined);
+        return { ...state,
+                server: getProp('server'),
+                lastSyncTime: getProp('lastSyncTime') };
       }
+
+    case 'COMMIT_SYNC_SERVER':
       return { ...state,
-               server: action.value ? action.value.server : undefined,
-               lastSyncTime: action.value
-                             ? action.value.lastSyncTime
-                             : undefined };
+               server: action.server,
+               state: action.server
+                      ? SyncState.IN_PROGRESS
+                      : SyncState.NOT_CONFIGURED,
+               editingServer: false,
+               lastSyncTime: undefined,
+               progress: null };
 
     case 'UPDATE_SYNC_PROGRESS':
       return { ...state,
@@ -41,14 +50,8 @@ export default function sync(state = initialState, action) {
     case 'CANCEL_EDIT_SYNC_SERVER':
       return { ...state, editingServer: false };
 
-    // XXX See notes in sagas/sync.js -- we might be able to remove this
-    case 'COMMIT_SYNC_SERVER':
-      return { ...state, state: SyncState.IN_PROGRESS, editingServer: false };
-
-    case 'CLEAR_SYNC_SERVER':
-      return { ...state,
-               state: SyncState.NOT_CONFIGURED,
-               lastSyncTime: undefined };
+    case 'RETRY_SYNC':
+      return { ...state, state: SyncState.IN_PROGRESS, progress: null };
 
     case 'CHANGE_LOCATION':
       return { ...state, editingServer: false };

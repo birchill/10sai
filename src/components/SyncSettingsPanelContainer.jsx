@@ -3,7 +3,7 @@ import SyncSettingsPanel from './SyncSettingsPanel.jsx';
 
 const mapStateToProps =
   state => ({ syncState: state.sync.state,
-              server: state.sync.server || '',
+              server: state.sync.server,
               lastSyncTime: state.sync.lastSyncTime
                             ? new Date(state.sync.lastSyncTime)
                             : null,
@@ -13,9 +13,10 @@ const mapStateToProps =
 
 const mapDispatchToProps = dispatch => (
   {
+    onSubmit: server => dispatch({ type: 'SET_SYNC_SERVER', server }),
+    onRetry: server => dispatch({ type: 'RETRY_SYNC', server }),
     onEdit: () => dispatch({ type: 'EDIT_SYNC_SERVER' }),
     onCancel: () => dispatch({ type: 'CANCEL_EDIT_SYNC_SERVER' }),
-    onSubmit: server => dispatch({ type: 'SET_SYNC_SERVER', server }),
     onPause: () => {
       // TODO
     },

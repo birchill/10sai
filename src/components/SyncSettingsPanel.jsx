@@ -45,15 +45,16 @@ export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
     return {
       syncState: React.PropTypes.symbol.isRequired,
-      server: React.PropTypes.string.isRequired,
-      onSubmit: React.PropTypes.func.isRequired,
-      onEdit: React.PropTypes.func.isRequired,
-      onCancel: React.PropTypes.func.isRequired,
-      onPause: React.PropTypes.func.isRequired,
+      server: React.PropTypes.shape({ name: React.PropTypes.string }),
       lastSyncTime: React.PropTypes.instanceOf(Date),
       errorDetail: React.PropTypes.object,
       progress: React.PropTypes.number,
       editingServer: React.PropTypes.bool,
+      onSubmit: React.PropTypes.func.isRequired,
+      onRetry: React.PropTypes.func.isRequired,
+      onEdit: React.PropTypes.func.isRequired,
+      onCancel: React.PropTypes.func.isRequired,
+      onPause: React.PropTypes.func.isRequired,
     };
   }
 
@@ -73,8 +74,8 @@ export class SyncSettingsPanel extends React.Component {
     this.props.onEdit();
   }
 
-  handleServerChange(options) {
-    this.props.onSubmit(options);
+  handleServerChange(server) {
+    this.props.onSubmit({ name: server });
   }
 
   handleServerChangeCancel() {
@@ -86,12 +87,13 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   handleRetry() {
-    this.props.onSubmit(this.props.server);
+    this.props.onRetry(this.props.server);
   }
 
-  renderOk() {
+  renderServerInputBox() {
+    const server = this.props.server ? this.props.server.name : '';
     return (
-      <ExistingServerBox server={this.props.server}
+      <ExistingServerBox server={server}
         lastSyncTime={this.props.lastSyncTime}
         onEdit={this.handleEditServer} />);
   }
@@ -103,20 +105,6 @@ export class SyncSettingsPanel extends React.Component {
         <div><button name="cancel-sync"
           onClick={this.handlePause}>Cancel</button></div>
       </div>);
-  }
-
-  renderPaused() {
-    return (
-      <ExistingServerBox server={this.props.server}
-        lastSyncTime={this.props.lastSyncTime}
-        onEdit={this.handleEditServer} />);
-  }
-
-  renderOffline() {
-    return (
-      <ExistingServerBox server={this.props.server}
-        lastSyncTime={this.props.lastSyncTime}
-        onEdit={this.handleEditServer} />);
   }
 
   renderNotConfigured() {
@@ -138,9 +126,7 @@ export class SyncSettingsPanel extends React.Component {
             translateError(this.props.errorDetail)}</div>
           <button name="retry" onClick={this.handleRetry}>Retry</button>
         </div>
-        <ExistingServerBox server={this.props.server}
-          lastSyncTime={this.props.lastSyncTime}
-          onEdit={this.handleEditServer} />
+        { this.renderServerInputBox() }
       </div>);
   }
 
@@ -163,16 +149,17 @@ export class SyncSettingsPanel extends React.Component {
 
     let body;
     if (this.props.editingServer) {
+      const server = this.props.server ? this.props.server.name : '';
       body = (
-        <SyncServerForm server={this.props.server}
+        <SyncServerForm server={server}
           onSubmit={this.handleServerChange}
           onCancel={this.handleServerChangeCancel} />);
     } else {
       const renderFns = [];
-      renderFns[SyncState.OK]             = this.renderOk;
+      renderFns[SyncState.OK]             = this.renderServerInputBox;
       renderFns[SyncState.IN_PROGRESS]    = this.renderInProgress;
-      renderFns[SyncState.PAUSED]         = this.renderPaused;
-      renderFns[SyncState.OFFLINE]        = this.renderOffline;
+      renderFns[SyncState.PAUSED]         = this.renderServerInputBox;
+      renderFns[SyncState.OFFLINE]        = this.renderServerInputBox;
       renderFns[SyncState.ERROR]          = this.renderError;
       renderFns[SyncState.NOT_CONFIGURED] = this.renderNotConfigured;
       body = renderFns[this.props.syncState].call(this);

@@ -1,23 +1,24 @@
 import { takeEvery, takeLatest } from 'redux-saga';
 import { put } from 'redux-saga/effects';
 
-let currentSyncServer;
+let currentServerName;
 
-function* setSyncServer(cardStore, settingsStore, dispatch, action) {
-  if (currentSyncServer !== action.server) {
-    currentSyncServer = action.server;
-    yield settingsStore.updateSetting('syncServer',
-                                      { server: action.server });
-  }
+function fetchAndNormalizeServerName(parentObj) {
+  return parentObj &&
+         parentObj.server &&
+         parentObj.server.name
+         ? parentObj.server.name.trim() || undefined
+         : undefined;
+}
 
-  yield put({ type: 'COMMIT_SYNC_SERVER' });
+function* startReplication(cardStore, server, dispatch) {
   try {
-    yield cardStore.setSyncServer(currentSyncServer, {
+    yield cardStore.setSyncServer(server, {
       onChange: changes =>
         dispatch({ type: 'UPDATE_SYNC_PROGRESS', progress: changes.progress }),
       onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
       onActive: () => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
-                                  progress: null }),
+                                 progress: null }),
       onError: details => {
         dispatch({ type: 'NOTIFY_SYNC_ERROR', details });
       },
@@ -27,38 +28,73 @@ function* setSyncServer(cardStore, settingsStore, dispatch, action) {
     // callback.
     return;
   }
+}
 
-  // XXX Revisit this later and see what kind of flicker we get if we move
-  // the COMMIT_SYNC_SERVER from above here and do:
-  //   put({ type: 'CLEAR_SYNC_SERVER', server: cardStore.remoteDb
-  //                                            ? action.server
-  //                                            : null });
-  // and then in the reducer update the state depending on if we have a
-  // server or not
-  if (!cardStore.remoteDb) {
-    yield put({ type: 'CLEAR_SYNC_SERVER' });
+function* setSyncServer(cardStore, settingsStore, dispatch, action) {
+  // Trim strings and convert all falsey values to 'undefined' so we can
+  // reliably compare the new server with the old, both here and in
+  // updateSetting below.
+  const updatedServerName = fetchAndNormalizeServerName(action);
+
+  if (currentServerName === updatedServerName) {
+    return;
   }
+
+  // Update currentServerName first so we ignore any actions triggered by
+  // updating the settings store.
+  currentServerName = updatedServerName;
+
+  // Update the settings store next so that if the initial replication is
+  // interrupted or protracted, we have the up-to-date information stored.
+  if (updatedServerName) {
+    // Since this is a new server, just blow away old data like lastSyncTime
+    const updatedServer = { server: { name: updatedServerName } };
+    yield settingsStore.updateSetting('syncServer', updatedServer);
+  } else {
+    yield settingsStore.clearSetting('syncServer');
+  }
+
+  // Update the UI now that we have done an initial validation of the data.
+  yield put({ type: 'COMMIT_SYNC_SERVER',
+              server: updatedServerName ? { name: updatedServerName }
+                                        : undefined,
+            });
+
+  // Kick off and/or cancel replication
+  yield startReplication(cardStore, updatedServerName, dispatch);
+}
+
+function* retrySync(cardStore, dispatch) {
+  yield startReplication(cardStore, currentServerName, dispatch);
 }
 
 function* finishSync(settingsStore, action) {
-  const updatedServer = { server: currentSyncServer,
+  const updatedServer = { server: { name: currentServerName },
                           lastSyncTime: action.lastSyncTime };
   yield settingsStore.updateSetting('syncServer', updatedServer);
 }
 
 function* updateSetting(action) {
-  if (action.key !== 'syncServer' ||
-      (action.value && action.value.server === currentSyncServer)) {
+  if (action.key !== 'syncServer') {
     return;
   }
 
-  currentSyncServer = action.value ? action.value.server : null;
-  yield put({ type: 'SET_SYNC_SERVER', server: currentSyncServer });
+  const updatedServerName = fetchAndNormalizeServerName(action.value);
+  if (updatedServerName === currentServerName) {
+    return;
+  }
+
+  yield put({ type: 'SET_SYNC_SERVER',
+              server: updatedServerName
+                      ? { name: updatedServerName }
+                      : undefined,
+            });
 }
 
 function* syncSagas(cardStore, settingsStore, dispatch) {
   yield* [ takeLatest('SET_SYNC_SERVER', setSyncServer,
                       cardStore, settingsStore, dispatch),
+           takeLatest('RETRY_SYNC', retrySync, cardStore, dispatch),
            takeLatest('FINISH_SYNC', finishSync, settingsStore),
            takeEvery('UPDATE_SETTING', updateSetting) ];
 }

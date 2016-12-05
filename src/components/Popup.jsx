@@ -62,7 +62,7 @@ export class Popup extends React.Component {
 
     return (
       <section className={popupClass}
-        aria-hidden={!this.props.active} aria-role="dialog"
+        aria-hidden={!this.props.active} role="dialog"
         tabIndex={this.props.active ? 0 : -1 }
         ref={this.assignPopup}>
         {this.props.children}

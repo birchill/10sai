@@ -22,7 +22,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
-          server="" onEdit={stub} onSubmit={stub} onCancel={stub}
+          onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
           onPause={stub} />
       );
     for (const state of Object.keys(SyncState)) {
@@ -37,7 +37,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.OK}
-          server="" onEdit={stub} onSubmit={stub} onCancel={stub}
+          onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
           onPause={stub} lastSyncTime={new Date()} />
       );
 
@@ -60,7 +60,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
-          server="" onEdit={onEdit} onSubmit={stub} onCancel={stub}
+          onSubmit={stub} onRetry={stub} onEdit={onEdit} onCancel={stub}
           onPause={stub} />
       );
 
@@ -74,7 +74,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
-          server="" onEdit={stub} onSubmit={stub} onCancel={onCancel}
+          onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={onCancel}
           onPause={stub} editingServer />
       );
 
@@ -89,13 +89,13 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
-          server="" onEdit={stub} onSubmit={onSubmit} onCancel={stub}
+          onSubmit={onSubmit} onRetry={stub} onEdit={stub} onCancel={stub}
           onPause={stub} editingServer />
       );
 
-    subject.find('SyncServerForm').prop('onSubmit')({ server: 'abc' });
+    subject.find('SyncServerForm').prop('onSubmit')('abc');
 
-    assert.calledWith(onSubmit, { server: 'abc' });
+    assert.calledWith(onSubmit, { name: 'abc' });
   });
 
   // -------------------------------------------------------------
@@ -108,7 +108,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
-          server="" onEdit={stub} onSubmit={stub} onCancel={stub}
+          onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
           onPause={stub} />
       );
 
@@ -119,7 +119,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
-          server="" onEdit={stub} onSubmit={stub} onCancel={stub}
+          onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
           onPause={stub} />
       );
     for (const state of Object.keys(SyncState)) {
@@ -138,7 +138,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
-          server="" onEdit={stub} onSubmit={stub} onCancel={stub}
+          onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
           onPause={onPause} />
       );
 
@@ -158,7 +158,7 @@ describe('<SyncSettingsPanel />', () => {
     const subject =
       shallow(
         <SyncSettingsPanel syncState={SyncState.ERROR}
-          server="" onEdit={stub} onSubmit={stub} onCancel={stub}
+          onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
           onPause={stub} errorDetail={errorMessage} />
       );
 

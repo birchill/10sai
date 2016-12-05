@@ -17,11 +17,11 @@ export class CancelableTextbox extends React.Component {
   }
 
   componentWillMount() {
-    this.setState({ value: this.props.value });
+    this.setState({ value: this.props.value || '' });
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({ value: nextProps.value });
+    this.setState({ value: nextProps.value  || '' });
   }
 
   handleChange(e) {
