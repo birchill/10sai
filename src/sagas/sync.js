@@ -2,6 +2,7 @@ import { takeEvery, takeLatest } from 'redux-saga';
 import { put } from 'redux-saga/effects';
 
 let currentServerName;
+let lastSyncTime;
 
 function fetchAndNormalizeServerName(parentObj) {
   return parentObj &&
@@ -16,9 +17,12 @@ function* startReplication(cardStore, server, dispatch) {
     yield cardStore.setSyncServer(server, {
       onChange: changes =>
         dispatch({ type: 'UPDATE_SYNC_PROGRESS', progress: changes.progress }),
-      onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
+      onIdle: () => {
+        lastSyncTime = Date.now();
+        return dispatch({ type: 'FINISH_SYNC', lastSyncTime });
+      },
       onActive: () => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
-                                 progress: null }),
+                                 progress: undefined }),
       onError: details => {
         dispatch({ type: 'NOTIFY_SYNC_ERROR', details });
       },
@@ -43,6 +47,7 @@ function* setSyncServer(cardStore, settingsStore, dispatch, action) {
   // Update currentServerName first so we ignore any actions triggered by
   // updating the settings store.
   currentServerName = updatedServerName;
+  lastSyncTime = undefined;
 
   // Update the settings store next so that if the initial replication is
   // interrupted or protracted, we have the up-to-date information stored.
@@ -69,8 +74,8 @@ function* retrySync(cardStore, dispatch) {
 }
 
 function* finishSync(settingsStore, action) {
-  const updatedServer = { server: { name: currentServerName },
-                          lastSyncTime: action.lastSyncTime };
+  lastSyncTime = action.lastSyncTime;
+  const updatedServer = { server: { name: currentServerName }, lastSyncTime };
   yield settingsStore.updateSetting('syncServer', updatedServer);
 }
 
@@ -80,15 +85,22 @@ function* updateSetting(action) {
   }
 
   const updatedServerName = fetchAndNormalizeServerName(action.value);
-  if (updatedServerName === currentServerName) {
-    return;
+  if (updatedServerName !== currentServerName) {
+    yield put({ type: 'SET_SYNC_SERVER',
+                server: updatedServerName
+                        ? { name: updatedServerName }
+                        : undefined,
+              });
+  } else {
+    const updatedSyncTime = action.value && action.value.lastSyncTime
+                            ? action.value.lastSyncTime
+                            : undefined;
+    if (typeof lastSyncTime !== typeof updatedSyncTime ||
+        lastSyncTime < updatedSyncTime) {
+      lastSyncTime = updatedSyncTime;
+      yield put({ type: 'UPDATE_SYNC_TIME', lastSyncTime });
+    }
   }
-
-  yield put({ type: 'SET_SYNC_SERVER',
-              server: updatedServerName
-                      ? { name: updatedServerName }
-                      : undefined,
-            });
 }
 
 function* syncSagas(cardStore, settingsStore, dispatch) {

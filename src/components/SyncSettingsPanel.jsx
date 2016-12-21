@@ -15,8 +15,7 @@ function translateError(error) {
     return <p>Couldn't understand server's response. Not a sync server?</p>;
   }
 
-  if (typeof error.status === 'number' &&
-      error.status === 0) {
+  if (typeof error.status === 'number' && error.status === 0) {
     return (<div>
               <p>
                 Network error. Some possible causes might be:
@@ -30,6 +29,10 @@ function translateError(error) {
                 <li>The server is temporarily offline</li>
               </ul>
             </div>);
+  }
+
+  if (typeof error.status === 'number' && error.status === 404) {
+    return <p>Sync server not found</p>;
   }
 
   if (typeof error.message === 'string') {
