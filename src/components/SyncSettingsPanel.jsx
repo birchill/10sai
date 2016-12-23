@@ -58,6 +58,7 @@ export class SyncSettingsPanel extends React.Component {
       onEdit: React.PropTypes.func.isRequired,
       onCancel: React.PropTypes.func.isRequired,
       onPause: React.PropTypes.func.isRequired,
+      onResume: React.PropTypes.func.isRequired,
     };
   }
 
@@ -68,6 +69,7 @@ export class SyncSettingsPanel extends React.Component {
       'handleServerChange',
       'handleServerChangeCancel',
       'handlePause',
+      'handleResume',
       'handleRetry' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
@@ -89,6 +91,10 @@ export class SyncSettingsPanel extends React.Component {
     this.props.onPause();
   }
 
+  handleResume() {
+    this.props.onResume();
+  }
+
   handleRetry() {
     this.props.onRetry(this.props.server);
   }
@@ -101,12 +107,30 @@ export class SyncSettingsPanel extends React.Component {
         onEdit={this.handleEditServer} />);
   }
 
+  renderOk() {
+    return (
+      <div>
+        <div><button name="pause-sync"
+          onClick={this.handlePause}>⏸ Pause</button></div>
+        { this.renderServerInputBox() }
+      </div>);
+  }
+
   renderInProgress() {
     return (
       <div>
         <progress value={this.props.progress} />
         <div><button name="cancel-sync"
           onClick={this.handlePause}>Cancel</button></div>
+      </div>);
+  }
+
+  renderPaused() {
+    return (
+      <div>
+        <div><button name="resume-sync"
+          onClick={this.handleResume}>► Resume</button></div>
+        { this.renderServerInputBox() }
       </div>);
   }
 
@@ -159,9 +183,9 @@ export class SyncSettingsPanel extends React.Component {
           onCancel={this.handleServerChangeCancel} />);
     } else {
       const renderFns = [];
-      renderFns[SyncState.OK]             = this.renderServerInputBox;
+      renderFns[SyncState.OK]             = this.renderOk;
       renderFns[SyncState.IN_PROGRESS]    = this.renderInProgress;
-      renderFns[SyncState.PAUSED]         = this.renderServerInputBox;
+      renderFns[SyncState.PAUSED]         = this.renderPaused;
       renderFns[SyncState.OFFLINE]        = this.renderServerInputBox;
       renderFns[SyncState.ERROR]          = this.renderError;
       renderFns[SyncState.NOT_CONFIGURED] = this.renderNotConfigured;

@@ -66,6 +66,17 @@ export default function sync(state = initialState, action) {
                                progress: undefined,
                                errorDetail: undefined }, true);
 
+    case 'PAUSE_SYNC':
+      return updateSyncState({ ...state,
+                               paused: true,
+                               errorDetail: undefined }, true);
+
+    case 'RESUME_SYNC':
+      return updateSyncState({ ...state,
+                               paused: false,
+                               progress: undefined,
+                               errorDetail: undefined }, true);
+
     case 'CHANGE_LOCATION':
       return { ...state, editingServer: false };
 

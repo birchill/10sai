@@ -23,7 +23,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
-          onPause={stub} />
+          onPause={stub} onResume={stub} />
       );
     for (const state of Object.keys(SyncState)) {
       subject.setProps({ syncState: SyncState[state] });
@@ -38,7 +38,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.OK}
           onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
-          onPause={stub} lastSyncTime={new Date()} />
+          onPause={stub} onResume={stub} lastSyncTime={new Date()} />
       );
 
     for (const state of [ 'OK', 'PAUSED', 'ERROR', 'OFFLINE' ]) {
@@ -61,7 +61,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           onSubmit={stub} onRetry={stub} onEdit={onEdit} onCancel={stub}
-          onPause={stub} />
+          onPause={stub} onResume={stub} />
       );
 
     subject.find('button[name="edit-server"]').simulate('click');
@@ -75,7 +75,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={onCancel}
-          onPause={stub} editingServer />
+          onPause={stub} onResume={stub} editingServer />
       );
 
     subject.find('SyncServerForm').prop('onCancel')();
@@ -90,7 +90,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.NOT_CONFIGURED}
           onSubmit={onSubmit} onRetry={stub} onEdit={stub} onCancel={stub}
-          onPause={stub} editingServer />
+          onPause={stub} onResume={stub} editingServer />
       );
 
     subject.find('SyncServerForm').prop('onSubmit')('abc');
@@ -109,7 +109,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
           onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
-          onPause={stub} />
+          onPause={stub} onResume={stub} />
       );
 
     assert.strictEqual(subject.find('progress').length, 1);
@@ -120,7 +120,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
           onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
-          onPause={stub} />
+          onPause={stub} onResume={stub} />
       );
     for (const state of Object.keys(SyncState)) {
       if (state === 'IN_PROGRESS') {
@@ -139,7 +139,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.IN_PROGRESS}
           onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
-          onPause={onPause} />
+          onPause={onPause} onResume={stub} />
       );
 
     subject.find('button[name="cancel-sync"]').simulate('click');
@@ -159,7 +159,7 @@ describe('<SyncSettingsPanel />', () => {
       shallow(
         <SyncSettingsPanel syncState={SyncState.ERROR}
           onSubmit={stub} onRetry={stub} onEdit={stub} onCancel={stub}
-          onPause={stub} errorDetail={errorMessage} />
+          onPause={stub} onResume={stub} errorDetail={errorMessage} />
       );
 
     assert.equal(subject.find('.error-details').text(), 'Oh dear',

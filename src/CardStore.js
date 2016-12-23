@@ -197,7 +197,8 @@ class CardStore {
         const wrapCallback = (evt, callback) => {
           return (...args) => {
             // Skip events if they are from an old remote DB
-            if (originalDbName !== this.remoteDb.name) {
+            if (!this.remoteDb ||
+                originalDbName !== this.remoteDb.name) {
               return;
             }
 

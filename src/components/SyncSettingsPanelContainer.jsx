@@ -17,9 +17,8 @@ const mapDispatchToProps = dispatch => (
     onRetry: server => dispatch({ type: 'RETRY_SYNC', server }),
     onEdit: () => dispatch({ type: 'EDIT_SYNC_SERVER' }),
     onCancel: () => dispatch({ type: 'CANCEL_EDIT_SYNC_SERVER' }),
-    onPause: () => {
-      // TODO
-    },
+    onPause: () => dispatch({ type: 'PAUSE_SYNC' }),
+    onResume: () => dispatch({ type: 'RESUME_SYNC' }),
   });
 
 const SyncSettingsPanelContainer =

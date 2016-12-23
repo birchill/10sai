@@ -75,6 +75,24 @@ function* finishSync(settingsStore, action) {
   yield settingsStore.updateSetting('syncServer', updatedServer);
 }
 
+function* pauseSync(cardStore) {
+  if (!currentServerName) {
+    return;
+  }
+
+  yield cardStore.setSyncServer();
+  // XXX Store pause state in local settings
+}
+
+function* resumeSync(cardStore, dispatch) {
+  if (!currentServerName) {
+    return;
+  }
+
+  yield startReplication(cardStore, currentServerName, dispatch);
+  // XXX Store pause state in local settings
+}
+
 function* updateSetting(action) {
   if (action.key !== 'syncServer') {
     return;
@@ -104,6 +122,8 @@ function* syncSagas(cardStore, settingsStore, dispatch) {
                       cardStore, settingsStore, dispatch),
            takeLatest('RETRY_SYNC', retrySync, cardStore, dispatch),
            takeLatest('FINISH_SYNC', finishSync, settingsStore),
+           takeLatest('PAUSE_SYNC', pauseSync, cardStore),
+           takeLatest('RESUME_SYNC', resumeSync, cardStore, dispatch),
            takeEvery('UPDATE_SETTING', updateSetting) ];
 }
 
