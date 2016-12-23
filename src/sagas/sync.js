@@ -40,13 +40,6 @@ function* setSyncServer(cardStore, settingsStore, dispatch, action) {
   // updateSetting below.
   const updatedServerName = fetchAndNormalizeServerName(action);
 
-  if (currentServerName === updatedServerName) {
-    // TODO: If there has been a sync error, make this retrigger duplication
-    // (i.e. do a retry).
-    yield put({ type: 'CANCEL_EDIT_SYNC_SERVER' });
-    return;
-  }
-
   // Update currentServerName first so we ignore any actions triggered by
   // updating the settings store.
   currentServerName = updatedServerName;
