@@ -6,7 +6,8 @@ const initialState = { state: SyncState.NOT_CONFIGURED,
                        lastSyncTime: undefined,
                        progress: undefined,
                        paused: false,
-                       offline: !navigator.onLine,
+                       offline: typeof navigator !== 'undefined' &&
+                                !navigator.onLine,
                        errorDetail: undefined };
 
 function updateSyncState(state) {

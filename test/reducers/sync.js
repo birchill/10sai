@@ -9,7 +9,7 @@ describe('reducer:sync', () => {
   it('updates the server', () => {
     const initialState = { state: SyncState.NOT_CONFIGURED,
                            editingServer: false };
-    const action = { type: 'COMMIT_SYNC_SERVER',
+    const action = { type: 'UPDATE_SYNC_SERVER',
                      server: { name: 'server-name' } };
 
     const updatedState = sync(initialState, action);
@@ -17,7 +17,6 @@ describe('reducer:sync', () => {
     assert.notStrictEqual(updatedState, initialState,
                           'state object is NOT the object passed-in');
     assert.strictEqual(updatedState.server.name, 'server-name');
-    assert.strictEqual(updatedState.state, SyncState.IN_PROGRESS);
     assert.strictEqual(updatedState.lastSyncTime, undefined);
   });
 });
