@@ -118,6 +118,7 @@ header .icon {
   width: 25px;
   height: 25px;
   padding: 7px 12px;
+  position: relative;
 }
 /* We put the icon itself in a pseudo-element so we can change the
  * background-color independently */
@@ -134,10 +135,24 @@ header .icon {
   content: "";
   background: url('img/icons.svg') left / auto 100% content-box;
 }
-#sync-status.error {
+#sync-status .overlay {
+  position: absolute;
+  left: 23px;
+  top: 19px;
+  width: 15px;
+  height: 15px;
 }
-#sync-status.updating::before {
+#sync-status.in-progress::before {
   animation: rotate 1s linear infinite;
+}
+#sync-status.paused .overlay {
+  background: url('img/icons.svg') -400% / auto 100% content-box;
+}
+#sync-status.offline .overlay {
+  background: url('img/icons.svg') -300% / auto 100% content-box;
+}
+#sync-status.error .overlay {
+  background: url('img/icons.svg') -200% / auto 100% content-box;
 }
 @keyframes rotate {
   from { transform: rotate(0deg); }

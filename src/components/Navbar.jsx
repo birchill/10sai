@@ -17,7 +17,18 @@ export class Navbar extends React.Component {
       return null;
     }
 
-    return <div id="sync-status" className="icon"></div>;
+    const syncClasses = [];
+    syncClasses[SyncState.OK] = 'ok';
+    syncClasses[SyncState.IN_PROGRESS] = 'in-progress';
+    syncClasses[SyncState.PAUSED] = 'paused';
+    syncClasses[SyncState.OFFLINE] = 'offline';
+    syncClasses[SyncState.ERROR] = 'error';
+
+    const syncClass =  `icon ${syncClasses[this.props.syncState]}`;
+
+    return (<div id="sync-status" className={syncClass}>
+             <div className="overlay"></div>
+           </div>);
   }
 
   render() {
