@@ -39,6 +39,15 @@ settingsStore.getSettings().then(dispatchSettingUpdates);
 settingsStore.onUpdate(dispatchSettingUpdates);
 
 //
+// Offline notification
+//
+
+window.addEventListener('online',
+                        () => { store.dispatch({ type: 'GO_ONLINE' }); });
+window.addEventListener('offline',
+                        () => { store.dispatch({ type: 'GO_OFFLINE' }); });
+
+//
 // Sagas
 //
 

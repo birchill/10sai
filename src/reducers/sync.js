@@ -6,7 +6,7 @@ const initialState = { state: SyncState.NOT_CONFIGURED,
                        lastSyncTime: undefined,
                        progress: undefined,
                        paused: false,
-                       offline: false,
+                       offline: !navigator.onLine,
                        errorDetail: undefined };
 
 function updateSyncState(state) {
@@ -67,6 +67,12 @@ export default function sync(state = initialState, action) {
                                paused: false,
                                progress: undefined,
                                errorDetail: undefined });
+
+    case 'GO_ONLINE':
+      return updateSyncState({ ...state, offline: false });
+
+    case 'GO_OFFLINE':
+      return updateSyncState({ ...state, offline: true });
 
     case 'EDIT_SYNC_SERVER':
       return { ...state, editingServer: true };
