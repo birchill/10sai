@@ -16,7 +16,7 @@ const mapDispatchToProps = dispatch => (
     onSubmit: server => dispatch({ type: 'SET_SYNC_SERVER', server }),
     onRetry: server => dispatch({ type: 'RETRY_SYNC', server }),
     onEdit: () => dispatch({ type: 'EDIT_SYNC_SERVER' }),
-    onCancel: () => dispatch({ type: 'CANCEL_EDIT_SYNC_SERVER' }),
+    onCancel: () => dispatch({ type: 'FINISH_EDIT_SYNC_SERVER' }),
     onPause: () => dispatch({ type: 'PAUSE_SYNC' }),
     onResume: () => dispatch({ type: 'RESUME_SYNC' }),
   });

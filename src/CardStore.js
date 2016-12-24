@@ -157,8 +157,9 @@ class CardStore {
     if (this.remoteSync) {
       this.remoteSync.cancel();
       this.remoteSync = undefined;
-      this.remoteDb = undefined;
     }
+
+    this.remoteDb = undefined;
 
     if (!syncServer) {
       return Promise.resolve();
@@ -168,6 +169,8 @@ class CardStore {
                     ? new PouchDB(syncServer)
                     : syncServer;
 
+    const originalDbName = this.remoteDb.name;
+
     // Initial sync
     let localUpdateSeq;
     let remoteUpdateSeq;
@@ -176,6 +179,13 @@ class CardStore {
         localUpdateSeq = parseInt(info.update_seq, 10);
         return this.remoteDb.info();
       }).catch(err => {
+        // Skip error if the remote DB has already been changed.
+        // This happens, for example, if we cancel while attempting to connect
+        // to a server.
+        if (!this.remoteDb ||
+            originalDbName !== this.remoteDb.name) {
+          return;
+        }
         this.remoteDb = undefined;
         reportErrorAsync(err);
         throw err;
@@ -193,7 +203,6 @@ class CardStore {
         });
 
         // Wrap and set callbacks
-        const originalDbName = this.remoteDb.name;
         const wrapCallback = (evt, callback) => {
           return (...args) => {
             // Skip events if they are from an old remote DB

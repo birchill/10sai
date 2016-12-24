@@ -1,31 +1,37 @@
 import { takeEvery, takeLatest } from 'redux-saga';
-import { put } from 'redux-saga/effects';
+import { put, select } from 'redux-saga/effects';
 
-let currentServerName;
-let lastSyncTime;
+// Selector wrappers
 
-function fetchAndNormalizeServerName(parentObj) {
-  return parentObj &&
-         parentObj.server &&
-         parentObj.server.name
-         ? parentObj.server.name.trim() || undefined
-         : undefined;
-}
+const getFromSync = func => state => func(state.sync);
+
+// Sync-selectors
+//
+// (These actually expect |obj| to be just the 'sync' member of the state and
+// need to be combined with getFromSync when using in select())
+
+const getServerName = obj => (obj &&
+                              obj.server &&
+                              obj.server.name
+                              ? obj.server.name.trim() || undefined
+                              : undefined);
+const getPaused = obj => !!(obj && obj.paused);
+const getLastSyncTime = obj => (obj ? obj.lastSyncTime : undefined);
+
+// Replication helpers
 
 function* startReplication(cardStore, server, dispatch) {
+  if (server) {
+    yield put({ type: 'UPDATE_SYNC_PROGRESS', progress: undefined });
+  }
   try {
     yield cardStore.setSyncServer(server, {
-      onChange: changes =>
-        dispatch({ type: 'UPDATE_SYNC_PROGRESS', progress: changes.progress }),
-      onIdle: () => {
-        lastSyncTime = Date.now();
-        return dispatch({ type: 'FINISH_SYNC', lastSyncTime });
-      },
+      onChange: changes => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
+                                      progress: changes.progress }),
+      onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
       onActive: () => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
                                  progress: undefined }),
-      onError: details => {
-        dispatch({ type: 'NOTIFY_SYNC_ERROR', details });
-      },
+      onError: details => dispatch({ type: 'NOTIFY_SYNC_ERROR', details }),
     });
   } catch (e) {
     // Ignore errors from setSyncServer since we deal with them in the onError
@@ -34,86 +40,128 @@ function* startReplication(cardStore, server, dispatch) {
   }
 }
 
+function* stopReplication(cardStore) {
+  yield cardStore.setSyncServer();
+}
+
 function* setSyncServer(cardStore, settingsStore, dispatch, action) {
   // Trim strings and convert all falsey values to 'undefined' so we can
-  // reliably compare the new server with the old, both here and in
-  // updateSetting below.
-  const updatedServerName = fetchAndNormalizeServerName(action);
-
-  // Update currentServerName first so we ignore any actions triggered by
-  // updating the settings store.
-  currentServerName = updatedServerName;
-  lastSyncTime = undefined;
+  // reliably compare the new server with the old in updateSetting.
+  const serverName = getServerName(action);
 
   // Update the settings store next so that if the initial replication is
   // interrupted or protracted, we have the up-to-date information stored.
-  if (updatedServerName) {
-    // Since this is a new server, just blow away old data like lastSyncTime
-    const updatedServer = { server: { name: updatedServerName } };
+  if (serverName) {
+    // Since this is a new server, just blow away old data like lastSyncTime.
+    // Here and below we clear the paused state--presumably if the user is
+    // setting a new sync server they want to perform a sync.
+    const updatedServer = { server: { name: serverName } };
     yield settingsStore.updateSetting('syncServer', updatedServer);
   } else {
     yield settingsStore.clearSetting('syncServer');
   }
 
-  // Update the UI now that we have done an initial validation of the data.
-  yield put({ type: 'COMMIT_SYNC_SERVER',
-              server: updatedServerName ? { name: updatedServerName }
-                                        : undefined,
+  // Update UI state
+  yield put({ type: 'UPDATE_SYNC_SERVER',
+              server: serverName ? { name: serverName } : undefined,
+              lastSyncTime: undefined,
+              paused: false,
             });
+  yield put({ type: 'FINISH_EDIT_SYNC_SERVER' });
 
   // Kick off and/or cancel replication
-  yield startReplication(cardStore, updatedServerName, dispatch);
+  yield startReplication(cardStore, serverName, dispatch);
 }
 
 function* retrySync(cardStore, dispatch) {
-  yield startReplication(cardStore, currentServerName, dispatch);
+  const serverName = yield select(getFromSync(getServerName));
+  yield startReplication(cardStore, serverName, dispatch);
 }
 
 function* finishSync(settingsStore, action) {
-  lastSyncTime = action.lastSyncTime;
-  const updatedServer = { server: { name: currentServerName }, lastSyncTime };
+  const serverName = yield select(getFromSync(getServerName));
+  const updatedServer = { server: { name: serverName },
+                          lastSyncTime: action.lastSyncTime };
+
+  const paused = yield select(getFromSync(getPaused));
+  if (paused) {
+    updatedServer.paused = true;
+  }
+
   yield settingsStore.updateSetting('syncServer', updatedServer);
 }
 
-function* pauseSync(cardStore) {
-  if (!currentServerName) {
+function* pauseSync(cardStore, settingsStore) {
+  const serverName = yield select(getFromSync(getServerName));
+  const lastSyncTime = yield select(getFromSync(getLastSyncTime));
+
+  if (!serverName) {
     return;
   }
 
-  yield cardStore.setSyncServer();
-  // XXX Store pause state in local settings
+  const updatedServer = { server: { name: serverName },
+                          lastSyncTime,
+                          paused: true };
+  yield settingsStore.updateSetting('syncServer', updatedServer);
+  yield stopReplication(cardStore);
 }
 
-function* resumeSync(cardStore, dispatch) {
-  if (!currentServerName) {
+function* resumeSync(cardStore, settingsStore, dispatch) {
+  const serverName = yield select(getFromSync(getServerName));
+  const lastSyncTime = yield select(getFromSync(getLastSyncTime));
+
+  if (!serverName) {
     return;
   }
 
-  yield startReplication(cardStore, currentServerName, dispatch);
-  // XXX Store pause state in local settings
+  const updatedServer = { server: { name: serverName }, lastSyncTime };
+  yield settingsStore.updateSetting('syncServer', updatedServer);
+  yield startReplication(cardStore, serverName, dispatch);
 }
 
-function* updateSetting(action) {
+function* updateSetting(cardStore, dispatch, action) {
   if (action.key !== 'syncServer') {
     return;
   }
 
-  const updatedServerName = fetchAndNormalizeServerName(action.value);
-  if (updatedServerName !== currentServerName) {
-    yield put({ type: 'SET_SYNC_SERVER',
-                server: updatedServerName
-                        ? { name: updatedServerName }
-                        : undefined,
-              });
-  } else {
-    const updatedSyncTime = action.value && action.value.lastSyncTime
-                            ? action.value.lastSyncTime
-                            : undefined;
-    if (typeof lastSyncTime !== typeof updatedSyncTime ||
-        lastSyncTime < updatedSyncTime) {
-      lastSyncTime = updatedSyncTime;
-      yield put({ type: 'UPDATE_SYNC_TIME', lastSyncTime });
-    }
+  const updatedServerName   = getServerName(action.value);
+  const updatedPaused       = getPaused(action.value);
+  let   updatedLastSyncTime = getLastSyncTime(action.value);
+
+  const serverName   = yield select(getFromSync(getServerName));
+  const paused       = yield select(getFromSync(getPaused));
+  const lastSyncTime = yield select(getFromSync(getLastSyncTime));
+
+  // Ignore updated sync times that are in the past
+  if (typeof lastSyncTime === typeof updatedLastSyncTime &&
+      updatedLastSyncTime < lastSyncTime) {
+    updatedLastSyncTime = lastSyncTime;
+  }
+
+  // Skip no-change case
+  if (serverName === updatedServerName &&
+      paused === updatedPaused &&
+      lastSyncTime === updatedLastSyncTime) {
+    return;
+  }
+
+  // Update UI with changes
+  yield put({ type: 'UPDATE_SYNC_SERVER',
+              server: updatedServerName
+                      ? { name: updatedServerName }
+                      : undefined,
+              lastSyncTime: updatedLastSyncTime,
+              paused: updatedPaused,
+            });
+
+  // Check if we need to trigger replication due to a change in server
+  // name or being unpaused.
+  if (!updatedPaused &&
+      (updatedServerName !== serverName || paused)) {
+    yield startReplication(cardStore, updatedServerName, dispatch);
+  // And likewise check if we need to stop it
+  } else if (updatedPaused && !paused) {
+    yield stopReplication(cardStore);
   }
 }
 
@@ -122,9 +170,10 @@ function* syncSagas(cardStore, settingsStore, dispatch) {
                       cardStore, settingsStore, dispatch),
            takeLatest('RETRY_SYNC', retrySync, cardStore, dispatch),
            takeLatest('FINISH_SYNC', finishSync, settingsStore),
-           takeLatest('PAUSE_SYNC', pauseSync, cardStore),
-           takeLatest('RESUME_SYNC', resumeSync, cardStore, dispatch),
-           takeEvery('UPDATE_SETTING', updateSetting) ];
+           takeEvery('PAUSE_SYNC', pauseSync, cardStore, settingsStore),
+           takeEvery('RESUME_SYNC', resumeSync, cardStore, settingsStore,
+                     dispatch),
+           takeEvery('UPDATE_SETTING', updateSetting, cardStore, dispatch) ];
 }
 
 export default syncSagas;
