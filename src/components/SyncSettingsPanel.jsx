@@ -107,7 +107,7 @@ export class SyncSettingsPanel extends React.Component {
         onEdit={this.handleEditServer} />);
   }
 
-  renderOk() {
+  renderOkOrOffline() {
     return (
       <div>
         <div><button name="pause-sync"
@@ -183,10 +183,10 @@ export class SyncSettingsPanel extends React.Component {
           onCancel={this.handleServerChangeCancel} />);
     } else {
       const renderFns = [];
-      renderFns[SyncState.OK]             = this.renderOk;
+      renderFns[SyncState.OK]             = this.renderOkOrOffline;
       renderFns[SyncState.IN_PROGRESS]    = this.renderInProgress;
       renderFns[SyncState.PAUSED]         = this.renderPaused;
-      renderFns[SyncState.OFFLINE]        = this.renderServerInputBox;
+      renderFns[SyncState.OFFLINE]        = this.renderOkOrOffline;
       renderFns[SyncState.ERROR]          = this.renderError;
       renderFns[SyncState.NOT_CONFIGURED] = this.renderNotConfigured;
       body = renderFns[this.props.syncState].call(this);
