@@ -9,6 +9,9 @@ import SettingsPanel from './SettingsPanel.jsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
 import Navbar from './Navbar.jsx';
 
+const ConnectedNavbar =
+  connect(state => ({ syncState: state.sync.state }))(Navbar);
+
 class App extends React.Component {
   static get propTypes() {
     return {
@@ -38,7 +41,7 @@ class App extends React.Component {
 
     return (
       <div>
-        <Navbar settingsActive={settingsActive}
+        <ConnectedNavbar settingsActive={settingsActive}
           currentScreenLink={this.currentScreenLink} />
         <main>
           <PopupOverlay active={!!this.props.nav.popup} close={this.closePopup}>
