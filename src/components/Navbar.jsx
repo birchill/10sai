@@ -26,9 +26,12 @@ export class Navbar extends React.Component {
 
     const syncClass =  `icon ${syncClasses[this.props.syncState]}`;
 
-    return (<div id="sync-status" className={syncClass}>
-             <div className="overlay"></div>
-           </div>);
+    return (
+      <Link id="sync-settings" to="/settings#sync">
+        <div id="sync-status" className={syncClass}>
+          <div className="overlay"></div>
+        </div>
+      </Link>);
   }
 
   render() {
