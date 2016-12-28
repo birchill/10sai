@@ -165,8 +165,13 @@ class CardStore {
       return Promise.resolve();
     }
 
+    let dbOptions = undefined;
+    if (options.username) {
+      dbOptions = { auth: { username: options.username,
+                            password: options.password } };
+    }
     this.remoteDb = typeof syncServer === 'string'
-                    ? new PouchDB(syncServer)
+                    ? new PouchDB(syncServer, dbOptions)
                     : syncServer;
 
     const originalDbName = this.remoteDb.name;

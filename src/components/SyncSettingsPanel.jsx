@@ -48,7 +48,9 @@ export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
     return {
       syncState: React.PropTypes.symbol.isRequired,
-      server: React.PropTypes.shape({ name: React.PropTypes.string }),
+      server: React.PropTypes.shape({ name: React.PropTypes.string,
+                                      username: React.PropTypes.string,
+                                      password: React.PropTypes.string }),
       lastSyncTime: React.PropTypes.instanceOf(Date),
       errorDetail: React.PropTypes.object,
       progress: React.PropTypes.number,
@@ -80,7 +82,7 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   handleServerChange(server) {
-    this.props.onSubmit({ name: server });
+    this.props.onSubmit(server);
   }
 
   handleServerChangeCancel() {
@@ -176,9 +178,11 @@ export class SyncSettingsPanel extends React.Component {
 
     let body;
     if (this.props.editingServer) {
-      const server = this.props.server ? this.props.server.name : '';
       body = (
-        <SyncServerForm server={server}
+        <SyncServerForm
+          server={this.props.server ? this.props.server.name : ''}
+          username={this.props.server ? this.props.server.username : ''}
+          password={this.props.server ? this.props.server.password : ''}
           onSubmit={this.handleServerChange}
           onCancel={this.handleServerChangeCancel} />);
     } else {

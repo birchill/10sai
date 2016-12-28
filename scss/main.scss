@@ -309,14 +309,16 @@ input[type=button].link {
   padding-right: 0.3rem;
 }
 
-input[type=text] {
+input[type=text],
+input[type=password] {
   -webkit-appearance: none;
   background: #fff;
   background-image: none;
   border: .1rem solid #c5c5c5;
   color: #333;
 }
-input[type=text]:focus {
+input[type=text]:focus,
+input[type=password]:focus {
   border-color: $highlight;
 }
 
@@ -339,6 +341,20 @@ input[type=text]:focus {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
   margin-left: -.2rem;
+}
+.stacked-group input:first-child:not(:last-child) {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom: none;
+}
+.stacked-group input:not(:first-child):not(:last-child) {
+  border-radius: 0;
+  margin-top: -.2rem;
+}
+.stacked-group input:last-child:not(:first-child) {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  margin-top: -.2rem;
 }
 fieldset {
   border: 1px solid #bbb;
@@ -441,4 +457,21 @@ fieldset[name=sync-server] .server-name {
 fieldset[name=sync-server] .server-sync-time {
   /* Try to avoid resizing when the time is updated */
   min-width: 17rem;
+}
+form[name=sync-server-settings] {
+  display: inline-block;
+  text-align: center;
+  position: relative;
+  & > * {
+    display: block;
+    margin-top: 0.4rem;
+  }
+  & > *, & input {
+    margin-left: 0;
+    margin-right: 0;
+    width: 25rem;
+  }
+  & input.primary {
+    margin-top: 0.8rem;
+  }
 }

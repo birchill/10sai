@@ -10,11 +10,17 @@ const getFromSync = func => state => func(state.sync);
 // (These actually expect |obj| to be just the 'sync' member of the state and
 // need to be combined with getFromSync when using in select())
 
-const getServerName = obj => (obj &&
-                              obj.server &&
-                              obj.server.name
-                              ? obj.server.name.trim() || undefined
-                              : undefined);
+const getServer = obj => {
+  if (!obj || !obj.server || !obj.server.name || !obj.server.name.trim()) {
+    return undefined;
+  }
+  const server = { name: obj.server.name.trim() };
+  if (obj.server.username && obj.server.username.trim()) {
+    server.username = obj.server.username.trim();
+    server.password = obj.server.password.trim() || undefined;
+  }
+  return server;
+};
 const getLastSyncTime = obj => (obj ? obj.lastSyncTime : undefined);
 const getPaused = obj => !!(obj && obj.paused);
 const getOffline = obj => !!(obj && obj.offline);
@@ -31,14 +37,19 @@ function* startReplication(cardStore, server, dispatch) {
     yield put({ type: 'UPDATE_SYNC_PROGRESS', progress: undefined });
   }
   try {
-    yield cardStore.setSyncServer(server, {
+    const syncServer = server ? server.name : undefined;
+    const options = {
       onChange: changes => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
                                       progress: changes.progress }),
       onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
       onActive: () => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
                                  progress: undefined }),
       onError: details => dispatch({ type: 'NOTIFY_SYNC_ERROR', details }),
-    });
+      username: server.username,
+      password: server.username ? server.password : undefined,
+    };
+
+    yield cardStore.setSyncServer(syncServer, options);
   } catch (e) {
     // Ignore errors from setSyncServer since we deal with them in the onError
     // callback.
@@ -51,17 +62,17 @@ function* stopReplication(cardStore) {
 }
 
 function* setSyncServer(cardStore, settingsStore, dispatch, action) {
-  // Trim strings and convert all falsey values to 'undefined' so we can
-  // reliably compare the new server with the old in updateSetting.
-  const serverName = getServerName(action);
+  // Normalize server so we can reliably compare the new server with the old
+  // in updateSetting.
+  const server = getServer(action);
 
   // Update the settings store next so that if the initial replication is
   // interrupted or protracted, we have the up-to-date information stored.
-  if (serverName) {
+  if (server) {
     // Since this is a new server, just blow away old data like lastSyncTime.
     // Here and below we clear the paused state--presumably if the user is
     // setting a new sync server they want to perform a sync.
-    const updatedServer = { server: { name: serverName } };
+    const updatedServer = { server };
     yield settingsStore.updateSetting('syncServer', updatedServer);
   } else {
     yield settingsStore.clearSetting('syncServer');
@@ -69,25 +80,24 @@ function* setSyncServer(cardStore, settingsStore, dispatch, action) {
 
   // Update UI state
   yield put({ type: 'UPDATE_SYNC_SERVER',
-              server: serverName ? { name: serverName } : undefined,
+              server,
               lastSyncTime: undefined,
               paused: false,
             });
   yield put({ type: 'FINISH_EDIT_SYNC_SERVER' });
 
   // Kick off and/or cancel replication
-  yield startReplication(cardStore, serverName, dispatch);
+  yield startReplication(cardStore, server, dispatch);
 }
 
 function* retrySync(cardStore, dispatch) {
-  const serverName = yield select(getFromSync(getServerName));
-  yield startReplication(cardStore, serverName, dispatch);
+  const server = yield select(getFromSync(getServer));
+  yield startReplication(cardStore, server, dispatch);
 }
 
 function* finishSync(settingsStore, action) {
-  const serverName = yield select(getFromSync(getServerName));
-  const updatedServer = { server: { name: serverName },
-                          lastSyncTime: action.lastSyncTime };
+  const server = yield select(getFromSync(getServer));
+  const updatedServer = { server, lastSyncTime: action.lastSyncTime };
 
   const paused = yield select(getFromSync(getPaused));
   if (paused) {
@@ -99,16 +109,14 @@ function* finishSync(settingsStore, action) {
 
 function* pauseSync(cardStore, settingsStore) {
   // Update stored paused state
-  const serverName = yield select(getFromSync(getServerName));
+  const server = yield select(getFromSync(getServer));
   const lastSyncTime = yield select(getFromSync(getLastSyncTime));
 
-  if (!serverName) {
+  if (!server) {
     return;
   }
 
-  const updatedServer = { server: { name: serverName },
-                          lastSyncTime,
-                          paused: true };
+  const updatedServer = { server, lastSyncTime, paused: true };
   yield settingsStore.updateSetting('syncServer', updatedServer);
 
   yield stopReplication(cardStore);
@@ -116,17 +124,17 @@ function* pauseSync(cardStore, settingsStore) {
 
 function* resumeSync(cardStore, settingsStore, dispatch) {
   // Update stored paused state
-  const serverName = yield select(getFromSync(getServerName));
+  const server = yield select(getFromSync(getServer));
   const lastSyncTime = yield select(getFromSync(getLastSyncTime));
 
-  if (!serverName) {
+  if (!server) {
     return;
   }
 
-  const updatedServer = { server: { name: serverName }, lastSyncTime };
+  const updatedServer = { server, lastSyncTime };
   yield settingsStore.updateSetting('syncServer', updatedServer);
 
-  yield startReplication(cardStore, serverName, dispatch);
+  yield startReplication(cardStore, server, dispatch);
 }
 
 function* updateSetting(cardStore, dispatch, action) {
@@ -134,11 +142,11 @@ function* updateSetting(cardStore, dispatch, action) {
     return;
   }
 
-  const updatedServerName   = getServerName(action.value);
+  const updatedServer       = getServer(action.value);
   const updatedPaused       = getPaused(action.value);
   let   updatedLastSyncTime = getLastSyncTime(action.value);
 
-  const serverName   = yield select(getFromSync(getServerName));
+  const server       = yield select(getFromSync(getServer));
   const paused       = yield select(getFromSync(getPaused));
   const lastSyncTime = yield select(getFromSync(getLastSyncTime));
 
@@ -149,7 +157,9 @@ function* updateSetting(cardStore, dispatch, action) {
   }
 
   // Skip no-change case
-  if (serverName === updatedServerName &&
+  const serverUpdated = JSON.stringify(server)
+                        !== JSON.stringify(updatedServer);
+  if (!serverUpdated &&
       paused === updatedPaused &&
       lastSyncTime === updatedLastSyncTime) {
     return;
@@ -157,18 +167,15 @@ function* updateSetting(cardStore, dispatch, action) {
 
   // Update UI with changes
   yield put({ type: 'UPDATE_SYNC_SERVER',
-              server: updatedServerName
-                      ? { name: updatedServerName }
-                      : undefined,
+              server: updatedServer,
               lastSyncTime: updatedLastSyncTime,
               paused: updatedPaused,
             });
 
   // Check if we need to trigger replication due to a change in server
   // name or being unpaused.
-  if (!updatedPaused &&
-      (updatedServerName !== serverName || paused)) {
-    yield startReplication(cardStore, updatedServerName, dispatch);
+  if (!updatedPaused && (serverUpdated || paused)) {
+    yield startReplication(cardStore, updatedServer, dispatch);
   // And likewise check if we need to stop it
   } else if (updatedPaused && !paused) {
     yield stopReplication(cardStore);
@@ -181,8 +188,8 @@ function* goOnline(cardStore, dispatch) {
     return;
   }
 
-  const serverName = yield select(getFromSync(getServerName));
-  yield startReplication(cardStore, serverName, dispatch);
+  const server = yield select(getFromSync(getServer));
+  yield startReplication(cardStore, server, dispatch);
 }
 
 function* goOffline(cardStore) {
