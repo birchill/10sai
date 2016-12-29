@@ -1,5 +1,6 @@
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
   entry: [ 'babel-polyfill', './src/index.js' ],
@@ -41,6 +42,9 @@ module.exports = {
     includePaths: [path.resolve(__dirname, "./scss")]
   },
   plugins: [
-    new ExtractTextPlugin('tensai.css', { allChunks: true })
+    new ExtractTextPlugin('tensai.css', { allChunks: true }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
+    })
   ]
 };

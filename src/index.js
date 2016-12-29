@@ -15,14 +15,17 @@ import App from './components/App.jsx';
 import 'main.scss';
 
 const sagaMiddleware = createSagaMiddleware();
-const loggerMiddleware = createLogger();
-const store = createStore(
-  reducer,
-  applyMiddleware(
-    sagaMiddleware,
-    loggerMiddleware
-  )
-);
+
+let store;
+if (process.env.NODE_ENV === 'development') {
+  const loggerMiddleware = createLogger();
+  store = createStore(
+    reducer,
+    applyMiddleware(sagaMiddleware, loggerMiddleware)
+  );
+} else {
+  store = createStore(reducer, applyMiddleware(sagaMiddleware));
+}
 
 const cardStore = new CardStore();
 const settingsStore = new SettingsStore();

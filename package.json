@@ -9,8 +9,10 @@
   },
   "scripts": {
     "build": "webpack --progress --colors",
+    "build:prod": "cross-env NODE_ENV=production webpack -p --progress --colors",
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
     "start": "webpack-dev-server --progress --colors --history-api-fallback --content-base public/",
+    "start:prod": "cross-env NODE_ENV=production webpack-dev-server -p --progress --colors --history-api-fallback --content-base public/",
     "lint": "eslint src/** test/**",
     "test": "mocha --recursive --compilers js:babel-core/register"
   },
@@ -39,6 +41,7 @@
     "webpack-dev-server": "^1.15.1"
   },
   "dependencies": {
+    "cross-env": "^3.1.3",
     "lodash": "^4.16.2",
     "pouchdb": "^6.0.6",
     "pouchdb-upsert": "^2.0.2",
