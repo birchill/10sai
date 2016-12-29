@@ -41,7 +41,7 @@ git checkout $TARGET_BRANCH || git checkout --orphan $TARGET_BRANCH
 cd ..
 
 # Clear target branch output leaving only the .git folder
-find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
+find out -maxdepth 1 ! -name '.git' ! -name out -exec rm -rf {} +
 
 # Run build and copy 'public' to (empty) clone of target branch
 build
