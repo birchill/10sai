@@ -62,10 +62,10 @@ fi
 
 # Commit the changes
 echo "Committing changes"
-git add .
+git add --all .
 COMMIT_MESSAGE=$(echo -e "Deploy to $TARGET_BRANCH for '$TRAVIS_COMMIT_MSG' [ci skip]\n\nGenerated from:\n";
                git log $TRAVIS_COMMIT_RANGE)
-git commit -m $COMMIT_MESSAGE
+git commit -m "$COMMIT_MESSAGE"
 
 # Get deploy key
 echo "Setting up deploy key"
