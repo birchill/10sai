@@ -166,7 +166,7 @@ class CardStore {
     }
 
     let dbOptions = undefined;
-    if (options.username) {
+    if (options && options.username) {
       dbOptions = { auth: { username: options.username,
                             password: options.password } };
     }

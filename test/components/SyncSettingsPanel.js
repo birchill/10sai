@@ -93,7 +93,7 @@ describe('<SyncSettingsPanel />', () => {
           onPause={stub} onResume={stub} editingServer />
       );
 
-    subject.find('SyncServerForm').prop('onSubmit')('abc');
+    subject.find('SyncServerForm').prop('onSubmit')({ name: 'abc' });
 
     assert.calledWith(onSubmit, { name: 'abc' });
   });
