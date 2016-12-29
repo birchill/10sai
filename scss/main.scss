@@ -14,6 +14,17 @@ body, html {
   color: #333;
 }
 
+@media screen and (max-width: 800px) {
+  body, html {
+    font-size: 13px;
+  }
+}
+@media screen and (max-width: 400px) {
+  body, html {
+    font-size: 11px;
+  }
+}
+
 /*
  * Screen layout
  *
@@ -38,10 +49,8 @@ main {
   position: relative;
   flex: 1;
 }
-main section {
+main #card-list {
   margin-top: 10px;
-}
-main section {
   height: 100%;
   width: 100%;
   position: absolute;
@@ -198,6 +207,7 @@ main section.popup {
   height: auto;
   padding: 15px;
   box-shadow: 0 0 6px grey;
+  overflow: auto;
 }
 main section.popup[aria-hidden=true] {
   transform: translate(0%, -120%);
@@ -224,7 +234,7 @@ main section h3 {
 .summary-panel {
   background: #f8f8f8;
   border-radius: .3rem;
-  padding: 4rem;
+  padding: 4rem 0.5rem;
   text-align: center;
 }
 .summary-panel h4 {
@@ -290,7 +300,6 @@ input[type=button], input[type=submit], button {
     color: $hover-highlight;
     border-color: $hover-highlight;
   }
-  margin-left: 0.8rem;
 }
 input[type=button].primary,
 input[type=submit].primary,
