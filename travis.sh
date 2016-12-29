@@ -56,7 +56,7 @@ git config user.email "$COMMIT_EMAIL"
 
 # Check for no-op change
 echo "Checking for changes"
-if [ -z `git diff --exit-code` ]; then
+if [ $(git status --porcelain | wc -l) -lt 1 ]; then
   ok_exit "No changes to the output on this push; exiting."
 fi
 
