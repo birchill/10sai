@@ -45,25 +45,30 @@ rm -rf out/**/* || exit 0
 
 # Run build and copy 'public' to (empty) clone of target branch
 build
+echo "Copying output to target branch"
 cp -r public/** out
 
 # Setup target branch git config
+echo "Setting up git config"
 cd out
 git config user.name "$COMMIT_USER (via Travis)"
 git config user.email "$COMMIT_EMAIL"
 
 # Check for no-op change
+echo "Checking for changes"
 if [ -z `git diff --exit-code` ]; then
   ok_exit "No changes to the output on this push; exiting."
 fi
 
 # Commit the changes
+echo "Committing changes"
 git add .
 COMMIT_MESSAGE=$(echo -e "Deploy to $TARGET_BRANCH for '$TRAVIS_COMMIT_MSG' [ci skip]\n\nGenerated from:\n";
                git log $TRAVIS_COMMIT_RANGE)
 git commit -m $COMMIT_MESSAGE
 
 # Get deploy key
+echo "Setting up deploy key"
 ENCRYPTED_KEY_VAR="encrypted_${ENCRYPTION_LABEL}_key"
 ENCRYPTED_IV_VAR="encrypted_${ENCRYPTION_LABEL}_iv"
 ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
@@ -74,4 +79,6 @@ eval `ssh-agent -s`
 ssh-add deploy_key
 
 # Push changes
+echo "Pushing to $SSH_REPO"
 git push $SSH_REPO $TARGET_BRANCH
+echo "Done"
