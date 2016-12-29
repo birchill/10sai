@@ -41,7 +41,7 @@ git checkout $TARGET_BRANCH || git checkout --orphan $TARGET_BRANCH
 cd ..
 
 # Clear target branch output
-rm -rf out/**/* || exit 0
+rm -rf out/** || exit 0
 
 # Run build and copy 'public' to (empty) clone of target branch
 build
