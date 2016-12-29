@@ -45,7 +45,7 @@ rm -rf out/**/* || exit 0
 
 # Run build and copy 'public' to (empty) clone of target branch
 build
-cp -r public out
+cp -r public/** out
 
 # Setup target branch git config
 cd out
