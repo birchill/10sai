@@ -21,6 +21,8 @@ function ok_exit
 
 function build
 {
+  npm run lint || error_exit "Error running lint"
+  npm test || error_exit "Error running tests"
   npm run build:prod || error_exit "Error building"
 }
 
