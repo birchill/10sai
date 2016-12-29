@@ -8,6 +8,7 @@ module.exports = {
     path: path.resolve(__dirname, 'public'),
     filename: 'tensai.js'
   },
+  devtool: 'cheap-source-map',
   module: {
     preLoaders: [
       {
