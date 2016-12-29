@@ -13,7 +13,7 @@ env:
   - TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
   - COMMIT_USER="$(git log --format=%an --no-merges -n 1)"
   - COMMIT_EMAIL="$(git log --format=%ae --no-merges -n 1)"
-  - ENCRYPTION_LABEL="f8a02b4aba43"
+  - ENCRYPTION_LABEL="03a0d2f68628"
 
 notifications:
   email:
