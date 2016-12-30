@@ -203,9 +203,14 @@ main section.popup {
   background: white;
   margin-left: 5%;
   margin-right: 5%;
-  margin-top: 5%;
+  margin-top: 2rem;
   width: 90%;
-  height: 90%;
+  height: auto;
+  /*
+   * Without this max-height, we won't get scrollbars when the screen is too
+   * small to fit the whole panel (e.g. when the onscreen keyboard is in use)
+   */
+  max-height: calc(100% - 3rem);
   padding: 1rem;
   box-shadow: 0 0 6px grey;
   overflow: auto;
@@ -429,6 +434,24 @@ legend {
 }
 .cancelable-textbox-group input[type="text"]::-ms-clear {
   display: none;
+}
+
+/*
+ * Generic settings panel
+ */
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  /*
+   * We do this just to make sure the panel doesn't keep resizing when the
+   * contents change. We could just to 'height: 100%' but there's too much
+   * empty space on desktop computers in that case. 32rem happens to fit most
+   * of the content we currently stick in these panels.
+   */
+  min-height: 32rem;
+}
+.settings-panel :not(h3) {
+  flex: 1;
 }
 
 /*
