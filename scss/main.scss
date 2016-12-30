@@ -203,9 +203,10 @@ main section.popup {
   background: white;
   margin-left: 5%;
   margin-right: 5%;
+  margin-top: 5%;
   width: 90%;
-  height: auto;
-  padding: 15px;
+  height: 90%;
+  padding: 1rem;
   box-shadow: 0 0 6px grey;
   overflow: auto;
 }
@@ -234,7 +235,7 @@ main section h3 {
 .summary-panel {
   background: #f8f8f8;
   border-radius: .3rem;
-  padding: 4rem 0.5rem;
+  padding: 2rem 0.5rem;
   text-align: center;
 }
 .summary-panel h4 {
