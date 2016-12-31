@@ -479,17 +479,21 @@ legend {
   margin-top: 1rem;
   margin-bottom: 1.2rem;
 }
-fieldset[name=sync-server],
-fieldset[name=sync-server] > :not(legend) {
-  display: inline-block;
-  vertical-align: middle;
-}
-fieldset[name=sync-server] .server-name {
-  font-weight: bold;
-}
-fieldset[name=sync-server] .server-sync-time {
-  /* Try to avoid resizing when the time is updated */
-  min-width: 17rem;
+fieldset[name=sync-server] {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.5rem 1rem;
+  & > * {
+    margin: 0.5rem;
+  }
+  & .server-name {
+    font-weight: bold;
+  }
+  & button {
+    flex: 0;
+  }
 }
 form[name=sync-server-settings] {
   display: inline-block;
