@@ -49,6 +49,7 @@ export class CancelableTextbox extends React.Component {
         <button type="reset"
           className="cancelable-textbox-cancel"
           aria-hidden={hidden}
+          tabIndex="-1"
           onClick={this.handleClear}><span>Clear</span></button>
       </div>
     );
