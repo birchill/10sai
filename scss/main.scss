@@ -228,14 +228,14 @@ main section.popup {
   background: white;
   margin-left: 5%;
   margin-right: 5%;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   width: 90%;
   height: auto;
   /*
    * Without this max-height, we won't get scrollbars when the screen is too
    * small to fit the whole panel (e.g. when the onscreen keyboard is in use)
    */
-  max-height: calc(100% - 3rem);
+  max-height: calc(100% - 1rem);
   padding: 1rem;
   box-shadow: 0 0 6px grey;
   overflow: auto;
