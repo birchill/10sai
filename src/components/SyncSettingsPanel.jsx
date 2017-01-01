@@ -113,7 +113,7 @@ export class SyncSettingsPanel extends React.Component {
     return (
       <div>
         <div><button name="pause-sync"
-          onClick={this.handlePause}>⏸ Pause</button></div>
+          onClick={this.handlePause}>Pause</button></div>
         { this.renderServerInputBox() }
       </div>);
   }
@@ -131,7 +131,7 @@ export class SyncSettingsPanel extends React.Component {
     return (
       <div>
         <div><button name="resume-sync"
-          onClick={this.handleResume}>► Resume</button></div>
+          onClick={this.handleResume}>Resume</button></div>
         { this.renderServerInputBox() }
       </div>);
   }

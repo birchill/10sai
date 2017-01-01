@@ -1,6 +1,31 @@
 $highlight: #2690BA;
 $hover-highlight: lighten(#2690BA, 15%);
 
+// Courtesy of Hugo Giraudel: http://www.sassmeister.com/gist/1b4f2da5527830088e4d
+@function str-replace($string, $search, $replace: '') {
+  $index: str-index($string, $search);
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+  }
+  @return $string;
+}
+
+// Courtesy of Kevin Weber: https://codepen.io/kevinweber/pen/dXWoRw
+$encoding-reference: (
+  ('<','%3C'),
+  ('>','%3E'),
+  ('"','\''),
+  ('#','%23'),
+  ('&','%26')
+);
+
+@function svg-encode($svg) {
+  @each $char, $encoded in $encoding-reference {
+    $svg: str-replace($svg, $char, $encoded);
+  }
+  @return 'data:image/svg+xml,' + $svg;
+}
+
 /*
  * Font settings
  */
@@ -386,6 +411,29 @@ legend {
   max-width: 100%;
   padding: 0 0.4rem;
   white-space: normal;
+}
+
+/*
+ * Specialized buttons
+ */
+@function pause-button($fill-color) {
+  @return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 0h20v100h-20v-100M60 0h20v100h-20v-100" fill="' + $fill-color + '"/></svg>';
+}
+@function resume-button($fill-color) {
+  @return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0 10l80 40l-80 40v-60" fill="' + $fill-color + '"/></svg>';
+}
+
+button[name='pause-sync'],
+button[name='resume-sync'] {
+  padding-left: 2rem;
+}
+button[name='pause-sync'] {
+  background: url(svg-encode(pause-button($highlight))) 0.8rem 0.7rem /
+              1rem no-repeat;
+}
+button[name='resume-sync'] {
+  background: url(svg-encode(resume-button($highlight))) 0.8rem 0.7rem /
+              1rem no-repeat;
 }
 
 /*
