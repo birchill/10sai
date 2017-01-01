@@ -298,6 +298,12 @@ main section h3 {
 .summary-panel fieldset {
   text-align: left;
 }
+/* Vertically align content */
+.summary-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
 /*
  * Forms
@@ -498,7 +504,7 @@ button[name='resume-sync'] {
    */
   min-height: 32rem;
 }
-.settings-panel :not(h3) {
+.settings-panel > :not(h3) {
   flex: 1;
 }
 
@@ -535,6 +541,9 @@ fieldset[name=sync-server] {
   padding: 0 0.5rem 1rem;
   & > * {
     margin: 0.5rem;
+  }
+  & .server-summary {
+    flex: 1;
   }
   & .server-name {
     font-weight: bold;
