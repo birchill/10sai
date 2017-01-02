@@ -1,5 +1,6 @@
 $highlight: #2690BA;
 $hover-highlight: lighten(#2690BA, 15%);
+$border-width: 0.1rem;
 
 // Courtesy of Hugo Giraudel: http://www.sassmeister.com/gist/1b4f2da5527830088e4d
 @function str-replace($string, $search, $replace: '') {
@@ -226,10 +227,10 @@ main section {
 
 main section.popup {
   background: white;
-  margin-left: 5%;
-  margin-right: 5%;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
   margin-top: 0.5rem;
-  width: 90%;
+  width: calc(100vw - 1rem);
   height: auto;
   /*
    * Without this max-height, we won't get scrollbars when the screen is too
@@ -264,7 +265,7 @@ main section h3 {
 
 .summary-panel {
   background: #f8f8f8;
-  border-radius: .3rem;
+  border-radius: .4rem;
   padding: 2rem 0.5rem;
   text-align: center;
 }
@@ -277,8 +278,7 @@ main section h3 {
   font-size: 1.1rem;
   color: #888;
 }
-.summary-panel .action,
-.summary-panel h4 + form {
+.summary-panel .action {
   margin-top: 1.5rem;
 }
 .summary-panel p + ul {
@@ -311,18 +311,18 @@ main section h3 {
 
 input, button {
   -webkit-appearance: none;
-  border-radius: .3rem;
+  border-radius: .4rem;
   box-sizing: border-box;
   font-size: 1.2rem;
-  height: 2.5rem;
-  padding: .3rem .7rem;
+  height: 3rem;
+  padding: .3rem 1rem;
   outline: 0;
   vertical-align: top;
   margin: 0 0.2rem;
 }
 input[type=button], input[type=submit], button {
   background: transparent;
-  border: .1rem solid $highlight;
+  border: $border-width solid $highlight;
   color: $highlight;
   cursor: pointer;
   text-align: center;
@@ -360,8 +360,11 @@ input[type=password] {
   -webkit-appearance: none;
   background: #fff;
   background-image: none;
-  border: .1rem solid #c5c5c5;
+  border: $border-width solid #c5c5c5;
   color: #333;
+  height: 3rem;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
 }
 input[type=text]:focus,
 input[type=password]:focus {
@@ -391,16 +394,23 @@ input[type=password]:focus {
 .stacked-group input:first-child:not(:last-child) {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
-  border-bottom: none;
+}
+/*
+ * Normally the item below will overlap our bottom border, but when we
+ * are in focus (and the border color changes) we should be on top so our
+ * border shows.
+ */
+.stacked-group input:not(:last-child):focus {
+  position: relative;
 }
 .stacked-group input:not(:first-child):not(:last-child) {
   border-radius: 0;
-  margin-top: -.2rem;
+  margin-top: -$border-width;
 }
 .stacked-group input:last-child:not(:first-child) {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  margin-top: -.2rem;
+  margin-top: -$border-width;
 }
 fieldset {
   border: 1px solid #bbb;
@@ -431,15 +441,21 @@ legend {
 
 button[name='pause-sync'],
 button[name='resume-sync'] {
-  padding-left: 2rem;
+  padding-left: 2.3rem;
 }
 button[name='pause-sync'] {
-  background: url(svg-encode(pause-button($highlight))) 0.8rem 0.7rem /
+  background: url(svg-encode(pause-button($highlight))) 1rem 0.9rem /
               1rem no-repeat;
 }
 button[name='resume-sync'] {
-  background: url(svg-encode(resume-button($highlight))) 0.8rem 0.7rem /
+  background: url(svg-encode(resume-button($highlight))) 1rem 0.9rem /
               1rem no-repeat;
+}
+button[name='pause-sync']:hover {
+  background-image: url(svg-encode(pause-button($hover-highlight)));
+}
+button[name='resume-sync']:hover {
+  background-image: url(svg-encode(resume-button($hover-highlight)));
 }
 
 /*
@@ -499,10 +515,11 @@ button[name='resume-sync'] {
   /*
    * We do this just to make sure the panel doesn't keep resizing when the
    * contents change. We could just to 'height: 100%' but there's too much
-   * empty space on desktop computers in that case. 32rem happens to fit most
-   * of the content we currently stick in these panels.
+   * empty space on desktop computers in that case. 31rem happens to fit most
+   * of the content we currently stick in these panels (and fit in a 320x480
+   * screen).
    */
-  min-height: 32rem;
+  min-height: 31rem;
 }
 .settings-panel > :not(h3) {
   flex: 1;
@@ -547,6 +564,7 @@ fieldset[name=sync-server] {
   }
   & .server-name {
     font-weight: bold;
+    white-space: nowrap;
   }
   & button {
     flex: 0;
