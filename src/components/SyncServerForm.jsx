@@ -19,6 +19,7 @@ export class SyncServerForm extends React.Component {
     [ 'handleServerChange',
       'handleUsernameChange',
       'handlePasswordChange',
+      'handleTextBoxFocus',
       'handleSubmit',
       'handleCancel' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
@@ -53,6 +54,46 @@ export class SyncServerForm extends React.Component {
     this.setState({ password: e.target.value });
   }
 
+  handleTextBoxFocus(e) {
+    // Until scrollIntoViewIfNeeded() gets standardized this is a very hacky
+    // version that should barely work for this situation.
+    const textBox = e.target;
+
+    // Get nearest scroll container
+    let scrollParent;
+    for (let parent = e.target.parentNode;
+         parent instanceof HTMLElement;
+         parent = parent.parentNode) {
+      if (parent.scrollHeight > parent.clientHeight) {
+        scrollParent = parent;
+        break;
+      }
+    }
+    if (!scrollParent) {
+      return;
+    }
+
+    // Wait for window to be resized for soft keyboard.
+    // (I have no idea if this works on iOS but it seems to be the way things
+    // work on Android.)
+    window.addEventListener('resize', function onresize() {
+      window.removeEventListener('resize', onresize);
+
+      // Check that we are still the focussed element.
+      if (document.activeElement !== textBox) {
+        return;
+      }
+
+      const bbox = textBox.getBoundingClientRect();
+      const scrollParentBbox = scrollParent.getBoundingClientRect();
+      if (bbox.bottom > scrollParentBbox.bottom) {
+        textBox.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      } else if (bbox.top < scrollParentBbox.top) {
+        textBox.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }
+    });
+  }
+
   handleSubmit(e) {
     e.preventDefault();
     const server = this.state.server.trim()
@@ -75,14 +116,18 @@ export class SyncServerForm extends React.Component {
       <form name="sync-server-settings" onSubmit={this.handleSubmit}>
         <CancelableTextbox name="server" type="text" placeholder="Server name"
           className="form-input" size="40"
-          value={this.state.server} onChange={this.handleServerChange} />
+          value={this.state.server}
+          onChange={this.handleServerChange}
+          onFocus={this.handleTextBoxFocus} />
         <div className="stacked-group">
           <input type="text" name="username" placeholder="Username"
             size="40" value={this.state.username}
-            onChange={this.handleUsernameChange} />
+            onChange={this.handleUsernameChange}
+            onFocus={this.handleTextBoxFocus} />
           <input type="password" name="password" placeholder="Password"
             size="40" value={this.state.password}
-            onChange={this.handlePasswordChange} />
+            onChange={this.handlePasswordChange}
+            onFocus={this.handleTextBoxFocus} />
         </div>
         <input type="button" name="submit" value="Ok"
           className="primary" onClick={this.handleSubmit} />
