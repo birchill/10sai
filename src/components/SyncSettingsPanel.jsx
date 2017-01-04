@@ -72,9 +72,34 @@ export class SyncSettingsPanel extends React.Component {
       'handleServerChangeCancel',
       'handlePause',
       'handleResume',
-      'handleRetry' ].forEach(
+      'handleRetry',
+      'handleKeyDown' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
+  }
+
+  componentDidMount() {
+    if (this.props.editingServer) {
+      document.addEventListener('keydown', this.handleKeyDown,
+                                { capture: true });
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.editingServer && !prevProps.editingServer) {
+      document.addEventListener('keydown', this.handleKeyDown,
+                                { capture: true });
+    } else if (!this.props.editingServer && prevProps.editingServer) {
+      document.removeEventListener('keydown', this.handleKeyDown,
+                                { capture: true });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.props.editingServer) {
+      document.removeEventListener('keydown', this.handleKeyDown,
+                                   { capture: true });
+    }
   }
 
   handleEditServer() {
@@ -99,6 +124,13 @@ export class SyncSettingsPanel extends React.Component {
 
   handleRetry() {
     this.props.onRetry(this.props.server);
+  }
+
+  handleKeyDown(e) {
+    if (e.keyCode && e.keyCode === 27) {
+      e.stopPropagation();
+      this.handleServerChangeCancel();
+    }
   }
 
   renderServerInputBox() {
