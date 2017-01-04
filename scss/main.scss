@@ -599,4 +599,19 @@ form[name=sync-server-settings] {
   & input.primary {
     margin-top: 0.8rem;
   }
+  input[name=username],
+  input[name=password] {
+    background-position: 0.9rem;
+    /* We want to use 'background-size: auto 45%' here but Chrome seems to
+     * have trouble with 'auto' values. */
+    background-size: 1.3rem 1.3rem;
+    background-repeat: no-repeat;
+    padding-left: 2.8rem;
+  }
+  input[name=username] {
+    background-image: url('img/icons.svg#user');
+  }
+  input[name=password] {
+    background-image: url('img/icons.svg#lock');
+  }
 }
