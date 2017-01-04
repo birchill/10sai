@@ -165,8 +165,6 @@ header .icon {
 }
 
 #sync-status::before {
-  /* Sync icon is initially hidden until we detect a remote server is set */
-  /* visibility: hidden; */
   content: "";
   background: url('img/icons.svg') left / auto 100% content-box;
 }
@@ -255,6 +253,19 @@ main section.popup {
 main section h3 {
   margin-top: 0;
   font-size: 1.3rem;
+}
+.popup-close-button {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 0;
+}
+.popup-close-button::before {
+  content: "";
+  width: 1.2rem;
+  height: 1.2rem;
+  display: inline-block;
+  background: url('img/icons.svg') -1200% / auto 100% content-box;
 }
 
 /*

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 
 export class Popup extends React.Component {
   static get propTypes() {
@@ -65,6 +66,7 @@ export class Popup extends React.Component {
         aria-hidden={!this.props.active} role="dialog"
         tabIndex={this.props.active ? 0 : -1 }
         ref={this.assignPopup}>
+        <Link to="." className="popup-close-button">Close</Link>
         {this.props.children}
       </section>
     );
