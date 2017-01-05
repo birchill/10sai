@@ -256,8 +256,9 @@ main section h3 {
 }
 .popup-close-button {
   position: absolute;
-  right: 1rem;
-  top: 1rem;
+  right: 0;
+  top: 0;
+  padding: 1rem;
   font-size: 0;
 }
 .popup-close-button::before {
