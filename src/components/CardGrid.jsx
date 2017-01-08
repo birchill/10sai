@@ -1,5 +1,5 @@
 import React from 'react';
-import CardRow from './CardRow.jsx';
+import CardPreview from './CardPreview.jsx';
 
 export class CardGrid extends React.Component {
   static get propTypes() {
@@ -11,7 +11,7 @@ export class CardGrid extends React.Component {
         <tbody>
           {
             this.props.cards.map(
-              card => <CardRow key={card._id} {...card} />
+              card => <CardPreview key={card._id} {...card} />
             )
           }
         </tbody>
