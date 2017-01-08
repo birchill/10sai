@@ -360,7 +360,8 @@ button.primary {
   }
 }
 
-input[type=button].link {
+input[type=button].link,
+button.link {
   color: $highlight;
   border-width: 0px;
   padding-left:  0.3rem;

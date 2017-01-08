@@ -13,7 +13,10 @@ export class CardOverviewScreen extends React.Component {
     this.state = { cards: [], question: '', answer: '' };
 
     // Bind handlers
-    [ 'handleAdd', 'handleQuestionChange', 'handleAnswerChange' ].forEach(
+    [ 'handleAdd',
+      'handleQuestionChange',
+      'handleAnswerChange',
+      'handleDelete' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
   }
@@ -56,6 +59,11 @@ export class CardOverviewScreen extends React.Component {
     this.addCard();
   }
 
+  handleDelete(id) {
+    // FIXME: Make this check for errors, animate etc.
+    this.props.db.deleteCard({ _id: id });
+  }
+
   render() {
     return (
       <section id="card-list" tabIndex="-1">
@@ -68,7 +76,7 @@ export class CardOverviewScreen extends React.Component {
             onChange={this.handleAnswerChange} />
           <input type="submit" value="Add" />
         </form>
-        <CardGrid cards={this.state.cards} />
+        <CardGrid cards={this.state.cards} onDelete={this.handleDelete} />
       </section>
     );
   }
