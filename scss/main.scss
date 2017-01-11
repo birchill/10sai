@@ -617,3 +617,46 @@ form[name=sync-server-settings] {
     background-image: url('img/icons.svg#lock');
   }
 }
+
+/*
+ * Card grid
+ */
+.card-preview {
+  display: inline-block;
+  background: white;
+  border-radius: .4rem;
+  box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.25);
+  margin: .8rem;
+  height: 10rem;
+  width: 10rem;
+  font-size: 1.2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.card-preview .flex-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: .4rem;
+  overflow: hidden;
+}
+.card-preview button.delete {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: .6rem;
+  font-size: 0;
+  height: auto;
+  margin: 0;
+  &::before {
+    content: "";
+    width: .8rem;
+    height: .8rem;
+    display: inline-block;
+    background: url("img/icons.svg#cross") 0 / 0.8rem 0.8rem content-box;
+  }
+}

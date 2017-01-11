@@ -7,7 +7,6 @@ export class CardGrid extends React.Component {
       cards: React.PropTypes.arrayOf(React.PropTypes.shape({
         _id: React.PropTypes.string.isRequired,
         question: React.PropTypes.string.isRequired,
-        answer: React.PropTypes.string.isRequired,
       })).isRequired,
       onDelete: React.PropTypes.func.isRequired,
     };
@@ -15,16 +14,14 @@ export class CardGrid extends React.Component {
 
   render() {
     return (
-      <table className="grid">
-        <tbody>
-          {
-            this.props.cards.map(
-              card => <CardPreview key={card._id}
-                onDelete={this.props.onDelete} {...card} />
-            )
-          }
-        </tbody>
-      </table>
+      <div className="card-grid">
+        {
+          this.props.cards.map(
+            card => <CardPreview key={card._id}
+              onDelete={this.props.onDelete} {...card} />
+          )
+        }
+      </div>
     );
   }
 }

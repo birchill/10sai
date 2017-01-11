@@ -5,7 +5,6 @@ export class CardPreview extends React.Component {
     return {
       _id: React.PropTypes.string.isRequired,
       question: React.PropTypes.string.isRequired,
-      answer: React.PropTypes.string.isRequired,
       onDelete: React.PropTypes.func.isRequired,
     };
   }
@@ -20,13 +19,16 @@ export class CardPreview extends React.Component {
   }
 
   render() {
+    // I thought flexbox was supposed to fix all the problems with CSS but
+    // we still have to add an extra div just to use it :/
     return (
-      <tr>
-        <td className="question">{this.props.question}</td>
-        <td className="answer">{this.props.answer}</td>
-        <td className="delete"><button className="link"
-          onClick={this.handleDelete}>X</button></td>
-      </tr>
+      <div className="card-preview">
+        <div className="flex-container">
+          <span className="question">{this.props.question}</span>
+          <button className="link delete"
+            onClick={this.handleDelete}>X</button>
+        </div>
+      </div>
     );
   }
 }

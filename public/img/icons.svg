@@ -69,6 +69,7 @@
     <circle cx="1171.8" cy="20.3" r="7.6"/>
   </g>
   <!-- Cross -->
+  <view id="cross" viewBox="1200 0 100 100"/>
   <g transform="translate(1200 0)">
     <path fill="none" stroke="#AAA" stroke-width="20" stroke-linecap="round"
       d="M85 15L15 85M15 15l70 70"/>
