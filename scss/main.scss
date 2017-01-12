@@ -166,7 +166,7 @@ header .icon {
 
 #sync-status::before {
   content: "";
-  background: url('img/icons.svg') left / auto 100% content-box;
+  background: url('img/icons.svg#sync') 0 / 100% 100% content-box;
 }
 #sync-status .overlay {
   position: absolute;
@@ -179,13 +179,13 @@ header .icon {
   animation: rotate 1s linear infinite;
 }
 #sync-status.paused .overlay {
-  background: url('img/icons.svg') -400% / auto 100% content-box;
+  background: url('img/icons.svg#overlay-pause') 0 / 100% 100% content-box;
 }
 #sync-status.offline .overlay {
-  background: url('img/icons.svg') -300% / auto 100% content-box;
+  background: url('img/icons.svg#overlay-offline') 0 / 100% 100% content-box;
 }
 #sync-status.error .overlay {
-  background: url('img/icons.svg') -200% / auto 100% content-box;
+  background: url('img/icons.svg#overlay-error') 0 / 100% 100% content-box;
 }
 @keyframes rotate {
   from { transform: rotate(0deg); }
@@ -200,7 +200,7 @@ header .icon {
   background: $hover-highlight;
 }
 #settings-menu::before {
-  background: url('img/icons.svg') -600% / auto 100% content-box;
+  background: url('img/icons.svg#settings') 0 / 100% 100% content-box;
 }
 
 /*
@@ -266,7 +266,7 @@ main section h3 {
   width: 1.2rem;
   height: 1.2rem;
   display: inline-block;
-  background: url('img/icons.svg') -1200% / auto 100% content-box;
+  background: url('img/icons.svg#cross') 0 / 100% 100% content-box;
 }
 
 /*
