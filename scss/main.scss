@@ -346,8 +346,11 @@ input[type=button], input[type=submit], button {
   vertical-align: middle;
   white-space: nowrap;
   &:hover {
-    color: $hover-highlight;
-    border-color: $hover-highlight;
+    /*
+     * Using a filter here (and below) means that when we put SVG icons in
+     * the buttons we don't have to prepare special recolored versions of them.
+     */
+    filter: brightness(1.2);
   }
 }
 input[type=button].primary,
@@ -356,7 +359,7 @@ button.primary {
   background: $highlight;
   color: white;
   &:hover {
-    background: $hover-highlight;
+    filter: brightness(1.2);
   }
 }
 
@@ -463,12 +466,6 @@ button[name='pause-sync'] {
 button[name='resume-sync'] {
   background: url(svg-encode(resume-button($highlight))) 1rem 0.9rem /
               1rem no-repeat;
-}
-button[name='pause-sync']:hover {
-  background-image: url(svg-encode(pause-button($hover-highlight)));
-}
-button[name='resume-sync']:hover {
-  background-image: url(svg-encode(resume-button($hover-highlight)));
 }
 
 /*
