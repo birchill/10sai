@@ -38,6 +38,21 @@ const dispatchSettingUpdates = settings => {
   }
 };
 
+/*
+XXX Delete me -- this is only here for generating large numbers of test cards.
+Should just use bulkDocs however though.
+function loop(promise) {
+  return promise.then(i => {
+    return cardStore.putCard({ question: `Question ${i}`,
+                               answer: 'Test answer' })
+           .then(() => i);
+  }).then(i => {
+    return i < 1000 ? loop(Promise.resolve(i + 1)) : 'yer';
+  });
+}
+setTimeout(() => { loop(Promise.resolve(11)); }, 500);
+*/
+
 settingsStore.getSettings().then(dispatchSettingUpdates);
 settingsStore.onUpdate(dispatchSettingUpdates);
 
