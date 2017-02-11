@@ -11,6 +11,14 @@ function getScrollContainer(elem) {
          : getScrollContainer(elem.parentNode);
 }
 
+// Ideal number of screens' worth of overflow to render. 0 means "just render
+// what is actually on the screen".
+const MAX_OVERFLOW_SCREENS = 2;
+
+// Rather than re-rendering content on each scroll, we only regenerate content
+// when we have less than the minimum amount of overflow.
+const MIN_OVERFLOW_SCREENS = 1;
+
 export class CardGrid extends React.Component {
   static get propTypes() {
     return {
@@ -162,24 +170,52 @@ export class CardGrid extends React.Component {
     let startIndex;
     let endIndex;
 
-    // XXX Fill in an overflow range of several screens' worth (e.g. 4) and only
-    // update the visible range when we're say, within 1 screen of the existing
-    // visible range.
-
     if (this.scrollContainer) {
       // Calculate visible height
+      const screenHeight = this.scrollContainer.offsetHeight;
+
+      // ("Upper" here refers to the vertical axis, like "up". I know,
+      // confusing.)
+
+      // What is actually on screen?
       const upperBound = Math.max(this.scrollContainer.scrollTop -
                                   this.grid.offsetTop, 0);
-      const lowerBound = this.scrollContainer.offsetHeight -
+      const lowerBound = screenHeight -
                          this.grid.offsetTop +
                          this.scrollContainer.scrollTop;
 
-      const firstVisibleRow = Math.floor(upperBound / this.state.itemHeight);
-      const lastVisibleRow  = Math.ceil(lowerBound / this.state.itemHeight);
+      // Define calculation for getting the item index for the first item
+      // we need to render in order to produce |numOverflowScreens|.
+      const getStartIndexForOverflow = numOverflowScreens => {
+        const overflowUpperBound =
+          Math.max(upperBound - screenHeight * numOverflowScreens, 0);
+        const firstRow = Math.floor(overflowUpperBound / this.state.itemHeight);
+        return firstRow * this.state.itemsPerRow;
+      };
+      // Likewise for the last item...
+      const getEndIndexForOverflow = numOverflowScreens => {
+        const overflowLowerBound =
+          Math.min(lowerBound + screenHeight * numOverflowScreens,
+                   this.state.containerHeight);
+        const lastRow = Math.ceil(overflowLowerBound / this.state.itemHeight);
+        return Math.min((lastRow + 1) * this.state.itemsPerRow,
+                        props.cards.length);
+      };
 
-      startIndex = firstVisibleRow * this.state.itemsPerRow;
-      endIndex   = Math.min((lastVisibleRow + 1) * this.state.itemsPerRow,
-                            props.cards.length);
+      // What is the range for the minimum overflow we would accept?
+      const minStartIndex = getStartIndexForOverflow(MIN_OVERFLOW_SCREENS);
+      const minEndIndex = getEndIndexForOverflow(MIN_OVERFLOW_SCREENS);
+
+      // If the current range covers the minimum overflow region, don't
+      // update the indices and just use the existing rendering.
+      if (minStartIndex >= this.state.startIndex &&
+          minEndIndex <= this.state.endIndex) {
+        startIndex = this.state.startIndex;
+        endIndex = this.state.endIndex;
+      } else {
+        startIndex = getStartIndexForOverflow(MAX_OVERFLOW_SCREENS);
+        endIndex = getEndIndexForOverflow(MAX_OVERFLOW_SCREENS);
+      }
     } else {
       // No scroll container? All the items must be visible, I guess.
       startIndex = 0;
