@@ -162,10 +162,6 @@ export class CardGrid extends React.Component {
     let startIndex;
     let endIndex;
 
-    // XXX Fill in an overflow range of several screens' worth (e.g. 4) and only
-    // update the visible range when we're say, within 1 screen of the existing
-    // visible range.
-
     if (this.scrollContainer) {
       // Calculate visible height
       const upperBound = Math.max(this.scrollContainer.scrollTop -
