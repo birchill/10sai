@@ -80,12 +80,6 @@ export class CardGrid extends React.Component {
     }
   }
 
-  // XXX
-  // - Animate deletion and subsequent movement
-  //   - Requires doing a minimal update to cards set? (Maybe not?)
-  // - Animate addition and prior movement (i.e. making room)
-  // - Animate initial reveal (and reveal on scroll)
-
   handleResize() {
     this.updateLayout();
   }
