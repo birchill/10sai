@@ -207,8 +207,15 @@ export class CardGrid extends React.Component {
       }
     });
 
-    // XXX Sort emptySlots (in descending order so we can use pop instead of
-    // shift below) by distance from visible range
+    const distanceFromVisibleRange = slot => {
+      // We use max because we want to find the distance from the closest edge
+      // but the distance from the other edge should be negative.
+      return Math.max(startIndex - slot, slot - endIndex);
+    };
+    // Sort in ascending order of distance so we can just pop() off the end
+    // of the array.
+    emptySlots.sort((a, b) => distanceFromVisibleRange(a) -
+                              distanceFromVisibleRange(b));
 
     // Fill in missing items
     for (let i = startIndex; i < endIndex; i++) {
@@ -216,7 +223,7 @@ export class CardGrid extends React.Component {
         continue;
       }
       if (emptySlots.length) {
-        const emptyIndex = emptySlots.shift();
+        const emptyIndex = emptySlots.pop();
         slots[emptyIndex] = i;
       } else {
         slots.push(i);
