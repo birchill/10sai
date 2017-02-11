@@ -11,6 +11,23 @@ function getScrollContainer(elem) {
          : getScrollContainer(elem.parentNode);
 }
 
+// This is just a safeguard to ensure we don't end up rendering recursively.
+//
+// This could happen, for example, if we update layout, determine the size of
+// items, trigger a render based on that size. Then, suppose that render with
+// the new size means we now need scrollbars. Then if we update layout again we
+// might decide to render the items at a smaller size (due to narrower area)
+// which might mean we don't overflow the screen anymore and no longer need
+// scroll bars, and so on.
+//
+// React's lifecycle actually makes it quite hard to detect this case so we
+// simply update the below when we *think* we are triggering a render and clear
+// it any time return early from updating layout (this relies on the fact that
+// componentDidUpdate calls updateLayout). If the depth gets greater than 3
+// (this turns out to be the number of initial renders we need when we have
+// scrollbars), then we just bail.
+let layoutRenderDepth = 0;
+
 export class CardGrid extends React.Component {
   static get propTypes() {
     return {
@@ -67,7 +84,7 @@ export class CardGrid extends React.Component {
 
   componentDidUpdate() {
     // Re-do layout since, after rendering, the template item might have
-    // changed in size (e.g. due to media queries).
+    // changed in size (e.g. due to media queries being applied).
     this.updateLayout();
   }
 
@@ -90,6 +107,13 @@ export class CardGrid extends React.Component {
 
   updateLayout(nextProps) {
     if (!this.grid || !this.templateItem) {
+      layoutRenderDepth = 0;
+      return;
+    }
+
+    // Detect possible infinite layout behavior
+    if (layoutRenderDepth > 3) {
+      layoutRenderDepth = 0;
       return;
     }
 
@@ -98,6 +122,7 @@ export class CardGrid extends React.Component {
     const cards = props.cards;
     if (!cards.length) {
       if (this.state.containerHeight !== 0) {
+        layoutRenderDepth++;
         this.setState({ containerHeight: 0 });
       }
       return;
@@ -132,16 +157,17 @@ export class CardGrid extends React.Component {
     const containerHeight = Math.floor(this.props.cards.length / itemsPerRow) *
                             itemHeight;
 
-    // XXX We probably need some sort of safeguard against recursion here in
-    // case updating this state causes the templateItem's size to change.
     if (this.state.itemsPerRow     !== itemsPerRow ||
         this.state.itemWidth       !== itemWidth ||
         this.state.itemHeight      !== itemHeight ||
         this.state.itemScale       !== itemScale ||
         this.state.containerHeight !== containerHeight) {
+      layoutRenderDepth++;
       this.setState({ itemsPerRow, itemWidth, itemHeight, itemScale,
                       containerHeight });
       this.updateVisibleRange(nextProps);
+    } else {
+      layoutRenderDepth = 0;
     }
   }
 
