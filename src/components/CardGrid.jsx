@@ -23,9 +23,8 @@ function getScrollContainer(elem) {
 // React's lifecycle actually makes it quite hard to detect this case so we
 // simply update the below when we *think* we are triggering a render and clear
 // it any time return early from updating layout (this relies on the fact that
-// componentDidUpdate calls updateLayout). If the depth gets greater than 3
-// (this turns out to be the number of initial renders we need when we have
-// scrollbars), then we just bail.
+// componentDidUpdate calls updateLayout). If the depth gets greater than 2,
+// then we just bail.
 let layoutRenderDepth = 0;
 
 export class CardGrid extends React.Component {
@@ -79,6 +78,7 @@ export class CardGrid extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    layoutRenderDepth = 0;
     this.updateLayout(nextProps);
   }
 
@@ -112,7 +112,7 @@ export class CardGrid extends React.Component {
     }
 
     // Detect possible infinite layout behavior
-    if (layoutRenderDepth > 3) {
+    if (layoutRenderDepth > 2) {
       layoutRenderDepth = 0;
       return;
     }
