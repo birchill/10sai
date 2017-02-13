@@ -45,7 +45,7 @@ export class CardGrid extends React.Component {
                    itemsPerRow: 1,
                    itemScale: 1,
                    startIndex: 0,
-                   endIndex: 1,
+                   endIndex: 0,
                    containerHeight: null,
                    slots: [] };
 
@@ -77,14 +77,19 @@ export class CardGrid extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    layoutRenderDepth = 0;
-    this.updateLayout(nextProps);
+    if (this.props.cards.length !== nextProps.cards.length) {
+      layoutRenderDepth = 0;
+      this.updateLayout(nextProps);
+      this.updateVisibleRange(nextProps);
+    }
   }
 
   componentDidUpdate() {
     // Re-do layout since, after rendering, the template item might have
     // changed in size (e.g. due to media queries being applied).
-    this.updateLayout();
+    if (layoutRenderDepth) {
+      this.updateLayout();
+    }
   }
 
   componentWillUnmount() {
@@ -153,7 +158,7 @@ export class CardGrid extends React.Component {
     itemWidth  = Math.floor(itemWidth * itemScale);
     itemHeight = Math.floor(itemHeight * itemScale);
 
-    const containerHeight = Math.floor(this.props.cards.length / itemsPerRow) *
+    const containerHeight = Math.ceil(this.props.cards.length / itemsPerRow) *
                             itemHeight;
 
     if (this.state.itemsPerRow     !== itemsPerRow ||
@@ -265,6 +270,11 @@ export class CardGrid extends React.Component {
         {
           this.state.slots.map((itemIndex, i) => {
             const card = this.props.cards[itemIndex];
+            // This is probably only needed until we make the slot assignment
+            // work in the face of deletion.
+            if (!card) {
+              return null;
+            }
             const row = Math.floor(itemIndex / this.state.itemsPerRow);
             const col = itemIndex % this.state.itemsPerRow;
             const translate = `translate(${col * this.state.itemWidth}px, ` +
