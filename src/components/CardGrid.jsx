@@ -60,7 +60,6 @@ export class CardGrid extends React.Component {
       }
       this.scrollContainer = getScrollContainer(elem);
       if (this.scrollContainer) {
-        // XXX Throttle this?
         this.scrollContainer.addEventListener('scroll',
                                               this.handleScroll,
                                               { passive: true });
