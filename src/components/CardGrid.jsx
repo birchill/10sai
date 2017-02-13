@@ -103,6 +103,7 @@ export class CardGrid extends React.Component {
 
   handleResize() {
     this.updateLayout();
+    this.updateVisibleRange();
   }
 
   handleScroll() {
