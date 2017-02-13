@@ -624,6 +624,9 @@ form[name=sync-server-settings] {
 .card-grid > * {
   position: absolute;
 }
+.grid-item {
+  transform-origin: 0% 0%;
+}
 .card-preview {
   display: inline-block;
   position: relative;

@@ -271,11 +271,9 @@ export class CardGrid extends React.Component {
             const translate = `translate(${col * this.state.itemWidth}px, ` +
                                         `${row * this.state.itemHeight}px)`;
 
-            // XXX Set the transform-origin in the stylesheet instead
             return (
-              <div style={ { transform: `${translate} ${scale}`,
-                             transformOrigin: '0% 0%' } }
-                key={i}>
+              <div style={ { transform: `${translate} ${scale}` } }
+                className="grid-item" key={i}>
                 <CardPreview onDelete={this.props.onDelete} {...card} />
               </div>);
           })
