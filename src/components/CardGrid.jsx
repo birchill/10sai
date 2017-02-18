@@ -11,7 +11,9 @@ function getScrollContainer(elem) {
          : getScrollContainer(elem.parentNode);
 }
 
-// This is just a safeguard to ensure we don't end up rendering recursively.
+// Record the number of potentially recursive calls to updateLayout. This is
+// mostly a safeguard to ensure we don't end up rendering recursively without
+// limit.
 //
 // This could happen, for example, if we update layout, determine the size of
 // items, trigger a render based on that size. Then, suppose that render with
@@ -22,9 +24,11 @@ function getScrollContainer(elem) {
 //
 // React's lifecycle actually makes it quite hard to detect this case so we
 // simply update the below when we *think* we are triggering a render and clear
-// it any time return early from updating layout (this relies on the fact that
-// componentDidUpdate calls updateLayout). If the depth gets greater than 2,
-// then we just bail.
+// it any time return early from updating layout. If the depth gets greater than
+// 2, then we just bail.
+//
+// We also use this to detect when the layout has changed so we know if we need
+// to re-check the computed style after the DOM has been updated.
 let layoutRenderDepth = 0;
 
 export class CardGrid extends React.Component {
@@ -73,22 +77,52 @@ export class CardGrid extends React.Component {
 
   componentDidMount() {
     this.updateLayout();
+    this.updateVisibleRange();
     window.addEventListener('resize', this.handleResize);
   }
 
   componentWillReceiveProps(nextProps) {
+    // This is a new render cycle, so reset the render depth.
+    layoutRenderDepth = 0;
+
+    let needsRangeUpdate = false;
+
+    // The only thing the can trigger a change to layout is a change in the
+    // number of items.
     if (this.props.cards.length !== nextProps.cards.length) {
-      layoutRenderDepth = 0;
-      this.updateLayout(nextProps);
-      this.updateVisibleRange(nextProps);
+      needsRangeUpdate = true;
+      this.updateLayout(nextProps.cards);
+    }
+
+    // We will only call this of the number of items has *not* changed so we can
+    // assume that the two items arrays have the same length.
+    const visibleCardIndicesHaveChanged = () => {
+      for (let i = this.state.startIndex; i < this.state.endIndex; i++) {
+        if (this.props.cards[i]._id !== nextProps.cards[i]._id) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    if (needsRangeUpdate || visibleCardIndicesHaveChanged()) {
+      // Generate a slot assignment mapping for existing cards so we can keep
+      // them in the same slots of they are still visible.
+      const slotAssignment = {};
+      this.state.slots.forEach((itemIndex, i) => {
+        slotAssignment[this.props.cards[itemIndex]._id] = i;
+      });
+
+      this.updateVisibleRange(nextProps.cards, slotAssignment);
     }
   }
 
   componentDidUpdate() {
-    // Re-do layout since, after rendering, the template item might have
-    // changed in size (e.g. due to media queries being applied).
-    if (layoutRenderDepth) {
-      this.updateLayout();
+    // If we updated layout before the last render, check if the size of
+    // items in the DOM has changed. This might happen, for example, if media
+    // queries were applied based on the new viewport size.
+    if (layoutRenderDepth && this.updateLayout()) {
+      this.updateVisibleRange();
     }
   }
 
@@ -103,6 +137,9 @@ export class CardGrid extends React.Component {
 
   handleResize() {
     this.updateLayout();
+    // Regardless of the return value of updateLayout, we need to update the
+    // visible range since more items may now be in view even if their size has
+    // not changed.
     this.updateVisibleRange();
   }
 
@@ -110,27 +147,38 @@ export class CardGrid extends React.Component {
     this.updateVisibleRange();
   }
 
-  updateLayout(nextProps) {
+  // Recalculates the size of items based on the computed style of a hidden
+  // dummy item in the DOM. Also, updates the scroll height of the container to
+  // reflect the number of items available.
+  //
+  // @param nextItems An optional parameter specifying the to-be-set array of
+  //                  items. If this is not provided, the current items (stored
+  //                  in props) are used.
+  //
+  // Returns true if the size changed, false otherwise.
+  updateLayout(nextItems) {
     if (!this.grid || !this.templateItem) {
       layoutRenderDepth = 0;
-      return;
+      return false;
     }
 
     // Detect possible infinite layout behavior
     if (layoutRenderDepth > 2) {
       layoutRenderDepth = 0;
-      return;
+      return false;
     }
 
-    const props = nextProps || this.props;
+    const cards = nextItems || this.props.cards;
 
-    const cards = props.cards;
     if (!cards.length) {
-      if (this.state.containerHeight !== 0) {
-        layoutRenderDepth++;
-        this.setState({ containerHeight: 0 });
+      if (this.state.containerHeight === 0) {
+        layoutRenderDepth = 0;
+        return false;
       }
-      return;
+
+      layoutRenderDepth++;
+      this.setState({ containerHeight: 0 });
+      return true;
     }
 
     // We want to be able to define the item size using the stylesheet (e.g.
@@ -159,30 +207,47 @@ export class CardGrid extends React.Component {
     itemWidth  = Math.floor(itemWidth * itemScale);
     itemHeight = Math.floor(itemHeight * itemScale);
 
-    const containerHeight = Math.ceil(this.props.cards.length / itemsPerRow) *
+    const containerHeight = Math.ceil(cards.length / itemsPerRow) *
                             itemHeight;
 
-    if (this.state.itemsPerRow     !== itemsPerRow ||
-        this.state.itemWidth       !== itemWidth ||
-        this.state.itemHeight      !== itemHeight ||
-        this.state.itemScale       !== itemScale ||
-        this.state.containerHeight !== containerHeight) {
-      layoutRenderDepth++;
-      this.setState({ itemsPerRow, itemWidth, itemHeight, itemScale,
-                      containerHeight });
-      this.updateVisibleRange(nextProps);
-    } else {
+    if (this.state.itemsPerRow     === itemsPerRow &&
+        this.state.itemWidth       === itemWidth &&
+        this.state.itemHeight      === itemHeight &&
+        this.state.itemScale       === itemScale &&
+        this.state.containerHeight === containerHeight) {
       layoutRenderDepth = 0;
+      return false;
     }
+
+    layoutRenderDepth++;
+    this.setState({ itemsPerRow, itemWidth, itemHeight, itemScale,
+                    containerHeight });
+    return true;
   }
 
-  updateVisibleRange(nextProps) {
+  // Recalculates the assignment of items to slots. This needs to be performed
+  // whenever layout is updated but also whenever a scroll takes place or the
+  // viewport is resized.
+  //
+  // @param nextItems An optional parameter specifying the to-be-set array of
+  //                  items. If this is not provided, the current items (stored
+  //                  in props) are used.
+  //
+  // @param slotAssignment An optional parameter that may be provided together
+  //                       with nextItems that maps item IDs for the *current*
+  //                       set of properties to slots. This is used so that we
+  //                       can ensure existing items that remain in view are
+  //                       assigned to the same slot even when the set of items
+  //                       is being updated.
+  //
+  // Returns true if the size changed, false otherwise.
+  updateVisibleRange(nextItems, slotAssignment) {
     // We haven't finished doing the initial layout yet
     if (!this.state.itemWidth || !this.state.itemHeight) {
       return;
     }
 
-    const props = nextProps || this.props;
+    const cards = nextItems || this.props.cards;
 
     let startIndex;
     let endIndex;
@@ -200,47 +265,59 @@ export class CardGrid extends React.Component {
 
       startIndex = firstVisibleRow * this.state.itemsPerRow;
       endIndex   = Math.min((lastVisibleRow + 1) * this.state.itemsPerRow,
-                            props.cards.length);
+                            cards.length);
     } else {
       // No scroll container? All the items must be visible, I guess.
       startIndex = 0;
-      endIndex = props.length;
+      endIndex = cards.length;
     }
 
-    if (this.state.startIndex === startIndex &&
+    if (!slotAssignment &&
+        this.state.startIndex === startIndex &&
         this.state.endIndex === endIndex) {
       return;
     }
+
+    // * Then we need to go through |nextProps| and work out which ones should
+    //   be in view, i.e. work out the range.
+    // * Then for each card in |nextProps| that is in range, we should look up
+    //   our reverse map and work out if it currently has a slot. If it does we
+    //   should use it. i.e. fill in that slot with the index in |nextProps|.
+    // * At the end of the process, we need to know which slots are taken and
+    //   which are empty and then fill in the empty ones are usual.
 
     // Update slots
     const slots = this.state.slots.slice();
 
     // Collect empty and existing slots
-    const emptySlots = [];
+    let emptySlots = [];
     const existingItems = [];
-    slots.forEach((itemIndex, i) => {
-      if (itemIndex === null ||
-          itemIndex < startIndex ||
-          itemIndex >= endIndex) {
-        emptySlots.push(i);
-      } else {
-        existingItems[itemIndex] = i;
+    if (slotAssignment) {
+      slots.fill(null);
+      for (let i = startIndex; i < endIndex; i++) {
+        const existingSlot = slotAssignment[cards[i]._id];
+        if (typeof existingSlot === 'number') {
+          slots[existingSlot] = i;
+          existingItems[i] = existingSlot;
+        }
       }
-    });
-
-    const distanceFromVisibleRange = slot => {
-      // We use max because we want to find the distance from the closest edge
-      // but the distance from the other edge should be negative.
-      return Math.max(startIndex - slot, slot - endIndex);
-    };
-    // Sort in ascending order of distance so we can just pop() off the end
-    // of the array.
-    emptySlots.sort((a, b) => distanceFromVisibleRange(a) -
-                              distanceFromVisibleRange(b));
+      emptySlots = slots.map((slot, i) => (slot === null ? i : null))
+                        .filter(slot => slot !== null);
+    } else {
+      slots.forEach((itemIndex, i) => {
+        if (itemIndex === null ||
+            itemIndex < startIndex ||
+            itemIndex >= endIndex) {
+          emptySlots.push(i);
+        } else {
+          existingItems[itemIndex] = i;
+        }
+      });
+    }
 
     // Fill in missing items
     for (let i = startIndex; i < endIndex; i++) {
-      if (existingItems[i] || existingItems[i] === 0) {
+      if (typeof existingItems[i] === 'number') {
         continue;
       }
       if (emptySlots.length) {
