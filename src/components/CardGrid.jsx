@@ -278,14 +278,6 @@ export class CardGrid extends React.Component {
       return;
     }
 
-    // * Then we need to go through |nextProps| and work out which ones should
-    //   be in view, i.e. work out the range.
-    // * Then for each card in |nextProps| that is in range, we should look up
-    //   our reverse map and work out if it currently has a slot. If it does we
-    //   should use it. i.e. fill in that slot with the index in |nextProps|.
-    // * At the end of the process, we need to know which slots are taken and
-    //   which are empty and then fill in the empty ones are usual.
-
     // Update slots
     const slots = this.state.slots.slice();
 
