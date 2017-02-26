@@ -220,7 +220,10 @@ export class VirtualGrid extends React.Component {
     }
 
     layoutRenderDepth++;
-    this.setState({ itemsPerRow, itemWidth, itemHeight, itemScale,
+    this.setState({ itemsPerRow,
+                    itemWidth,
+                    itemHeight,
+                    itemScale,
                     containerHeight });
     return true;
   }
@@ -331,10 +334,13 @@ export class VirtualGrid extends React.Component {
     const scale = `scale(${this.state.itemScale})`;
 
     return (
-      <div className={this.props.className} ref={this.assignGrid}
+      <div
+        className={this.props.className}
+        ref={this.assignGrid}
         style={gridStyle}>
-        <div style={ { opacity: 0,
-                       pointerEvents: 'none' } } ref={this.assignItemTemplate}>
+        <div
+          style={{ opacity: 0, pointerEvents: 'none' }}
+          ref={this.assignItemTemplate}>
           {this.props.renderTemplateItem()}
         </div>
         {
@@ -351,8 +357,11 @@ export class VirtualGrid extends React.Component {
                                         `${row * this.state.itemHeight}px)`;
 
             return (
-              <div style={ { transform: `${translate} ${scale}` } }
-                className="grid-item" key={i}>
+              <div
+                style={{ transform: `${translate} ${scale}` }}
+                className="grid-item"
+                // eslint-disable-next-line react/no-array-index-key
+                key={i}>
                 {this.props.renderItem(item)}
               </div>);
           })

@@ -1,11 +1,12 @@
 /* global define, it, describe */
+/* eslint-disable react/jsx-first-prop-new-line */
 
 import React from 'react';
 import { shallow } from 'enzyme';
 import { assert } from 'chai';
 import sinon from 'sinon';
 import SyncState from '../../src/sync-states';
-import SyncSettingsPanel from '../../src/components/SyncSettingsPanel';
+import SyncSettingsPanel from '../../src/components/SyncSettingsPanel.jsx';
 
 sinon.assert.expose(assert, { prefix: '' });
 

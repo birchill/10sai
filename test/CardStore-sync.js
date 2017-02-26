@@ -1,11 +1,12 @@
 /* global afterEach, beforeEach, define, describe, it */
 /* eslint arrow-body-style: [ "off" ] */
 
+import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 import { assert, AssertionError } from 'chai';
+
 import CardStore from '../src/CardStore';
 import { waitForEvents } from './testcommon';
-import PouchDB from 'pouchdb';
 
 describe('CardStore remote sync', () => {
   let subject;
@@ -76,12 +77,13 @@ describe('CardStore remote sync', () => {
 
   it('reports an error for an invalid sync server', done => {
     subject.setSyncServer('http://not.found/',
-      { onError: err => {
-        assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT', 'ECONNREFUSED' ],
-                     'Expected error for inaccessible server');
-        done();
-      },
-    });
+      { onError:
+          err => {
+            assert.oneOf(err.code, [ 'ENOTFOUND', 'ENOENT', 'ECONNREFUSED' ],
+                        'Expected error for inaccessible server');
+            done();
+          },
+      });
   });
 
   it('rejects a non-http/https database', () => {
@@ -140,12 +142,10 @@ describe('CardStore remote sync', () => {
   it('downloads existing cards on the remote server', done => {
     const firstCard =  { question: 'Question 1',
                          answer:   'Answer 1',
-                         _id: CardStore.generateCardId(),
-                       };
+                         _id: CardStore.generateCardId() };
     const secondCard = { question: 'Question 2',
                          answer:   'Answer 2',
-                         _id: CardStore.generateCardId(),
-                       };
+                         _id: CardStore.generateCardId() };
 
     const expectedCards = [ firstCard, secondCard ];
 
@@ -171,10 +171,9 @@ describe('CardStore remote sync', () => {
 
   it('disassociates from previous remote sync server when a new one is set',
   () => {
-    const card =  { question: 'Question',
-                    answer:   'Answer',
-                    _id: CardStore.generateCardId(),
-                  };
+    const card = { question: 'Question',
+                   answer:   'Answer',
+                   _id: CardStore.generateCardId() };
 
     const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
 

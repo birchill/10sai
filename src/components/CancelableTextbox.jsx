@@ -51,11 +51,13 @@ export class CancelableTextbox extends React.Component {
 
     return (
       <div className="cancelable-textbox-group">
-        <input {...this.props}
+        <input
+          {...this.props}
           value={this.state.value}
           onChange={this.handleChange}
           onFocus={this.handleFocus} />
-        <button type="reset"
+        <button
+          type="reset"
           className="cancelable-textbox-cancel"
           aria-hidden={hidden}
           tabIndex="-1"

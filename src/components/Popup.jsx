@@ -62,9 +62,11 @@ export class Popup extends React.Component {
     const popupClass = `popup ${this.props.active ? 'active' : ''}`;
 
     return (
-      <section className={popupClass}
-        aria-hidden={!this.props.active} role="dialog"
-        tabIndex={this.props.active ? 0 : -1 }
+      <section
+        className={popupClass}
+        aria-hidden={!this.props.active}
+        role="dialog"
+        tabIndex={this.props.active ? 0 : -1}
         ref={this.assignPopup}>
         <Link to="." className="popup-close-button">Close</Link>
         {this.props.children}

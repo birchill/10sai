@@ -12,23 +12,24 @@ function translateError(error) {
   }
 
   if (error instanceof SyntaxError) {
-    return <p>Couldn't understand server's response. Not a sync server?</p>;
+    return <p>Couldn’t understand server’s response. Not a sync server?</p>;
   }
 
   if (typeof error.status === 'number' && error.status === 0) {
-    return (<div>
-              <p>
-                Network error. Some possible causes might be:
-              </p>
-              <ul>
-                <li>The server name was misspelled</li>
-                <li>The server has not been set up to <a
-                  href="https://github.com/pouchdb/add-cors-to-couchdb"
-                  target="_blank" rel="noopener">support
-                  cross-origin access</a></li>
-                <li>The server is temporarily offline</li>
-              </ul>
-            </div>);
+    return (
+      <div>
+        <p>
+          Network error. Some possible causes might be:
+        </p>
+        <ul>
+          <li>The server name was misspelled</li>
+          <li>The server has not been set up to <a
+            href="https://github.com/pouchdb/add-cors-to-couchdb"
+            target="_blank" rel="noopener noreferrer">support
+            cross-origin access</a></li>
+          <li>The server is temporarily offline</li>
+        </ul>
+      </div>);
   }
 
   if (typeof error.status === 'number' && error.status === 404) {
@@ -136,7 +137,8 @@ export class SyncSettingsPanel extends React.Component {
   renderServerInputBox() {
     const server = this.props.server ? this.props.server.name : '';
     return (
-      <ExistingServerBox server={server}
+      <ExistingServerBox
+        server={server}
         lastSyncTime={this.props.lastSyncTime}
         onEdit={this.handleEditServer} />);
   }
@@ -144,7 +146,8 @@ export class SyncSettingsPanel extends React.Component {
   renderOkOrOffline() {
     return (
       <div>
-        <div><button name="pause-sync"
+        <div><button
+          name="pause-sync"
           onClick={this.handlePause}>Pause</button></div>
         { this.renderServerInputBox() }
       </div>);
@@ -154,7 +157,8 @@ export class SyncSettingsPanel extends React.Component {
     return (
       <div>
         <progress value={this.props.progress} />
-        <div><button name="cancel-sync"
+        <div><button
+          name="cancel-sync"
           onClick={this.handlePause}>Cancel</button></div>
       </div>);
   }
@@ -162,7 +166,8 @@ export class SyncSettingsPanel extends React.Component {
   renderPaused() {
     return (
       <div>
-        <div><button name="resume-sync"
+        <div><button
+          name="resume-sync"
           onClick={this.handleResume}>Resume</button></div>
         { this.renderServerInputBox() }
       </div>);
@@ -174,7 +179,8 @@ export class SyncSettingsPanel extends React.Component {
         <p className="explanation">Adding a sync server lets you
           access your cards from another computer, phone, or tablet.
         </p>
-        <button name="edit-server" className="action primary"
+        <button
+          name="edit-server" className="action primary"
           onClick={this.handleEditServer}>Add a sync server</button>
       </div>);
   }
@@ -229,9 +235,9 @@ export class SyncSettingsPanel extends React.Component {
     }
 
     return (
-      <div className={ `sync-settings summary-panel ${syncClass}` }>
+      <div className={`sync-settings summary-panel ${syncClass}`}>
         <div className="sync-overview">
-          <div className="icon sync-icon"></div>
+          <div className="icon sync-icon" />
         </div>
         <div className="sync-details">
           <h4 className="summary">{summary}</h4>

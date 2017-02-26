@@ -4,7 +4,6 @@ import { browserHistory, Router, Route } from 'react-router';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import createSagaMiddleware from 'redux-saga';
-import createLogger from 'redux-logger';
 
 import reducer from './reducers/index';
 import syncSagas from './sagas/sync';
@@ -12,12 +11,14 @@ import SettingsStore from './SettingsStore';
 import CardStore from './CardStore';
 import App from './components/App.jsx';
 
-import 'main.scss';
+import 'main.scss'; // eslint-disable-line
 
 const sagaMiddleware = createSagaMiddleware();
 
 let store;
 if (process.env.NODE_ENV === 'development') {
+  // eslint-disable-next-line global-require, import/no-extraneous-dependencies
+  const createLogger = require('redux-logger');
   const loggerMiddleware = createLogger();
   store = createStore(
     reducer,
@@ -60,11 +61,12 @@ sagaMiddleware.run(function* allSagas() {
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={browserHistory}
-      onUpdate={ function onUpdate() {
+    <Router
+      history={browserHistory}
+      onUpdate={function onUpdate() {
         store.dispatch({ type: 'CHANGE_LOCATION',
                          screen: this.state.params.screen });
-      } }>
+      }}>
       <Route path="/(:screen)" component={App} cards={cardStore} />
     </Router>
   </Provider>,

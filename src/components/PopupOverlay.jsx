@@ -9,12 +9,7 @@ export class PopupOverlay extends React.Component {
     };
   }
 
-  constructor(props) {
-    super(props);
-    this.handleFocus = this.handleFocus.bind(this);
-  }
-
-  handleFocus(evt) {
+  static handleFocus(evt) {
     evt.stopPropagation();
     const popup = document.querySelector('.popup.active');
     if (popup) {
@@ -28,7 +23,7 @@ export class PopupOverlay extends React.Component {
     return (
       <div onFocus={this.props.active ? this.handleFocus : ''}>
         {this.props.children}
-        <div className={overlayClass} onClick={this.props.close}></div>
+        <div className={overlayClass} onClick={this.props.close} />
       </div>
     );
   }

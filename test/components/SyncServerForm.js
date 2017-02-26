@@ -1,10 +1,11 @@
 /* global define, it, describe */
+/* eslint-disable react/jsx-first-prop-new-line */
 
 import React from 'react';
 import { shallow } from 'enzyme';
 import { assert } from 'chai';
 import sinon from 'sinon';
-import SyncServerForm from '../../src/components/SyncServerForm';
+import SyncServerForm from '../../src/components/SyncServerForm.jsx';
 
 sinon.assert.expose(assert, { prefix: '' });
 

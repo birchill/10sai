@@ -10,14 +10,13 @@ module.exports = {
   },
   devtool: 'cheap-source-map',
   module: {
-    preLoaders: [
+    rules: [
       {
+        enforce: 'pre',
         test: /\.jsx?$/,
         loader: 'eslint-loader',
         exclude: /node_modules/,
-      }
-    ],
-    loaders: [
+      },
       {
         test: /\.jsx?$/,
         loader: 'babel-loader',
@@ -29,21 +28,28 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('raw!sass')
+        loader: ExtractTextPlugin.extract({
+          loader: [
+            { loader: 'raw-loader' },
+            { loader: 'sass-loader',
+              options: {
+                includePaths: [path.resolve(__dirname, "./scss")]
+              }
+            }
+          ]
+        })
       }
     ]
   },
   resolve: {
-    root: [
+    modules: [
       path.resolve(__dirname, './src'),
-      path.resolve(__dirname, './scss')
+      path.resolve(__dirname, './scss'),
+      'node_modules'
     ]
   },
-  sassLoader: {
-    includePaths: [path.resolve(__dirname, "./scss")]
-  },
   plugins: [
-    new ExtractTextPlugin('tensai.css', { allChunks: true }),
+    new ExtractTextPlugin({ filename: 'tensai.css', allChunks: true }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
     })

@@ -13,28 +13,31 @@ export class CardGrid extends React.Component {
     };
   }
 
+  static renderTemplateCard() {
+    return (
+      <CardPreview
+        onDelete={() => {}}
+        _id="template"
+        question="Template" />);
+  }
+
   constructor(props) {
     super(props);
 
     this.renderCard = this.renderCard.bind(this);
-    this.renderTemplateCard = this.renderTemplateCard.bind(this);
   }
 
   renderCard(item) {
     return <CardPreview onDelete={this.props.onDelete} {...item} />;
   }
 
-  renderTemplateCard() {
-    return (
-      <CardPreview onDelete={() => {}} _id="template"
-        question="Template" />);
-  }
-
   render() {
     return (
-      <VirtualGrid items={this.props.cards} className="card-grid"
+      <VirtualGrid
+        items={this.props.cards}
+        className="card-grid"
         renderItem={this.renderCard}
-        renderTemplateItem={this.renderTemplateCard} />);
+        renderTemplateItem={CardGrid.renderTemplateCard} />);
   }
 }
 

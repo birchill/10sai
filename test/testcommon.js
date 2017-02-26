@@ -9,3 +9,5 @@ export function waitForEvents(cycles = 1) {
     }());
   });
 }
+
+export default waitForEvents;

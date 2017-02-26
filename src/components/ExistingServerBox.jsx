@@ -8,12 +8,13 @@ function ExistingServerBox(props) {
       <div className="server-summary">
         <div className="server-name">{props.server}</div>
         { props.lastSyncTime
-          ?  <div className="server-sync-time">
-                Last synced <SortOfRelativeDate value={props.lastSyncTime} />
-              </div>
+          ? <div className="server-sync-time">
+              Last synced <SortOfRelativeDate value={props.lastSyncTime} />
+          </div>
           : '' }
       </div>
-      <button name="edit-server"
+      <button
+        name="edit-server"
         onClick={props.onEdit}>Change</button>
     </fieldset>);
 }

@@ -23,6 +23,10 @@ class App extends React.Component {
     };
   }
 
+  static get defaultProps() {
+    return { nav: {} };
+  }
+
   constructor(props) {
     super(props);
     this.closePopup = this.closePopup.bind(this);
@@ -41,14 +45,20 @@ class App extends React.Component {
 
     return (
       <div>
-        <ConnectedNavbar settingsActive={settingsActive}
+        <ConnectedNavbar
+          settingsActive={settingsActive}
           currentScreenLink={this.currentScreenLink} />
         <main>
-          <PopupOverlay active={!!this.props.nav.popup} close={this.closePopup}>
+          <PopupOverlay
+            active={!!this.props.nav.popup}
+            close={this.closePopup}>
             <CardOverviewScreen db={this.props.route.cards} />
           </PopupOverlay>
-          <Popup active={settingsActive} close={this.closePopup}>
-            <SettingsPanel heading="Sync">
+          <Popup
+            active={settingsActive}
+            close={this.closePopup}>
+            <SettingsPanel
+              heading="Sync">
               <SyncSettingsPanelContainer />
             </SettingsPanel>
           </Popup>

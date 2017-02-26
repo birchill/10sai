@@ -165,7 +165,7 @@ class CardStore {
       return Promise.resolve();
     }
 
-    let dbOptions = undefined;
+    let dbOptions;
     if (options && options.username) {
       dbOptions = { auth: { username: options.username,
                             password: options.password } };

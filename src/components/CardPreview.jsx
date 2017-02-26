@@ -25,7 +25,8 @@ export class CardPreview extends React.Component {
       <div className="card-preview">
         <div className="flex-container">
           <span className="question">{this.props.question}</span>
-          <button className="link delete"
+          <button
+            className="link delete"
             onClick={this.handleDelete}>X</button>
         </div>
       </div>

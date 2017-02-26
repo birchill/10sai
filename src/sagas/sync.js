@@ -36,6 +36,7 @@ function* startReplication(cardStore, server, dispatch) {
   if (server) {
     yield put({ type: 'UPDATE_SYNC_PROGRESS', progress: undefined });
   }
+
   try {
     const syncServer = server ? server.name : undefined;
     const options = {
@@ -53,7 +54,6 @@ function* startReplication(cardStore, server, dispatch) {
   } catch (e) {
     // Ignore errors from setSyncServer since we deal with them in the onError
     // callback.
-    return;
   }
 }
 
@@ -82,8 +82,7 @@ function* setSyncServer(cardStore, settingsStore, dispatch, action) {
   yield put({ type: 'UPDATE_SYNC_SERVER',
               server,
               lastSyncTime: undefined,
-              paused: false,
-            });
+              paused: false });
   yield put({ type: 'FINISH_EDIT_SYNC_SERVER' });
 
   // Kick off and/or cancel replication
@@ -169,8 +168,7 @@ function* updateSetting(cardStore, dispatch, action) {
   yield put({ type: 'UPDATE_SYNC_SERVER',
               server: updatedServer,
               lastSyncTime: updatedLastSyncTime,
-              paused: updatedPaused,
-            });
+              paused: updatedPaused });
 
   // Check if we need to trigger replication due to a change in server
   // name or being unpaused.
@@ -197,6 +195,7 @@ function* goOffline(cardStore) {
 }
 
 function* syncSagas(cardStore, settingsStore, dispatch) {
+  /* eslint-disable indent */
   yield* [ takeLatest('SET_SYNC_SERVER', setSyncServer,
                       cardStore, settingsStore, dispatch),
            takeLatest('RETRY_SYNC', retrySync, cardStore, dispatch),
@@ -207,6 +206,7 @@ function* syncSagas(cardStore, settingsStore, dispatch) {
            takeEvery('UPDATE_SETTING', updateSetting, cardStore, dispatch),
            takeEvery('GO_ONLINE', goOnline, cardStore, dispatch),
            takeEvery('GO_OFFLINE', goOffline, cardStore) ];
+  /* eslint-enable indent */
 }
 
 export default syncSagas;

@@ -11,7 +11,7 @@ function SettingsPanel(props) {
 
 SettingsPanel.propTypes = {
   heading: React.PropTypes.string.isRequired,
-  children: React.PropTypes.object,
+  children: React.PropTypes.node,
 };
 
 export default SettingsPanel;

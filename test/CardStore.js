@@ -188,7 +188,8 @@ describe('CardStore', () => {
       .then(card => {
         oldRevision = card._rev;
         return subject.putCard({ _id: card._id,
-                                 question: 'Updated question' }); })
+                                 question: 'Updated question' });
+      })
       .then(card => subject.putCard({ _id: card._id,
                                       _rev: oldRevision,
                                       answer: 'Updated answer' }))

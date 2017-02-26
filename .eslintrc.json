@@ -1,8 +1,12 @@
 {
+  "env": {
+    "browser": true
+  },
   "extends": "airbnb",
   "parserOptions": {
     "ecmaFeatures": {
-      "experimentalObjectRestSpread": true
+      "experimentalObjectRestSpread": true,
+      "jsx": true
     }
   },
   "plugins": [
@@ -11,12 +15,29 @@
   "rules": {
     "array-bracket-spacing": [ "warn", "always" ],
     "arrow-body-style": [ "off" ],
+    "arrow-parens": [ "error", "as-needed" ],
+    "comma-dangle": [ "error", { "objects": "only-multiline",
+                                 "arrays": "only-multiline",
+                                 "functions": "never" } ],
+    "indent": [ "error", 2, { "ObjectExpression": "first", "SwitchCase": 1 } ],
+    "import/no-named-as-default": [ "off" ],
+    "import/extensions": [ "error", { "js": "never", "jsx": "always" } ],
+    "jsx-a11y/no-static-element-interactions": [ "off" ],
     "key-spacing": [ "error", { "mode": "minimum" } ],
+    "linebreak-style": [ "off" ],
+    "no-continue": [ "off" ],
+    "no-mixed-operators": [ "error", { "allowSamePrecedence": true } ],
     "no-multi-spaces": [ "off" ],
     "no-param-reassign": [ "off" ],
+    "no-plusplus": [ "off" ],
+    "no-prototype-builtins": [ "off" ],
+    "no-restricted-syntax": [ "off" ],
+    "no-underscore-dangle": [ "off" ],
     "react/prefer-stateless-function": [ "off" ],
     "react/jsx-closing-bracket-location": [
       "error", { "selfClosing": "after-props", "nonEmpty": "after-props" }
-    ]
+    ],
+    "react/jsx-filename-extension": [ "off" ],
+    "react/require-default-props": [ "off" ]
   }
 }

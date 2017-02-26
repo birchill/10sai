@@ -29,7 +29,7 @@ export class Navbar extends React.Component {
     return (
       <Link id="sync-settings" to="/settings#sync">
         <div id="sync-status" className={syncClass}>
-          <div className="overlay"></div>
+          <div className="overlay" />
         </div>
       </Link>);
   }
@@ -48,7 +48,7 @@ export class Navbar extends React.Component {
         </hgroup>
         { this.renderSyncIcon() }
         <Link to={settingsLink}>
-          <div id="settings-menu" className={settingsClass}></div>
+          <div id="settings-menu" className={settingsClass} />
         </Link>
       </header>
     );
