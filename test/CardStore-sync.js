@@ -39,13 +39,6 @@ describe('CardStore remote sync', () => {
 
     failedAssertion = undefined;
 
-    // Override the onUpdate setter to automatically wrap the callback
-    // passed-in so that assertion failures are successfully rethrown.
-    const originalOnUpdate = subject.onUpdate;
-    subject.onUpdate = fn => {
-      originalOnUpdate.call(subject, wrapAssertingFunction(fn));
-    };
-
     testRemote = new PouchDB('cards_remote', { db: memdown });
   });
 
@@ -149,9 +142,9 @@ describe('CardStore remote sync', () => {
 
     const expectedCards = [ firstCard, secondCard ];
 
-    subject.onUpdate(info => {
+    subject.changes.on('change', wrapAssertingFunction(info => {
       assert.deepEqual(info.doc, expectedCards.shift());
-    });
+    }));
 
     testRemote.put(firstCard)
       .then(result => { firstCard._rev = result.rev; })
@@ -177,9 +170,9 @@ describe('CardStore remote sync', () => {
 
     const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
 
-    subject.onUpdate(() => {
+    subject.changes.on('change', wrapAssertingFunction(() => {
       assert.fail('Did not expect update to be called on the previous remote');
-    });
+    }));
 
     return subject.setSyncServer(testRemote)
       .then(() => subject.setSyncServer(alternateRemote))

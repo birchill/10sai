@@ -2,33 +2,20 @@ import React from 'react';
 import CardGrid from './CardGrid.jsx';
 
 export class CardOverviewScreen extends React.Component {
-  static get propTypes() {
-    return {
-      db: React.PropTypes.object.isRequired,
-    };
+  static get contextTypes() {
+    return { cardStore: React.PropTypes.object };
   }
 
   constructor(props) {
     super(props);
-    this.state = { cards: [], question: '', answer: '' };
+    this.state = { question: '', answer: '' };
 
     // Bind handlers
     [ 'handleAdd',
       'handleQuestionChange',
-      'handleAnswerChange',
-      'handleDelete' ].forEach(
+      'handleAnswerChange' ].forEach(
       handler => { this[handler] = this[handler].bind(this); }
     );
-  }
-
-  componentDidMount() {
-    const updateCards = () => {
-      this.props.db.getCards().then(cards => {
-        this.setState({ cards });
-      });
-    };
-    this.props.db.onUpdate(updateCards);
-    updateCards();
   }
 
   addCard() {
@@ -38,7 +25,7 @@ export class CardOverviewScreen extends React.Component {
       return;
     }
 
-    this.props.db.putCard({ question, answer })
+    this.context.cardStore.putCard({ question, answer })
       .then(() => {
         this.setState({ question: '', answer: '' });
       })
@@ -57,11 +44,6 @@ export class CardOverviewScreen extends React.Component {
   handleAdd(e) {
     e.preventDefault();
     this.addCard();
-  }
-
-  handleDelete(id) {
-    // FIXME: Make this check for errors, animate etc.
-    this.props.db.deleteCard({ _id: id });
   }
 
   render() {
@@ -84,7 +66,7 @@ export class CardOverviewScreen extends React.Component {
             onChange={this.handleAnswerChange} />
           <input type="submit" value="Add" />
         </form>
-        <CardGrid cards={this.state.cards} onDelete={this.handleDelete} />
+        <CardGrid />
       </section>
     );
   }

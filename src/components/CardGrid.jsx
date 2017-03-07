@@ -1,16 +1,40 @@
 import React from 'react';
+import { collate } from 'pouchdb-collate';
 import CardPreview from './CardPreview.jsx';
 import VirtualGrid from './VirtualGrid.jsx';
 
+// Perform a binary search in |cards| for card with _id |id|.
+//
+// Returns a pair [found, index]. If |found| is true, |index| is the index of
+// matching card in |cards|. If |found| is false, |index| is the index to use
+// such that cards.splice(index, 0, card) would keep |cards| sorted.
+function findCard(id, cards) {
+  let min = 0;
+  let max = cards.length - 1;
+  let guess;
+
+  while (min <= max) {
+    guess = Math.floor((min + max) / 2);
+
+    const result = collate(cards[guess]._id, id);
+
+    if (result === 0) {
+      return [ true, guess ];
+    }
+
+    if (result > 0) {
+      min = guess + 1;
+    } else {
+      max = guess - 1;
+    }
+  }
+
+  return [ false, Math.max(min, max) ];
+}
+
 export class CardGrid extends React.Component {
-  static get propTypes() {
-    return {
-      cards: React.PropTypes.arrayOf(React.PropTypes.shape({
-        _id: React.PropTypes.string.isRequired,
-        question: React.PropTypes.string.isRequired,
-      })).isRequired,
-      onDelete: React.PropTypes.func.isRequired,
-    };
+  static get contextTypes() {
+    return { cardStore: React.PropTypes.object };
   }
 
   static renderTemplateCard() {
@@ -23,18 +47,50 @@ export class CardGrid extends React.Component {
 
   constructor(props) {
     super(props);
+    this.state = { cards: [] };
 
-    this.renderCard = this.renderCard.bind(this);
+    // Bind handlers
+    [ 'handleDelete', 'renderCard' ].forEach(
+      handler => { this[handler] = this[handler].bind(this); }
+    );
+  }
+
+  componentDidMount() {
+    // Get initial set of cards
+    this.context.cardStore.getCards().then(cards => {
+      this.setState({ cards });
+    });
+
+    this.context.cardStore.changes.on('change', change => {
+      const cards = this.state.cards.slice();
+      const [ found, index ] = findCard(change.id, cards);
+      if (found) {
+        if (change.deleted) {
+          cards.splice(index, 1);
+        } else {
+          cards[index] = change.doc;
+        }
+        this.setState({ cards });
+      } else if (!change.deleted) {
+        cards.splice(index, 0, change.doc);
+        this.setState({ cards });
+      }
+    });
+  }
+
+  handleDelete(id) {
+    // FIXME: Make this check for errors, animate etc.
+    this.context.cardStore.deleteCard({ _id: id });
   }
 
   renderCard(item) {
-    return <CardPreview onDelete={this.props.onDelete} {...item} />;
+    return <CardPreview onDelete={this.handleDelete} {...item} />;
   }
 
   render() {
     return (
       <VirtualGrid
-        items={this.props.cards}
+        items={this.state.cards}
         className="card-grid"
         renderItem={this.renderCard}
         renderTemplateItem={CardGrid.renderTemplateCard} />);

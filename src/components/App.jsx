@@ -27,9 +27,17 @@ class App extends React.Component {
     return { nav: {} };
   }
 
+  static get childContextTypes() {
+    return { cardStore: React.PropTypes.object };
+  }
+
   constructor(props) {
     super(props);
     this.closePopup = this.closePopup.bind(this);
+  }
+
+  getChildContext() {
+    return { cardStore: this.props.route.cards };
   }
 
   get currentScreenLink() {
@@ -52,7 +60,7 @@ class App extends React.Component {
           <PopupOverlay
             active={!!this.props.nav.popup}
             close={this.closePopup}>
-            <CardOverviewScreen db={this.props.route.cards} />
+            <CardOverviewScreen />
           </PopupOverlay>
           <Popup
             active={settingsActive}

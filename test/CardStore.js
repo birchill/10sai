@@ -66,7 +66,7 @@ describe('CardStore', () => {
     let addedCard;
     let updateInfo;
 
-    subject.onUpdate(info => { updateInfo = info; });
+    subject.changes.on('change', info => { updateInfo = info; });
 
     return subject.putCard({ question: 'Q1', answer: 'A1' })
       .then(card => { addedCard = card; })
@@ -134,7 +134,7 @@ describe('CardStore', () => {
     let addedCard;
     let updateInfo;
 
-    subject.onUpdate(info => { updateInfo = info; });
+    subject.changes.on('change', info => { updateInfo = info; });
 
     return subject.putCard({ question: 'Question', answer: 'Answer' })
       .then(card => { addedCard = card; })
@@ -231,7 +231,7 @@ describe('CardStore', () => {
 
   it('reports changes to cards', () => {
     const updates = [];
-    subject.onUpdate(info => { updates.push(info); });
+    subject.changes.on('change', info => { updates.push(info); });
 
     return subject.putCard({ question: 'Question', answer: 'Answer' })
       .then(card => subject.putCard({ ...card, question: 'Updated question' }))
