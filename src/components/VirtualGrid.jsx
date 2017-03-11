@@ -94,7 +94,7 @@ export class VirtualGrid extends React.Component {
       this.updateLayout(nextProps.items);
     }
 
-    // We will only call this of the number of items has *not* changed so we can
+    // We will only call this if the number of items has *not* changed so we can
     // assume that the two items arrays have the same length.
     const visibleItemIndicesHaveChanged = () => {
       for (let i = this.state.startIndex; i < this.state.endIndex; i++) {
@@ -107,10 +107,12 @@ export class VirtualGrid extends React.Component {
 
     if (needsRangeUpdate || visibleItemIndicesHaveChanged()) {
       // Generate a slot assignment mapping for existing items so we can keep
-      // them in the same slots of they are still visible.
+      // them in the same slots if they are still visible.
       const slotAssignment = {};
       this.state.slots.forEach((itemIndex, i) => {
-        slotAssignment[this.props.items[itemIndex]._id] = i;
+        if (itemIndex) {
+          slotAssignment[this.props.items[itemIndex]._id] = i;
+        }
       });
 
       this.updateVisibleRange(nextProps.items, slotAssignment);
