@@ -76,8 +76,8 @@ export class VirtualGrid extends React.Component {
   }
 
   componentDidMount() {
-    this.updateLayout();
-    this.updateVisibleRange();
+    const layout = this.updateLayout();
+    this.updateVisibleRange(layout);
     window.addEventListener('resize', this.handleResize);
   }
 
@@ -89,9 +89,10 @@ export class VirtualGrid extends React.Component {
 
     // The only thing the can trigger a change to layout is a change in the
     // number of items.
+    let layout = false;
     if (this.props.items.length !== nextProps.items.length) {
       needsRangeUpdate = true;
-      this.updateLayout(nextProps.items);
+      layout = this.updateLayout(nextProps.items);
     }
 
     // We will only call this if the number of items has *not* changed so we can
@@ -115,7 +116,7 @@ export class VirtualGrid extends React.Component {
         }
       });
 
-      this.updateVisibleRange(nextProps.items, slotAssignment);
+      this.updateVisibleRange(layout, nextProps.items, slotAssignment);
     }
   }
 
@@ -123,8 +124,13 @@ export class VirtualGrid extends React.Component {
     // If we updated layout before the last render, check if the size of
     // items in the DOM has changed. This might happen, for example, if media
     // queries were applied based on the new viewport size.
-    if (layoutRenderDepth && this.updateLayout()) {
-      this.updateVisibleRange();
+    if (!layoutRenderDepth) {
+      return;
+    }
+
+    const layout = this.updateLayout();
+    if (layout) {
+      this.updateVisibleRange(layout);
     }
   }
 
@@ -138,11 +144,11 @@ export class VirtualGrid extends React.Component {
   }
 
   handleResize() {
-    this.updateLayout();
+    const layout = this.updateLayout();
     // Regardless of the return value of updateLayout, we need to update the
     // visible range since more items may now be in view even if their size has
     // not changed.
-    this.updateVisibleRange();
+    this.updateVisibleRange(layout);
   }
 
   handleScroll() {
@@ -157,7 +163,7 @@ export class VirtualGrid extends React.Component {
   //                  items. If this is not provided, the current items (stored
   //                  in props) are used.
   //
-  // Returns true if the size changed, false otherwise.
+  // Returns the updated layout if it changed, false otherwise.
   updateLayout(nextItems) {
     if (!this.grid || !this.templateItem) {
       layoutRenderDepth = 0;
@@ -180,7 +186,11 @@ export class VirtualGrid extends React.Component {
 
       layoutRenderDepth++;
       this.setState({ containerHeight: 0 });
-      return true;
+      return { itemWidth: null,
+               itemHeight: null,
+               itemsPerRow: 1,
+               itemScale: 1,
+               containerHeight: 0 };
     }
 
     // We want to be able to define the item size using the stylesheet (e.g.
@@ -222,17 +232,20 @@ export class VirtualGrid extends React.Component {
     }
 
     layoutRenderDepth++;
-    this.setState({ itemsPerRow,
-                    itemWidth,
-                    itemHeight,
-                    itemScale,
-                    containerHeight });
-    return true;
+    const layout = { itemsPerRow,
+                     itemWidth,
+                     itemHeight,
+                     itemScale,
+                     containerHeight };
+    this.setState(layout);
+    return layout;
   }
 
   // Recalculates the assignment of items to slots. This needs to be performed
   // whenever layout is updated but also whenever a scroll takes place or the
   // viewport is resized.
+  //
+  // @params nextLayout An optional parameter specifying the layout to use.
   //
   // @param nextItems An optional parameter specifying the to-be-set array of
   //                  items. If this is not provided, the current items (stored
@@ -246,9 +259,15 @@ export class VirtualGrid extends React.Component {
   //                       is being updated.
   //
   // Returns true if the size changed, false otherwise.
-  updateVisibleRange(nextItems, slotAssignment) {
+  updateVisibleRange(nextLayout, nextItems, slotAssignment) {
+    const layout = nextLayout || { itemWidth: this.state.itemWidth,
+                                   itemHeight: this.state.itemHeight,
+                                   itemsPerRow: this.state.itemsPerRow,
+                                   itemScale: this.state.itemScale,
+                                   containerHeight:
+                                     this.state.containerHeight };
     // We haven't finished doing the initial layout yet
-    if (!this.state.itemWidth || !this.state.itemHeight) {
+    if (!layout.itemWidth || !layout.itemHeight) {
       return;
     }
 
@@ -265,11 +284,11 @@ export class VirtualGrid extends React.Component {
                          this.grid.offsetTop +
                          this.scrollContainer.scrollTop;
 
-      const firstVisibleRow = Math.floor(upperBound / this.state.itemHeight);
-      const lastVisibleRow  = Math.ceil(lowerBound / this.state.itemHeight);
+      const firstVisibleRow = Math.floor(upperBound / layout.itemHeight);
+      const lastVisibleRow  = Math.ceil(lowerBound / layout.itemHeight);
 
-      startIndex = firstVisibleRow * this.state.itemsPerRow;
-      endIndex   = Math.min((lastVisibleRow + 1) * this.state.itemsPerRow,
+      startIndex = firstVisibleRow * layout.itemsPerRow;
+      endIndex   = Math.min((lastVisibleRow + 1) * layout.itemsPerRow,
                             items.length);
     } else {
       // No scroll container? All the items must be visible, I guess.
