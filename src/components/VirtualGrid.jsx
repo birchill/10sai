@@ -1,4 +1,5 @@
 import React from 'react';
+import update from 'immutability-helper';
 
 function getScrollContainer(elem) {
   if (elem === null) {
@@ -51,7 +52,29 @@ export class VirtualGrid extends React.Component {
                    startIndex: 0,
                    endIndex: 0,
                    containerHeight: null,
+                   // |slots| is an array mapping the index of rendered items
+                   // to items in props.items so that we consistently render the
+                   // same item using the same DOM elements to avoid unnecessary
+                   // DOM surgery.
+                   //
+                   // String indices indicate items that have been deleted but
+                   // are still animating and are stored in
+                   // this.state.deletingItems.
+                   //
+                   // e.g.
+                   //
+                   // [
+                   //   { index: 30 },
+                   //   { index: 31 },
+                   //   { index: 'abcdef' },
+                   // ]
+                   //
+                   // would mean that we first render props.items[30], then
+                   // props.items[31] and finally state.deletingItems['abcdef'].
                    slots: [],
+                   // Items that have been deleted from props.items but
+                   // which are still animating. The data needed to render them
+                   // while animating is stored here, indexed by _id.
                    deletingItems: {} };
 
     // Ref callbacks
@@ -110,12 +133,13 @@ export class VirtualGrid extends React.Component {
     if (needsRangeUpdate || visibleItemIndicesHaveChanged()) {
       // Generate a slot assignment mapping for existing items so we can keep
       // them in the same slots if they are still visible.
+      // This is a mapping from _id to position in the state.slots array.
       const slotAssignment = {};
-      this.state.slots.forEach((itemIndex, i) => {
-        if (typeof itemIndex === 'number') {
-          slotAssignment[this.props.items[itemIndex]._id] = i;
-        } else if (typeof itemIndex === 'string') {
-          slotAssignment[itemIndex] = i;
+      this.state.slots.forEach((data, i) => {
+        if (data && typeof data.index === 'number') {
+          slotAssignment[this.props.items[data.index]._id] = i;
+        } else if (data && typeof data.index === 'string') {
+          slotAssignment[data.index] = i;
         }
       });
 
@@ -306,78 +330,29 @@ export class VirtualGrid extends React.Component {
     }
 
     // Update slots
-    const slots = this.state.slots.slice();
+    if (slotAssignment) {
+      this.updateSlotsWithNewProps(startIndex, endIndex,
+                                   items, slotAssignment);
+    } else {
+      this.updateSlots(startIndex, endIndex);
+    }
+  }
 
-    // XXX Fix the bugs
-    // XXX We need to store whether or not a slot was recycled so we can *not*
-    // trigger transitions on recycled slots
-    // XXX Make delete transition a scale transition
-    // XXX Stagger transition timing (and probably store transition delay so
-    // that if we regenerate we don't cause the transition to jump
-    // XXX Detect when a slot changes line and don't make it transition (or,
-    // actually, make it jump)
-    // XXX Check that perf hasn't regressed
-    // XXX See if we can simplify the following logic
+  updateSlots(startIndex, endIndex) {
+    let slots = this.state.slots;
 
     // Collect empty and existing slots
-    let emptySlots = [];
+    const emptySlots = [];
     const existingItems = [];
-    let deletingItems = {};
-    if (slotAssignment) {
-      slots.fill(null);
-      // Fill in existing items that are still in range
-      for (let i = startIndex; i < endIndex; i++) {
-        const existingSlot = slotAssignment[items[i]._id];
-        if (typeof existingSlot === 'number') {
-          slots[existingSlot] = i;
-          existingItems[i] = existingSlot;
-          delete slotAssignment[items[i]._id];
-        }
+    slots.forEach((data, i) => {
+      if (data === null ||
+          data.index < startIndex ||
+          data.index >= endIndex) {
+        emptySlots.push(i);
+      } else {
+        existingItems[data.index] = i;
       }
-      console.log('After filling in existing items we still have the following'
-                  + ' in the slot assignments '
-                  + JSON.stringify(slotAssignment));
-      // Detect and store any newly-deleted items that would still be in range
-      for (const [ id, slot ] of Object.entries(slotAssignment)) {
-        console.log(`Processing [${id}, ${slot}] from slotAssignment`);
-        const previousIndex = this.state.slots[slot];
-        console.log(`Previous index was ${previousIndex}`);
-        if (previousIndex < startIndex || previousIndex >= endIndex) {
-          console.log('No longer in range, skipping');
-          continue;
-        }
-        const existingRecord = this.state.deletingItems[id];
-        if (existingRecord) {
-          console.log('Found an existing record, copying');
-          console.log(`Existing record: ${JSON.stringify(existingRecord)}`);
-          deletingItems[id] = existingRecord;
-        } else {
-          console.log('Adding new record to deletingItems');
-          deletingItems[id] = {
-            item: this.props.items[previousIndex],
-            index: previousIndex,
-          };
-          console.log(`deletingItems now: ${JSON.stringify(deletingItems)}`);
-        }
-        slots[slot] = id;
-      }
-      console.log(`deletingItems at end: ${JSON.stringify(deletingItems)}`);
-      emptySlots = slots.map((slot, i) => (slot === null ? i : null))
-                        .filter(slot => slot !== null);
-      console.log(`emptySlots: ${JSON.stringify(emptySlots)}`);
-    } else {
-      slots.forEach((itemIndex, i) => {
-        if (itemIndex === null ||
-            itemIndex < startIndex ||
-            itemIndex >= endIndex) {
-          emptySlots.push(i);
-        } else {
-          existingItems[itemIndex] = i;
-        }
-      });
-      // XXX Clone this instead?
-      deletingItems = this.state.deletingItems;
-    }
+    });
 
     // Fill in missing items
     for (let i = startIndex; i < endIndex; i++) {
@@ -386,9 +361,95 @@ export class VirtualGrid extends React.Component {
       }
       if (emptySlots.length) {
         const emptyIndex = emptySlots.pop();
-        slots[emptyIndex] = i;
+        slots = update(slots, {
+          $splice: [ [ emptyIndex, 1, { index: i, recycled: true } ] ]
+        });
       } else {
-        slots.push(i);
+        slots = update(slots, { $push: [ { index: i } ] });
+      }
+    }
+
+    this.setState({ startIndex, endIndex, slots });
+  }
+
+  updateSlotsWithNewProps(startIndex, endIndex, items, slotAssignment) {
+    // Create empty slots array
+    const slots = Array(this.state.slots.length).fill(null);
+
+    // XXX Work out why we sometimes get null slots in the render method
+    // XXX Stagger transition timing (and probably store transition delay so
+    // that if we regenerate we don't cause the transition to jump
+    // XXX Also, adjust the easing on the delete animation
+    // XXX Detect when a slot changes line and don't make it transition (or,
+    // actually, make it jump)
+    // XXX Drop the console messages
+    // XXX Check that perf hasn't regressed
+
+    // Fill in existing items that are still in range
+    const existingItems = [];
+    for (let i = startIndex; i < endIndex; i++) {
+      const existingSlot = slotAssignment[items[i]._id];
+      if (typeof existingSlot === 'number') {
+        slots[existingSlot] = { index: i };
+        existingItems[i] = existingSlot;
+        delete slotAssignment[items[i]._id];
+      }
+    }
+    console.log('After filling in existing items we still have the following'
+                + ' in the slot assignments '
+                + JSON.stringify(slotAssignment));
+
+    // Detect and store any newly-deleted items that would still be in range
+    const deletingItems = {};
+    for (const [ id, slot ] of Object.entries(slotAssignment)) {
+      console.log(`Processing [${JSON.stringify(id)}, ${slot}] from slotAssignment`);
+      // Check it is still in range
+      const previousIndex = this.state.slots[slot].index;
+      console.log(`Previous index was ${previousIndex}`);
+      if (previousIndex < startIndex || previousIndex >= endIndex) {
+        console.log('No longer in range, skipping');
+        continue;
+      }
+
+      // Check if we have already stored this item
+      const existingRecord = this.state.deletingItems[id];
+      if (existingRecord) {
+        console.log('Found an existing record, copying');
+        console.log(`Existing record: ${JSON.stringify(existingRecord)}`);
+        deletingItems[id] = existingRecord;
+      // Otherwise store a new record
+      } else {
+        console.log('Adding new record to deletingItems');
+        deletingItems[id] = {
+          item: this.props.items[previousIndex],
+          index: previousIndex,
+        };
+        console.log(`deletingItems now: ${JSON.stringify(deletingItems)}`);
+      }
+      slots[slot] = { index: id };
+    }
+    console.log(`deletingItems at end: ${JSON.stringify(deletingItems)}`);
+
+    // Look for not-yet-filled slots in two steps:
+    // 1) Create a copy of the slots array where each item is either null
+    //    (empty) or its own index
+    // 2) Filter that array to drop the null items
+    const emptySlots = slots.map((slot, i) => (slot === null ? i : null))
+                            .filter(slot => slot !== null);
+    console.log(`emptySlots: ${JSON.stringify(emptySlots)}`);
+
+    // Fill in missing items
+    for (let i = startIndex; i < endIndex; i++) {
+      // Check if the item is already assigned a slot
+      if (typeof existingItems[i] === 'number') {
+        continue;
+      }
+      // Otherwise take the first empty slot
+      if (emptySlots.length) {
+        const emptyIndex = emptySlots.pop();
+        slots[emptyIndex] = { index: i, recycled: true };
+      } else {
+        slots.push({ index: i });
       }
     }
 
@@ -413,14 +474,19 @@ export class VirtualGrid extends React.Component {
           {this.props.renderTemplateItem()}
         </div>
         {
-          this.state.slots.map((ref, i) => {
+          this.state.slots.map((data, i) => {
             const classes = [ 'grid-item' ];
-            console.log(`Rendering [${ref}, ${i}]`);
+            console.log(`Rendering [${JSON.stringify(data)}, ${i}]`);
+
+            // XXX This appears to still be needed but I'm not sure why
+            if (!data) {
+              return null;
+            }
 
             let item;
             let itemIndex;
-            if (typeof ref === 'string') {
-              const deletingRecord = this.state.deletingItems[ref];
+            if (typeof data.index === 'string') {
+              const deletingRecord = this.state.deletingItems[data.index];
               item = deletingRecord.item;
               itemIndex = deletingRecord.index;
               classes.push('deleting');
@@ -428,17 +494,15 @@ export class VirtualGrid extends React.Component {
               // transitionend / transitioncancel events and drop the
               // appropriate element from deletingItems at that time
             } else {
-              item = this.props.items[ref];
-              itemIndex = ref;
+              item = this.props.items[data.index];
+              itemIndex = data.index;
             }
             console.log(`${itemIndex} @ ${JSON.stringify(item)}`);
 
-            // This is probably only needed until we make the slot assignment
-            // work in the face of deletion.
-            if (!item) {
-              // XXX Is this needed now?
-              return null;
+            if (!data.recycled) {
+              classes.push('transition');
             }
+
             const row = Math.floor(itemIndex / this.state.itemsPerRow);
             const col = itemIndex % this.state.itemsPerRow;
             const translate = `translate(${col * this.state.itemWidth}px, ` +
@@ -450,7 +514,9 @@ export class VirtualGrid extends React.Component {
                 className={classes.join(' ')}
                 // eslint-disable-next-line react/no-array-index-key
                 key={i}>
-                {this.props.renderItem(item)}
+                <div className="nested-transform">
+                  {this.props.renderItem(item)}
+                </div>
               </div>);
           })
         }
