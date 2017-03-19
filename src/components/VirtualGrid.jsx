@@ -51,7 +51,8 @@ export class VirtualGrid extends React.Component {
                    startIndex: 0,
                    endIndex: 0,
                    containerHeight: null,
-                   slots: [] };
+                   slots: [],
+                   deletingItems: {} };
 
     // Ref callbacks
     this.assignGrid = elem => { this.grid = elem; };
@@ -111,8 +112,10 @@ export class VirtualGrid extends React.Component {
       // them in the same slots if they are still visible.
       const slotAssignment = {};
       this.state.slots.forEach((itemIndex, i) => {
-        if (itemIndex) {
+        if (typeof itemIndex === 'number') {
           slotAssignment[this.props.items[itemIndex]._id] = i;
+        } else if (typeof itemIndex === 'string') {
+          slotAssignment[itemIndex] = i;
         }
       });
 
@@ -308,17 +311,49 @@ export class VirtualGrid extends React.Component {
     // Collect empty and existing slots
     let emptySlots = [];
     const existingItems = [];
+    const deletingItems = {};
     if (slotAssignment) {
       slots.fill(null);
+      // Fill in existing items that are still in range
       for (let i = startIndex; i < endIndex; i++) {
         const existingSlot = slotAssignment[items[i]._id];
         if (typeof existingSlot === 'number') {
           slots[existingSlot] = i;
           existingItems[i] = existingSlot;
+          delete slotAssignment[items[i]._id];
         }
       }
+      console.log('After filling in existing items we still have the following'
+                  + ' in the slot assignments '
+                  + JSON.stringify(slotAssignment));
+      // Detect and store any newly-deleted items that would still be in range
+      for (const [ id, slot ] of Object.entries(slotAssignment)) {
+        console.log(`Processing [${id}, ${slot}] from slotAssignment`);
+        const previousIndex = this.state.slots[slot];
+        console.log(`Previous index was ${previousIndex}`);
+        if (previousIndex < startIndex || previousIndex >= endIndex) {
+          console.log('No longer in range, skipping');
+          continue;
+        }
+        const existingRecord = this.state.deletingItems[id];
+        if (existingRecord) {
+          console.log('Found an existing record, copying');
+          console.log(`Existing record: ${JSON.stringify(existingRecord)}`);
+          deletingItems[id] = existingRecord;
+        } else {
+          console.log('Adding new record to deletingItems');
+          deletingItems[id] = {
+            item: this.props.items[previousIndex],
+            index: previousIndex,
+          };
+          console.log(`deletingItems now: ${JSON.stringify(deletingItems)}`);
+        }
+        slots[slot] = id;
+      }
+      console.log(`deletingItems at end: ${JSON.stringify(deletingItems)}`);
       emptySlots = slots.map((slot, i) => (slot === null ? i : null))
                         .filter(slot => slot !== null);
+      console.log(`emptySlots: ${JSON.stringify(emptySlots)}`);
     } else {
       slots.forEach((itemIndex, i) => {
         if (itemIndex === null ||
@@ -344,7 +379,7 @@ export class VirtualGrid extends React.Component {
       }
     }
 
-    this.setState({ startIndex, endIndex, slots });
+    this.setState({ startIndex, endIndex, slots, deletingItems });
   }
 
   render() {
@@ -365,11 +400,30 @@ export class VirtualGrid extends React.Component {
           {this.props.renderTemplateItem()}
         </div>
         {
-          this.state.slots.map((itemIndex, i) => {
-            const item = this.props.items[itemIndex];
+          this.state.slots.map((ref, i) => {
+            const classes = [ 'grid-item' ];
+            console.log(`Rendering [${ref}, ${i}]`);
+
+            let item;
+            let itemIndex;
+            if (typeof ref === 'string') {
+              const deletingRecord = this.state.deletingItems[ref];
+              item = deletingRecord.item;
+              itemIndex = deletingRecord.index;
+              classes.push('deleting');
+              // XXX Need to register an event listener somewhere to catch
+              // transitionend / transitioncancel events and drop the
+              // appropriate element from deletingItems at that time
+            } else {
+              item = this.props.items[ref];
+              itemIndex = ref;
+            }
+            console.log(`${itemIndex} @ ${JSON.stringify(item)}`);
+
             // This is probably only needed until we make the slot assignment
             // work in the face of deletion.
             if (!item) {
+              // XXX Is this needed now?
               return null;
             }
             const row = Math.floor(itemIndex / this.state.itemsPerRow);
@@ -380,7 +434,7 @@ export class VirtualGrid extends React.Component {
             return (
               <div
                 style={{ transform: `${translate} ${scale}` }}
-                className="grid-item"
+                className={classes.join(' ')}
                 // eslint-disable-next-line react/no-array-index-key
                 key={i}>
                 {this.props.renderItem(item)}

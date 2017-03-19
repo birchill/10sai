@@ -626,6 +626,11 @@ form[name=sync-server-settings] {
 }
 .grid-item {
   transform-origin: 0% 0%;
+  transition: opacity 0.3s, transform 0.2s 0.2s;
+}
+.grid-item.deleting {
+  pointer-events: none;
+  opacity: 0;
 }
 .card-preview {
   display: inline-block;
