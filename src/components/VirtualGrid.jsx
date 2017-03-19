@@ -308,10 +308,21 @@ export class VirtualGrid extends React.Component {
     // Update slots
     const slots = this.state.slots.slice();
 
+    // XXX Fix the bugs
+    // XXX We need to store whether or not a slot was recycled so we can *not*
+    // trigger transitions on recycled slots
+    // XXX Make delete transition a scale transition
+    // XXX Stagger transition timing (and probably store transition delay so
+    // that if we regenerate we don't cause the transition to jump
+    // XXX Detect when a slot changes line and don't make it transition (or,
+    // actually, make it jump)
+    // XXX Check that perf hasn't regressed
+    // XXX See if we can simplify the following logic
+
     // Collect empty and existing slots
     let emptySlots = [];
     const existingItems = [];
-    const deletingItems = {};
+    let deletingItems = {};
     if (slotAssignment) {
       slots.fill(null);
       // Fill in existing items that are still in range
@@ -364,6 +375,8 @@ export class VirtualGrid extends React.Component {
           existingItems[itemIndex] = i;
         }
       });
+      // XXX Clone this instead?
+      deletingItems = this.state.deletingItems;
     }
 
     // Fill in missing items
