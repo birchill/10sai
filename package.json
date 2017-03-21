@@ -21,7 +21,6 @@
   ],
   "dependencies": {
     "cross-env": "^3.1.4",
-    "immutability-helper": "^2.1.2",
     "pouchdb": "^6.1.2",
     "pouchdb-collate": "^6.1.2",
     "pouchdb-upsert": "^2.0.2",

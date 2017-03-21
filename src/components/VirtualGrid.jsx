@@ -1,5 +1,4 @@
 import React from 'react';
-import update from 'immutability-helper';
 
 function getScrollContainer(elem) {
   if (elem === null) {
@@ -9,6 +8,23 @@ function getScrollContainer(elem) {
   return elem.scrollHeight > elem.clientHeight
          ? elem
          : getScrollContainer(elem.parentNode);
+}
+
+function fillInMissingSlots(startIndex, endIndex, emptySlots,
+                            existingItems, slots) {
+  for (let i = startIndex; i < endIndex; i++) {
+    // Check if the item is already assigned a slot
+    if (typeof existingItems[i] === 'number') {
+      continue;
+    }
+    // Otherwise take the first empty slot
+    if (emptySlots.length) {
+      const emptyIndex = emptySlots.shift();
+      slots[emptyIndex] = { index: i, recycled: true };
+    } else {
+      slots.push({ index: i });
+    }
+  }
 }
 
 // Record the number of potentially recursive calls to updateLayout. This is
@@ -339,44 +355,37 @@ export class VirtualGrid extends React.Component {
   }
 
   updateSlots(startIndex, endIndex) {
-    let slots = this.state.slots;
+    const slots = this.state.slots.slice();
 
     // Collect empty and existing slots
     const emptySlots = [];
     const existingItems = [];
+    console.log(`startIndex, endIndex: ${startIndex}, ${endIndex}`);
     slots.forEach((data, i) => {
       if (data === null ||
           data.index < startIndex ||
           data.index >= endIndex) {
         emptySlots.push(i);
       } else {
+        delete data.recycled;
         existingItems[data.index] = i;
       }
     });
+    console.log(`emptySlots: ${JSON.stringify(emptySlots)}`);
 
-    // Fill in missing items
-    for (let i = startIndex; i < endIndex; i++) {
-      if (typeof existingItems[i] === 'number') {
-        continue;
-      }
-      if (emptySlots.length) {
-        const emptyIndex = emptySlots.pop();
-        slots = update(slots, {
-          $splice: [ [ emptyIndex, 1, { index: i, recycled: true } ] ]
-        });
-      } else {
-        slots = update(slots, { $push: [ { index: i } ] });
-      }
-    }
+    // Fill in items in missing slots
+    fillInMissingSlots(startIndex, endIndex, emptySlots,
+                       existingItems, slots);
+    console.log(`Result of fillInMissingSlots(a): ${JSON.stringify(slots)}`);
 
     this.setState({ startIndex, endIndex, slots });
   }
 
   updateSlotsWithNewProps(startIndex, endIndex, items, slotAssignment) {
-    // Create empty slots array
-    const slots = Array(this.state.slots.length).fill(null);
+    console.log(`updateSlotsWithNewProps: ${startIndex}, ${endIndex}`);
+    const slots = this.state.slots.slice();
 
-    // XXX Work out why we sometimes get null slots in the render method
+    // XXX Drop items from deletingItems when the transition finishes
     // XXX Stagger transition timing (and probably store transition delay so
     // that if we regenerate we don't cause the transition to jump
     // XXX Also, adjust the easing on the delete animation
@@ -430,28 +439,23 @@ export class VirtualGrid extends React.Component {
     }
     console.log(`deletingItems at end: ${JSON.stringify(deletingItems)}`);
 
-    // Look for not-yet-filled slots in two steps:
-    // 1) Create a copy of the slots array where each item is either null
-    //    (empty) or its own index
-    // 2) Filter that array to drop the null items
-    const emptySlots = slots.map((slot, i) => (slot === null ? i : null))
-                            .filter(slot => slot !== null);
+    // Collect empty slots
+    const emptySlots = [];
+    slots.forEach((slot, i) => {
+      if (slot === null) {
+        emptySlots.push(i);
+      } else if (typeof slot.index === 'number' &&
+                 (slot.index < startIndex || slot.index >= endIndex)) {
+        delete slot.recycled;
+        emptySlots.push(i);
+      }
+    });
     console.log(`emptySlots: ${JSON.stringify(emptySlots)}`);
 
     // Fill in missing items
-    for (let i = startIndex; i < endIndex; i++) {
-      // Check if the item is already assigned a slot
-      if (typeof existingItems[i] === 'number') {
-        continue;
-      }
-      // Otherwise take the first empty slot
-      if (emptySlots.length) {
-        const emptyIndex = emptySlots.pop();
-        slots[emptyIndex] = { index: i, recycled: true };
-      } else {
-        slots.push({ index: i });
-      }
-    }
+    fillInMissingSlots(startIndex, endIndex, emptySlots,
+                       existingItems, slots);
+    console.log(`Result of fillInMissingSlots(b): ${JSON.stringify(slots)}`);
 
     this.setState({ startIndex, endIndex, slots, deletingItems });
   }
@@ -476,9 +480,10 @@ export class VirtualGrid extends React.Component {
         {
           this.state.slots.map((data, i) => {
             const classes = [ 'grid-item' ];
-            console.log(`Rendering [${JSON.stringify(data)}, ${i}]`);
 
-            // XXX This appears to still be needed but I'm not sure why
+            // Skip empty slots. (These typically occur when we have a
+            // deleting item that has now disappeared but we want to preserve
+            // the slot order.)
             if (!data) {
               return null;
             }
@@ -497,7 +502,6 @@ export class VirtualGrid extends React.Component {
               item = this.props.items[data.index];
               itemIndex = data.index;
             }
-            console.log(`${itemIndex} @ ${JSON.stringify(item)}`);
 
             if (!data.recycled) {
               classes.push('transition');
