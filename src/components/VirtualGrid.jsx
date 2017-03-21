@@ -94,7 +94,10 @@ export class VirtualGrid extends React.Component {
                    deletingItems: {} };
 
     // Ref callbacks
-    this.assignGrid = elem => { this.grid = elem; };
+    this.assignGrid = elem => {
+      this.grid = elem;
+      this.grid.addEventListener('transitionend', this.handleTransitionEnd);
+    };
     this.assignItemTemplate = elem => {
       this.templateItem = elem;
       if (this.scrollContainer) {
@@ -109,6 +112,7 @@ export class VirtualGrid extends React.Component {
     // Event callbacks
     this.handleResize = this.handleResize.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
+    this.handleTransitionEnd = this.handleTransitionEnd.bind(this);
   }
 
   componentDidMount() {
@@ -176,9 +180,10 @@ export class VirtualGrid extends React.Component {
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
     if (this.scrollContainer) {
-      this.scrollContainer.removeEventListener('scroll',
-                                               this.handleScroll,
-                                               { passive: true });
+      this.scrollContainer.removeEventListener('scroll', this.handleScroll);
+    }
+    if (this.grid) {
+      this.grid.removeEventListener('transitionend', this.handleTransitionEnd);
     }
   }
 
@@ -192,6 +197,38 @@ export class VirtualGrid extends React.Component {
 
   handleScroll() {
     this.updateVisibleRange();
+  }
+
+  handleTransitionEnd(evt) {
+    // Ignore transitions on the outer element (since they are the translation
+    // transitions).
+    if (!evt.target.classList.contains('nested-transform') ||
+        evt.propertyName !== 'transform') {
+      return;
+    }
+
+    // Check if we have already deleted this item
+    const deletedId = evt.target.parentNode.dataset.itemId;
+    if (!this.state.deletingItems[deletedId]) {
+      return;
+    }
+
+    // Drop from deletingItems
+    // (We're basically doing an immutable delete here since immutability-helper
+    // doesn't provide this and we don't quite need Immutable.js yet)
+    const deletingItems =
+      Object.entries(this.state.deletingItems).reduce(
+        (result, entry) => {
+          const [ id, item ] = entry;
+          if (id !== deletedId) {
+            result[id] = item;
+          }
+          return result;
+        }, {});
+
+    // The following will cause up to update slots and drop the item from there
+    // too.
+    this.setState({ deletingItems });
   }
 
   // Recalculates the size of items based on the computed style of a hidden
@@ -362,6 +399,10 @@ export class VirtualGrid extends React.Component {
           data.index < startIndex ||
           data.index >= endIndex) {
         emptySlots.push(i);
+      } else if (typeof data.index === 'string' &&
+                 !this.state.deletingItems[data.index]) {
+        slots[i] = null;
+        emptySlots.push(i);
       } else {
         delete data.recycled;
         existingItems[data.index] = i;
@@ -381,9 +422,6 @@ export class VirtualGrid extends React.Component {
     console.log(`updateSlotsWithNewProps: ${startIndex}, ${endIndex}`);
     const slots = this.state.slots.slice();
 
-    // XXX Drop items from deletingItems when the transition finishes
-    //  -- add the listener to the grid component then read back the ID
-    //     from the event target?
     // XXX Stagger transition timing (and probably store transition delay so
     // that if we regenerate we don't cause the transition to jump
     // XXX Also, adjust the easing on the delete animation
@@ -415,6 +453,13 @@ export class VirtualGrid extends React.Component {
       console.log(`Previous index was ${previousIndex}`);
       if (previousIndex < startIndex || previousIndex >= endIndex) {
         console.log('No longer in range, skipping');
+        continue;
+      }
+
+      // Check if it is a deleting item that has finished deleting
+      if (typeof previousIndex === 'string' &&
+          !this.state.deletingItems[previousIndex]) {
+        slots[slot] = null;
         continue;
       }
 
@@ -479,10 +524,10 @@ export class VirtualGrid extends React.Component {
           this.state.slots.map((data, i) => {
             const classes = [ 'grid-item' ];
 
-            // Skip empty slots. (These typically occur when we have a
-            // deleting item that has now disappeared but we want to preserve
-            // the slot order.)
-            if (!data) {
+            // Skip empty slots caused by deleting items.
+            if (!data ||
+                (typeof data.index === 'string' &&
+                 !this.state.deletingItems[data.index])) {
               return null;
             }
 
@@ -493,9 +538,6 @@ export class VirtualGrid extends React.Component {
               item = deletingRecord.item;
               itemIndex = deletingRecord.index;
               classes.push('deleting');
-              // XXX Need to register an event listener somewhere to catch
-              // transitionend / transitioncancel events and drop the
-              // appropriate element from deletingItems at that time
             } else {
               item = this.props.items[data.index];
               itemIndex = data.index;
@@ -515,7 +557,8 @@ export class VirtualGrid extends React.Component {
                 style={{ transform: `${translate} ${scale}` }}
                 className={classes.join(' ')}
                 // eslint-disable-next-line react/no-array-index-key
-                key={i}>
+                key={i}
+                data-item-id={item._id}>
                 <div className="nested-transform">
                   {this.props.renderItem(item)}
                 </div>
