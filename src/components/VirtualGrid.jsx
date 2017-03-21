@@ -420,13 +420,19 @@ export class VirtualGrid extends React.Component {
     console.log(`updateSlotsWithNewProps: ${startIndex}, ${endIndex}`);
     const slots = this.state.slots.slice();
 
+    // XXX More robust look up of grid item (and rename class to scale-wrapper
+    // or some such)
+    // XXX Detect when a slot changes line and don't make it transition (or,
+    // actually, make it jump)
     // XXX Stagger transition timing (and probably store transition delay so
     // that if we regenerate we don't cause the transition to jump
     // XXX Also, adjust the easing on the delete animation
-    // XXX Detect when a slot changes line and don't make it transition (or,
-    // actually, make it jump)
     // XXX Drop the console messages
     // XXX Check that perf hasn't regressed
+    // XXX Add animation for adding an item
+    // XXX Add tests
+    // XXX Add test for undo case -- i.e. re-adding an item that is deleting
+    // XXX Simplify code
 
     // Fill in existing items that are still in range
     const existingItems = [];
