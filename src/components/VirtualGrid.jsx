@@ -226,8 +226,6 @@ export class VirtualGrid extends React.Component {
           return result;
         }, {});
 
-    // The following will cause up to update slots and drop the item from there
-    // too.
     this.setState({ deletingItems });
   }
 
