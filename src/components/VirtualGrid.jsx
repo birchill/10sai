@@ -98,15 +98,11 @@ export class VirtualGrid extends React.Component {
     this.assignItemTemplate = elem => {
       this.templateItem = elem;
       if (this.scrollContainer) {
-        this.scrollContainer.removeEventListener('scroll',
-                                                 this.handleScroll,
-                                                 { passive: true });
+        this.scrollContainer.removeEventListener('scroll', this.handleScroll);
       }
       this.scrollContainer = getScrollContainer(elem);
       if (this.scrollContainer) {
-        this.scrollContainer.addEventListener('scroll',
-                                              this.handleScroll,
-                                              { passive: true });
+        this.scrollContainer.addEventListener('scroll', this.handleScroll);
       }
     };
 
@@ -386,6 +382,8 @@ export class VirtualGrid extends React.Component {
     const slots = this.state.slots.slice();
 
     // XXX Drop items from deletingItems when the transition finishes
+    //  -- add the listener to the grid component then read back the ID
+    //     from the event target?
     // XXX Stagger transition timing (and probably store transition delay so
     // that if we regenerate we don't cause the transition to jump
     // XXX Also, adjust the easing on the delete animation
