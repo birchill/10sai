@@ -630,6 +630,9 @@ form[name=sync-server-settings] {
 .grid-item.transition {
   transition: transform 0.2s 0.2s;
 }
+.grid-item.transition.changed-row {
+  transition-timing-function: step-end;
+}
 .grid-item.deleting {
   pointer-events: none;
 }
@@ -637,7 +640,7 @@ form[name=sync-server-settings] {
   transform: scale(0);
 }
 .grid-item.deleting.transition .scale-wrapper {
-  transition: transform 0.3s 0s;
+  transition: transform 0.3s;
 }
 .card-preview {
   display: inline-block;

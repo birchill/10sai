@@ -390,7 +390,8 @@ export class VirtualGrid extends React.Component {
     // Update slots
     if (slotAssignment) {
       this.updateSlotsWithNewProps(startIndex, endIndex,
-                                   items, slotAssignment);
+                                   items, slotAssignment,
+                                   layout);
     } else {
       this.updateSlots(startIndex, endIndex);
     }
@@ -427,14 +428,12 @@ export class VirtualGrid extends React.Component {
     this.setState({ startIndex, endIndex, slots });
   }
 
-  updateSlotsWithNewProps(startIndex, endIndex, items, slotAssignment) {
+  updateSlotsWithNewProps(startIndex, endIndex, items, slotAssignment, layout) {
     console.log(`updateSlotsWithNewProps: ${startIndex}, ${endIndex}`);
     const slots = this.state.slots.slice();
 
-    // XXX Detect when a slot changes line and don't make it transition (or,
-    // actually, make it jump)
     // XXX Stagger transition timing (and probably store transition delay so
-    // that if we regenerate we don't cause the transition to jump
+    //     that if we regenerate we don't cause the transition to jump
     // XXX Also, adjust the easing on the delete animation
     // XXX Drop the console messages
     // XXX Check that perf hasn't regressed
@@ -442,13 +441,23 @@ export class VirtualGrid extends React.Component {
     // XXX Add tests
     // XXX Add test for undo case -- i.e. re-adding an item that is deleting
     // XXX Simplify code
+    // XXX Might it better to use the item ID as the key for the items? That
+    //     would mean we end up regenerating the wrapper when the item it
+    //     contains changes but that might be a little simpler since we wouldn't
+    //     need the recycled flag.
 
     // Fill in existing items that are still in range
     const existingItems = [];
     for (let i = startIndex; i < endIndex; i++) {
       const existingSlot = slotAssignment[items[i]._id];
       if (typeof existingSlot === 'number') {
+        const existingRow = Math.floor(slots[existingSlot].index /
+                                       layout.itemsPerRow);
+        const newRow      = Math.floor(i / layout.itemsPerRow);
         slots[existingSlot] = { index: i };
+        if (existingRow !== newRow) {
+          slots[existingSlot].changedRow = true;
+        }
         existingItems[i] = existingSlot;
         delete slotAssignment[items[i]._id];
       }
@@ -559,11 +568,15 @@ export class VirtualGrid extends React.Component {
             if (!data.recycled) {
               classes.push('transition');
             }
+            if (data.changedRow) {
+              classes.push('changed-row');
+            }
 
             const row = Math.floor(itemIndex / this.state.itemsPerRow);
             const col = itemIndex % this.state.itemsPerRow;
             const translate = `translate(${col * this.state.itemWidth}px, ` +
                                         `${row * this.state.itemHeight}px)`;
+
 
             return (
               <div
