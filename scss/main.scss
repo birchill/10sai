@@ -633,10 +633,10 @@ form[name=sync-server-settings] {
 .grid-item.deleting {
   pointer-events: none;
 }
-.grid-item.deleting .nested-transform {
+.grid-item.deleting .scale-wrapper {
   transform: scale(0);
 }
-.grid-item.deleting.transition .nested-transform {
+.grid-item.deleting.transition .scale-wrapper {
   transition: transform 0.3s 0s;
 }
 .card-preview {

@@ -10,6 +10,13 @@ function getScrollContainer(elem) {
          : getScrollContainer(elem.parentNode);
 }
 
+function getInclusiveAncestorWithClass(elem, className) {
+  while (elem && !elem.classList.contains(className)) {
+    elem = elem.parentNode;
+  }
+  return elem;
+}
+
 function fillInMissingSlots(startIndex, endIndex, emptySlots,
                             existingItems, slots) {
   for (let i = startIndex; i < endIndex; i++) {
@@ -202,13 +209,17 @@ export class VirtualGrid extends React.Component {
   handleTransitionEnd(evt) {
     // Ignore transitions on the outer element (since they are the translation
     // transitions).
-    if (!evt.target.classList.contains('nested-transform') ||
+    if (!evt.target.classList.contains('scale-wrapper') ||
         evt.propertyName !== 'transform') {
       return;
     }
 
     // Check if we have already deleted this item
-    const deletedId = evt.target.parentNode.dataset.itemId;
+    const gridItem = getInclusiveAncestorWithClass(evt.target, 'grid-item');
+    if (!gridItem) {
+      return;
+    }
+    const deletedId = gridItem.dataset.itemId;
     if (!this.state.deletingItems[deletedId]) {
       return;
     }
@@ -420,8 +431,6 @@ export class VirtualGrid extends React.Component {
     console.log(`updateSlotsWithNewProps: ${startIndex}, ${endIndex}`);
     const slots = this.state.slots.slice();
 
-    // XXX More robust look up of grid item (and rename class to scale-wrapper
-    // or some such)
     // XXX Detect when a slot changes line and don't make it transition (or,
     // actually, make it jump)
     // XXX Stagger transition timing (and probably store transition delay so
@@ -563,7 +572,7 @@ export class VirtualGrid extends React.Component {
                 // eslint-disable-next-line react/no-array-index-key
                 key={i}
                 data-item-id={item._id}>
-                <div className="nested-transform">
+                <div className="scale-wrapper">
                   {this.props.renderItem(item)}
                 </div>
               </div>);
