@@ -429,6 +429,14 @@ export class VirtualGrid extends React.Component {
     const slots = this.state.slots.slice();
 
     // XXX Add animation for adding an item
+    //     -- add an 'adding' class that sets scale to 0
+    //     -- in the componentDidUpdate go through and drop the 'adding' class
+    //     -- set the transition delay appropriately
+    //         -- moving ones -- need to factor in whether or not we have any
+    //            deletions or not
+    //         -- added ones -- likewise need to factor in whether or not we
+    //            have any deletions or not
+    // XXX Animate initial reveal (might get this for free?)
     // XXX Add tests
     // XXX Add test for undo case -- i.e. re-adding an item that is deleting
     // XXX Simplify code
