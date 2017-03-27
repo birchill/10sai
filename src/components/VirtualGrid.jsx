@@ -403,7 +403,6 @@ export class VirtualGrid extends React.Component {
     // Collect empty and existing slots
     const emptySlots = [];
     const existingItems = [];
-    console.log(`startIndex, endIndex: ${startIndex}, ${endIndex}`);
     slots.forEach((data, i) => {
       if (data === null ||
           data.index < startIndex ||
@@ -418,21 +417,17 @@ export class VirtualGrid extends React.Component {
         existingItems[data.index] = i;
       }
     });
-    console.log(`emptySlots: ${JSON.stringify(emptySlots)}`);
 
     // Fill in items in missing slots
     fillInMissingSlots(startIndex, endIndex, emptySlots,
                        existingItems, slots);
-    console.log(`Result of fillInMissingSlots(a): ${JSON.stringify(slots)}`);
 
     this.setState({ startIndex, endIndex, slots });
   }
 
   updateSlotsWithNewProps(startIndex, endIndex, items, slotAssignment, layout) {
-    console.log(`updateSlotsWithNewProps: ${startIndex}, ${endIndex}`);
     const slots = this.state.slots.slice();
 
-    // XXX Drop the console messages
     // XXX Check that perf hasn't regressed
     // XXX Add animation for adding an item
     // XXX Add tests
@@ -459,20 +454,14 @@ export class VirtualGrid extends React.Component {
         delete slotAssignment[items[i]._id];
       }
     }
-    console.log('After filling in existing items we still have the following'
-                + ' in the slot assignments '
-                + JSON.stringify(slotAssignment));
 
     // Detect and store any newly-deleted items that would still be in range
     const deletingItems = {};
     let firstChange;
     for (const [ id, slot ] of Object.entries(slotAssignment)) {
-      console.log(`Processing [${JSON.stringify(id)}, ${slot}] from slotAssignment`);
       // Check it is still in range
       const previousIndex = this.state.slots[slot].index;
-      console.log(`Previous index was ${previousIndex}`);
       if (previousIndex < startIndex || previousIndex >= endIndex) {
-        console.log('No longer in range, skipping');
         continue;
       }
 
@@ -486,22 +475,17 @@ export class VirtualGrid extends React.Component {
       // Check if we have already stored this item
       const existingRecord = this.state.deletingItems[id];
       if (existingRecord) {
-        console.log('Found an existing record, copying');
-        console.log(`Existing record: ${JSON.stringify(existingRecord)}`);
         deletingItems[id] = existingRecord;
       // Otherwise store a new record
       } else {
-        console.log('Adding new record to deletingItems');
         deletingItems[id] = {
           item: this.props.items[previousIndex],
           index: previousIndex,
         };
-        console.log(`deletingItems now: ${JSON.stringify(deletingItems)}`);
         firstChange = Math.min(previousIndex, firstChange || Infinity);
       }
       slots[slot] = { index: id };
     }
-    console.log(`deletingItems at end: ${JSON.stringify(deletingItems)}`);
 
     // Collect empty slots
     const emptySlots = [];
@@ -514,16 +498,13 @@ export class VirtualGrid extends React.Component {
         emptySlots.push(i);
       }
     });
-    console.log(`emptySlots: ${JSON.stringify(emptySlots)}`);
 
     // Fill in missing items
     fillInMissingSlots(startIndex, endIndex, emptySlots,
                        existingItems, slots);
-    console.log(`Result of fillInMissingSlots(b): ${JSON.stringify(slots)}`);
 
     // Stagger transitions after first change
     if (typeof firstChange !== 'undefined') {
-      console.log(`firstChange: ${firstChange}`);
       const initialDelay = 0.2;
       slots.forEach(slot => {
         if (!slot ||
