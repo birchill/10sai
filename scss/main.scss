@@ -628,10 +628,14 @@ form[name=sync-server-settings] {
   transform-origin: 0% 0%;
 }
 .grid-item.transition {
-  transition: transform 0.2s 0.2s;
+  transition: transform 0.15s 0.2s ease-in;
 }
 .grid-item.transition.changed-row {
-  transition-timing-function: step-end;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+}
+.grid-item.transition:not(.changed-row) {
+  z-index: 1;
 }
 .grid-item.deleting {
   pointer-events: none;

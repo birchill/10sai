@@ -432,8 +432,6 @@ export class VirtualGrid extends React.Component {
     console.log(`updateSlotsWithNewProps: ${startIndex}, ${endIndex}`);
     const slots = this.state.slots.slice();
 
-    // XXX Stagger transition timing (and probably store transition delay so
-    //     that if we regenerate we don't cause the transition to jump
     // XXX Also, adjust the easing on the delete animation
     // XXX Drop the console messages
     // XXX Check that perf hasn't regressed
@@ -468,6 +466,7 @@ export class VirtualGrid extends React.Component {
 
     // Detect and store any newly-deleted items that would still be in range
     const deletingItems = {};
+    let firstChange;
     for (const [ id, slot ] of Object.entries(slotAssignment)) {
       console.log(`Processing [${JSON.stringify(id)}, ${slot}] from slotAssignment`);
       // Check it is still in range
@@ -499,6 +498,7 @@ export class VirtualGrid extends React.Component {
           index: previousIndex,
         };
         console.log(`deletingItems now: ${JSON.stringify(deletingItems)}`);
+        firstChange = Math.min(previousIndex, firstChange || Infinity);
       }
       slots[slot] = { index: id };
     }
@@ -521,6 +521,22 @@ export class VirtualGrid extends React.Component {
     fillInMissingSlots(startIndex, endIndex, emptySlots,
                        existingItems, slots);
     console.log(`Result of fillInMissingSlots(b): ${JSON.stringify(slots)}`);
+
+    // Stagger transitions after first change
+    if (typeof firstChange !== 'undefined') {
+      console.log(`firstChange: ${firstChange}`);
+      const initialDelay = 0.2;
+      slots.forEach(slot => {
+        if (!slot ||
+            typeof slot.index !== 'number' ||
+            slot.index < firstChange) {
+          return;
+        }
+        const dist = Math.max(slot.index - firstChange, 0);
+        slot.transitionDelay = initialDelay +
+                               initialDelay * (1 - 1 / Math.pow(1.1, dist));
+      });
+    }
 
     this.setState({ startIndex, endIndex, slots, deletingItems });
   }
@@ -547,9 +563,8 @@ export class VirtualGrid extends React.Component {
             const classes = [ 'grid-item' ];
 
             // Skip empty slots caused by deleting items.
-            if (!data ||
-                (typeof data.index === 'string' &&
-                 !this.state.deletingItems[data.index])) {
+            if (!data || (typeof data.index === 'string' &&
+                          !this.state.deletingItems[data.index])) {
               return null;
             }
 
@@ -576,11 +591,14 @@ export class VirtualGrid extends React.Component {
             const col = itemIndex % this.state.itemsPerRow;
             const translate = `translate(${col * this.state.itemWidth}px, ` +
                                         `${row * this.state.itemHeight}px)`;
-
+            const styles = { transform: `${translate} ${scale}` };
+            if (data.transitionDelay) {
+              styles.transitionDelay = data.transitionDelay + 's';
+            }
 
             return (
               <div
-                style={{ transform: `${translate} ${scale}` }}
+                style={styles}
                 className={classes.join(' ')}
                 // eslint-disable-next-line react/no-array-index-key
                 key={i}
