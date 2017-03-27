@@ -634,9 +634,6 @@ form[name=sync-server-settings] {
   transition-duration: 0.25s;
   transition-timing-function: ease;
 }
-.grid-item.transition:not(.changed-row) {
-  z-index: 1;
-}
 .grid-item.deleting {
   pointer-events: none;
 }
