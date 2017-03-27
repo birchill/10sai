@@ -432,7 +432,6 @@ export class VirtualGrid extends React.Component {
     console.log(`updateSlotsWithNewProps: ${startIndex}, ${endIndex}`);
     const slots = this.state.slots.slice();
 
-    // XXX Also, adjust the easing on the delete animation
     // XXX Drop the console messages
     // XXX Check that perf hasn't regressed
     // XXX Add animation for adding an item

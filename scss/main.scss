@@ -644,7 +644,7 @@ form[name=sync-server-settings] {
   transform: scale(0);
 }
 .grid-item.deleting.transition .scale-wrapper {
-  transition: transform 0.3s;
+  transition: transform 0.3s cubic-bezier(0,-0.5,1,-0.5);
 }
 .card-preview {
   display: inline-block;
