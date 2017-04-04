@@ -19,8 +19,7 @@
       }
     </style>
   </defs>
-  <rect rx="15" ry="15" x="1" y="1" width="254" height="254" stroke="#eee"
-    fill="url(#bg)"/>
+  <rect rx="15" ry="15" x="1" y="1" width="254" height="254" fill="url(#bg)"/>
   <rect rx="8" ry="8" x="24" y="24" width="100" height="100" class="back"/>
   <rect rx="8" ry="8" x="22" y="22" width="100" height="100" class="card"/>
   <rect rx="8" ry="8" x="136" y="24" width="100" height="100" class="back"/>
