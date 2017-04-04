@@ -459,7 +459,6 @@ export class VirtualGrid extends React.Component {
         slots[i] = null;
         emptySlots.push(i);
       } else {
-        // XXX Do we still need this?
         delete data.recycled;
         delete data.added;
         existingItems[data.index] = i;
@@ -475,12 +474,6 @@ export class VirtualGrid extends React.Component {
 
   updateSlotsWithNewProps(startIndex, endIndex, items, slotAssignment, layout) {
     const slots = this.state.slots.slice();
-
-    // XXX Simplify code
-    // XXX Might it better to use the item ID as the key for the items? That
-    //     would mean we end up regenerating the wrapper when the item it
-    //     contains changes but that might be a little simpler since we wouldn't
-    //     need the recycled flag.
 
     // Fill in existing items that are still in range
     const existingItems = [];
@@ -540,7 +533,6 @@ export class VirtualGrid extends React.Component {
         emptySlots.push(i);
       } else if (typeof slot.index === 'number' &&
                  (slot.index < startIndex || slot.index >= endIndex)) {
-        // XXX Do we still need this?
         delete slot.recycled;
         delete slot.added;
         emptySlots.push(i);

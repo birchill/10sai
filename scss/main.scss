@@ -646,14 +646,14 @@ form[name=sync-server-settings] {
 }
 .grid-item.adding .scale-wrapper,
 .grid-item.deleting .scale-wrapper {
+  will-change: transform;
   transform: scale(0);
 }
 
-/* Do we need moving below? */
 .grid-item.deleting {
   pointer-events: none;
 }
-.grid-item.deleting.moving .scale-wrapper {
+.grid-item.deleting .scale-wrapper {
   transition: transform 0.3s cubic-bezier(0,-0.5,1,-0.5);
 }
 
