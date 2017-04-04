@@ -18,20 +18,47 @@ function getInclusiveAncestorWithClass(elem, className) {
 }
 
 function fillInMissingSlots(startIndex, endIndex, emptySlots,
-                            existingItems, slots) {
+                            existingItems, slots, adding) {
+  let firstAddition;
+
   for (let i = startIndex; i < endIndex; i++) {
     // Check if the item is already assigned a slot
     if (typeof existingItems[i] === 'number') {
       continue;
     }
+
+    if (typeof firstAddition === 'undefined') {
+      firstAddition = i;
+    }
+
+    const entry = { index: i };
+    if (adding) {
+      entry.added = true;
+    }
+
     // Otherwise take the first empty slot
     if (emptySlots.length) {
       const emptyIndex = emptySlots.shift();
-      slots[emptyIndex] = { index: i, recycled: true };
+      entry.recycled = true;
+      slots[emptyIndex] = entry;
     } else {
-      slots.push({ index: i });
+      slots.push(entry);
     }
   }
+
+  return firstAddition;
+}
+
+// Returns the minimum of |a| and |b| such that undefined is treated as
+// Infinity.
+function definedMin(a, b) {
+  if (typeof a === 'undefined') {
+    return b;
+  }
+  if (typeof b === 'undefined') {
+    return a;
+  }
+  return Math.min(a, b);
 }
 
 // Record the number of potentially recursive calls to updateLayout. This is
@@ -171,6 +198,20 @@ export class VirtualGrid extends React.Component {
   }
 
   componentDidUpdate() {
+    // Drop the 'adding' class from any items added on the last render so that
+    // they transition.
+    if (this.grid) {
+      const addedItems = this.grid.querySelectorAll('.grid-item.adding');
+      // If we have items, force a style flush so that transitions run
+      if (addedItems.length) {
+        // eslint-disable-next-line no-unused-expressions
+        getComputedStyle(this.grid).backgroundColor;
+      }
+      [].forEach.call(addedItems, item => {
+        item.classList.remove('adding');
+      });
+    }
+
     // If we updated layout before the last render, check if the size of
     // items in the DOM has changed. This might happen, for example, if media
     // queries were applied based on the new viewport size.
@@ -413,14 +454,16 @@ export class VirtualGrid extends React.Component {
         slots[i] = null;
         emptySlots.push(i);
       } else {
+        // XXX Do we still need this?
         delete data.recycled;
+        delete data.added;
         existingItems[data.index] = i;
       }
     });
 
     // Fill in items in missing slots
     fillInMissingSlots(startIndex, endIndex, emptySlots,
-                       existingItems, slots);
+                       existingItems, slots, false);
 
     this.setState({ startIndex, endIndex, slots });
   }
@@ -428,15 +471,9 @@ export class VirtualGrid extends React.Component {
   updateSlotsWithNewProps(startIndex, endIndex, items, slotAssignment, layout) {
     const slots = this.state.slots.slice();
 
-    // XXX Add animation for adding an item
-    //     -- add an 'adding' class that sets scale to 0
-    //     -- in the componentDidUpdate go through and drop the 'adding' class
-    //     -- set the transition delay appropriately
-    //         -- moving ones -- need to factor in whether or not we have any
-    //            deletions or not
-    //         -- added ones -- likewise need to factor in whether or not we
-    //            have any deletions or not
-    // XXX Animate initial reveal (might get this for free?)
+    // XXX Replace the bool param to fillInMissingSlots with something nicer
+    // XXX Animate initial reveal (might get this for free? Needs some
+    //     randomness)
     // XXX Add tests
     // XXX Add test for undo case -- i.e. re-adding an item that is deleting
     // XXX Simplify code
@@ -447,6 +484,7 @@ export class VirtualGrid extends React.Component {
 
     // Fill in existing items that are still in range
     const existingItems = [];
+    let hasMovedItems = false;
     for (let i = startIndex; i < endIndex; i++) {
       const existingSlot = slotAssignment[items[i]._id];
       if (typeof existingSlot === 'number') {
@@ -458,13 +496,14 @@ export class VirtualGrid extends React.Component {
           slots[existingSlot].changedRow = true;
         }
         existingItems[i] = existingSlot;
+        hasMovedItems = true;
         delete slotAssignment[items[i]._id];
       }
     }
 
     // Detect and store any newly-deleted items that would still be in range
     const deletingItems = {};
-    let firstChange;
+    let firstDeletion;
     for (const [ id, slot ] of Object.entries(slotAssignment)) {
       // Check it is still in range
       const previousIndex = this.state.slots[slot].index;
@@ -489,7 +528,7 @@ export class VirtualGrid extends React.Component {
           item: this.props.items[previousIndex],
           index: previousIndex,
         };
-        firstChange = Math.min(previousIndex, firstChange || Infinity);
+        firstDeletion = definedMin(firstDeletion, previousIndex);
       }
       slots[slot] = { index: id };
     }
@@ -501,27 +540,40 @@ export class VirtualGrid extends React.Component {
         emptySlots.push(i);
       } else if (typeof slot.index === 'number' &&
                  (slot.index < startIndex || slot.index >= endIndex)) {
+        // XXX Do we still need this?
         delete slot.recycled;
+        delete slot.added;
         emptySlots.push(i);
       }
     });
 
     // Fill in missing items
-    fillInMissingSlots(startIndex, endIndex, emptySlots,
-                       existingItems, slots);
+    const firstAddition = fillInMissingSlots(startIndex, endIndex, emptySlots,
+                                             existingItems, slots, true);
 
-    // Stagger transitions after first change
-    if (typeof firstChange !== 'undefined') {
-      const initialDelay = 0.2;
+    console.log(`Slots after filling in: ${JSON.stringify(slots)}`);
+
+    // Schedule transitions
+    const firstChange = definedMin(firstDeletion, firstAddition);
+    if (firstChange !== Infinity) {
+      const deleteDur = typeof firstDeletion === 'undefined' ? 0 : 0.2;
+      const moveDur   = hasMovedItems ? 0.2 : 0;
       slots.forEach(slot => {
         if (!slot ||
             typeof slot.index !== 'number' ||
             slot.index < firstChange) {
           return;
         }
-        const dist = Math.max(slot.index - firstChange, 0);
-        slot.transitionDelay = initialDelay +
-                               initialDelay * (1 - 1 / Math.pow(1.1, dist));
+
+        if (slot.added) {
+          // Randomize reveal transitions
+          slot.transitionDelay = deleteDur + moveDur + Math.random() * 0.3;
+        } else {
+          // Stagger move transitions by a decreasing amount
+          const dist = Math.max(slot.index - firstChange, 0);
+          slot.transitionDelay = deleteDur +
+                                 moveDur * (1 - 1 / Math.pow(1.1, dist));
+        }
       });
     }
 
@@ -568,10 +620,13 @@ export class VirtualGrid extends React.Component {
             }
 
             if (!data.recycled) {
-              classes.push('transition');
+              classes.push('moving');
             }
             if (data.changedRow) {
               classes.push('changed-row');
+            }
+            if (data.added) {
+              classes.push('adding');
             }
 
             const row = Math.floor(itemIndex / this.state.itemsPerRow);
