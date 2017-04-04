@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+  width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x2="30%" y2="100%">
+      <stop offset="40%" stop-color="#79c"/>
+      <stop offset="100%" stop-color="#68b"/>
+    </linearGradient>
+    <style>
+      .back {
+        fill: #46a;
+        stroke: #46a;
+        stroke-width: 2;
+      }
+      .card {
+        fill: white;
+      }
+      .note {
+        fill: #fe4;
+      }
+    </style>
+  </defs>
+  <rect rx="15" ry="15" x="1" y="1" width="254" height="254" stroke="#eee"
+    fill="url(#bg)"/>
+  <rect rx="8" ry="8" x="24" y="24" width="100" height="100" class="back"/>
+  <rect rx="8" ry="8" x="22" y="22" width="100" height="100" class="card"/>
+  <rect rx="8" ry="8" x="136" y="24" width="100" height="100" class="back"/>
+  <rect rx="8" ry="8" x="134" y="22" width="100" height="100" class="card"/>
+  <rect rx="8" ry="8" x="24" y="136" width="100" height="100" class="back"/>
+  <rect rx="8" ry="8" x="22" y="134" width="100" height="100" class="card"/>
+  <rect rx="8" ry="8" x="136" y="136" width="100" height="100"
+    fill="orange" stroke="orange" stroke-width="2"/>
+  <rect rx="8" ry="8" x="134" y="134" width="100" height="100" class="note"/>
+  <g font-size="70" font-weight="bold">
+    <text x="70" y="99" text-anchor="middle">10</text>
+    <text x="184" y="97" text-anchor="middle">天</text>
+    <text x="72" y="200" text-anchor="middle" font-size="40">さい</text>
+    <text x="184" y="200" text-anchor="middle" font-size="40">PSY</text>
+  </g>
+</svg>
