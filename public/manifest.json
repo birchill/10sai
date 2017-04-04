@@ -1,0 +1,11 @@
+{
+  "lang": "en-US",
+  "name": "Tensai",
+  "short_name": "Tensai",
+  "start_url": ".",
+  "scope": "/tensai/",
+  "display": "standalone",
+  "background_color": "#fff",
+  "theme_color": "#fff",
+  "description": "A tool for studying anything and remembering it (hopefully)"
+}
