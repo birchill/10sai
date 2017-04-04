@@ -17,8 +17,13 @@ function getInclusiveAncestorWithClass(elem, className) {
   return elem;
 }
 
+const FillMode = {
+  Add: Symbol('Add'),
+  Fill: Symbol('Fill'),
+};
+
 function fillInMissingSlots(startIndex, endIndex, emptySlots,
-                            existingItems, slots, adding) {
+                            existingItems, slots, fillMode) {
   let firstAddition;
 
   for (let i = startIndex; i < endIndex; i++) {
@@ -32,7 +37,7 @@ function fillInMissingSlots(startIndex, endIndex, emptySlots,
     }
 
     const entry = { index: i };
-    if (adding) {
+    if (fillMode === FillMode.Add) {
       entry.added = true;
     }
 
@@ -463,7 +468,7 @@ export class VirtualGrid extends React.Component {
 
     // Fill in items in missing slots
     fillInMissingSlots(startIndex, endIndex, emptySlots,
-                       existingItems, slots, false);
+                       existingItems, slots, FillMode.Fill);
 
     this.setState({ startIndex, endIndex, slots });
   }
@@ -471,11 +476,6 @@ export class VirtualGrid extends React.Component {
   updateSlotsWithNewProps(startIndex, endIndex, items, slotAssignment, layout) {
     const slots = this.state.slots.slice();
 
-    // XXX Replace the bool param to fillInMissingSlots with something nicer
-    // XXX Animate initial reveal (might get this for free? Needs some
-    //     randomness)
-    // XXX Add tests
-    // XXX Add test for undo case -- i.e. re-adding an item that is deleting
     // XXX Simplify code
     // XXX Might it better to use the item ID as the key for the items? That
     //     would mean we end up regenerating the wrapper when the item it
@@ -549,7 +549,8 @@ export class VirtualGrid extends React.Component {
 
     // Fill in missing items
     const firstAddition = fillInMissingSlots(startIndex, endIndex, emptySlots,
-                                             existingItems, slots, true);
+                                             existingItems, slots,
+                                             FillMode.Add);
 
     console.log(`Slots after filling in: ${JSON.stringify(slots)}`);
 
