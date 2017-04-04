@@ -552,8 +552,6 @@ export class VirtualGrid extends React.Component {
                                              existingItems, slots,
                                              FillMode.Add);
 
-    console.log(`Slots after filling in: ${JSON.stringify(slots)}`);
-
     // Schedule transitions
     const firstChange = definedMin(firstDeletion, firstAddition);
     if (firstChange !== Infinity) {
