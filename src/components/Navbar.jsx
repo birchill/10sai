@@ -18,13 +18,13 @@ export class Navbar extends React.Component {
     }
 
     const syncClasses = [];
-    syncClasses[SyncState.OK] = 'ok';
-    syncClasses[SyncState.IN_PROGRESS] = 'in-progress';
-    syncClasses[SyncState.PAUSED] = 'paused';
-    syncClasses[SyncState.OFFLINE] = 'offline';
-    syncClasses[SyncState.ERROR] = 'error';
+    syncClasses[SyncState.OK] = '-ok';
+    syncClasses[SyncState.IN_PROGRESS] = '-inprogress';
+    syncClasses[SyncState.PAUSED] = '-paused';
+    syncClasses[SyncState.OFFLINE] = '-offline';
+    syncClasses[SyncState.ERROR] = '-error';
 
-    const syncClass =  `icon ${syncClasses[this.props.syncState]}`;
+    const syncClass =  `nav-icon -sync ${syncClasses[this.props.syncState]}`;
 
     return (
       <Link id="sync-settings" to="/settings#sync">
@@ -38,12 +38,15 @@ export class Navbar extends React.Component {
     const settingsLink = this.props.settingsActive
                          ? this.props.currentScreenLink
                          : '/settings';
-    const settingsClass = `icon ${this.props.settingsActive ? 'active' : ''}`;
+    let settingsClass = 'nav-icon -selectable -settings';
+    if (this.props.settingsActive) {
+      settingsClass += ' -active';
+    }
 
     return (
-      <header>
-        <hgroup>
-          <h1>Tensai</h1>
+      <header className="nav-bar">
+        <hgroup className="app-title">
+          <h1 className="appname">Tensai</h1>
           <h2 className="subject">Subject</h2>
         </hgroup>
         { this.renderSyncIcon() }

@@ -1,0 +1,97 @@
+.nav-bar {
+  height: 39px;
+  background: white;
+  box-shadow: 0 1.5px 3px rgba(0,0,0,0.25);
+  display: flex;
+
+  > .app-title {
+    flex: 1 1 auto;
+  }
+  .nav-icon {
+    width: 25px;
+    height: 25px;
+    padding: 7px 12px;
+    position: relative;
+  }
+}
+
+.app-title {
+  display: inline-block;
+  padding-top: 2px;
+  padding-left: 10px;
+
+  // I would love to make .subject use text-overflow: ellipsis but after about
+  // 1hr of trying every combination of flexbox under the sun I couldn't get the
+  // h2 to be independently resizeable so that it would work.
+  overflow: hidden;
+
+  > .appname {
+    display: inline-block;
+    font-size: 2rem;
+    margin: 0;
+  }
+  > .subject {
+    display: inline-block;
+    font-size: 1.2rem;
+    font-weight: normal;
+    color: grey;
+    margin: 0;
+    margin-left: 0.2rem;
+  }
+}
+
+.nav-icon {
+  // We put the icon itself in a pseudo-element so we can change the
+  // background-color independently
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+  }
+
+  // Common variants
+  &.-active {
+    background: $highlight;
+  }
+  &.-selectable:hover {
+    background: $hover-highlight;
+  }
+
+  // Sync icon
+  &.-sync::before {
+    content: "";
+    background: url('img/icons.svg#sync') 0 / 100% 100% content-box;
+  }
+  &.-sync.-inprogress::before {
+    animation: rotate 1s linear infinite;
+  }
+
+  // The little icon overlay indicating the sync state
+  &.-sync .overlay {
+    position: absolute;
+    left: 23px;
+    top: 19px;
+    width: 15px;
+    height: 15px;
+  }
+  &.-sync.-paused .overlay {
+    background: url('img/icons.svg#overlay-pause') 0 / 100% 100% content-box;
+  }
+  &.-sync.-offline .overlay {
+    background: url('img/icons.svg#overlay-offline') 0 / 100% 100% content-box;
+  }
+  &.-sync.-error .overlay {
+    background: url('img/icons.svg#overlay-error') 0 / 100% 100% content-box;
+  }
+
+  // Settings menu
+  &.-settings::before {
+    background: url('img/icons.svg#settings') 0 / 100% 100% content-box;
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0turn); }
+  to   { transform: rotate(1turn); }
+}
