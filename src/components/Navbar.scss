@@ -1,24 +1,24 @@
 .nav-bar {
-  height: 39px;
+  height: 3rem;
   background: white;
   box-shadow: 0 1.5px 3px rgba(0,0,0,0.25);
   display: flex;
 
   > .app-title {
     flex: 1 1 auto;
+    margin-top: 0.3rem;
+    margin-left: 0.6rem;
   }
   .nav-icon {
-    width: 25px;
-    height: 25px;
-    padding: 7px 12px;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.5rem 0.9rem;
     position: relative;
   }
 }
 
 .app-title {
   display: inline-block;
-  padding-top: 2px;
-  padding-left: 10px;
 
   // I would love to make .subject use text-overflow: ellipsis but after about
   // 1hr of trying every combination of flexbox under the sun I couldn't get the
@@ -36,7 +36,7 @@
     font-weight: normal;
     color: grey;
     margin: 0;
-    margin-left: 0.2rem;
+    margin-left: 0.6rem;
   }
 }
 
