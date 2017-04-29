@@ -79,7 +79,6 @@ export class CardGrid extends React.Component {
   }
 
   handleDelete(id) {
-    // FIXME: Make this check for errors, animate etc.
     this.context.cardStore.deleteCard({ _id: id });
   }
 
