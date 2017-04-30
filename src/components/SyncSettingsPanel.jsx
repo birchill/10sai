@@ -180,7 +180,7 @@ export class SyncSettingsPanel extends React.Component {
           access your cards from another computer, phone, or tablet.
         </p>
         <button
-          name="edit-server" className="action primary"
+          name="edit-server" className="action -primary"
           onClick={this.handleEditServer}>Add a sync server</button>
       </div>);
   }

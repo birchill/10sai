@@ -256,23 +256,31 @@ input[type=button], input[type=submit], button {
      */
     filter: brightness(1.2);
   }
-}
-input[type=button].primary,
-input[type=submit].primary,
-button.primary {
-  background: $highlight;
-  color: white;
-  &:hover {
-    filter: brightness(1.2);
-  }
-}
 
-input[type=button].link,
-button.link {
-  color: $highlight;
-  border-width: 0px;
-  padding-left:  0.3rem;
-  padding-right: 0.3rem;
+  &.-primary {
+    background: $highlight;
+    color: white;
+    &:hover {
+      filter: brightness(1.2);
+    }
+  }
+
+  &.-link {
+    color: $highlight;
+    border-width: 0;
+    padding-left:  .3rem;
+    padding-right: .3rem;
+  }
+
+  &.-large {
+    font-size: 2rem;
+    height: auto;
+    padding: .5rem 2.5rem;
+  }
+
+  &.-shadow {
+    box-shadow: grey 0 0 1rem;
+  }
 }
 
 input[type=text],

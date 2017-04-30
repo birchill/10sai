@@ -144,13 +144,13 @@ export class SyncServerForm extends React.Component {
           type="button"
           name="submit"
           value="Ok"
-          className="primary"
+          className="-primary"
           onClick={this.handleSubmit} />
         <input
           type="button"
           name="cancel"
           value="Cancel"
-          className="link"
+          className="-link"
           onClick={this.handleCancel} />
       </form>
     );
