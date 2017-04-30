@@ -3,6 +3,7 @@ import { browserHistory } from 'react-router';
 import { connect } from 'react-redux';
 
 import CardOverviewScreen from './CardOverviewScreen.jsx';
+import ControlOverlay from './ControlOverlay.jsx';
 import Popup from './Popup.jsx';
 import PopupOverlay from './PopupOverlay.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
@@ -61,6 +62,10 @@ class App extends React.Component {
             active={!!this.props.nav.popup}
             close={this.closePopup}>
             <CardOverviewScreen />
+            <ControlOverlay>
+              <button className="primary">Review</button>
+              <button className="primary">Add</button>
+            </ControlOverlay>
           </PopupOverlay>
           <Popup
             active={settingsActive}
