@@ -147,7 +147,7 @@ export class SyncSettingsPanel extends React.Component {
     return (
       <div>
         <div><button
-          name="pause-sync"
+          className="-icon -pause"
           onClick={this.handlePause}>Pause</button></div>
         { this.renderServerInputBox() }
       </div>);
@@ -167,7 +167,7 @@ export class SyncSettingsPanel extends React.Component {
     return (
       <div>
         <div><button
-          name="resume-sync"
+          className="-icon -play"
           onClick={this.handleResume}>Resume</button></div>
         { this.renderServerInputBox() }
       </div>);
