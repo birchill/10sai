@@ -13,9 +13,17 @@
 
     display: flex;
     justify-content: space-between;
-    padding: 2rem;
+    padding: 3rem;
   }
   > .buttons > button {
     pointer-events: auto;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .control-overlay {
+    > .buttons {
+      padding: 2rem;
+    }
   }
 }

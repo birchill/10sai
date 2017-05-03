@@ -63,8 +63,12 @@ class App extends React.Component {
             close={this.closePopup}>
             <CardOverviewScreen />
             <ControlOverlay>
-              <button className="-primary -large -shadow">Review</button>
-              <button className="-primary -large -shadow">Add</button>
+              <button className="-primary -large -shadow -icon -review">
+                Review
+              </button>
+              <button className="-primary -large -shadow -icon -add-lookup">
+                Add
+              </button>
             </ControlOverlay>
           </PopupOverlay>
           <Popup
