@@ -283,6 +283,14 @@ input[type=button], input[type=submit], button {
   }
 }
 
+@media screen and (max-width: 600px) {
+  input[type=button], input[type=submit], button {
+    &.-large {
+      font-size: 1.5rem;
+    }
+  }
+}
+
 input[type=text],
 input[type=password] {
   -webkit-appearance: none;
