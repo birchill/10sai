@@ -8,6 +8,12 @@ before_install:
 script:
   - ./travis.sh
 
+deploy:
+  provider: surge
+  project: ./public/
+  domain: tensai.surge.sh
+  skip_cleanup: true
+
 env:
   global:
   - TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
