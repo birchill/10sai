@@ -35,19 +35,19 @@ body, html {
   font-family: Arial, sans-serif;
   -webkit-text-size-adjust: 100%;
   box-sizing: border-box;
-  font-size: 15px;
-  line-height: 1.42857143;
+  font-size: 18px;
+  line-height: 1.4;
   color: #333;
 }
 
 @media screen and (max-width: 600px) {
   body, html {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 @media screen and (max-width: 450px) {
   body, html {
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 
@@ -175,14 +175,12 @@ main section h3 {
 
 /*
  * Summary panel
- *
- * Based on the empty component in spectre.css
  */
 
 .summary-panel {
   background: #f8f8f8;
   border-radius: .4rem;
-  padding: 2rem 0.5rem;
+  padding: 2rem .5rem;
   text-align: center;
 }
 .summary-panel h4 {
@@ -191,7 +189,6 @@ main section h3 {
 }
 .summary-panel p,
 .summary-panel ul {
-  font-size: 1.1rem;
   color: #888;
 }
 .summary-panel .action {
@@ -227,14 +224,15 @@ main section h3 {
 
 input, button {
   -webkit-appearance: none;
-  border-radius: .5em;
+  -moz-appearance: none;
+  appearance: none;
+  font-size: 1rem;
+
+  border-radius: .6em;
   box-sizing: border-box;
-  font-size: 1.2rem;
-  height: 3rem;
-  padding: .3rem 1rem;
-  outline: 0;
-  vertical-align: top;
-  margin: 0 0.2rem;
+  padding: .4em 1em;
+  outline: none;
+  vertical-align: middle;
 }
 input[type=button], input[type=submit], button {
   background: transparent;
@@ -273,9 +271,8 @@ input[type=button], input[type=submit], button {
   }
 
   &.-large {
-    font-size: 2rem;
-    height: auto;
-    padding: 1rem 2.5rem;
+    font-size: 1.8rem;
+    padding: 0.5em 1.4em;
     border-radius: 2em;
   }
 
@@ -284,10 +281,19 @@ input[type=button], input[type=submit], button {
   }
 
   &.-icon {
-    background-position: 1.5em;
-    background-size: 1em;
+    // Match the normal left padding
+    background-position: 1em;
+    // Make icon a 1em x 1em square
+    background-size: 1em 1em;
     background-repeat: no-repeat;
-    padding-left: 3em;
+    // 1em is the normal left padding,
+    // 1em is the width of the icon,
+    // 0.5em is the space to add between the icon and the label
+    padding-left: 1em + 1em + 0.5em;
+  }
+  &.-large.-icon {
+    background-position: 1.4em;
+    padding-left: 1.4em + 1em + 0.5em;
   }
   &.-icon.-review {
     background-image: url('img/icons.svg#review');
@@ -300,7 +306,26 @@ input[type=button], input[type=submit], button {
 @media screen and (max-width: 600px) {
   input[type=button], input[type=submit], button {
     &.-large {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
+    }
+  }
+}
+
+// For large icon buttons on small screens, just show the icon
+@media screen and (max-width: 350px) {
+  input[type=button], input[type=submit], button {
+    &.-large.-icon {
+      // Move text out the way
+      text-indent: 10em;
+      overflow: hidden;
+      // Make the button a 4em x 4em square area
+      width: 4em;
+      height: 4em;
+      // Drop the extra padding we added
+      padding: 0;
+      // Make the background a little larger and put it in the middle
+      background-size: 1.5em 1.5em;
+      background-position: 4em / 2 - 1.5em / 2;
     }
   }
 }
@@ -598,10 +623,9 @@ form[name=sync-server-settings] {
   border-radius: .4rem;
   border: $border-width solid #c5c5c5;
   box-shadow: 0 1.5px 2px rgba(0, 0, 0, 0.15);
-  margin: .8rem;
-  height: 10rem;
-  width: 10rem;
-  font-size: 1.2rem;
+  margin: .6rem;
+  height: 8rem;
+  width: 8rem;
   text-align: center;
   overflow: hidden;
 }
