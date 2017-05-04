@@ -16,7 +16,6 @@ export default function route(state = { }, action) {
     case 'NAVIGATE': {
       const screenMatches = screenRe.exec(action.url);
       if (screenMatches) {
-        console.log(screenMatches);
         if (popups.includes(screenMatches[1])) {
           return { ...state, popup: screenMatches[1] };
         }
