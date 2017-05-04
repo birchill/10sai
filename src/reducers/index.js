@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
-import nav from './nav';
+import route from './route';
 import sync from './sync';
 
 export default combineReducers({
-  nav,
+  route,
   sync,
 });

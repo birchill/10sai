@@ -1,5 +1,4 @@
 import React from 'react';
-import { browserHistory } from 'react-router';
 import { connect } from 'react-redux';
 
 import CardOverviewScreen from './CardOverviewScreen.jsx';
@@ -16,16 +15,16 @@ const ConnectedNavbar =
 class App extends React.Component {
   static get propTypes() {
     return {
-      nav: React.PropTypes.shape({
+      cards: React.PropTypes.object.isRequired,
+      route: React.PropTypes.shape({
         screen: React.PropTypes.string,
         popup: React.PropTypes.string,
       }),
-      route: React.PropTypes.object.isRequired,
     };
   }
 
   static get defaultProps() {
-    return { nav: {} };
+    return { route: {} };
   }
 
   static get childContextTypes() {
@@ -38,19 +37,19 @@ class App extends React.Component {
   }
 
   getChildContext() {
-    return { cardStore: this.props.route.cards };
+    return { cardStore: this.props.cards };
   }
 
   get currentScreenLink() {
-    return `/${this.props.nav.screen || ''}`;
+    return `/${this.props.route.screen || ''}`;
   }
 
   closePopup() {
-    browserHistory.replace(this.currentScreenLink);
+    history.replaceState({}, null, this.currentScreenLink);
   }
 
   render() {
-    const settingsActive = this.props.nav.popup === 'settings';
+    const settingsActive = this.props.route.popup === 'settings';
 
     return (
       <div>
@@ -59,7 +58,7 @@ class App extends React.Component {
           currentScreenLink={this.currentScreenLink} />
         <main>
           <PopupOverlay
-            active={!!this.props.nav.popup}
+            active={!!this.props.route.popup}
             close={this.closePopup}>
             <CardOverviewScreen />
             <ControlOverlay>
@@ -85,7 +84,7 @@ class App extends React.Component {
   }
 }
 
-const mapStateToProps = state => ({ nav: state.nav });
+const mapStateToProps = state => ({ route: state.route });
 const ConnectedApp = connect(mapStateToProps)(App);
 
 export default ConnectedApp;

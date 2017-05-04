@@ -1,7 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router';
 
 import SyncState from '../sync-states';
+import Link from './Link.jsx';
 
 export class Navbar extends React.Component {
   static get propTypes() {
@@ -24,10 +24,10 @@ export class Navbar extends React.Component {
     syncClasses[SyncState.OFFLINE] = '-offline';
     syncClasses[SyncState.ERROR] = '-error';
 
-    const syncClass =  `nav-icon -sync ${syncClasses[this.props.syncState]}`;
+    const syncClass = `nav-icon -sync ${syncClasses[this.props.syncState]}`;
 
     return (
-      <Link id="sync-settings" to="/settings#sync">
+      <Link id="sync-settings" href="/settings#sync">
         <div id="sync-status" className={syncClass}>
           <div className="overlay" />
         </div>
@@ -50,7 +50,7 @@ export class Navbar extends React.Component {
           <h2 className="subject">Subject</h2>
         </hgroup>
         { this.renderSyncIcon() }
-        <Link to={settingsLink}>
+        <Link href={settingsLink}>
           <div id="settings-menu" className={settingsClass} />
         </Link>
       </header>

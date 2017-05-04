@@ -1,6 +1,5 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { browserHistory, Router, Route } from 'react-router';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import createSagaMiddleware from 'redux-saga';
@@ -12,6 +11,10 @@ import CardStore from './CardStore';
 import App from './components/App.jsx';
 
 import 'main.scss'; // eslint-disable-line
+
+//
+// Redux store
+//
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -28,6 +31,10 @@ if (process.env.NODE_ENV === 'development') {
   store = createStore(reducer, applyMiddleware(sagaMiddleware));
 }
 
+//
+// Local data stores
+//
+
 const cardStore = new CardStore();
 const settingsStore = new SettingsStore();
 
@@ -43,6 +50,22 @@ settingsStore.getSettings().then(dispatchSettingUpdates);
 settingsStore.onUpdate(dispatchSettingUpdates);
 
 //
+// Sagas
+//
+
+sagaMiddleware.run(function* allSagas() {
+  yield [ syncSagas(cardStore, settingsStore, store.dispatch.bind(store)) ];
+});
+
+//
+// Router
+//
+
+// XXX Read the window.location.pathname and window.location.search and
+// dispatch a NAVIGATE action with them (so the reducer then turns that into
+// appropriate state representing the current screen/popup)
+
+//
 // Offline notification
 //
 
@@ -52,23 +75,12 @@ window.addEventListener('offline',
                         () => { store.dispatch({ type: 'GO_OFFLINE' }); });
 
 //
-// Sagas
+// Render the root component
 //
-
-sagaMiddleware.run(function* allSagas() {
-  yield [ syncSagas(cardStore, settingsStore, store.dispatch.bind(store)) ];
-});
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router
-      history={browserHistory}
-      onUpdate={function onUpdate() {
-        store.dispatch({ type: 'CHANGE_LOCATION',
-                         screen: this.state.params.screen });
-      }}>
-      <Route path="/(:screen)" component={App} cards={cardStore} />
-    </Router>
+    <App cards={cardStore} />
   </Provider>,
   document.getElementById('container')
 );
