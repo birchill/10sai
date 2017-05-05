@@ -21,7 +21,7 @@ export default function route(state = { }, action) {
         }
         return { ...state, screen: screenMatches[1], popup: undefined };
       }
-      return state;
+      return { ...state, screen: '', popup: undefined };
     }
 
     default:

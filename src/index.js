@@ -61,9 +61,10 @@ sagaMiddleware.run(function* allSagas() {
 // Router
 //
 
-// XXX Read the window.location.pathname and window.location.search and
-// dispatch a NAVIGATE action with them (so the reducer then turns that into
-// appropriate state representing the current screen/popup)
+store.dispatch({ type: 'NAVIGATE', url: window.location.pathname });
+window.addEventListener('popstate', () => {
+  store.dispatch({ type: 'NAVIGATE', url: window.location.pathname });
+});
 
 //
 // Offline notification
