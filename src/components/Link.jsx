@@ -1,6 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+// This function is copied from react-router.
+const isModifiedEvent = evt =>
+  !!(evt.metaKey || evt.altKey || evt.ctrlKey || evt.shiftKey);
+
 class Link extends React.Component {
   static get propTypes() {
     return {
@@ -21,16 +25,27 @@ class Link extends React.Component {
   }
 
   handleClick(e) {
+    // Ignore the event if...
+    if (e.button !== 0 ||      // ... it's a right-click
+        isModifiedEvent(e)) {  // ... it's a ctrl-click etc.
+      return;
+    }
+
+    if (this.props.onClick) {
+      this.props.onClick(this.props.href);
+    }
+
+    // If props.onClick called preventDefault, abort.
+    if (e.defaultPrevented) {
+      return;
+    }
+
     e.preventDefault();
 
     if (this.props.replace) {
       history.replaceState({}, null, this.props.href);
     } else {
       history.pushState({}, null, this.props.href);
-    }
-
-    if (this.props.onClick) {
-      this.props.onClick(this.props.href);
     }
   }
 
