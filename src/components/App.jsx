@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { URLFromRoute } from '../router';
@@ -16,14 +17,14 @@ const ConnectedNavbar =
 class App extends React.Component {
   static get propTypes() {
     return {
-      cards: React.PropTypes.object.isRequired,
-      route: React.PropTypes.shape({
-        screen: React.PropTypes.string,
-        popup: React.PropTypes.string,
-        search: React.PropTypes.object,
-        hash: React.PropTypes.string,
+      cards: PropTypes.object.isRequired,
+      route: PropTypes.shape({
+        screen: PropTypes.string,
+        popup: PropTypes.string,
+        search: PropTypes.object,
+        hash: PropTypes.string,
       }),
-      onClosePopup: React.PropTypes.func,
+      onClosePopup: PropTypes.func,
     };
   }
 
@@ -32,7 +33,7 @@ class App extends React.Component {
   }
 
   static get childContextTypes() {
-    return { cardStore: React.PropTypes.object };
+    return { cardStore: PropTypes.object };
   }
 
   constructor(props) {

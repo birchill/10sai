@@ -1,4 +1,6 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+
 import SortOfRelativeDate from './SortOfRelativeDate.jsx';
 
 function ExistingServerBox(props) {
@@ -20,9 +22,9 @@ function ExistingServerBox(props) {
 }
 
 ExistingServerBox.propTypes = {
-  server: React.PropTypes.string.isRequired,
-  lastSyncTime: React.PropTypes.instanceOf(Date),
-  onEdit: React.PropTypes.func.isRequired,
+  server: PropTypes.string.isRequired,
+  lastSyncTime: PropTypes.instanceOf(Date),
+  onEdit: PropTypes.func.isRequired,
 };
 
 export default ExistingServerBox;

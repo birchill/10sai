@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 // This function is copied from react-router.
@@ -8,10 +9,10 @@ const isModifiedEvent = evt =>
 class Link extends React.Component {
   static get propTypes() {
     return {
-      href: React.PropTypes.string.isRequired,
-      direction: React.PropTypes.oneOf([ 'backwards', 'replace', 'forwards' ]),
-      onClick: React.PropTypes.func,
-      children: React.PropTypes.node,
+      href: PropTypes.string.isRequired,
+      direction: PropTypes.oneOf([ 'backwards', 'replace', 'forwards' ]),
+      onClick: PropTypes.func,
+      children: PropTypes.node,
     };
   }
 

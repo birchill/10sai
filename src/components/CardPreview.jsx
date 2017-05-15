@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export class CardPreview extends React.Component {
   static get propTypes() {
     return {
-      _id: React.PropTypes.string.isRequired,
-      question: React.PropTypes.string.isRequired,
-      onDelete: React.PropTypes.func.isRequired,
+      _id: PropTypes.string.isRequired,
+      question: PropTypes.string.isRequired,
+      onDelete: PropTypes.func.isRequired,
     };
   }
 

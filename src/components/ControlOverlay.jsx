@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 function ControlOverlay(props) {
   return (
@@ -11,7 +12,7 @@ function ControlOverlay(props) {
 }
 
 ControlOverlay.propTypes = {
-  children: React.PropTypes.node,
+  children: PropTypes.node,
 };
 
 export default ControlOverlay;

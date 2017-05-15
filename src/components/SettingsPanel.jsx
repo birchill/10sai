@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 function SettingsPanel(props) {
   return (
@@ -10,8 +11,8 @@ function SettingsPanel(props) {
 }
 
 SettingsPanel.propTypes = {
-  heading: React.PropTypes.string.isRequired,
-  children: React.PropTypes.node,
+  heading: PropTypes.string.isRequired,
+  children: PropTypes.node,
 };
 
 export default SettingsPanel;

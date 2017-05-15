@@ -1,14 +1,16 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+
 import CancelableTextbox from './CancelableTextbox.jsx';
 
 export class SyncServerForm extends React.Component {
   static get propTypes() {
     return {
-      server: React.PropTypes.string,
-      username: React.PropTypes.string,
-      password: React.PropTypes.string,
-      onSubmit: React.PropTypes.func.isRequired,
-      onCancel: React.PropTypes.func.isRequired,
+      server: PropTypes.string,
+      username: PropTypes.string,
+      password: PropTypes.string,
+      onSubmit: PropTypes.func.isRequired,
+      onCancel: PropTypes.func.isRequired,
     };
   }
 

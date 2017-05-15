@@ -25,6 +25,7 @@
     "pouchdb": "^6.1.2",
     "pouchdb-collate": "^6.1.2",
     "pouchdb-upsert": "^2.0.2",
+    "prop-types": "^15.5.10",
     "query-string": "^4.3.4",
     "react": "^15.4.2",
     "react-addons-test-utils": "^15.4.2",

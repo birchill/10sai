@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import SyncState from '../sync-states';
 import SyncStatusMessages from '../sync-status-messages';
@@ -47,20 +48,20 @@ function translateError(error) {
 export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
     return {
-      syncState: React.PropTypes.symbol.isRequired,
-      server: React.PropTypes.shape({ name: React.PropTypes.string,
-                                      username: React.PropTypes.string,
-                                      password: React.PropTypes.string }),
-      lastSyncTime: React.PropTypes.instanceOf(Date),
-      errorDetail: React.PropTypes.object,
-      progress: React.PropTypes.number,
-      editingServer: React.PropTypes.bool,
-      onSubmit: React.PropTypes.func.isRequired,
-      onRetry: React.PropTypes.func.isRequired,
-      onEdit: React.PropTypes.func.isRequired,
-      onCancel: React.PropTypes.func.isRequired,
-      onPause: React.PropTypes.func.isRequired,
-      onResume: React.PropTypes.func.isRequired,
+      syncState: PropTypes.symbol.isRequired,
+      server: PropTypes.shape({ name: PropTypes.string,
+                                username: PropTypes.string,
+                                password: PropTypes.string }),
+      lastSyncTime: PropTypes.instanceOf(Date),
+      errorDetail: PropTypes.object,
+      progress: PropTypes.number,
+      editingServer: PropTypes.bool,
+      onSubmit: PropTypes.func.isRequired,
+      onRetry: PropTypes.func.isRequired,
+      onEdit: PropTypes.func.isRequired,
+      onCancel: PropTypes.func.isRequired,
+      onPause: PropTypes.func.isRequired,
+      onResume: PropTypes.func.isRequired,
     };
   }
 

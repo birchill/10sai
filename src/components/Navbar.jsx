@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import SyncState from '../sync-states';
 import Link from './Link.jsx';
@@ -6,9 +7,9 @@ import Link from './Link.jsx';
 export class Navbar extends React.Component {
   static get propTypes() {
     return {
-      syncState: React.PropTypes.symbol.isRequired,
-      settingsActive: React.PropTypes.bool,
-      currentScreenLink: React.PropTypes.string,
+      syncState: PropTypes.symbol.isRequired,
+      settingsActive: PropTypes.bool,
+      currentScreenLink: PropTypes.string,
     };
   }
 
