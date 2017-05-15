@@ -8,10 +8,10 @@
     "url": "https://github.com/birtles/tensai.git"
   },
   "scripts": {
-    "build": "webpack --progress --colors",
+    "build": "cross-env NODE_ENV=development webpack --progress --colors",
     "build:prod": "cross-env NODE_ENV=production webpack -p --progress --colors",
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
-    "start": "webpack-dev-server --progress --colors --history-api-fallback --content-base public/",
+    "start": "cross-env NODE_ENV=development webpack-dev-server --progress --colors --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server -p --progress --colors --history-api-fallback --content-base public/",
     "lint": "eslint src/** test/**",
     "test": "mocha --recursive --compilers js:babel-core/register --require babel-polyfill"
