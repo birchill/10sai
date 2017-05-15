@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { URLFromRoute } from '../router';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import ControlOverlay from './ControlOverlay.jsx';
 import Popup from './Popup.jsx';
@@ -19,7 +20,10 @@ class App extends React.Component {
       route: React.PropTypes.shape({
         screen: React.PropTypes.string,
         popup: React.PropTypes.string,
+        search: React.PropTypes.object,
+        hash: React.PropTypes.string,
       }),
+      onClosePopup: React.PropTypes.func,
     };
   }
 
@@ -41,11 +45,13 @@ class App extends React.Component {
   }
 
   get currentScreenLink() {
-    return `/${this.props.route.screen || ''}`;
+    return URLFromRoute(this.props.route);
   }
 
   closePopup() {
-    history.replaceState({}, null, this.currentScreenLink);
+    if (this.props.onClosePopup) {
+      this.props.onClosePopup();
+    }
   }
 
   render() {
@@ -84,7 +90,20 @@ class App extends React.Component {
   }
 }
 
-const mapStateToProps = state => ({ route: state.route });
-const ConnectedApp = connect(mapStateToProps)(App);
+const mapStateToProps = state => ({
+  route: state.route &&
+         state.route.history &&
+         state.route.history.length
+         ? state.route.history[state.route.index]
+         : {}
+});
+const mapDispatchToProps = (dispatch, props) => ({
+  onClosePopup: () => {
+    dispatch({ type: 'FOLLOW_LINK',
+               url: URLFromRoute(props.route),
+               direction: 'backwards' });
+  }
+});
+const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
 
 export default ConnectedApp;

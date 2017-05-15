@@ -6,6 +6,7 @@ import createSagaMiddleware from 'redux-saga';
 
 import reducer from './reducers/index';
 import syncSagas from './sagas/sync';
+import routeSagas from './sagas/route';
 import SettingsStore from './SettingsStore';
 import CardStore from './CardStore';
 import App from './components/App.jsx';
@@ -54,16 +55,26 @@ settingsStore.onUpdate(dispatchSettingUpdates);
 //
 
 sagaMiddleware.run(function* allSagas() {
-  yield [ syncSagas(cardStore, settingsStore, store.dispatch.bind(store)) ];
+  yield [
+    syncSagas(cardStore, settingsStore, store.dispatch.bind(store)),
+    routeSagas(store.dispatch.bind(store)),
+  ];
 });
 
 //
 // Router
 //
 
-store.dispatch({ type: 'NAVIGATE', url: window.location.pathname });
-window.addEventListener('popstate', () => {
-  store.dispatch({ type: 'NAVIGATE', url: window.location.pathname });
+store.dispatch({ type: 'NAVIGATE',
+                 path: window.location.pathname,
+                 search: window.location.search,
+                 fragment: window.location.hash });
+window.addEventListener('popstate', evt => {
+  store.dispatch({ type: 'NAVIGATE_FROM_HISTORY',
+                   index: evt.state ? evt.state.index : 0,
+                   path: window.location.pathname,
+                   search: window.location.search,
+                   fragment: window.location.hash });
 });
 
 //

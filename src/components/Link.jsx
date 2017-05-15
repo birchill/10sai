@@ -9,14 +9,16 @@ class Link extends React.Component {
   static get propTypes() {
     return {
       href: React.PropTypes.string.isRequired,
-      replace: React.PropTypes.bool,
+      direction: React.PropTypes.oneOf([ 'backwards', 'replace', 'forwards' ]),
       onClick: React.PropTypes.func,
       children: React.PropTypes.node,
     };
   }
 
-  static get childContextTypes() {
-    return { store: React.PropTypes.any };
+  static get defaultProps() {
+    return {
+      direction: 'forwards'
+    };
   }
 
   constructor(props) {
@@ -35,18 +37,7 @@ class Link extends React.Component {
       this.props.onClick(this.props.href);
     }
 
-    // If props.onClick called preventDefault, abort.
-    if (e.defaultPrevented) {
-      return;
-    }
-
     e.preventDefault();
-
-    if (this.props.replace) {
-      history.replaceState({}, null, this.props.href);
-    } else {
-      history.pushState({}, null, this.props.href);
-    }
   }
 
   render() {
@@ -59,9 +50,9 @@ class Link extends React.Component {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch, props) => ({
   onClick: href => {
-    dispatch({ type: 'NAVIGATE', url: href });
+    dispatch({ type: 'FOLLOW_LINK', url: href, direction: props.direction });
   }
 });
 

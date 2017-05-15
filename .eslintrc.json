@@ -27,6 +27,7 @@
     "linebreak-style": [ "off" ],
     "prefer-template": [ "off" ],
     "no-continue": [ "off" ],
+    "no-console": [ "error", { "allow": ["assert", "warn", "error"] } ],
     "no-mixed-operators": [ "off" ],
     "no-multi-spaces": [ "off" ],
     "no-param-reassign": [ "off" ],
@@ -34,7 +35,9 @@
     "no-prototype-builtins": [ "off" ],
     "no-restricted-syntax": [ "off" ],
     "no-restricted-properties": [ "off" ],
+    "no-shadow": [ "off" ],
     "no-underscore-dangle": [ "off" ],
+    "no-use-before-define": [ "error", { "functions": false } ],
     "react/prefer-stateless-function": [ "off" ],
     "react/jsx-closing-bracket-location": [
       "error", { "selfClosing": "after-props", "nonEmpty": "after-props" }

@@ -1,27 +1,50 @@
-import pathToRegexp from 'path-to-regexp';
-
-//
-// Routes to different screens
-//
-let screenKeys;
-const screenRe = pathToRegexp('/:screen', screenKeys);
-
-//
-// "Screens" that actually represent popups
-//
-const popups = [ 'settings' ];
+import { routeFromPath, routeFromURL } from '../router';
 
 export default function route(state = { }, action) {
   switch (action.type) {
     case 'NAVIGATE': {
-      const screenMatches = screenRe.exec(action.url);
-      if (screenMatches) {
-        if (popups.includes(screenMatches[1])) {
-          return { ...state, popup: screenMatches[1] };
+      const route = action.url
+                    ? routeFromURL(action.url)
+                    : routeFromPath(action.path, action.search,
+                                    action.fragment);
+      const history = state.history ? state.history.slice() : [];
+
+      let index = typeof state.index === 'number' ? state.index : -1;
+      if (action.replace && index >= 0 && index < history.length) {
+        history[index] = route;
+      } else {
+        if (index < history.length - 1) {
+          history.splice(index + 1);
         }
-        return { ...state, screen: screenMatches[1], popup: undefined };
+        history.push(route);
+        index++;
       }
-      return { ...state, screen: '', popup: undefined };
+
+      return { index, history };
+    }
+
+    case 'NAVIGATE_FROM_HISTORY': {
+      const route = routeFromPath(action.path, action.search, action.fragment);
+      const history = state.history ? state.history.slice() : [];
+      const hasRoute = typeof action.path !== 'undefined';
+
+      // Ignore actions without an index
+      if (typeof action.index !== 'number') {
+        return state;
+      }
+
+      let index = Math.max(action.index,  0);
+
+      if (index < history.length && hasRoute) {
+        history[index] = route;
+      } else if (index >= history.length) {
+        if (hasRoute) {
+          history.push(route);
+        }
+        index = history.length - 1;
+      }
+
+      return { index, history };
     }
 
     default:

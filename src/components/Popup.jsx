@@ -69,7 +69,10 @@ export class Popup extends React.Component {
         role="dialog"
         tabIndex={this.props.active ? 0 : -1}
         ref={this.assignPopup}>
-        <Link href="." className="popup-close-button">Close</Link>
+        <Link
+          href="/"
+          className="popup-close-button"
+          direction="backwards">Close</Link>
         {this.props.children}
       </section>
     );
