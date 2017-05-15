@@ -1,4 +1,4 @@
-/* global afterEach, beforeEach, define, describe, it */
+/* global describe, it */
 /* eslint arrow-body-style: [ "off" ] */
 
 import { assert } from 'chai';

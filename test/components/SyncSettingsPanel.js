@@ -1,4 +1,4 @@
-/* global define, it, describe */
+/* global describe, it */
 /* eslint-disable react/jsx-first-prop-new-line */
 
 import React from 'react';

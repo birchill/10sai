@@ -1,4 +1,4 @@
-/* global afterEach, beforeEach, define, describe, it */
+/* global afterEach, beforeEach, describe, it */
 /* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';

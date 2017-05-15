@@ -1,4 +1,4 @@
-/* global afterEach, beforeEach, define, describe, it */
+/* global beforeEach, describe, it */
 /* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
