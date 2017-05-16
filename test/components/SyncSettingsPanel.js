@@ -1,5 +1,6 @@
 /* global describe, it */
 /* eslint-disable react/jsx-first-prop-new-line */
+/* eslint-disable react/jsx-max-props-per-line */
 
 import React from 'react';
 import { shallow } from 'enzyme';

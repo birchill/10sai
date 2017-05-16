@@ -68,7 +68,6 @@ export class Popup extends React.Component {
         className={popupClass}
         aria-hidden={!this.props.active}
         role="dialog"
-        tabIndex={this.props.active ? 0 : -1}
         ref={this.assignPopup}>
         <Link
           href="/"

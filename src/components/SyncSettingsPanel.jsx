@@ -26,7 +26,8 @@ function translateError(error) {
           <li>The server name was misspelled</li>
           <li>The server has not been set up to <a
             href="https://github.com/pouchdb/add-cors-to-couchdb"
-            target="_blank" rel="noopener noreferrer">support
+            target="_blank"
+            rel="noopener noreferrer">support
             cross-origin access</a></li>
           <li>The server is temporarily offline</li>
         </ul>
@@ -180,7 +181,8 @@ export class SyncSettingsPanel extends React.Component {
           access your cards from another computer, phone, or tablet.
         </p>
         <button
-          name="edit-server" className="action -primary"
+          name="edit-server"
+          className="action -primary"
           onClick={this.handleEditServer}>Add a sync server</button>
       </div>);
   }
