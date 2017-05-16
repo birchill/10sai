@@ -22,7 +22,7 @@ const sagaMiddleware = createSagaMiddleware();
 let store;
 if (process.env.NODE_ENV === 'development') {
   // eslint-disable-next-line global-require, import/no-extraneous-dependencies
-  const createLogger = require('redux-logger');
+  const createLogger = require('redux-logger').createLogger;
   const loggerMiddleware = createLogger();
   store = createStore(
     reducer,
