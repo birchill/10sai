@@ -59,7 +59,7 @@ export function* followLink(action) {
 }
 
 function* routeSagas() {
-  yield* takeEvery('FOLLOW_LINK', followLink);
+  yield* [ takeEvery('FOLLOW_LINK', followLink) ];
 }
 
 export default routeSagas;
