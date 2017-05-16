@@ -37,7 +37,6 @@ export function* followLink(action) {
     navigateRoute = navigateRoute || routeFromURL(action.url || '/');
     if (routesEqual(previousRoute, navigateRoute)) {
       yield call([ history, 'back' ]);
-      history.back();
       return;
     }
   }
