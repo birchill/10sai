@@ -3,6 +3,7 @@ import React from 'react';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import createSagaMiddleware from 'redux-saga';
+import { all } from 'redux-saga/effects';
 
 import reducer from './reducers/index';
 import syncSagas from './sagas/sync';
@@ -55,10 +56,10 @@ settingsStore.onUpdate(dispatchSettingUpdates);
 //
 
 sagaMiddleware.run(function* allSagas() {
-  yield [
+  yield all([
     syncSagas(cardStore, settingsStore, store.dispatch.bind(store)),
     routeSagas(store.dispatch.bind(store)),
-  ];
+  ]);
 });
 
 //

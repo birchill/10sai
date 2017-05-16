@@ -1,5 +1,4 @@
-import { takeEvery, takeLatest } from 'redux-saga';
-import { put, select } from 'redux-saga/effects';
+import { takeEvery, takeLatest, put, select } from 'redux-saga/effects';
 
 // Selector wrappers
 
