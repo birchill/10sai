@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../router';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
@@ -58,35 +59,43 @@ class App extends React.Component {
   render() {
     const settingsActive = this.props.route.popup === 'settings';
 
+    let title = 'Tensai';
+    if (this.props.route.popup) {
+      const toTitle = str => str[0].toUpperCase() + str.substring(1);
+      title += ` - ${toTitle(this.props.route.popup)}`;
+    }
+
     return (
-      <div>
-        <ConnectedNavbar
-          settingsActive={settingsActive}
-          currentScreenLink={this.currentScreenLink} />
-        <main>
-          <PopupOverlay
-            active={!!this.props.route.popup}
-            close={this.closePopup}>
-            <CardOverviewScreen />
-            <ControlOverlay>
-              <button className="-primary -large -shadow -icon -review">
-                Review
-              </button>
-              <button className="-primary -large -shadow -icon -add-lookup">
-                Add
-              </button>
-            </ControlOverlay>
-          </PopupOverlay>
-          <Popup
-            active={settingsActive}
-            close={this.closePopup}>
-            <SettingsPanel
-              heading="Sync">
-              <SyncSettingsPanelContainer />
-            </SettingsPanel>
-          </Popup>
-        </main>
-      </div>
+      <DocumentTitle title={title}>
+        <div>
+          <ConnectedNavbar
+            settingsActive={settingsActive}
+            currentScreenLink={this.currentScreenLink} />
+          <main>
+            <PopupOverlay
+              active={!!this.props.route.popup}
+              close={this.closePopup}>
+              <CardOverviewScreen />
+              <ControlOverlay>
+                <button className="-primary -large -shadow -icon -review">
+                  Review
+                </button>
+                <button className="-primary -large -shadow -icon -add-lookup">
+                  Add
+                </button>
+              </ControlOverlay>
+            </PopupOverlay>
+            <Popup
+              active={settingsActive}
+              close={this.closePopup}>
+              <SettingsPanel
+                heading="Sync">
+                <SyncSettingsPanelContainer />
+              </SettingsPanel>
+            </Popup>
+          </main>
+        </div>
+      </DocumentTitle>
     );
   }
 }
