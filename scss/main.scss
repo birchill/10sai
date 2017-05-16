@@ -234,7 +234,7 @@ input, button {
   outline: none;
   vertical-align: middle;
 }
-input[type=button], input[type=submit], button {
+input[type=button], input[type=submit], button, a.button {
   background: transparent;
   border: $border-width solid $highlight;
   color: $highlight;

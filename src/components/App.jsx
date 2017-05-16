@@ -6,11 +6,12 @@ import DocumentTitle from 'react-document-title';
 import { URLFromRoute } from '../router';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import ControlOverlay from './ControlOverlay.jsx';
+import Link from './Link.jsx';
+import Navbar from './Navbar.jsx';
 import Popup from './Popup.jsx';
 import PopupOverlay from './PopupOverlay.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
-import Navbar from './Navbar.jsx';
 
 const ConnectedNavbar =
   connect(state => ({ syncState: state.sync.state }))(Navbar);
@@ -47,7 +48,8 @@ class App extends React.Component {
   }
 
   get currentScreenLink() {
-    return URLFromRoute(this.props.route);
+    const routeWithoutPopup = { ...this.props.route, popup: undefined };
+    return URLFromRoute(routeWithoutPopup);
   }
 
   closePopup() {
@@ -80,9 +82,11 @@ class App extends React.Component {
                 <button className="-primary -large -shadow -icon -review">
                   Review
                 </button>
-                <button className="-primary -large -shadow -icon -add-lookup">
+                <Link
+                  href="/cards/new"
+                  className="button -primary -large -shadow -icon -add-lookup">
                   Add
-                </button>
+                </Link>
               </ControlOverlay>
             </PopupOverlay>
             <Popup
