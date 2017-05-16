@@ -1,4 +1,4 @@
-/* global define, it, describe */
+/* global describe, it */
 /* eslint-disable react/jsx-first-prop-new-line */
 
 import React from 'react';
@@ -44,7 +44,9 @@ describe('<SyncServerForm />', () => {
   it('calls the callback when cancelled', () => {
     const onCancel = sinon.spy();
     const subject =
-      shallow(<SyncServerForm server="abc" onSubmit={stub}
+      shallow(<SyncServerForm
+        server="abc"
+        onSubmit={stub}
         onCancel={onCancel} />);
 
     subject.find('input[name="cancel"]').simulate('click');
@@ -66,7 +68,9 @@ describe('<SyncServerForm />', () => {
   it('passes the server to the callback when submitted', () => {
     const onSubmit = sinon.spy();
     const subject =
-      shallow(<SyncServerForm server="abc" onSubmit={onSubmit}
+      shallow(<SyncServerForm
+        server="abc"
+        onSubmit={onSubmit}
         onCancel={stub} />);
 
     subject.find('form').simulate('submit', { preventDefault: stub });
@@ -77,7 +81,9 @@ describe('<SyncServerForm />', () => {
   it('passes the updated server to the callback when submitted', () => {
     const onSubmit = sinon.spy();
     const subject =
-      shallow(<SyncServerForm server="abc" onSubmit={onSubmit}
+      shallow(<SyncServerForm
+        server="abc"
+        onSubmit={onSubmit}
         onCancel={stub} />);
 
     subject.find('CancelableTextbox[name="server"]').simulate('change', 'def');

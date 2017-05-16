@@ -35,19 +35,19 @@ body, html {
   font-family: Arial, sans-serif;
   -webkit-text-size-adjust: 100%;
   box-sizing: border-box;
-  font-size: 15px;
-  line-height: 1.42857143;
+  font-size: 18px;
+  line-height: 1.4;
   color: #333;
 }
 
 @media screen and (max-width: 600px) {
   body, html {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 @media screen and (max-width: 450px) {
   body, html {
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 
@@ -75,7 +75,7 @@ main {
   position: relative;
   flex: 1;
 }
-main #card-list {
+main .content-screen {
   margin-top: 10px;
   height: calc(100% - 10px);
   width: 100%;
@@ -105,6 +105,7 @@ main div.popup-overlay.active {
 }
 
 @import '../src/components/Navbar';
+@import '../src/components/ControlOverlay';
 
 /*
  * Section pages
@@ -174,14 +175,12 @@ main section h3 {
 
 /*
  * Summary panel
- *
- * Based on the empty component in spectre.css
  */
 
 .summary-panel {
   background: #f8f8f8;
   border-radius: .4rem;
-  padding: 2rem 0.5rem;
+  padding: 2rem .5rem;
   text-align: center;
 }
 .summary-panel h4 {
@@ -190,7 +189,6 @@ main section h3 {
 }
 .summary-panel p,
 .summary-panel ul {
-  font-size: 1.1rem;
   color: #888;
 }
 .summary-panel .action {
@@ -226,14 +224,15 @@ main section h3 {
 
 input, button {
   -webkit-appearance: none;
-  border-radius: .4rem;
+  -moz-appearance: none;
+  appearance: none;
+  font-size: 1rem;
+
+  border-radius: .6em;
   box-sizing: border-box;
-  font-size: 1.2rem;
-  height: 3rem;
-  padding: .3rem 1rem;
-  outline: 0;
-  vertical-align: top;
-  margin: 0 0.2rem;
+  padding: .4em 1em;
+  outline: none;
+  vertical-align: middle;
 }
 input[type=button], input[type=submit], button {
   background: transparent;
@@ -255,23 +254,97 @@ input[type=button], input[type=submit], button {
      */
     filter: brightness(1.2);
   }
-}
-input[type=button].primary,
-input[type=submit].primary,
-button.primary {
-  background: $highlight;
-  color: white;
-  &:hover {
-    filter: brightness(1.2);
+
+  &.-primary {
+    background: $highlight;
+    color: white;
+    &:hover {
+      filter: brightness(1.2);
+    }
+  }
+
+  &.-link {
+    color: $highlight;
+    border-width: 0;
+    padding-left:  .3rem;
+    padding-right: .3rem;
+  }
+
+  &.-large {
+    font-size: 1.8rem;
+    padding: 0.5em 1.4em;
+    border-radius: 2em;
+  }
+
+  &.-shadow {
+    box-shadow: grey 0 0 1rem;
+  }
+
+  &.-icon {
+    // Match the normal left padding
+    background-position: 1em;
+    // Make icon a 1em x 1em square
+    background-size: 1em 1em;
+    background-repeat: no-repeat;
+    // 1em is the normal left padding,
+    // 1em is the width of the icon,
+    // 0.5em is the space to add between the icon and the label
+    padding-left: 1em + 1em + 0.5em;
+  }
+  &.-large.-icon {
+    background-position: 1.4em;
+    padding-left: 1.4em + 1em + 0.5em;
+  }
+  &.-icon.-review {
+    background-image: url('img/icons.svg#review');
+  }
+  &.-icon.-add-lookup {
+    background-image: url('img/icons.svg#add-lookup');
   }
 }
 
-input[type=button].link,
-button.link {
-  color: $highlight;
-  border-width: 0px;
-  padding-left:  0.3rem;
-  padding-right: 0.3rem;
+// Generated icon buttons
+@function pause-button($fill-color) {
+  @return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 0h20v100h-20v-100M60 0h20v100h-20v-100" fill="' + $fill-color + '"/></svg>';
+}
+@function resume-button($fill-color) {
+  @return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0 10l80 40l-80 40v-60" fill="' + $fill-color + '"/></svg>';
+}
+
+input[type=button], input[type=submit], button {
+  &.-icon.-pause {
+    background-image: url(svg-encode(pause-button($highlight)));
+  }
+  &.-icon.-play {
+    background-image: url(svg-encode(resume-button($highlight)));
+  }
+}
+
+@media screen and (max-width: 600px) {
+  input[type=button], input[type=submit], button {
+    &.-large {
+      font-size: 1.4rem;
+    }
+  }
+}
+
+// For large icon buttons on small screens, just show the icon
+@media screen and (max-width: 350px) {
+  input[type=button], input[type=submit], button {
+    &.-large.-icon {
+      // Move text out the way
+      text-indent: 10em;
+      overflow: hidden;
+      // Make the button a 4em x 4em square area
+      width: 4em;
+      height: 4em;
+      // Drop the extra padding we added
+      padding: 0;
+      // Make the background a little larger and put it in the middle
+      background-size: 1.5em 1.5em;
+      background-position: 4em / 2 - 1.5em / 2;
+    }
+  }
 }
 
 input[type=text],
@@ -349,29 +422,6 @@ legend {
 }
 
 /*
- * Specialized buttons
- */
-@function pause-button($fill-color) {
-  @return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 0h20v100h-20v-100M60 0h20v100h-20v-100" fill="' + $fill-color + '"/></svg>';
-}
-@function resume-button($fill-color) {
-  @return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0 10l80 40l-80 40v-60" fill="' + $fill-color + '"/></svg>';
-}
-
-button[name='pause-sync'],
-button[name='resume-sync'] {
-  padding-left: 2.3rem;
-}
-button[name='pause-sync'] {
-  background: url(svg-encode(pause-button($highlight))) 1rem 0.9rem /
-              1rem no-repeat;
-}
-button[name='resume-sync'] {
-  background: url(svg-encode(resume-button($highlight))) 1rem 0.9rem /
-              1rem no-repeat;
-}
-
-/*
  * Error panel
  */
 .error-panel {
@@ -442,22 +492,22 @@ button[name='resume-sync'] {
  * Sync settings panel
  */
 .sync-settings .sync-icon {
-  background: url('img/icons.svg') -800% / auto 100% content-box;
+  background: url('img/icons.svg#sync-full') 0% / 100% 100% content-box;
 }
 .sync-settings.in-progress .sync-icon {
   animation: rotate 1s linear infinite;
 }
 .sync-settings.paused .sync-icon {
-  background-position-x: -900%;
+  background-image: url('img/icons.svg#sync-pause');
 }
 .sync-settings.offline .sync-icon {
-  background-position-x: -1000%;
+  background-image: url('img/icons.svg#sync-offline');
 }
 .sync-settings.error .sync-icon {
-  background-position-x: -1100%;
+  background-image: url('img/icons.svg#sync-error');
 }
 .sync-settings.not-configured .sync-icon {
-  background-position-x: -700%;
+  background-image: url('img/icons.svg#sync-hollow');
 }
 .sync-settings.in-progress progress {
   margin-top: 1rem;
@@ -564,13 +614,12 @@ form[name=sync-server-settings] {
   display: inline-block;
   position: relative;
   background: white;
-  border-radius: .4rem;
+  border-radius: .2rem;
   border: $border-width solid #c5c5c5;
   box-shadow: 0 1.5px 2px rgba(0, 0, 0, 0.15);
-  margin: .8rem;
-  height: 10rem;
-  width: 10rem;
-  font-size: 1.2rem;
+  margin: .6rem;
+  height: 8rem;
+  width: 8rem;
   text-align: center;
   overflow: hidden;
 }

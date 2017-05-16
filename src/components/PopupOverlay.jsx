@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export class PopupOverlay extends React.Component {
   static get propTypes() {
     return {
-      active: React.PropTypes.bool.isRequired,
-      close: React.PropTypes.func.isRequired,
-      children: React.PropTypes.any,
+      active: PropTypes.bool.isRequired,
+      close: PropTypes.func.isRequired,
+      children: PropTypes.any,
     };
   }
 

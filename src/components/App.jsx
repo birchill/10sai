@@ -1,8 +1,10 @@
 import React from 'react';
-import { browserHistory } from 'react-router';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
+import { URLFromRoute } from '../router';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
+import ControlOverlay from './ControlOverlay.jsx';
 import Popup from './Popup.jsx';
 import PopupOverlay from './PopupOverlay.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
@@ -15,20 +17,23 @@ const ConnectedNavbar =
 class App extends React.Component {
   static get propTypes() {
     return {
-      nav: React.PropTypes.shape({
-        screen: React.PropTypes.string,
-        popup: React.PropTypes.string,
+      cards: PropTypes.object.isRequired,
+      route: PropTypes.shape({
+        screen: PropTypes.string,
+        popup: PropTypes.string,
+        search: PropTypes.object,
+        hash: PropTypes.string,
       }),
-      route: React.PropTypes.object.isRequired,
+      onClosePopup: PropTypes.func,
     };
   }
 
   static get defaultProps() {
-    return { nav: {} };
+    return { route: {} };
   }
 
   static get childContextTypes() {
-    return { cardStore: React.PropTypes.object };
+    return { cardStore: PropTypes.object };
   }
 
   constructor(props) {
@@ -37,19 +42,21 @@ class App extends React.Component {
   }
 
   getChildContext() {
-    return { cardStore: this.props.route.cards };
+    return { cardStore: this.props.cards };
   }
 
   get currentScreenLink() {
-    return `/${this.props.nav.screen || ''}`;
+    return URLFromRoute(this.props.route);
   }
 
   closePopup() {
-    browserHistory.replace(this.currentScreenLink);
+    if (this.props.onClosePopup) {
+      this.props.onClosePopup();
+    }
   }
 
   render() {
-    const settingsActive = this.props.nav.popup === 'settings';
+    const settingsActive = this.props.route.popup === 'settings';
 
     return (
       <div>
@@ -58,9 +65,17 @@ class App extends React.Component {
           currentScreenLink={this.currentScreenLink} />
         <main>
           <PopupOverlay
-            active={!!this.props.nav.popup}
+            active={!!this.props.route.popup}
             close={this.closePopup}>
             <CardOverviewScreen />
+            <ControlOverlay>
+              <button className="-primary -large -shadow -icon -review">
+                Review
+              </button>
+              <button className="-primary -large -shadow -icon -add-lookup">
+                Add
+              </button>
+            </ControlOverlay>
           </PopupOverlay>
           <Popup
             active={settingsActive}
@@ -76,7 +91,20 @@ class App extends React.Component {
   }
 }
 
-const mapStateToProps = state => ({ nav: state.nav });
-const ConnectedApp = connect(mapStateToProps)(App);
+const mapStateToProps = state => ({
+  route: state.route &&
+         state.route.history &&
+         state.route.history.length
+         ? state.route.history[state.route.index]
+         : {}
+});
+const mapDispatchToProps = (dispatch, props) => ({
+  onClosePopup: () => {
+    dispatch({ type: 'FOLLOW_LINK',
+               url: URLFromRoute(props.route),
+               direction: 'backwards' });
+  }
+});
+const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
 
 export default ConnectedApp;

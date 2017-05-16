@@ -81,7 +81,7 @@ export default function sync(state = initialState, action) {
     case 'FINISH_EDIT_SYNC_SERVER':
       return { ...state, editingServer: false };
 
-    case 'CHANGE_LOCATION':
+    case 'NAVIGATE':
       return { ...state, editingServer: false };
 
     default:

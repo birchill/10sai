@@ -33,8 +33,7 @@ class SettingsStore {
           return null;
         }
         if (err.status !== 409) {
-          // eslint-disable-next-line no-console
-          console.log(`Unexpected error removing setting: ${err}`);
+          console.error(`Unexpected error removing setting: ${err}`);
           return null;
         }
         // Conflict: Try again

@@ -1,17 +1,21 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { browserHistory, Router, Route } from 'react-router';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import createSagaMiddleware from 'redux-saga';
 
 import reducer from './reducers/index';
 import syncSagas from './sagas/sync';
+import routeSagas from './sagas/route';
 import SettingsStore from './SettingsStore';
 import CardStore from './CardStore';
 import App from './components/App.jsx';
 
 import 'main.scss'; // eslint-disable-line
+
+//
+// Redux store
+//
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -28,6 +32,10 @@ if (process.env.NODE_ENV === 'development') {
   store = createStore(reducer, applyMiddleware(sagaMiddleware));
 }
 
+//
+// Local data stores
+//
+
 const cardStore = new CardStore();
 const settingsStore = new SettingsStore();
 
@@ -43,6 +51,33 @@ settingsStore.getSettings().then(dispatchSettingUpdates);
 settingsStore.onUpdate(dispatchSettingUpdates);
 
 //
+// Sagas
+//
+
+sagaMiddleware.run(function* allSagas() {
+  yield [
+    syncSagas(cardStore, settingsStore, store.dispatch.bind(store)),
+    routeSagas(store.dispatch.bind(store)),
+  ];
+});
+
+//
+// Router
+//
+
+store.dispatch({ type: 'NAVIGATE',
+                 path: window.location.pathname,
+                 search: window.location.search,
+                 fragment: window.location.hash });
+window.addEventListener('popstate', evt => {
+  store.dispatch({ type: 'NAVIGATE_FROM_HISTORY',
+                   index: evt.state ? evt.state.index : 0,
+                   path: window.location.pathname,
+                   search: window.location.search,
+                   fragment: window.location.hash });
+});
+
+//
 // Offline notification
 //
 
@@ -52,23 +87,12 @@ window.addEventListener('offline',
                         () => { store.dispatch({ type: 'GO_OFFLINE' }); });
 
 //
-// Sagas
+// Render the root component
 //
-
-sagaMiddleware.run(function* allSagas() {
-  yield [ syncSagas(cardStore, settingsStore, store.dispatch.bind(store)) ];
-});
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router
-      history={browserHistory}
-      onUpdate={function onUpdate() {
-        store.dispatch({ type: 'CHANGE_LOCATION',
-                         screen: this.state.params.screen });
-      }}>
-      <Route path="/(:screen)" component={App} cards={cardStore} />
-    </Router>
+    <App cards={cardStore} />
   </Provider>,
   document.getElementById('container')
 );

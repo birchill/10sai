@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 function getScrollContainer(elem) {
   if (elem === null) {
@@ -89,12 +90,12 @@ let layoutRenderDepth = 0;
 export class VirtualGrid extends React.Component {
   static get propTypes() {
     return {
-      items: React.PropTypes.arrayOf(React.PropTypes.shape({
-        _id: React.PropTypes.string.isRequired,
+      items: PropTypes.arrayOf(PropTypes.shape({
+        _id: PropTypes.string.isRequired,
       })).isRequired,
-      renderItem: React.PropTypes.func.isRequired,
-      renderTemplateItem: React.PropTypes.func.isRequired,
-      className: React.PropTypes.string,
+      renderItem: PropTypes.func.isRequired,
+      renderTemplateItem: PropTypes.func.isRequired,
+      className: PropTypes.string,
     };
   }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import SyncState from '../sync-states';
 import SyncStatusMessages from '../sync-status-messages';
@@ -25,7 +26,8 @@ function translateError(error) {
           <li>The server name was misspelled</li>
           <li>The server has not been set up to <a
             href="https://github.com/pouchdb/add-cors-to-couchdb"
-            target="_blank" rel="noopener noreferrer">support
+            target="_blank"
+            rel="noopener noreferrer">support
             cross-origin access</a></li>
           <li>The server is temporarily offline</li>
         </ul>
@@ -40,28 +42,27 @@ function translateError(error) {
     return <p>{error.message}</p>;
   }
 
-  // eslint-disable-next-line no-console
-  console.log(error);
+  console.error(error);
   return <p>Unknown error</p>;
 }
 
 export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
     return {
-      syncState: React.PropTypes.symbol.isRequired,
-      server: React.PropTypes.shape({ name: React.PropTypes.string,
-                                      username: React.PropTypes.string,
-                                      password: React.PropTypes.string }),
-      lastSyncTime: React.PropTypes.instanceOf(Date),
-      errorDetail: React.PropTypes.object,
-      progress: React.PropTypes.number,
-      editingServer: React.PropTypes.bool,
-      onSubmit: React.PropTypes.func.isRequired,
-      onRetry: React.PropTypes.func.isRequired,
-      onEdit: React.PropTypes.func.isRequired,
-      onCancel: React.PropTypes.func.isRequired,
-      onPause: React.PropTypes.func.isRequired,
-      onResume: React.PropTypes.func.isRequired,
+      syncState: PropTypes.symbol.isRequired,
+      server: PropTypes.shape({ name: PropTypes.string,
+                                username: PropTypes.string,
+                                password: PropTypes.string }),
+      lastSyncTime: PropTypes.instanceOf(Date),
+      errorDetail: PropTypes.object,
+      progress: PropTypes.number,
+      editingServer: PropTypes.bool,
+      onSubmit: PropTypes.func.isRequired,
+      onRetry: PropTypes.func.isRequired,
+      onEdit: PropTypes.func.isRequired,
+      onCancel: PropTypes.func.isRequired,
+      onPause: PropTypes.func.isRequired,
+      onResume: PropTypes.func.isRequired,
     };
   }
 
@@ -147,7 +148,7 @@ export class SyncSettingsPanel extends React.Component {
     return (
       <div>
         <div><button
-          name="pause-sync"
+          className="-icon -pause"
           onClick={this.handlePause}>Pause</button></div>
         { this.renderServerInputBox() }
       </div>);
@@ -167,7 +168,7 @@ export class SyncSettingsPanel extends React.Component {
     return (
       <div>
         <div><button
-          name="resume-sync"
+          className="-icon -play"
           onClick={this.handleResume}>Resume</button></div>
         { this.renderServerInputBox() }
       </div>);
@@ -180,7 +181,8 @@ export class SyncSettingsPanel extends React.Component {
           access your cards from another computer, phone, or tablet.
         </p>
         <button
-          name="edit-server" className="action primary"
+          name="edit-server"
+          className="action -primary"
           onClick={this.handleEditServer}>Add a sync server</button>
       </div>);
   }

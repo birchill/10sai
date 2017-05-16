@@ -1,12 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router';
+import PropTypes from 'prop-types';
+
+import Link from './Link.jsx';
 
 export class Popup extends React.Component {
   static get propTypes() {
     return {
-      active: React.PropTypes.bool.isRequired,
-      close: React.PropTypes.func.isRequired,
-      children: React.PropTypes.any,
+      active: PropTypes.bool.isRequired,
+      close: PropTypes.func.isRequired,
+      children: PropTypes.any,
     };
   }
 
@@ -66,9 +68,11 @@ export class Popup extends React.Component {
         className={popupClass}
         aria-hidden={!this.props.active}
         role="dialog"
-        tabIndex={this.props.active ? 0 : -1}
         ref={this.assignPopup}>
-        <Link to="." className="popup-close-button">Close</Link>
+        <Link
+          href="/"
+          className="popup-close-button"
+          direction="backwards">Close</Link>
         {this.props.children}
       </section>
     );

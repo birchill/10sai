@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export class CancelableTextbox extends React.Component {
   static get propTypes() {
     return {
-      value: React.PropTypes.string,
-      onChange: React.PropTypes.func,
-      onFocus: React.PropTypes.func,
+      value: PropTypes.string,
+      onChange: PropTypes.func,
+      onFocus: PropTypes.func,
     };
   }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // A half-hearted attempt at a date thing.
 //
@@ -16,7 +17,7 @@ export class SortOfRelativeDate extends React.Component {
 
   static get propTypes() {
     return {
-      value: React.PropTypes.instanceOf(Date).isRequired,
+      value: PropTypes.instanceOf(Date).isRequired,
     };
   }
 

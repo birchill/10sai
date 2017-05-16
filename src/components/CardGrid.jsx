@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { collate } from 'pouchdb-collate';
 import CardPreview from './CardPreview.jsx';
 import VirtualGrid from './VirtualGrid.jsx';
@@ -34,7 +35,7 @@ function findCard(id, cards) {
 
 export class CardGrid extends React.Component {
   static get contextTypes() {
-    return { cardStore: React.PropTypes.object };
+    return { cardStore: PropTypes.object };
   }
 
   static renderTemplateCard() {
@@ -79,7 +80,6 @@ export class CardGrid extends React.Component {
   }
 
   handleDelete(id) {
-    // FIXME: Make this check for errors, animate etc.
     this.context.cardStore.deleteCard({ _id: id });
   }
 
