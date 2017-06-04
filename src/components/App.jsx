@@ -6,6 +6,7 @@ import DocumentTitle from 'react-document-title';
 import { URLFromRoute } from '../router';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import ControlOverlay from './ControlOverlay.jsx';
+import EditCardScreen from './EditCardScreen.jsx';
 import Link from './Link.jsx';
 import Navbar from './Navbar.jsx';
 import Popup from './Popup.jsx';
@@ -25,6 +26,7 @@ class App extends React.Component {
         popup: PropTypes.string,
         search: PropTypes.object,
         hash: PropTypes.string,
+        card: PropTypes.string,
       }),
       onClosePopup: PropTypes.func,
     };
@@ -98,6 +100,9 @@ class App extends React.Component {
               </SettingsPanel>
             </Popup>
           </main>
+          <EditCardScreen
+            active={this.props.route.screen === 'edit-card'}
+            card={this.props.route.card} />
         </div>
       </DocumentTitle>
     );
