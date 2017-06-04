@@ -58,6 +58,11 @@ export function routeFromPath(path, search, fragment) {
 
   if (path === 'settings') {
     route.popup = 'settings';
+  } else if (path === 'cards/new') {
+    route.screen = 'edit-card';
+  } else if (path && path.startsWith('cards/')) {
+    route.screen = 'edit-card';
+    route.card = path.substr('cards/'.length);
   }
 
   // Parse query string
@@ -92,6 +97,8 @@ export function URLFromRoute(route = {}) {
   // regexp to use and then call pathToRegexp.compile here).
   if (route.popup === 'settings') {
     url += 'settings';
+  } else if (route.screen === 'edit-card') {
+    url += 'cards/' + (route.card || 'new');
   }
 
   // Append query string

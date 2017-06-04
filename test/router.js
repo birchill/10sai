@@ -22,6 +22,16 @@ describe('router:routeFromPath', () => {
                      { screen: '', popup: 'settings' });
   });
 
+  it('converts new card path to route', () => {
+    assert.deepEqual(routeFromPath('/cards/new'),
+                     { screen: 'edit-card' });
+  });
+
+  it('converts edit card path to route', () => {
+    assert.deepEqual(routeFromPath('/cards/abc'),
+                     { screen: 'edit-card', card: 'abc' });
+  });
+
   it('parses query string', () => {
     assert.deepEqual(routeFromPath('/', 'abc=123'),
                      { screen: '', search: { abc: '123' } });
@@ -98,6 +108,16 @@ describe('router:routeFromURL', () => {
                      { screen: '', popup: 'settings' });
   });
 
+  it('converts new card path to route', () => {
+    assert.deepEqual(routeFromURL('/cards/new'),
+                     { screen: 'edit-card' });
+  });
+
+  it('converts edit card path to route', () => {
+    assert.deepEqual(routeFromURL('/cards/abc'),
+                     { screen: 'edit-card', card: 'abc' });
+  });
+
   it('parses popup url with fragment', () => {
     assert.deepEqual(routeFromURL('/settings#sync'),
                      { screen: '', popup: 'settings', fragment: 'sync' });
@@ -123,6 +143,15 @@ describe('router:URLFromRoute', () => {
 
   it('serializes popup route to url', () => {
     assert.equal(URLFromRoute({ screen: '', popup: 'settings' }), '/settings');
+  });
+
+  it('serializes new card route to path', () => {
+    assert.equal(URLFromRoute({ screen: 'edit-card' }), '/cards/new');
+  });
+
+  it('serializes edit card route to path', () => {
+    assert.equal(URLFromRoute({ screen: 'edit-card', card: 'abc' }),
+                 '/cards/abc');
   });
 
   it('serializes query string', () => {
