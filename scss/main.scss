@@ -272,7 +272,7 @@ input[type=button], input[type=submit], button, a.button {
   }
 
   &.-large {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     padding: 0.5em 1.4em;
     border-radius: 2em;
   }
@@ -322,28 +322,28 @@ input[type=button], input[type=submit], button {
 }
 
 @media screen and (max-width: 600px) {
-  input[type=button], input[type=submit], button {
+  input[type=button], input[type=submit], button, a.button {
     &.-large {
-      font-size: 1.4rem;
+      font-size: 1.2rem;
     }
   }
 }
 
 // For large icon buttons on small screens, just show the icon
 @media screen and (max-width: 350px) {
-  input[type=button], input[type=submit], button {
+  input[type=button], input[type=submit], button, a.button {
     &.-large.-icon {
       // Move text out the way
       text-indent: 10em;
       overflow: hidden;
       // Make the button a 4em x 4em square area
-      width: 4em;
-      height: 4em;
+      width: 3em;
+      height: 3em;
       // Drop the extra padding we added
       padding: 0;
       // Make the background a little larger and put it in the middle
-      background-size: 1.5em 1.5em;
-      background-position: 4em / 2 - 1.5em / 2;
+      background-size: 1.2em 1.2em;
+      background-position: 3em / 2 - 1.2em / 2;
     }
   }
 }
