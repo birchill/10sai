@@ -104,9 +104,9 @@ main div.popup-overlay.active {
   pointer-events: all;
 }
 
-@import '../src/components/Navbar';
-@import '../src/components/ControlOverlay';
-@import '../src/components/EditCardScreen';
+@import 'Navbar';
+@import 'ControlOverlay';
+@import 'EditCardScreen';
 
 /*
  * Section pages
