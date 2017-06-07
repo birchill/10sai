@@ -15,22 +15,6 @@
     pointer-events: none;
   }
 
-  // XXX: Factor out this to use with both this component and the pop-up screen
-  > .close-button {
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: 1rem;
-    font-size: 0;
-  }
-  > .close-button::before {
-    content: "";
-    width: 1.2rem;
-    height: 1.2rem;
-    display: inline-block;
-    background: url('/img/icons.svg#cross') 0 / 100% 100% content-box;
-  }
-
   // XXX: Factor this out into a separate component
   > .edit-form {
     display: flex;

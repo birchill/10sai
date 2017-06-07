@@ -159,20 +159,6 @@ main section h3 {
   margin-top: 0;
   font-size: 1.3rem;
 }
-.popup-close-button {
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding: 1rem;
-  font-size: 0;
-}
-.popup-close-button::before {
-  content: "";
-  width: 1.2rem;
-  height: 1.2rem;
-  display: inline-block;
-  background: url('img/icons.svg#cross') 0 / 100% 100% content-box;
-}
 
 /*
  * Summary panel
@@ -217,6 +203,25 @@ main section h3 {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+//
+// Close button
+//
+
+.close-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 1rem;
+  font-size: 0;
+}
+.close-button::before {
+  content: "";
+  width: 1.2rem;
+  height: 1.2rem;
+  display: inline-block;
+  background: url('img/icons.svg#cross') 0 / 100% 100% content-box;
 }
 
 /*

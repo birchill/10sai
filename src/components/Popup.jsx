@@ -71,7 +71,7 @@ export class Popup extends React.Component {
         ref={this.assignPopup}>
         <Link
           href="/"
-          className="popup-close-button"
+          className="close-button"
           direction="backwards">Close</Link>
         {this.props.children}
       </section>
