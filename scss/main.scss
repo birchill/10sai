@@ -1,6 +1,11 @@
+@import "~normalize-css/normalize";
+
 $highlight: #2690BA;
 $hover-highlight: lighten(#2690BA, 15%);
 $border-width: 0.1rem;
+
+$light-grey: #dbdbdb;
+$dark-grey: darken($light-grey, 10%);
 
 // Courtesy of Hugo Giraudel: http://www.sassmeister.com/gist/1b4f2da5527830088e4d
 @function str-replace($string, $search, $replace: '') {
@@ -224,9 +229,9 @@ main section h3 {
   background: url('img/icons.svg#cross') 0 / 100% 100% content-box;
 }
 
-/*
- * Forms
- */
+//
+// Forms
+//
 
 input, button {
   -webkit-appearance: none;
@@ -234,7 +239,7 @@ input, button {
   appearance: none;
   font-size: 1rem;
 
-  border-radius: .6em;
+  border-radius: .3em;
   box-sizing: border-box;
   padding: .4em 1em;
   outline: none;
@@ -358,15 +363,26 @@ input[type=password] {
   -webkit-appearance: none;
   background: #fff;
   background-image: none;
-  border: $border-width solid #c5c5c5;
+  border: $border-width solid $light-grey;
   color: #333;
   height: 3rem;
   padding-left: 0.6rem;
   padding-right: 0.6rem;
-}
-input[type=text]:focus,
-input[type=password]:focus {
-  border-color: $highlight;
+
+  &:hover {
+    border-color: $dark-grey;
+  }
+
+  &:focus {
+    border-color: $highlight;
+    box-shadow: 0 0 0 .2rem lighten($highlight, 50%);
+  }
+
+  &.-compact {
+    height: 2.5rem;
+    padding-left: .3rem;
+    padding-right: .3rem;
+  }
 }
 
 .input-group {
@@ -443,9 +459,9 @@ legend {
   margin-right: 1rem;
 }
 
-/*
- * Cancelable text box
- */
+//
+// Cancelable text box
+//
 .cancelable-textbox-group {
   display: inline-block;
 }

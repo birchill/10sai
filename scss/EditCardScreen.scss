@@ -15,19 +15,49 @@
     pointer-events: none;
   }
 
-  // XXX: Factor this out into a separate component
-  > .edit-form {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    height: 100%;
-    padding: 1rem;
-    box-sizing: border-box;
+  > .form {
+    width: 100%;
+    max-width: 60rem;
+    margin-top: 2rem;
+    height: calc(100% - 2rem);
+    margin-left: auto;
+    margin-right: auto;
   }
-  > .edit-form {
-    > .card-fields {
-      overflow: auto;
-    }
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  box-sizing: border-box;
+
+  > .cardfields {
+    width: 100%;
+    flex-shrink: 1;
+    overflow: auto;
+    padding: .5rem;
+  }
+
+  input[type=text] {
+    display: block;
+    width: 100%;
+  }
+
+  .keywords {
+    background: lemonchiffon;
+  }
+
+  .prompt {
+    margin-top: 1rem
+  }
+
+  .prompt, .answer {
+    height: 5rem;
+  }
+
+  .submit {
+    margin-top: 1rem;
   }
 }

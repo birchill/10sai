@@ -12,14 +12,17 @@ function EditCardScreen(props) {
         href="/"
         className="close-button"
         direction="backwards">Close</Link>
-      <form className="edit-form">
-        <div className="card-fields">
-          <input type="text" placeholder="Keywords" />
-          <input type="text" placeholder="Prompt" />
-          <input type="text" placeholder="Answer" />
+      <form className="form edit-form" autoComplete="off">
+        <div className="cardfields">
+          <input
+            type="text"
+            placeholder="🔑 Keywords"
+            className="keywords -compact" />
+          <input type="text" placeholder="Prompt" className="prompt" />
+          <input type="text" placeholder="Answer" className="answer" />
         </div>
         <input
-          className="-primary"
+          className="submit -primary"
           type="submit"
           value={props.card ? 'OK' : 'Add'} />
       </form>
