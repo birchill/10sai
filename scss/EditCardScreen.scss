@@ -1,5 +1,6 @@
 .edit-screen {
   position: absolute;
+  overflow: auto;
   left: 0px;
   top: 0px;
   width: 100%;
@@ -15,49 +16,66 @@
     pointer-events: none;
   }
 
+  > .buttons {
+    box-sizing: border-box;
+    width: 100%;
+    position: sticky;
+    top: 0px;
+  }
+
   > .form {
     width: 100%;
     max-width: 60rem;
-    margin-top: 2rem;
-    height: calc(100% - 2rem);
     margin-left: auto;
     margin-right: auto;
   }
 }
 
-.edit-form {
+.button-bar {
+  background: white;
+  box-shadow: 0 2px 2px $light-grey;
+  padding: 0.5rem;
   display: flex;
-  flex-direction: column;
+  align-items: stretch;
   justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  box-sizing: border-box;
+  flex-wrap: wrap;
 
-  > .cardfields {
-    width: 100%;
-    flex-shrink: 1;
-    overflow: auto;
+  > * {
+    flex: 1 0 0;
+
+    display: flex;
+    align-items: center;
+  }
+
+  > .-center {
+    flex: 0 0 auto;
+  }
+
+  > *:last-child {
+    justify-content: flex-end;
+  }
+
+  .close-button {
     padding: .5rem;
   }
+}
+
+.edit-form {
+  box-sizing: border-box;
 
   input[type=text] {
     display: block;
     width: 100%;
+    border: none;
+    border-radius: 0;
+    border-top: 1px solid $light-grey;
   }
 
   .keywords {
     background: lemonchiffon;
   }
 
-  .prompt {
-    margin-top: 1rem
-  }
-
   .prompt, .answer {
     height: 5rem;
-  }
-
-  .submit {
-    margin-top: 1rem;
   }
 }

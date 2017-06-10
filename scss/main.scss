@@ -159,6 +159,12 @@ main section.popup {
   transform: translate(0%);
   transition-timing-function: ease;
 }
+main section.popup .close-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 1rem;
+}
 
 main section h3 {
   margin-top: 0;
@@ -215,10 +221,6 @@ main section h3 {
 //
 
 .close-button {
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding: 1rem;
   font-size: 0;
 }
 .close-button::before {
