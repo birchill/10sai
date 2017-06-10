@@ -11,13 +11,13 @@ function EditCardScreen(props) {
       <nav className="buttons button-bar">
         <div>
           <input
-            className="delete"
+            className="delete -icon -delete -link"
             type="button"
             value="Delete" />
         </div>
         <div className="-center">
           <input
-            className="submit -primary -center"
+            className="submit -primary -icon -plus"
             type="submit"
             value={props.card ? 'OK' : 'Add'} />
         </div>

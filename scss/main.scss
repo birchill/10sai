@@ -314,6 +314,12 @@ input[type=button], input[type=submit], button, a.button {
   &.-icon.-add-lookup {
     background-image: url('img/icons.svg#add-lookup');
   }
+  &.-icon.-delete {
+    background-image: url('img/icons.svg#bin');
+  }
+  &.-icon.-plus {
+    background-image: url('img/icons.svg#plus');
+  }
 }
 
 // Generated icon buttons
