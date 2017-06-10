@@ -8,7 +8,7 @@ function EditCardScreen(props) {
     <section
       className="edit-screen"
       aria-hidden={!props.active} >
-      <nav className="buttons button-bar">
+      <nav className="buttons tool-bar">
         <div>
           <input
             className="delete -icon -delete -link"
