@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import CardFaceInput from './CardFaceInput.jsx';
 import Link from './Link.jsx';
 
 function EditCardScreen(props) {
@@ -33,18 +34,15 @@ function EditCardScreen(props) {
           type="text"
           placeholder="Keywords"
           className="keywords -compact" />
-        <textarea
+        <CardFaceInput
           name="prompt"
-          className="prompt textarea"
-          autoComplete="off"
+          className="prompt"
           placeholder="Prompt"
-          required
-          wrap="soft" />
-        <textarea
+          required />
+        <CardFaceInput
           name="answer"
-          className="answer textarea"
-          placeholder="Answer"
-          wrap="soft" />
+          className="answer"
+          placeholder="Answer" />
       </form>
     </section>
   );

@@ -74,10 +74,14 @@
     background: lemonchiffon;
   }
 
-  > .textarea {
+  > .prompt,
+  > .answer {
     height: 5rem;
-    text-align: center;
-    font-size: 1.5rem;
-    resize: none;
   }
+}
+
+.cardface-input {
+  text-align: center;
+  font-size: 1.5rem;
+  resize: none;
 }
