@@ -31,10 +31,20 @@ function EditCardScreen(props) {
       <form className="form edit-form" autoComplete="off">
         <input
           type="text"
-          placeholder="🔑 Keywords"
+          placeholder="Keywords"
           className="keywords -compact" />
-        <input type="text" placeholder="Prompt" className="prompt" />
-        <input type="text" placeholder="Answer" className="answer" />
+        <textarea
+          name="prompt"
+          className="prompt textarea"
+          autoComplete="off"
+          placeholder="Prompt"
+          required
+          wrap="soft" />
+        <textarea
+          name="answer"
+          className="answer textarea"
+          placeholder="Answer"
+          wrap="soft" />
       </form>
     </section>
   );

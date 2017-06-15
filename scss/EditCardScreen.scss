@@ -62,7 +62,7 @@
 .edit-form {
   box-sizing: border-box;
 
-  input[type=text] {
+  input[type=text], textarea {
     display: block;
     width: 100%;
     border: none;
@@ -70,11 +70,14 @@
     border-top: 1px solid $light-grey;
   }
 
-  .keywords {
+  > .keywords {
     background: lemonchiffon;
   }
 
-  .prompt, .answer {
+  > .textarea {
     height: 5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    resize: none;
   }
 }
