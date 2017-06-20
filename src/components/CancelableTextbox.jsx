@@ -15,7 +15,7 @@ export class CancelableTextbox extends React.Component {
 
     this.state = { value: '' };
     this.handleChange = this.handleChange.bind(this);
-    this.handleFocus = this.handleFocus.bind(this);
+    this.handleFocus  = this.handleFocus.bind(this);
     this.handleClear  = this.handleClear.bind(this);
   }
 

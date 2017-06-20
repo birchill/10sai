@@ -1,4 +1,5 @@
 @import "~normalize-css/normalize";
+@import "~draft-js/dist/Draft";
 
 $highlight: #2690BA;
 $hover-highlight: lighten(#2690BA, 15%);
@@ -112,6 +113,7 @@ main div.popup-overlay.active {
 @import 'Navbar';
 @import 'ControlOverlay';
 @import 'EditCardScreen';
+@import 'CardFaceInput';
 
 /*
  * Section pages
