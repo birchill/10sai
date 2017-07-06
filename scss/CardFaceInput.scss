@@ -1,10 +1,14 @@
 .cardface-input {
   font-size: 1.5rem;
+  border-top: 1px dotted $light-grey;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 
   > .DraftEditor-root {
     > .public-DraftEditorPlaceholder-root {
       color: $light-grey;
     }
+
     &:hover > .public-DraftEditorPlaceholder-root {
       color: $dark-grey;
     }

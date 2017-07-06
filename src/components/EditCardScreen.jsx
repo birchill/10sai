@@ -32,8 +32,8 @@ function EditCardScreen(props) {
       <form className="form edit-form" autoComplete="off">
         <input
           type="text"
-          placeholder="Keywords"
-          className="keywords -compact" />
+          placeholder="Search"
+          className="search -compact" />
         <CardFaceInput
           name="prompt"
           className="prompt"
@@ -43,6 +43,10 @@ function EditCardScreen(props) {
           name="answer"
           className="answer"
           placeholder="Answer" />
+        <input
+          type="text"
+          placeholder="Keywords"
+          className="keywords -compact" />
       </form>
     </section>
   );
