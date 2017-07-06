@@ -1,7 +1,16 @@
 .cardface-input {
   font-size: 1.5rem;
 
-  > .DraftEditor-root > .public-DraftEditorPlaceholder-hasFocus {
-    display: none;
+  > .DraftEditor-root {
+    > .public-DraftEditorPlaceholder-root {
+      color: $light-grey;
+    }
+    &:hover > .public-DraftEditorPlaceholder-root {
+      color: $dark-grey;
+    }
+
+    > .public-DraftEditorPlaceholder-hasFocus {
+      display: none;
+    }
   }
 }
