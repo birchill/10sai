@@ -13,20 +13,38 @@ export class CardFaceInput extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { editorState: EditorState.createEmpty() };
+    this.state = { editorState: EditorState.createEmpty(),
+                   hasFocus: false };
     this.handleChange = this.handleChange.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
   }
 
   handleChange(editorState) {
     this.setState({ editorState });
   }
 
+  handleFocus() {
+    this.setState({ hasFocus: true });
+  }
+
+  handleBlur() {
+    this.setState({ hasFocus: false });
+  }
+
   render() {
+    const classes = [ this.props.className, 'cardface-input' ];
+    if (this.state.hasFocus) {
+      classes.push('hasFocus');
+    }
+
     return (
-      <div className={this.props.className + ' cardface-input'}>
+      <div className={classes.join(' ')}>
         <Editor
           editorState={this.state.editorState}
           onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
           placeholder={this.props.placeholder}
           textAlignment="center"
           stripPastedStyles />

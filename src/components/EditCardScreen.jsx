@@ -30,23 +30,25 @@ function EditCardScreen(props) {
         </div>
       </nav>
       <form className="form edit-form" autoComplete="off">
-        <input
-          type="text"
-          placeholder="Search"
-          className="search -compact" />
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Lookup"
+            className="text-box -compact" />
+        </div>
         <CardFaceInput
           name="prompt"
-          className="prompt"
+          className="-textpanel -large"
           placeholder="Prompt"
           required />
         <CardFaceInput
           name="answer"
-          className="answer"
+          className="-textpanel -large"
           placeholder="Answer" />
         <input
           type="text"
           placeholder="Keywords"
-          className="keywords -compact" />
+          className="-textpanel -compact -yellow" />
       </form>
     </section>
   );

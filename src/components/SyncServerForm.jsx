@@ -119,7 +119,7 @@ export class SyncServerForm extends React.Component {
           name="server"
           type="text"
           placeholder="Server name"
-          className="form-input"
+          className="text-box form-input"
           size="40"
           value={this.state.server}
           onChange={this.handleServerChange}
@@ -129,6 +129,7 @@ export class SyncServerForm extends React.Component {
             type="text"
             name="username"
             placeholder="Username"
+            className="text-box"
             size="40"
             value={this.state.username}
             onChange={this.handleUsernameChange}
@@ -137,6 +138,7 @@ export class SyncServerForm extends React.Component {
             type="password"
             name="password"
             placeholder="Password"
+            className="text-box"
             size="40"
             value={this.state.password}
             onChange={this.handlePasswordChange}

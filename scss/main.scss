@@ -5,8 +5,12 @@ $highlight: #2690BA;
 $hover-highlight: lighten(#2690BA, 15%);
 $border-width: 0.1rem;
 
+$really-light-grey: #f2f2f2;
 $light-grey: #dbdbdb;
 $dark-grey: darken($light-grey, 10%);
+
+$keyword-yellow: lemonchiffon;
+$keyword-yellow-dark: darken($keyword-yellow, 50%);
 
 // Courtesy of Hugo Giraudel: http://www.sassmeister.com/gist/1b4f2da5527830088e4d
 @function str-replace($string, $search, $replace: '') {
@@ -120,12 +124,12 @@ main div.popup-overlay.active {
  */
 
 body {
-  background: #f2f2f2;
+  background: $really-light-grey;
 }
 main section {
   box-sizing: border-box;
   padding: 10px;
-  background: #f2f2f2;
+  background: $really-light-grey;
 }
 main section {
   transition: all 0.2s;
@@ -368,8 +372,7 @@ input[type=button], input[type=submit], button {
   }
 }
 
-input[type=text],
-input[type=password] {
+.text-box {
   -webkit-appearance: none;
   background: #fff;
   background-image: none;

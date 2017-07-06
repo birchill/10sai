@@ -5,7 +5,7 @@
   top: 0px;
   width: 100%;
   height: 100%;
-  background: white;
+  background: $really-light-grey;
 
   transition: opacity 0.1s 0.05s ease-in;
   will-change: opacity;
@@ -59,33 +59,70 @@
   }
 }
 
+$blur-opacity: 0.54;
+$hover-opacity: 0.7;
+
 .edit-form {
-  box-sizing: border-box;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  > * {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+  }
 
   input[type=text], textarea {
-    display: block;
-    width: 100%;
-    border: none;
-    border-radius: 0;
-    border-top: 1px solid $light-grey;
-
     &::placeholder {
+      opacity: initial;
       color: $light-grey;
-      opacity: 1;
     }
     &:hover::placeholder {
       color: $dark-grey;
     }
-  }
 
-  > .keywords {
-    background: lemonchiffon;
+    &.-yellow {
+      background: $keyword-yellow;
+      &::placeholder {
+        color: $keyword-yellow-dark;
+      }
+    }
   }
+}
 
-  > .prompt,
-  > .answer {
+.search-box {
+  padding: 1rem 1rem;
+
+  > .text-box {
+    width: 100%;
+  }
+}
+
+.-textpanel {
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid $light-grey;
+
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  background: white;
+
+  &.-large {
     min-height: 5rem;
+  }
+
+  opacity: $blur-opacity;
+  &:hover {
+    opacity: $hover-opacity;
+  }
+  &:focus, &.hasFocus {
+    opacity: 1;
+    border-top-color: $highlight;
+    box-shadow: 0 -.2rem 0 .2rem lighten($highlight, 50%);
+  }
+
+  &.-yellow, &.yellow:focus, &.yellow.hasFocus {
+    border-top-color: $keyword-yellow-dark;
+  }
+  &.-yellow:focus, &.-yellow.hasFocus {
+    box-shadow: 0 -.2rem .4rem .2rem $keyword-yellow;
   }
 }
