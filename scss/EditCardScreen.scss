@@ -59,9 +59,6 @@
   }
 }
 
-$blur-opacity: 0.54;
-$hover-opacity: 0.7;
-
 .edit-form {
   > * {
     display: block;
@@ -72,9 +69,6 @@ $hover-opacity: 0.7;
   input[type=text], textarea {
     &::placeholder {
       opacity: initial;
-      color: $light-grey;
-    }
-    &:hover::placeholder {
       color: $dark-grey;
     }
 
@@ -109,12 +103,7 @@ $hover-opacity: 0.7;
     min-height: 5rem;
   }
 
-  opacity: $blur-opacity;
-  &:hover {
-    opacity: $hover-opacity;
-  }
   &:focus, &.hasFocus {
-    opacity: 1;
     border-top-color: $highlight;
     box-shadow: 0 -.2rem 0 .2rem lighten($highlight, 50%);
   }

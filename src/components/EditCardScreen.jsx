@@ -34,7 +34,7 @@ function EditCardScreen(props) {
           <input
             type="text"
             placeholder="Lookup"
-            className="text-box -compact" />
+            className="text-box -compact -rounded -search" />
         </div>
         <CardFaceInput
           name="prompt"

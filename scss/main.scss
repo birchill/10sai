@@ -5,9 +5,10 @@ $highlight: #2690BA;
 $hover-highlight: lighten(#2690BA, 15%);
 $border-width: 0.1rem;
 
+$text-color: #333;
 $really-light-grey: #f2f2f2;
 $light-grey: #dbdbdb;
-$dark-grey: darken($light-grey, 10%);
+$dark-grey: #c5c5c5;
 
 $keyword-yellow: lemonchiffon;
 $keyword-yellow-dark: darken($keyword-yellow, 50%);
@@ -47,7 +48,7 @@ body, html {
   box-sizing: border-box;
   font-size: 18px;
   line-height: 1.4;
-  color: #333;
+  color: $text-color;
 }
 
 @media screen and (max-width: 600px) {
@@ -377,7 +378,7 @@ input[type=button], input[type=submit], button {
   background: #fff;
   background-image: none;
   border: $border-width solid $light-grey;
-  color: #333;
+  color: $text-color;
   height: 3rem;
   padding-left: 0.6rem;
   padding-right: 0.6rem;
@@ -395,6 +396,20 @@ input[type=button], input[type=submit], button {
     height: 2.5rem;
     padding-left: .3rem;
     padding-right: .3rem;
+  }
+
+  &.-rounded {
+    border-radius: 1.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  &.-search {
+    background-position: 0.9rem;
+    background-size: 1rem 1rem;
+    background-repeat: no-repeat;
+    padding-left: 2.5rem;
+    background-image: url('img/icons.svg#search');
   }
 }
 
