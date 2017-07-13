@@ -95,8 +95,14 @@ export class EditCardScreen extends React.Component {
             placeholder="Answer" />
           <input
             type="text"
-            placeholder="Keywords"
-            className="-textpanel -compact -yellow" />
+            name="keywords"
+            className="-textpanel -yellow"
+            placeholder="Keywords" />
+          <input
+            type="text"
+            name="tags"
+            className="-textpanel"
+            placeholder="Tags" />
         </form>
       </section>
     );
