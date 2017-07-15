@@ -38,8 +38,8 @@ export class EditCardScreen extends React.Component {
   }
 
   activate() {
-    this.previousFocus = document.activeElement;
-    if (this.searchBox) {
+    if (!this.props.card && this.searchBox) {
+      this.previousFocus = document.activeElement;
       this.searchBox.focus();
     }
   }
@@ -67,7 +67,7 @@ export class EditCardScreen extends React.Component {
             <input
               className="submit -primary -icon -plus"
               type="submit"
-              value={this.props.card ? 'OK' : 'Add'} />
+              value={this.props.card ? 'OK' : 'Save'} />
           </div>
           <div>
             <Link
