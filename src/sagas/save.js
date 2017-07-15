@@ -3,7 +3,7 @@ import { URLFromRoute } from '../router';
 
 // Sagas
 
-export function* saveCard(action, cardStore) {
+export function* saveCard(cardStore, action) {
   try {
     const savedCard = yield call([ cardStore, 'putCard' ], action.card);
     yield put({ type: 'COMPLETE_SAVE_CARD', card: savedCard });
@@ -14,8 +14,8 @@ export function* saveCard(action, cardStore) {
                   url: URLFromRoute({ screen: 'edit-card',
                                       card: savedCard._id }) });
     }
-  } catch (err) {
-    yield put({ type: 'FAIL_SAVE_CARD', err });
+  } catch (error) {
+    yield put({ type: 'FAIL_SAVE_CARD', error });
   }
 }
 

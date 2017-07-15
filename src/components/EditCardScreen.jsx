@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
 import CardFaceInput from './CardFaceInput.jsx';
 import Link from './Link.jsx';
@@ -9,12 +10,18 @@ export class EditCardScreen extends React.Component {
     return {
       active: PropTypes.bool.isRequired,
       card: PropTypes.string,
+      onSave: PropTypes.func,
     };
   }
 
   constructor(props) {
     super(props);
+
+    this.state = { prompt: '', answer: '' };
     this.assignSearchBox = elem => { this.searchBox = elem; };
+    this.handleSave = this.handleSave.bind(this);
+    this.handlePromptChange = this.handlePromptChange.bind(this);
+    this.handleAnswerChange = this.handleAnswerChange.bind(this);
   }
 
   componentDidMount() {
@@ -51,6 +58,21 @@ export class EditCardScreen extends React.Component {
     }
   }
 
+  handleSave() {
+    if (this.props.onSave) {
+      const card = { question: this.state.prompt, answer: this.state.answer };
+      this.props.onSave(card);
+    }
+  }
+
+  handlePromptChange(value) {
+    this.setState({ prompt: value });
+  }
+
+  handleAnswerChange(value) {
+    this.setState({ answer: value });
+  }
+
   render() {
     return (
       <section
@@ -67,7 +89,8 @@ export class EditCardScreen extends React.Component {
             <input
               className="submit -primary -icon -plus"
               type="submit"
-              value={this.props.card ? 'OK' : 'Save'} />
+              value={this.props.card ? 'OK' : 'Save'}
+              onClick={this.handleSave} />
           </div>
           <div>
             <Link
@@ -88,11 +111,13 @@ export class EditCardScreen extends React.Component {
             name="prompt"
             className="-textpanel -large"
             placeholder="Prompt"
-            required />
+            required
+            onChange={this.handlePromptChange} />
           <CardFaceInput
             name="answer"
             className="-textpanel -large"
-            placeholder="Answer" />
+            placeholder="Answer"
+            onChange={this.handleAnswerChange} />
           <input
             type="text"
             name="keywords"
@@ -109,4 +134,8 @@ export class EditCardScreen extends React.Component {
   }
 }
 
-export default EditCardScreen;
+const mapDispatchToProps = dispatch => ({
+  onSave: card => { dispatch({ type: 'SAVE_CARD', card }); }
+});
+
+export default connect(null, mapDispatchToProps)(EditCardScreen);

@@ -7,6 +7,7 @@ export class CardFaceInput extends React.Component {
     return {
       className: PropTypes.string,
       placeholder: PropTypes.string,
+      onChange: PropTypes.func,
     };
   }
 
@@ -22,6 +23,12 @@ export class CardFaceInput extends React.Component {
 
   handleChange(editorState) {
     this.setState({ editorState });
+
+    if (this.props.onChange) {
+      this.props.onChange(this.state.editorState
+                                    .getCurrentContent()
+                                    .getPlainText());
+    }
   }
 
   handleFocus() {
