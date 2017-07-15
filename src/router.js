@@ -8,9 +8,9 @@ import deepEqual from 'deep-equal';
 //                         on
 // /settings             - Settings popup (over whatever screen is showing)
 // /cards/asdfasdf       - View card with id 'adsfasdf'
-// /cards/add            - Add card screen
+// /cards/new            - Add card screen
 // /notes/asdfasdf       - Likewise, but for notes
-// /notes/add            - Needed?
+// /notes/new            - Needed?
 // /review               - Review cards, default settings
 // /review?limit=50&q=search&max-due=40 - Review cards but with query params
 //

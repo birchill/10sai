@@ -1,5 +1,5 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
-import { routeFromURL, routesEqual } from '../router';
+import { URLFromRoute, routeFromURL, routesEqual } from '../router';
 
 // Selectors
 
@@ -57,8 +57,43 @@ export function* followLink(action) {
   }
 }
 
+// A special-case action to take the current URL, replace it with some other
+// URL, then push the previous current URL on. Used when adding cards so that we
+// can go from, e.g.:
+//
+//   0: /
+//   1: /cards/new
+//
+// to:
+//
+//   0: /
+//   1: /cards/123
+//   2: /cards/new
+//
+// That way if the user enters a new card and then presses back, they navigate
+// back to the edit screen of the card they just created.
+export function* insertHistory(action) {
+  const routeState = yield select(getRoute);
+
+  if (typeof routeState.index === 'number' &&
+      routeState.index >= 0) {
+    const previousRoute = routeState.history[routeState.index];
+    yield call([ history, 'replaceState' ],
+               { index: routeState.index },
+               '',
+               action.url);
+    yield call([ history, 'pushState' ],
+               { index: routeState.index + 1 },
+               '',
+               URLFromRoute(previousRoute));
+  }
+}
+
 function* routeSagas() {
-  yield* [ takeEvery('FOLLOW_LINK', followLink) ];
+  /* eslint-disable indent */
+  yield* [ takeEvery('FOLLOW_LINK', followLink),
+           takeEvery('INSERT_HISTORY', insertHistory) ];
+  /* eslint-enable indent */
 }
 
 export default routeSagas;
