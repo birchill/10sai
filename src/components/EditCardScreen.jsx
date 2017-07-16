@@ -4,10 +4,12 @@ import { connect } from 'react-redux';
 
 import CardFaceInput from './CardFaceInput.jsx';
 import Link from './Link.jsx';
+import EditState from '../edit-states';
 
 export class EditCardScreen extends React.Component {
   static get propTypes() {
     return {
+      editState: PropTypes.symbol.isRequired,
       active: PropTypes.bool.isRequired,
       card: PropTypes.string,
       onSave: PropTypes.func,
@@ -17,7 +19,7 @@ export class EditCardScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { prompt: '', answer: '' };
+    this.state = { prompt: '', answer: '', editState: EditState.LOADING };
     this.assignSearchBox = elem => { this.searchBox = elem; };
     this.handleSave = this.handleSave.bind(this);
     this.handlePromptChange = this.handlePromptChange.bind(this);
@@ -74,6 +76,10 @@ export class EditCardScreen extends React.Component {
   }
 
   render() {
+    const saveClass = this.props.editState === EditState.SAVING
+                      ? ' -busy'
+                      : ' -plus';
+
     return (
       <section
         className="edit-screen"
@@ -85,13 +91,17 @@ export class EditCardScreen extends React.Component {
               type="button"
               value="Delete" />
           </div>
-          <div className="-center">
-            <input
-              className="submit -primary -icon -plus"
-              type="submit"
-              value={this.props.card ? 'OK' : 'Save'}
-              onClick={this.handleSave} />
-          </div>
+          { !this.props.card &&
+            <div className="-center">
+              { /* We want a pseduo on this for the busy animation but that
+                   requires we use a <button> instead of an <input> */ }
+              <button
+                className={'submit -primary -icon ' + saveClass}
+                type="submit"
+                disabled={this.props.editState !== EditState.OK}
+                onClick={this.handleSave}>Add</button>
+            </div>
+          }
           <div>
             <Link
               href="/"
@@ -134,8 +144,11 @@ export class EditCardScreen extends React.Component {
   }
 }
 
+const mapStateToProps = state => ({
+  editState: state.edit.state
+});
 const mapDispatchToProps = dispatch => ({
   onSave: card => { dispatch({ type: 'SAVE_CARD', card }); }
 });
 
-export default connect(null, mapDispatchToProps)(EditCardScreen);
+export default connect(mapStateToProps, mapDispatchToProps)(EditCardScreen);

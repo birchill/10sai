@@ -281,6 +281,13 @@ input[type=button], input[type=submit], button, a.button {
     &:hover {
       filter: brightness(1.2);
     }
+    &:hover:disabled {
+      filter: grayscale(1) brightness(1.2);
+    }
+  }
+
+  &:disabled {
+    filter: grayscale(1);
   }
 
   &.-link {
@@ -313,7 +320,6 @@ input[type=button], input[type=submit], button, a.button {
   }
   &.-large.-icon {
     background-position: 1.4em;
-    padding-left: 1.4em + 1em + 0.5em;
   }
   &.-icon.-review {
     background-image: url('img/icons.svg#review');
@@ -326,6 +332,28 @@ input[type=button], input[type=submit], button, a.button {
   }
   &.-icon.-plus {
     background-image: url('img/icons.svg#plus');
+  }
+  &.-icon.-busy {
+    // 1em is the normal left padding,
+    // 0.5em is the space to add between the icon and the label
+    padding-left: 1em + 0.5em;
+    &::before {
+      content: "";
+      width: 1em;
+      height: 1em;
+      display: inline-block;
+      background-size: 1em 1em;
+      background-repeat: no-repeat;
+      background-image: url('img/icons.svg#sync-white');
+      animation: rotate 1s linear infinite;
+      // I have no idea what is going on here, but without this the background
+      // ends up flush against the button label
+      margin-left: -0.5em;
+      margin-right: 0.5em;
+      // And this, this, I really have no idea. I hate CSS.
+      margin-top: 0.12em;
+      margin-bottom: -0.12em;
+    }
   }
 }
 

@@ -1,18 +1,22 @@
-// edit {
-//   state: 'saving' | 'ok' ('loading' in future)
+import EditState from '../edit-states';
+
+// shape:
+// {
+//   state: EditState
 //   [error]
 //   (card too in future)
 // }
-export default function edit(state = { state: 'OK' }, action) {
+
+export default function edit(state = { state: EditState.OK }, action) {
   switch (action.type) {
     case 'SAVE_CARD': {
-      return { state: 'SAVING' };
+      return { state: EditState.SAVING };
     }
-    case 'FINISH_SAVE_CARD': {
-      return { state: 'OK' };
+    case 'COMPLETE_SAVE_CARD': {
+      return { state: EditState.OK };
     }
     case 'FAIL_SAVE_CARD': {
-      return { state: 'OK', error: action.error };
+      return { state: EditState.OK, error: action.error };
     }
 
     default:
