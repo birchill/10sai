@@ -32,6 +32,28 @@ describe('CardStore', () => {
       });
   });
 
+  it('returns individual cards', () => {
+    return subject.putCard({ question: 'Question', answer: 'Answer' })
+      .then(card => subject.getCard(card._id))
+      .then(card => {
+        assert.strictEqual(card.question, 'Question');
+        assert.strictEqual(card.answer, 'Answer');
+      });
+  });
+
+  it('does not return non-existent cards', () => {
+    return subject.getCard('abc')
+      .then(() => {
+        assert.fail('Should have reported an error for non-existent card');
+      })
+      .catch(err => {
+        assert.strictEqual(err.status, 404);
+        assert.strictEqual(err.name, 'not_found');
+        assert.strictEqual(err.message, 'missing');
+        assert.strictEqual(err.reason, 'missing');
+      });
+  });
+
   it('generates unique ascending IDs', () => {
     let prevId = '';
     for (let i = 0; i < 100; i++) {
@@ -85,6 +107,24 @@ describe('CardStore', () => {
       .then(() => subject.getCards())
       .then(cards => {
         assert.strictEqual(cards.length, 0, 'Length of getCards() result');
+      });
+  });
+
+  it('does not return individual deleted cards', () => {
+    let id;
+
+    return subject.putCard({ question: 'Question', answer: 'Answer' })
+      .then(card => { id = card._id; return card; })
+      .then(card => subject.deleteCard(card))
+      .then(() => subject.getCard(id))
+      .then(() => {
+        assert.fail('Should have reported an error for non-existent card');
+      })
+      .catch(err => {
+        assert.strictEqual(err.status, 404);
+        assert.strictEqual(err.name, 'not_found');
+        assert.strictEqual(err.message, 'missing');
+        assert.strictEqual(err.reason, 'deleted');
       });
   });
 

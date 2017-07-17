@@ -1,23 +1,65 @@
 import EditState from '../edit-states';
 
-// shape:
+// Editing state shape:
+//
 // {
-//   state: EditState
-//   [error]
-//   (card too in future)
+//   forms: {
+//     active: {
+//       editState: EditState
+//       card
+//     }
+//     [ next: { " " } ]
+//     [ prev: { " " } ]
+//   }
+//   [ saveError ]
 // }
 
-export default function edit(state = { state: EditState.OK }, action) {
+const initialState = {
+  forms: {
+    active: {
+      editState: EditState.EMPTY,
+      card: {}
+    },
+  },
+};
+
+export default function edit(state = initialState, action) {
   switch (action.type) {
+    case 'FINISH_LOAD_CARD': {
+      return {
+        forms: {
+          active: { editState: EditState.OK, card: action.card }
+        }
+      };
+    }
+
+    case 'FAIL_LOAD_CARD': {
+      return {
+        forms: {
+          active: { editState: EditState.NOT_FOUND, card: {} }
+        }
+      };
+    }
+
+    case 'UPDATE_EDIT_CARD': {
+      return {
+        forms: {
+          active: { ...state.forms.active, card: action.card }
+        }
+      };
+    }
+
+    /*
     case 'SAVE_CARD': {
       return { state: EditState.SAVING };
     }
-    case 'COMPLETE_SAVE_CARD': {
+    case 'FINISH_SAVE_CARD': {
       return { state: EditState.OK };
     }
     case 'FAIL_SAVE_CARD': {
       return { state: EditState.OK, error: action.error };
     }
+    */
 
     default:
       return state;

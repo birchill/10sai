@@ -2,28 +2,23 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import CardFaceInput from './CardFaceInput.jsx';
-import Link from './Link.jsx';
+import EditCardToolbar from './EditCardToolbar.jsx';
+import EditCardForm from './EditCardForm.jsx';
+import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit-states';
 
 export class EditCardScreen extends React.Component {
   static get propTypes() {
     return {
-      editState: PropTypes.symbol.isRequired,
+      forms: PropTypes.shape({
+        active: PropTypes.shape({
+          editState: PropTypes.symbol.isRequired,
+          card: PropTypes.object,
+        }).isRequired
+      }),
       active: PropTypes.bool.isRequired,
-      card: PropTypes.string,
-      onSave: PropTypes.func,
+      onAdd: PropTypes.func.isRequired,
     };
-  }
-
-  constructor(props) {
-    super(props);
-
-    this.state = { prompt: '', answer: '', editState: EditState.LOADING };
-    this.assignSearchBox = elem => { this.searchBox = elem; };
-    this.handleSave = this.handleSave.bind(this);
-    this.handlePromptChange = this.handlePromptChange.bind(this);
-    this.handleAnswerChange = this.handleAnswerChange.bind(this);
   }
 
   componentDidMount() {
@@ -47,23 +42,13 @@ export class EditCardScreen extends React.Component {
   }
 
   activate() {
-    if (!this.props.card && this.searchBox) {
-      this.previousFocus = document.activeElement;
-      this.searchBox.focus();
-    }
+    this.previousFocus = document.activeElement;
   }
 
   deactivate() {
     if (this.previousFocus) {
       this.previousFocus.focus();
       this.previousFocus = undefined;
-    }
-  }
-
-  handleSave() {
-    if (this.props.onSave) {
-      const card = { question: this.state.prompt, answer: this.state.answer };
-      this.props.onSave(card);
     }
   }
 
@@ -76,79 +61,26 @@ export class EditCardScreen extends React.Component {
   }
 
   render() {
-    const saveClass = this.props.editState === EditState.SAVING
-                      ? ' -busy'
-                      : ' -plus';
-
     return (
       <section
         className="edit-screen"
         aria-hidden={!this.props.active} >
-        <nav className="buttons tool-bar">
-          <div>
-            <input
-              className="delete -icon -delete -link"
-              type="button"
-              value="Delete" />
-          </div>
-          { !this.props.card &&
-            <div className="-center">
-              { /* We want a pseduo on this for the busy animation but that
-                   requires we use a <button> instead of an <input> */ }
-              <button
-                className={'submit -primary -icon ' + saveClass}
-                type="submit"
-                disabled={this.props.editState !== EditState.OK}
-                onClick={this.handleSave}>Add</button>
-            </div>
-          }
-          <div>
-            <Link
-              href="/"
-              className="close-button"
-              direction="backwards">Close</Link>
-          </div>
-        </nav>
-        <form className="form edit-form" autoComplete="off">
-          <div className="search-box">
-            <input
-              type="text"
-              placeholder="Lookup"
-              className="text-box -compact -rounded -search"
-              ref={this.assignSearchBox} />
-          </div>
-          <CardFaceInput
-            name="prompt"
-            className="-textpanel -large"
-            placeholder="Prompt"
-            required
-            onChange={this.handlePromptChange} />
-          <CardFaceInput
-            name="answer"
-            className="-textpanel -large"
-            placeholder="Answer"
-            onChange={this.handleAnswerChange} />
-          <input
-            type="text"
-            name="keywords"
-            className="-textpanel -yellow"
-            placeholder="Keywords" />
-          <input
-            type="text"
-            name="tags"
-            className="-textpanel"
-            placeholder="Tags" />
-        </form>
+        <EditCardToolbar editState={this.props.forms.active.editState} />
+        { this.props.forms.active.editState !== EditState.NOT_FOUND
+          ? <EditCardForm
+            active={this.props.active}
+            {...this.props.forms.active} />
+          : <EditCardNotFound onAdd={this.props.onAdd} /> }
       </section>
     );
   }
 }
 
 const mapStateToProps = state => ({
-  editState: state.edit.state
+  forms: state.edit.forms,
 });
 const mapDispatchToProps = dispatch => ({
-  onSave: card => { dispatch({ type: 'SAVE_CARD', card }); }
+  onAdd: card => { dispatch({ type: 'ADD_CARD', card }); }
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditCardScreen);

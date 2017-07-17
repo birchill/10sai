@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Editor, EditorState } from 'draft-js';
+import { ContentState, Editor, EditorState } from 'draft-js';
 
 export class CardFaceInput extends React.Component {
   static get propTypes() {
     return {
+      value: PropTypes.string,
       className: PropTypes.string,
       placeholder: PropTypes.string,
       onChange: PropTypes.func,
@@ -19,6 +20,22 @@ export class CardFaceInput extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
+  }
+
+  componentDidMount() {
+    if (this.props.value) this.updateValue();
+  }
+
+  componentDidUpdate(previousProps) {
+    if (previousProps.value !== this.props.value) {
+      this.updateValue();
+    }
+  }
+
+  updateValue() {
+    const contentState = ContentState.createFromText(this.props.value || '');
+    const editorState = EditorState.push(this.state.editorState, contentState);
+    this.setState({ editorState });
   }
 
   handleChange(editorState) {

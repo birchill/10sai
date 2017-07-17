@@ -58,6 +58,10 @@ class CardStore {
     });
   }
 
+  getCard(id) {
+    return this.db.get(id);
+  }
+
   deleteCard(card) {
     return (function tryToDeleteCard(card, db) {
       return db.remove(card)
