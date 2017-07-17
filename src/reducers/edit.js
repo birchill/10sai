@@ -25,6 +25,14 @@ const initialState = {
 
 export default function edit(state = initialState, action) {
   switch (action.type) {
+    case 'LOAD_CARD': {
+      return {
+        forms: {
+          active: { editState: EditState.LOADING, card: {} }
+        }
+      };
+    }
+
     case 'FINISH_LOAD_CARD': {
       return {
         forms: {
