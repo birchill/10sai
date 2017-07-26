@@ -22,17 +22,19 @@ export class CardFaceInput extends React.Component {
     this.handleBlur = this.handleBlur.bind(this);
   }
 
-  componentDidMount() {
-    if (this.props.value) this.updateValue();
-  }
-
-  componentDidUpdate(previousProps) {
-    if (previousProps.value !== this.props.value) {
-      this.updateValue();
+  componentWillMount() {
+    if (this.props.value) {
+      this.updateValueFromProps();
     }
   }
 
-  updateValue() {
+  componentWillReceiveProps(nextProps) {
+    if (this.props.value !== nextProps.value) {
+      this.updateValueFromProps();
+    }
+  }
+
+  updateValueFromProps() {
     const contentState = ContentState.createFromText(this.props.value || '');
     const editorState = EditorState.push(this.state.editorState, contentState);
     this.setState({ editorState });
