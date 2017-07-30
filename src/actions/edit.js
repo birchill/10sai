@@ -37,10 +37,18 @@ export function failLoadCard(formId) {
   };
 }
 
-// |card| here should only specify the _id and changed fields
+// |card| here only needs to specify the _id and changed fields
 export function editCard(formId, card) {
   return {
     type: 'EDIT_CARD',
+    formId,
+    card
+  };
+}
+
+export function saveCard(formId, card) {
+  return {
+    type: 'SAVE_CARD',
     formId,
     card
   };

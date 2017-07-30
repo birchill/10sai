@@ -31,6 +31,23 @@ const loadingState = formId => ({
   }
 });
 
+const dirtyEditState = id => ({
+  edit: {
+    forms: {
+      active: {
+        formId: id,
+        editState: EditState.DIRTY_EDIT,
+        card: {
+          _id: id,
+          prompt: 'Updated',
+          answer: 'Answer',
+        },
+        dirtyFields: [ 'prompt' ],
+      }
+    },
+  }
+});
+
 describe('sagas:card navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
@@ -97,6 +114,16 @@ describe('sagas:card navigate', () => {
       .call([ cardStore, 'getCard' ], '123')
       .withState(loadingState('123'))
       .put(editActions.failLoadCard('123'))
+      .run();
+  });
+
+  it('triggers a save action if the current form is dirty', () => {
+    const cardStore = { getCard: id => ({ _id: id }) };
+
+    return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/456'))
+      .withState(dirtyEditState('123'))
+      .put(editActions.saveCard('123',
+                                dirtyEditState('123').edit.forms.active.card))
       .run();
   });
 });

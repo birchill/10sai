@@ -1,10 +1,11 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { routeFromURL, routeFromPath, URLFromRoute } from '../router';
+import EditState from '../../src/edit-states';
 import * as editActions from '../actions/edit';
 
 // Selectors
 
-const getFormId = state => (state ? state.edit.forms.active.formId : null);
+const getActiveRecord = state => (state ? state.edit.forms.active : {});
 
 // Sagas
 
@@ -18,6 +19,13 @@ export function* navigate(cardStore, action) {
     return;
   }
 
+  const activeRecord = yield select(getActiveRecord);
+  if (activeRecord.editState == EditState.DIRTY_NEW ||
+      activeRecord.editState == EditState.DIRTY_EDIT) {
+    // XXX Presumably this should wait on the following to succeed?
+    yield put(editActions.saveCard(activeRecord.formId, activeRecord.card));
+  }
+
   if (!route.card) {
     yield put(editActions.newCard());
     return;
@@ -25,7 +33,7 @@ export function* navigate(cardStore, action) {
 
   yield put(editActions.loadCard(route.card));
 
-  const formId = yield select(getFormId);
+  const formId = activeRecord.formId;
 
   try {
     const card = yield call([ cardStore, 'getCard' ], route.card);
