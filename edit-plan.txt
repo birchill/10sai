@@ -37,7 +37,7 @@ test/integration/edit
 Also:
  x tidy up edit reducer test to make it shorter/simpler
  x rename card.js to edit.js
- -- create action creators for other actions
+ x create action creators for other actions
  -- merge dirty states?
  -- create saving state?
     Somehow make it not drop current form unless save completes successfully

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import * as routeActions from '../actions/route';
 
 // This function is copied from react-router.
 const isModifiedEvent = evt =>
@@ -53,7 +54,7 @@ class Link extends React.Component {
 
 const mapDispatchToProps = (dispatch, props) => ({
   onClick: href => {
-    dispatch({ type: 'FOLLOW_LINK', url: href, direction: props.direction });
+    dispatch(routeActions.followLink(href, props.direction));
   }
 });
 

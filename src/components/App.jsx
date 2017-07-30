@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../router';
+import * as routeActions from '../actions/route';
 import CardOverviewScreen from './CardOverviewScreen.jsx';
 import ControlOverlay from './ControlOverlay.jsx';
 import EditCardScreen from './EditCardScreen.jsx';
@@ -118,9 +119,7 @@ const mapStateToProps = state => ({
 });
 const mapDispatchToProps = (dispatch, props) => ({
   onClosePopup: () => {
-    dispatch({ type: 'FOLLOW_LINK',
-               url: URLFromRoute(props.route),
-               direction: 'backwards' });
+    dispatch(routeActions.followLink(URLFromRoute(props.route), 'backwards'));
   }
 });
 const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);

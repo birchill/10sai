@@ -17,3 +17,11 @@ export function navigateFromHistory(index, path) {
     ...path,
   };
 }
+
+export function followLink(url, direction) {
+  return {
+    type: 'FOLLOW_LINK',
+    url: url || '/',
+    direction,
+  };
+}
