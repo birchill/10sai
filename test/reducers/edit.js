@@ -6,118 +6,121 @@ import subject from '../../src/reducers/edit';
 import EditState from '../../src/edit-states';
 import * as actions from '../../src/actions/edit';
 
+const emptyState = formId => ({
+  forms: {
+    active: {
+      formId,
+      editState: EditState.EMPTY,
+      card: {},
+    }
+  }
+});
+
+const okState = (card, dirtyFields) => {
+  const result = {
+    forms: {
+      active: {
+        formId: card._id,
+        editState: EditState.OK,
+        card,
+      }
+    }
+  };
+
+  if (dirtyFields) {
+    result.dirtyFields = dirtyFields;
+  }
+
+  return result;
+};
+
+const loadingState = formId => ({
+  forms: {
+    active: {
+      formId,
+      editState: EditState.LOADING,
+      card: {},
+    }
+  }
+});
+
+const dirtyEditState = (card, dirtyFields) => ({
+  forms: {
+    active: {
+      formId: card._id,
+      editState: EditState.DIRTY_EDIT,
+      card,
+      dirtyFields,
+    }
+  }
+});
+
+const dirtyNewState = (formId, card, dirtyFields) => ({
+  forms: {
+    active: {
+      formId,
+      editState: EditState.DIRTY_NEW,
+      card,
+      dirtyFields,
+    }
+  }
+});
+
+const notFoundState = formId => ({
+  forms: {
+    active: {
+      formId,
+      editState: EditState.NOT_FOUND,
+      card: {},
+    }
+  }
+});
+
+const withSaveError = (state, saveError) => ({ ...state, saveError });
+
 describe('reducer:edit', () => {
   it('should return the initial state', () => {
     const updatedState = subject(undefined, {});
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 0,
-            editState: EditState.EMPTY,
-            card: {},
-          }
-        }
-      }
-    );
+
+    assert.deepEqual(updatedState, emptyState(0));
   });
 
   it('should update formId on NEW_CARD', () => {
     const updatedState = subject(undefined, actions.newCard());
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 1,
-            editState: EditState.EMPTY,
-            card: {},
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, emptyState(1));
   });
 
   it('should clear fields on NEW_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.OK,
-          card: { _id: 'abc', prompt: 'yer' },
-          dirtyFields: [ 'prompt', 'question' ],
-        }
-      }
-    };
+    const initialState = okState(
+      { _id: 'abc', prompt: 'yer' },
+      [ 'prompt', 'answer' ]
+    );
 
     const updatedState = subject(initialState, actions.newCard());
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 2,
-            editState: EditState.EMPTY,
-            card: {},
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, emptyState(2));
   });
 
   it('should update formId and state on LOAD_CARD', () => {
     const updatedState = subject(undefined, actions.loadCard('abc'));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.LOADING,
-            card: {},
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, loadingState('abc'));
   });
 
   it('should clear other state on LOAD_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.OK,
-          card: { _id: 'abc', prompt: 'yer' },
-          dirtyFields: [ 'prompt', 'question' ],
-        }
-      }
-    };
+    const initialState = okState(
+      { _id: 'abc', prompt: 'yer' },
+      [ 'prompt', 'answer' ]
+    );
 
     const updatedState = subject(initialState, actions.loadCard('def'));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'def',
-            editState: EditState.LOADING,
-            card: {},
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, loadingState('def'));
   });
 
   it('should update card info and state on FINISH_LOAD_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.LOADING,
-          card: { },
-        }
-      }
-    };
+    const initialState = loadingState('abc');
     const card = {
       _id: 'abc',
       prompt: 'Prompt',
@@ -127,30 +130,12 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.finishLoadCard('abc', card));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.OK,
-            card,
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, okState(card));
   });
 
   it('should NOT update card info and state on FINISH_SAVE_CARD if formIds'
      + ' differ', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.LOADING,
-          card: { },
-        }
-      }
-    };
+    const initialState = loadingState('abc');
     const card = {
       _id: 'def',
       prompt: 'Prompt',
@@ -164,41 +149,15 @@ describe('reducer:edit', () => {
   });
 
   it('should update state on FAIL_LOAD_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.LOADING,
-          card: { },
-        }
-      }
-    };
+    const initialState = loadingState('abc');
 
     const updatedState = subject(initialState, actions.failLoadCard('abc'));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.NOT_FOUND,
-            card: { },
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, notFoundState('abc'));
   });
 
   it('should NOT update state on FAIL_LOAD_CARD if formIds differ', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.LOADING,
-          card: { },
-        }
-      }
-    };
+    const initialState = loadingState('abc');
 
     const updatedState = subject(initialState, actions.failLoadCard('def'));
 
@@ -206,95 +165,44 @@ describe('reducer:edit', () => {
   });
 
   it('should update card and dirty fields and state on EDIT_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.OK,
-          card: {
-            _id: 'abc',
-            prompt: 'Prompt',
-            answer: 'Answer',
-          }
-        }
-      }
-    };
-
+    const initialState = okState(
+      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' }
+    );
     const change = {
       _id: 'abc',
       prompt: 'Updated prompt',
       answer: 'Answer'
     };
+
     const updatedState = subject(initialState, actions.editCard('abc', change));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.DIRTY_EDIT,
-            card: {
-              _id: 'abc',
-              prompt: 'Updated prompt',
-              answer: 'Answer',
-            },
-            dirtyFields: [ 'prompt' ],
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, dirtyEditState(
+      { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
+      [ 'prompt' ]
+    ));
   });
 
   it('should update card and dirty fields and state on EDIT_CARD for new'
      + ' card', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 7,
-          editState: EditState.EMPTY,
-          card: { }
-        }
-      }
-    };
-
+    const initialState = emptyState(7);
     const change = {
       prompt: 'Updated prompt',
       answer: 'Updated answer',
     };
+
     const updatedState = subject(initialState, actions.editCard(7, change));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 7,
-            editState: EditState.DIRTY_NEW,
-            card: {
-              prompt: 'Updated prompt',
-              answer: 'Updated answer',
-            },
-            dirtyFields: [ 'prompt', 'answer' ],
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, dirtyNewState(7,
+      { prompt: 'Updated prompt', answer: 'Updated answer' },
+      [ 'prompt', 'answer' ]
+    ));
   });
 
   it('should NOT update card and dirty fields and state on EDIT_CARD when'
      + ' formIds differ', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.OK,
-          card: {
-            _id: 'abc',
-            prompt: 'Prompt',
-            answer: 'Answer',
-          }
-        }
-      }
-    };
+    const initialState = okState(
+      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' }
+    );
 
     const change = {
       _id: 'def',
@@ -307,20 +215,10 @@ describe('reducer:edit', () => {
   });
 
   it('should update state on FINISH_SAVE_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.DIRTY_EDIT,
-          card: {
-            _id: 'abc',
-            prompt: 'Updated prompt',
-            answer: 'Answer',
-          },
-          dirtyFields: [ 'prompt' ],
-        }
-      }
-    };
+    const initialState = dirtyEditState(
+      { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
+      [ 'prompt' ]
+    );
     const card = {
       _id: 'abc',
       prompt: 'Updated prompt',
@@ -330,39 +228,17 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.finishSaveCard('abc', card));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.OK,
-            card: {
-              _id: 'abc',
-              prompt: 'Updated prompt',
-              answer: 'Answer',
-            },
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, okState(
+      { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' }
+    ));
   });
 
   it('should only update dirty-ness with regards to fields that have not'
      + ' since changed on FINISH_SAVE_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.DIRTY_EDIT,
-          card: {
-            _id: 'abc',
-            prompt: 'Updated #2',
-            answer: 'Updated answer',
-          },
-          dirtyFields: [ 'prompt', 'answer' ],
-        }
-      }
-    };
+    const initialState = dirtyEditState(
+      { _id: 'abc', prompt: 'Updated #2', answer: 'Updated answer' },
+      [ 'prompt', 'answer' ]
+    );
     const card = {
       _id: 'abc',
       prompt: 'Updated #1',
@@ -372,39 +248,17 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.finishSaveCard('abc', card));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.DIRTY_EDIT,
-            card: {
-              _id: 'abc',
-              prompt: 'Updated #2',
-              answer: 'Updated answer',
-            },
-            dirtyFields: [ 'prompt' ],
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, dirtyEditState(
+      { _id: 'abc', prompt: 'Updated #2', answer: 'Updated answer' },
+      [ 'prompt' ]
+    ));
   });
 
   it('should NOT update state on FINISH_SAVE_CARD if formIds differ', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.DIRTY_EDIT,
-          card: {
-            _id: 'abc',
-            prompt: 'Updated prompt',
-            answer: 'Answer',
-          },
-          dirtyFields: [ 'prompt' ],
-        }
-      }
-    };
+    const initialState = dirtyEditState(
+      { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
+      [ 'prompt' ]
+    );
     const card = {
       _id: 'def',
       prompt: 'Updated prompt',
@@ -418,19 +272,10 @@ describe('reducer:edit', () => {
   });
 
   it('should update state on FINISH_SAVE_CARD with new card', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 12,
-          editState: EditState.DIRTY_NEW,
-          card: {
-            prompt: 'Prompt',
-            answer: 'Answer',
-          },
-          dirtyFields: [ 'prompt', 'answer' ],
-        }
-      }
-    };
+    const initialState = dirtyNewState(12,
+      { prompt: 'Prompt', answer: 'Answer' },
+      [ 'prompt', 'answer' ]
+    );
     const card = {
       _id: 'abc',
       prompt: 'Prompt',
@@ -440,38 +285,17 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.finishSaveCard(12, card));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.OK,
-            card: {
-              _id: 'abc',
-              prompt: 'Prompt',
-              answer: 'Answer',
-            },
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, okState(
+      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' }
+    ));
   });
 
   it('should only update dirty-ness with regards to fields that have not'
      + ' since changed on FINISH_SAVE_CARD with new card', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 17,
-          editState: EditState.DIRTY_NEW,
-          card: {
-            prompt: 'Updated #1',
-            answer: 'Updated #2',
-          },
-          dirtyFields: [ 'prompt', 'answer' ],
-        }
-      }
-    };
+    const initialState = dirtyNewState(17,
+      { prompt: 'Updated #1', answer: 'Updated #2' },
+      [ 'prompt', 'answer' ]
+    );
     const card = {
       _id: 'abc',
       prompt: 'Updated #1',
@@ -481,40 +305,18 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.finishSaveCard(17, card));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.DIRTY_NEW,
-            card: {
-              _id: 'abc',
-              prompt: 'Updated #1',
-              answer: 'Updated #2',
-            },
-            dirtyFields: [ 'answer' ],
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, dirtyEditState(
+      { _id: 'abc', prompt: 'Updated #1', answer: 'Updated #2' },
+      [ 'answer' ]
+    ));
   });
 
   it('should NOT update state on FINISH_SAVE_CARD with new card if formIds'
      + ' differ', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.DIRTY_NEW,
-          card: {
-            _id: 'abc',
-            prompt: 'Prompt',
-            answer: 'Answer',
-          },
-          dirtyFields: [ 'prompt' ],
-        }
-      }
-    };
+    const initialState = dirtyNewState(12,
+      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
+      [ 'prompt' ]
+    );
     const card = {
       _id: 'def',
       prompt: 'Prompt',
@@ -528,59 +330,26 @@ describe('reducer:edit', () => {
   });
 
   it('should update save error message on FAIL_SAVE_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.DIRTY_EDIT,
-          card: {
-            _id: 'abc',
-            prompt: 'Prompt',
-            answer: 'Answer',
-          },
-          dirtyFields: [ 'prompt' ],
-        }
-      }
-    };
+    const initialState = dirtyEditState(
+      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
+      [ 'prompt' ]
+    );
 
     const updatedState =
       subject(initialState, actions.failSaveCard('abc', 'Bad bad bad'));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.DIRTY_EDIT,
-            card: {
-              _id: 'abc',
-              prompt: 'Prompt',
-              answer: 'Answer',
-            },
-            dirtyFields: [ 'prompt' ],
-          }
-        },
-        saveError: 'Bad bad bad',
-      }
-    );
+    assert.deepEqual(updatedState, withSaveError(dirtyEditState(
+      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
+      [ 'prompt' ]
+    ), 'Bad bad bad'));
   });
 
   it('should NOT update save error message on FAIL_SAVE_CARD if formIds'
      + ' differ', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.DIRTY_EDIT,
-          card: {
-            _id: 'abc',
-            prompt: 'Prompt',
-            answer: 'Answer',
-          },
-          dirtyFields: [ 'prompt' ],
-        }
-      }
-    };
+    const initialState = dirtyEditState(
+      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
+      [ 'prompt' ]
+    );
 
     const updatedState =
       subject(initialState, actions.failSaveCard('def', 'Bad bad bad'));
@@ -589,20 +358,10 @@ describe('reducer:edit', () => {
   });
 
   it('should update non-dirty fields on SYNC_CARD', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.DIRTY_EDIT,
-          card: {
-            _id: 'abc',
-            prompt: 'Prompt A',
-            answer: 'Answer',
-          },
-          dirtyFields: [ 'prompt' ],
-        }
-      }
-    };
+    const initialState = dirtyEditState(
+      { _id: 'abc', prompt: 'Prompt A', answer: 'Answer' },
+      [ 'prompt' ]
+    );
     const card = {
       _id: 'abc',
       prompt: 'Prompt B',
@@ -612,39 +371,17 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.syncCard(card));
 
-    assert.deepEqual(updatedState,
-      {
-        forms: {
-          active: {
-            formId: 'abc',
-            editState: EditState.DIRTY_EDIT,
-            card: {
-              _id: 'abc',
-              prompt: 'Prompt A',
-              answer: 'Answer B',
-            },
-            dirtyFields: [ 'prompt' ],
-          }
-        }
-      }
-    );
+    assert.deepEqual(updatedState, dirtyEditState(
+      { _id: 'abc', prompt: 'Prompt A', answer: 'Answer B' },
+      [ 'prompt' ]
+    ));
   });
 
   it('should NOT update fields on SYNC_CARD when card IDs differ', () => {
-    const initialState = {
-      forms: {
-        active: {
-          formId: 'abc',
-          editState: EditState.DIRTY_EDIT,
-          card: {
-            _id: 'abc',
-            prompt: 'Prompt A',
-            answer: 'Answer',
-          },
-          dirtyFields: [ 'prompt' ],
-        }
-      }
-    };
+    const initialState = dirtyEditState(
+      { _id: 'abc', prompt: 'Prompt A', answer: 'Answer' },
+      [ 'prompt' ]
+    );
     const card = {
       _id: 'def',
       prompt: 'Prompt B',

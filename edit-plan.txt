@@ -35,7 +35,7 @@ test/integration/edit
  -- Do test of triggering a new card / load card while dirty
 
 Also:
- -- tidy up edit reducer test to make it shorter/simpler
+ x tidy up edit reducer test to make it shorter/simpler
  -- rename card.js to edit.js
  -- create action creators for other actions
  -- merge dirty states?

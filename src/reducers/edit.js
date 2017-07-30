@@ -113,7 +113,7 @@ export default function edit(state = initialState, action) {
         !deepEqual(action.card[field], state.forms.active.card[field])
       );
       const editState = dirtyFields.length
-                        ? state.forms.active.editState
+                        ? EditState.DIRTY_EDIT
                         : EditState.OK;
 
       const result = {
