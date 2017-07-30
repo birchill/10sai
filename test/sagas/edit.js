@@ -6,18 +6,7 @@ import { navigate as navigateSaga,
          saveCard as saveCardSaga } from '../../src/sagas/edit';
 import EditState from '../../src/edit-states';
 import * as editActions from '../../src/actions/edit';
-
-const navigateWithURL = url => ({
-  type: 'NAVIGATE',
-  url,
-});
-
-const navigateWithPath = (path, search, fragment) => ({
-  type: 'NAVIGATE',
-  path,
-  search,
-  fragment,
-});
+import * as routeActions from '../../src/actions/route';
 
 const loadingState = formId => ({
   edit: {
@@ -52,7 +41,8 @@ describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
-    return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/123'))
+    return expectSaga(navigateSaga, cardStore,
+                      routeActions.navigate('/cards/123'))
       .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .run();
@@ -61,7 +51,8 @@ describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (path)', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
-    return expectSaga(navigateSaga, cardStore, navigateWithPath('/cards/123'))
+    return expectSaga(navigateSaga, cardStore,
+                      routeActions.navigate({ path: '/cards/123' }))
       .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .run();
@@ -76,7 +67,8 @@ describe('sagas:edit navigate', () => {
     const newCardAction = editActions.newCard();
     newCardAction.id++;
 
-    return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/new'))
+    return expectSaga(navigateSaga, cardStore,
+                      routeActions.navigate('/cards/new'))
       .not.put(editActions.loadCard('123'))
       .put(newCardAction)
       .not.call([ cardStore, 'getCard' ], '123')
@@ -86,7 +78,8 @@ describe('sagas:edit navigate', () => {
   it('does not triggers a load action if the route is something else', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
-    return expectSaga(navigateSaga, cardStore, navigateWithURL('/'))
+    return expectSaga(navigateSaga, cardStore,
+                      routeActions.navigate('/'))
       .not.put(editActions.loadCard('123'))
       .not.call([ cardStore, 'getCard' ], '123')
       .run();
@@ -95,7 +88,8 @@ describe('sagas:edit navigate', () => {
   it('dispatches a finished action if the load successfully complete', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
-    return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/123'))
+    return expectSaga(navigateSaga, cardStore,
+                      routeActions.navigate('/cards/123'))
       .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .withState(loadingState('123'))
@@ -109,7 +103,8 @@ describe('sagas:edit navigate', () => {
       getCard: () => new Promise((resolve, reject) => { reject(error); })
     };
 
-    return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/123'))
+    return expectSaga(navigateSaga, cardStore,
+                      routeActions.navigate('/cards/123'))
       .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .withState(loadingState('123'))
@@ -120,7 +115,8 @@ describe('sagas:edit navigate', () => {
   it('triggers a save action if the current form is dirty', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
-    return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/456'))
+    return expectSaga(navigateSaga, cardStore,
+                      routeActions.navigate('/cards/456'))
       .withState(dirtyEditState('123'))
       .put(editActions.saveCard('123',
                                 dirtyEditState('123').edit.forms.active.card))

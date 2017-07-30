@@ -6,9 +6,13 @@ import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
 
 import reducer from './reducers/index';
+
 import editSagas from './sagas/edit';
 import syncSagas from './sagas/sync';
 import routeSagas from './sagas/route';
+
+import * as routeActions from './actions/route';
+
 import SettingsStore from './SettingsStore';
 import CardStore from './CardStore';
 import App from './components/App.jsx';
@@ -82,16 +86,17 @@ sagaMiddleware.run(function* allSagas() {
 // Router
 //
 
-store.dispatch({ type: 'NAVIGATE',
+store.dispatch(routeActions.navigate({
                  path: window.location.pathname,
                  search: window.location.search,
-                 fragment: window.location.hash });
+                 fragment: window.location.hash }));
 window.addEventListener('popstate', evt => {
-  store.dispatch({ type: 'NAVIGATE_FROM_HISTORY',
-                   index: evt.state ? evt.state.index : 0,
-                   path: window.location.pathname,
-                   search: window.location.search,
-                   fragment: window.location.hash });
+  store.dispatch(routeActions.navigateFromHistory(
+    evt.state ? evt.state.index : 0,
+    { path: window.location.pathname,
+      search: window.location.search,
+      fragment: window.location.hash }
+  ));
 });
 
 //

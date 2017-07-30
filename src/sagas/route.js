@@ -1,5 +1,6 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { URLFromRoute, routeFromURL, routesEqual } from '../router';
+import * as routeActions from '../actions/route';
 
 // Selectors
 
@@ -47,13 +48,13 @@ export function* followLink(action) {
       routeState.index >= 0) {
     yield call([ history, 'replaceState' ], { index: routeState.index }, '',
                action.url);
-    yield put({ type: 'NAVIGATE', replace: true, url: action.url });
+    yield put(routeActions.navigate(action.url, 'replace'));
   } else {
     const index = typeof routeState.index === 'number'
                   ? routeState.index + 1
                   : 0;
     yield call([ history, 'pushState' ], { index }, '', action.url);
-    yield put({ type: 'NAVIGATE', url: action.url });
+    yield put(routeActions.navigate(action.url));
   }
 }
 
