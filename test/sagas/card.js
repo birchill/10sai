@@ -4,6 +4,8 @@
 import { expectSaga } from 'redux-saga-test-plan';
 import { navigate as navigateSaga,
          saveCard as saveCardSaga } from '../../src/sagas/card';
+import EditState from '../../src/edit-states';
+import * as editActions from '../../src/actions/edit';
 
 const navigateWithURL = url => ({
   type: 'NAVIGATE',
@@ -17,12 +19,24 @@ const navigateWithPath = (path, search, fragment) => ({
   fragment,
 });
 
+const loadingState = formId => ({
+  edit: {
+    forms: {
+      active: {
+        formId,
+        editState: EditState.LOADING,
+        card: {}
+      }
+    },
+  }
+});
+
 describe('sagas:card navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/123'))
-      .put({ type: 'LOAD_CARD', card: '123' })
+      .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .run();
   });
@@ -31,7 +45,7 @@ describe('sagas:card navigate', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore, navigateWithPath('/cards/123'))
-      .put({ type: 'LOAD_CARD', card: '123' })
+      .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .run();
   });
@@ -40,7 +54,7 @@ describe('sagas:card navigate', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/new'))
-      .not.put({ type: 'LOAD_CARD', card: '123' })
+      .not.put(editActions.loadCard('123'))
       .not.call([ cardStore, 'getCard' ], '123')
       .run();
   });
@@ -49,7 +63,7 @@ describe('sagas:card navigate', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore, navigateWithURL('/'))
-      .not.put({ type: 'LOAD_CARD', card: '123' })
+      .not.put(editActions.loadCard('123'))
       .not.call([ cardStore, 'getCard' ], '123')
       .run();
   });
@@ -58,9 +72,10 @@ describe('sagas:card navigate', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/123'))
-      .put({ type: 'LOAD_CARD', card: '123' })
+      .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
-      .put({ type: 'FINISH_LOAD_CARD', card: { _id: '123' } })
+      .withState(loadingState('123'))
+      .put(editActions.finishLoadCard('123', { _id: '123' }))
       .run();
   });
 
@@ -71,9 +86,10 @@ describe('sagas:card navigate', () => {
     };
 
     return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/123'))
-      .put({ type: 'LOAD_CARD', card: '123' })
+      .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
-      .put({ type: 'FAIL_LOAD_CARD', error })
+      .withState(loadingState('123'))
+      .put(editActions.failLoadCard('123'))
       .run();
   });
 });

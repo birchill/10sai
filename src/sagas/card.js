@@ -1,5 +1,10 @@
-import { takeEvery, call, put } from 'redux-saga/effects';
+import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { routeFromURL, routeFromPath, URLFromRoute } from '../router';
+import * as editActions from '../actions/edit';
+
+// Selectors
+
+const getFormId = state => (state ? state.edit.forms.active.formId : null);
 
 // Sagas
 
@@ -13,13 +18,16 @@ export function* navigate(cardStore, action) {
     return;
   }
 
-  yield put({ type: 'LOAD_CARD', card: route.card });
+  yield put(editActions.loadCard(route.card));
+
+  const formId = yield select(getFormId);
 
   try {
     const card = yield call([ cardStore, 'getCard' ], route.card);
-    yield put({ type: 'FINISH_LOAD_CARD', card });
+    yield put(editActions.finishLoadCard(formId, card));
   } catch (error) {
-    yield put({ type: 'FAIL_LOAD_CARD', error });
+    console.error(`Failed to load card: ${route.card}`);
+    yield put(editActions.failLoadCard(formId));
   }
 }
 
