@@ -14,7 +14,12 @@ export function* navigate(cardStore, action) {
                 ? routeFromURL(action.url)
                 : routeFromPath(action.path, action.search,
                                 action.fragment);
-  if (route.screen !== 'edit-card' || !route.card) {
+  if (route.screen !== 'edit-card') {
+    return;
+  }
+
+  if (!route.card) {
+    yield put(editActions.newCard());
     return;
   }
 

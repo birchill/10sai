@@ -50,11 +50,18 @@ describe('sagas:card navigate', () => {
       .run();
   });
 
-  it('does not triggers a load action if the route is for adding a card', () => {
+  it('triggers a new action if the route is for adding a card', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
+
+    // newCard generates a globally unique sequence number and since we call
+    // this before the implementation will, we should increment the number by
+    // one to match what the implementation will get.
+    const newCardAction = editActions.newCard();
+    newCardAction.id++;
 
     return expectSaga(navigateSaga, cardStore, navigateWithURL('/cards/new'))
       .not.put(editActions.loadCard('123'))
+      .put(newCardAction)
       .not.call([ cardStore, 'getCard' ], '123')
       .run();
   });
