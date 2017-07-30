@@ -48,12 +48,20 @@ export function* saveCard(cardStore, action) {
   try {
     const savedCard = yield call([ cardStore, 'putCard' ], action.card);
     yield put(editActions.finishSaveCard(action.formId, savedCard));
-    // If it is a new card, update history so the edit card for the screen
-    // appears to be the previous item in the history.
+
+    // If it is a new card, update the URL.
     if (!action.card._id) {
-      yield put({ type: 'INSERT_HISTORY',
-                  url: URLFromRoute({ screen: 'edit-card',
-                                      card: savedCard._id }) });
+      const activeRecord = yield select(getActiveRecord);
+      const editURL = URLFromRoute({ screen: 'edit-card',
+                                     card: savedCard._id });
+      // If we are still editing the saved card, just update the current URL.
+      if (activeRecord.formId === action.formId) {
+        yield put({ type: 'UPDATE_URL', url: editURL });
+      // Otherwise, make the previous entry in the history reflect the saved
+      // card. Presumably, it is the previous card we saved.
+      } else {
+        yield put({ type: 'INSERT_HISTORY', url: editURL });
+      }
     }
   } catch (error) {
     yield put(editActions.failSaveCard(action.formId, error));

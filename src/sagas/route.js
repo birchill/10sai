@@ -89,10 +89,23 @@ export function* insertHistory(action) {
   }
 }
 
+export function* updateURL(action) {
+  const routeState = yield select(getRoute);
+
+  if (typeof routeState.index === 'number' &&
+      routeState.index >= 0) {
+    yield call([ history, 'replaceState' ],
+               { index: routeState.index },
+               '',
+               action.url);
+  }
+}
+
 function* routeSagas() {
   /* eslint-disable indent */
   yield* [ takeEvery('FOLLOW_LINK', followLink),
-           takeEvery('INSERT_HISTORY', insertHistory) ];
+           takeEvery('INSERT_HISTORY', insertHistory),
+           takeEvery('UPDATE_URL', updateURL) ];
   /* eslint-enable indent */
 }
 

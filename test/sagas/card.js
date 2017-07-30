@@ -128,6 +128,22 @@ describe('sagas:card navigate', () => {
   });
 });
 
+const dirtyNewState = id => ({
+  edit: {
+    forms: {
+      active: {
+        formId: id,
+        editState: EditState.DIRTY_NEW,
+        card: {
+          prompt: 'Prompt',
+          answer: 'Answer',
+        },
+        dirtyFields: [ 'prompt', 'answer' ],
+      }
+    },
+  }
+});
+
 describe('sagas:card saveCard', () => {
   it('saves the card', () => {
     const cardStore = {
@@ -158,7 +174,7 @@ describe('sagas:card saveCard', () => {
       .run();
   });
 
-  it('updates the history so a new card is previous in history', () => {
+  it('updates the history so the current URL reflects the saved card', () => {
     const cardStore = {
       putCard: card => ({ ...card, _id: '1234' }),
     };
@@ -167,6 +183,24 @@ describe('sagas:card saveCard', () => {
 
     return expectSaga(saveCardSaga, cardStore,
                       editActions.saveCard(formId, card))
+      .withState(dirtyNewState(formId))
+      .call([ cardStore, 'putCard' ], card)
+      .put(editActions.finishSaveCard(formId,
+           { ...card, _id: '1234' }))
+      .put({ type: 'UPDATE_URL', url: '/cards/1234' })
+      .run();
+  });
+
+  it('updates the history so the previous URL reflects the saved card', () => {
+    const cardStore = {
+      putCard: card => ({ ...card, _id: '1234' }),
+    };
+    const card = { question: 'yer' };
+    const formId = 12;
+
+    return expectSaga(saveCardSaga, cardStore,
+                      editActions.saveCard(formId, card))
+      .withState(dirtyNewState(formId + 1))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: '1234' }))
@@ -174,16 +208,18 @@ describe('sagas:card saveCard', () => {
       .run();
   });
 
-  it('does not update history if the card is not new', () => {
+  it('does NOT update history if the card is not new', () => {
     const cardStore = { putCard: card => card };
     const card = { question: 'yer', _id: '1234' };
     const formId = '1234';
 
     return expectSaga(saveCardSaga, cardStore,
                       editActions.saveCard(formId, card))
+      .withState(dirtyEditState(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
       .not.put({ type: 'INSERT_HISTORY', url: '/cards/1234' })
+      .not.put({ type: 'UPDATE_URL', url: '/cards/1234' })
       .run();
   });
 
