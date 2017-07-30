@@ -44,7 +44,7 @@ cardStore.changes.on('change', change => {
   const cardBeingEdited = store.getState().edit.form.active.card;
   if (cardBeingEdited &&
       cardBeingEdited._id === change.id) {
-    store.dispatch({ type: 'UPDATE_EDIT_CARD', card: change.doc });
+    store.dispatch({ type: 'SYNC_CARD', card: change.doc });
   }
 });
 
