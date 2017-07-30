@@ -610,7 +610,7 @@ describe('reducer:edit', () => {
     };
 
     const updatedState =
-      subject(initialState, actions.syncCard('abc', card));
+      subject(initialState, actions.syncCard(card));
 
     assert.deepEqual(updatedState,
       {
@@ -628,5 +628,32 @@ describe('reducer:edit', () => {
         }
       }
     );
+  });
+
+  it('should NOT update fields on SYNC_CARD when card IDs differ', () => {
+    const initialState = {
+      forms: {
+        active: {
+          formId: 'abc',
+          editState: EditState.DIRTY_EDIT,
+          card: {
+            _id: 'abc',
+            prompt: 'Prompt A',
+            answer: 'Answer',
+          },
+          dirtyFields: [ 'prompt' ],
+        }
+      }
+    };
+    const card = {
+      _id: 'def',
+      prompt: 'Prompt B',
+      answer: 'Answer B',
+    };
+
+    const updatedState =
+      subject(initialState, actions.syncCard(card));
+
+    assert.deepEqual(updatedState, initialState);
   });
 });

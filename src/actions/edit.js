@@ -70,7 +70,7 @@ export function failSaveCard(formId, error) {
   };
 }
 
-export function syncCard(formId, card) {
+export function syncCard(card) {
   return {
     type: 'SYNC_CARD',
     card

@@ -17,9 +17,7 @@ x FINISH_SAVE_CARD -> update edit card ID and change state from new_dirty -> ok 
   Need to integration test this case
   Alternatively, just pass the saved card as part of the FINISH_SAVE and compare which fields have changed and drop those that haven't from the dirtyFields -- if dirtyFields is empty update the state 
 x FAIL_SAVE_CARD -> update error field (only if formIds match)
-SYNC_CARD -> update fields that are not dirty
-
-^ SYNC_CARD needs to check the ID
+x SYNC_CARD -> update fields that are not dirty
 
 sagas/card
 x NAVIGATE -> dispatch NEW_CARD as needed

@@ -141,6 +141,10 @@ export default function edit(state = initialState, action) {
     }
 
     case 'SYNC_CARD': {
+      if (action.card._id !== state.forms.active.card._id) {
+        return state;
+      }
+
       const card = {};
       for (const field in action.card) {
         if (action.card.hasOwnProperty(field)) {
