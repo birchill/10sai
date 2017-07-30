@@ -47,7 +47,7 @@ export function* navigate(cardStore, action) {
 export function* saveCard(cardStore, action) {
   try {
     const savedCard = yield call([ cardStore, 'putCard' ], action.card);
-    yield put({ type: 'FINISH_SAVE_CARD', card: savedCard });
+    yield put(editActions.finishSaveCard(action.formId, savedCard));
     // If it is a new card, update history so the edit card for the screen
     // appears to be the previous item in the history.
     if (!action.card._id) {
@@ -56,7 +56,7 @@ export function* saveCard(cardStore, action) {
                                       card: savedCard._id }) });
     }
   } catch (error) {
-    yield put({ type: 'FAIL_SAVE_CARD', error });
+    yield put(editActions.failSaveCard(action.formId, error));
   }
 }
 

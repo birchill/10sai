@@ -128,21 +128,18 @@ describe('sagas:card navigate', () => {
   });
 });
 
-const saveCard = card => ({
-  type: 'SAVE_CARD',
-  card,
-});
-
 describe('sagas:card saveCard', () => {
   it('saves the card', () => {
     const cardStore = {
       putCard: card => card,
     };
     const card = { question: 'yer' };
+    const formId = 'abc';
 
-    return expectSaga(saveCardSaga, cardStore, saveCard(card))
+    return expectSaga(saveCardSaga, cardStore,
+                      editActions.saveCard(formId, card))
       .call([ cardStore, 'putCard' ], card)
-      .put({ type: 'FINISH_SAVE_CARD', card })
+      .put(editActions.finishSaveCard(formId, card))
       .run();
   });
 
@@ -151,11 +148,13 @@ describe('sagas:card saveCard', () => {
       putCard: card => ({ ...card, _id: 'generated-id' }),
     };
     const card = { question: 'yer' };
+    const formId = 'abc';
 
-    return expectSaga(saveCardSaga, cardStore, saveCard(card))
+    return expectSaga(saveCardSaga, cardStore,
+                      editActions.saveCard(formId, card))
       .call([ cardStore, 'putCard' ], card)
-      .put({ type: 'FINISH_SAVE_CARD',
-             card: { ...card, _id: 'generated-id' } })
+      .put(editActions.finishSaveCard(formId,
+           { ...card, _id: 'generated-id' }))
       .run();
   });
 
@@ -164,11 +163,13 @@ describe('sagas:card saveCard', () => {
       putCard: card => ({ ...card, _id: '1234' }),
     };
     const card = { question: 'yer' };
+    const formId = 12;
 
-    return expectSaga(saveCardSaga, cardStore, saveCard(card))
+    return expectSaga(saveCardSaga, cardStore,
+                      editActions.saveCard(formId, card))
       .call([ cardStore, 'putCard' ], card)
-      .put({ type: 'FINISH_SAVE_CARD',
-             card: { ...card, _id: '1234' } })
+      .put(editActions.finishSaveCard(formId,
+           { ...card, _id: '1234' }))
       .put({ type: 'INSERT_HISTORY', url: '/cards/1234' })
       .run();
   });
@@ -176,10 +177,12 @@ describe('sagas:card saveCard', () => {
   it('does not update history if the card is not new', () => {
     const cardStore = { putCard: card => card };
     const card = { question: 'yer', _id: '1234' };
+    const formId = '1234';
 
-    return expectSaga(saveCardSaga, cardStore, saveCard(card))
+    return expectSaga(saveCardSaga, cardStore,
+                      editActions.saveCard(formId, card))
       .call([ cardStore, 'putCard' ], card)
-      .put({ type: 'FINISH_SAVE_CARD', card })
+      .put(editActions.finishSaveCard(formId, card))
       .not.put({ type: 'INSERT_HISTORY', url: '/cards/1234' })
       .run();
   });
@@ -190,10 +193,12 @@ describe('sagas:card saveCard', () => {
       putCard: () => new Promise((resolve, reject) => { reject(error); })
     };
     const card = { question: 'yer' };
+    const formId = 13;
 
-    return expectSaga(saveCardSaga, cardStore, saveCard(card))
+    return expectSaga(saveCardSaga, cardStore,
+                      editActions.saveCard(formId, card))
       .call([ cardStore, 'putCard' ], card)
-      .put({ type: 'FAIL_SAVE_CARD', error })
+      .put(editActions.failSaveCard(formId, error))
       .run();
   });
 });

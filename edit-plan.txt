@@ -23,10 +23,10 @@ SYNC_CARD -> update fields that are not dirty
 
 sagas/card
 x NAVIGATE -> dispatch NEW_CARD as needed
-NEW_CARD -> does save if there are dirty fields
+x NEW_CARD -> does save if there are dirty fields
 SAVE_CARD -> Actually trigger save
              update URL on success -- either INSERT_HISTORY or replace history
-             depending on if the form IDs match
+               depending on if the form IDs match
              dispatch FINISH/FAIL_SAVE_CARD
 
 test/integration/edit
