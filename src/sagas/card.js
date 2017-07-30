@@ -20,8 +20,8 @@ export function* navigate(cardStore, action) {
   }
 
   const activeRecord = yield select(getActiveRecord);
-  if (activeRecord.editState == EditState.DIRTY_NEW ||
-      activeRecord.editState == EditState.DIRTY_EDIT) {
+  if (activeRecord.editState === EditState.DIRTY_NEW ||
+      activeRecord.editState === EditState.DIRTY_EDIT) {
     // XXX Presumably this should wait on the following to succeed?
     yield put(editActions.saveCard(activeRecord.formId, activeRecord.card));
   }
