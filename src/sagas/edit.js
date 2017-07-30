@@ -68,11 +68,11 @@ export function* saveCard(cardStore, action) {
   }
 }
 
-function* saveSagas(cardStore) {
+function* editSagas(cardStore) {
   /* eslint-disable indent */
   yield* [ takeEvery('NAVIGATE', navigate, cardStore),
            takeEvery('SAVE_CARD', saveCard, cardStore) ];
   /* eslint-enable indent */
 }
 
-export default saveSagas;
+export default editSagas;

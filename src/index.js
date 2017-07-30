@@ -6,7 +6,7 @@ import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
 
 import reducer from './reducers/index';
-import cardSagas from './sagas/card';
+import editSagas from './sagas/edit';
 import syncSagas from './sagas/sync';
 import routeSagas from './sagas/route';
 import SettingsStore from './SettingsStore';
@@ -72,7 +72,7 @@ settingsStore.onUpdate(dispatchSettingUpdates);
 
 sagaMiddleware.run(function* allSagas() {
   yield all([
-    cardSagas(cardStore),
+    editSagas(cardStore),
     syncSagas(cardStore, settingsStore, store.dispatch.bind(store)),
     routeSagas(),
   ]);

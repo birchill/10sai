@@ -3,7 +3,7 @@
 
 import { expectSaga } from 'redux-saga-test-plan';
 import { navigate as navigateSaga,
-         saveCard as saveCardSaga } from '../../src/sagas/card';
+         saveCard as saveCardSaga } from '../../src/sagas/edit';
 import EditState from '../../src/edit-states';
 import * as editActions from '../../src/actions/edit';
 
@@ -48,7 +48,7 @@ const dirtyEditState = id => ({
   }
 });
 
-describe('sagas:card navigate', () => {
+describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
@@ -144,7 +144,7 @@ const dirtyNewState = id => ({
   }
 });
 
-describe('sagas:card saveCard', () => {
+describe('sagas:edit saveCard', () => {
   it('saves the card', () => {
     const cardStore = {
       putCard: card => card,
