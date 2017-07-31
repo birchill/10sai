@@ -38,6 +38,7 @@ Also:
  x tidy up edit reducer test to make it shorter/simpler
  x rename card.js to edit.js
  x create action creators for other actions
+ -- don't allow saving if card is empty? i.e. require a dirty field?
  -- merge dirty states?
  -- create saving state?
     Somehow make it not drop current form unless save completes successfully

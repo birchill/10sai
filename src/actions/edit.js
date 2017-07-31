@@ -11,14 +11,14 @@ function newCardId() {
 export function newCard() {
   return {
     type: 'NEW_CARD',
-    id: newCardId()
+    id: newCardId(),
   };
 }
 
 export function loadCard(id) {
   return {
     type: 'LOAD_CARD',
-    id
+    id,
   };
 }
 
@@ -26,14 +26,14 @@ export function finishLoadCard(formId, card) {
   return {
     type: 'FINISH_LOAD_CARD',
     formId,
-    card
+    card,
   };
 }
 
 export function failLoadCard(formId) {
   return {
     type: 'FAIL_LOAD_CARD',
-    formId
+    formId,
   };
 }
 
@@ -42,15 +42,14 @@ export function editCard(formId, card) {
   return {
     type: 'EDIT_CARD',
     formId,
-    card
+    card,
   };
 }
 
-export function saveCard(formId, card) {
+export function saveEditCard(formId) {
   return {
-    type: 'SAVE_CARD',
+    type: 'SAVE_EDIT_CARD',
     formId,
-    card
   };
 }
 
@@ -58,7 +57,7 @@ export function finishSaveCard(formId, card) {
   return {
     type: 'FINISH_SAVE_CARD',
     formId,
-    card
+    card,
   };
 }
 
@@ -66,13 +65,13 @@ export function failSaveCard(formId, error) {
   return {
     type: 'FAIL_SAVE_CARD',
     formId,
-    error
+    error,
   };
 }
 
 export function syncCard(card) {
   return {
     type: 'SYNC_CARD',
-    card
+    card,
   };
 }

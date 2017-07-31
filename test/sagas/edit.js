@@ -3,7 +3,7 @@
 
 import { expectSaga } from 'redux-saga-test-plan';
 import { navigate as navigateSaga,
-         saveCard as saveCardSaga } from '../../src/sagas/edit';
+         saveEditCard as saveEditCardSaga } from '../../src/sagas/edit';
 import EditState from '../../src/edit-states';
 import * as editActions from '../../src/actions/edit';
 import * as routeActions from '../../src/actions/route';
@@ -20,22 +20,21 @@ const loadingState = formId => ({
   }
 });
 
-const dirtyEditState = id => ({
-  edit: {
-    forms: {
-      active: {
-        formId: id,
-        editState: EditState.DIRTY_EDIT,
-        card: {
-          _id: id,
-          prompt: 'Updated',
-          answer: 'Answer',
-        },
-        dirtyFields: [ 'prompt' ],
-      }
-    },
-  }
-});
+const dirtyEditState = (formId, cardToUse) => {
+  const card = cardToUse || { prompt: 'Updated', answer: 'Answer' };
+  return {
+    edit: {
+      forms: {
+        active: {
+          formId,
+          editState: EditState.DIRTY_EDIT,
+          card,
+          dirtyFields: [ 'prompt' ],
+        }
+      },
+    }
+  };
+};
 
 describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
@@ -111,36 +110,25 @@ describe('sagas:edit navigate', () => {
       .put(editActions.failLoadCard('123'))
       .run();
   });
-
-  it('triggers a save action if the current form is dirty', () => {
-    const cardStore = { getCard: id => ({ _id: id }) };
-
-    return expectSaga(navigateSaga, cardStore,
-                      routeActions.navigate('/cards/456'))
-      .withState(dirtyEditState('123'))
-      .put(editActions.saveCard('123',
-                                dirtyEditState('123').edit.forms.active.card))
-      .run();
-  });
 });
 
-const dirtyNewState = id => ({
-  edit: {
-    forms: {
-      active: {
-        formId: id,
-        editState: EditState.DIRTY_NEW,
-        card: {
-          prompt: 'Prompt',
-          answer: 'Answer',
-        },
-        dirtyFields: [ 'prompt', 'answer' ],
-      }
-    },
-  }
-});
+const dirtyNewState = (formId, cardToUse) => {
+  const card = cardToUse || { prompt: 'Prompt', answer: 'Answer' };
+  return {
+    edit: {
+      forms: {
+        active: {
+          formId,
+          editState: EditState.DIRTY_NEW,
+          card,
+          dirtyFields: [ 'prompt', 'answer' ],
+        }
+      },
+    }
+  };
+};
 
-describe('sagas:edit saveCard', () => {
+describe('sagas:edit saveEditCard', () => {
   it('saves the card', () => {
     const cardStore = {
       putCard: card => card,
@@ -148,8 +136,9 @@ describe('sagas:edit saveCard', () => {
     const card = { question: 'yer' };
     const formId = 'abc';
 
-    return expectSaga(saveCardSaga, cardStore,
-                      editActions.saveCard(formId, card))
+    return expectSaga(saveEditCardSaga, cardStore,
+                      editActions.saveEditCard(formId))
+      .withState(dirtyNewState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
       .run();
@@ -162,8 +151,9 @@ describe('sagas:edit saveCard', () => {
     const card = { question: 'yer' };
     const formId = 'abc';
 
-    return expectSaga(saveCardSaga, cardStore,
-                      editActions.saveCard(formId, card))
+    return expectSaga(saveEditCardSaga, cardStore,
+                      editActions.saveEditCard(formId))
+      .withState(dirtyNewState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: 'generated-id' }))
@@ -177,30 +167,13 @@ describe('sagas:edit saveCard', () => {
     const card = { question: 'yer' };
     const formId = 12;
 
-    return expectSaga(saveCardSaga, cardStore,
-                      editActions.saveCard(formId, card))
-      .withState(dirtyNewState(formId))
+    return expectSaga(saveEditCardSaga, cardStore,
+                      editActions.saveEditCard(formId))
+      .withState(dirtyNewState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: '1234' }))
       .put({ type: 'UPDATE_URL', url: '/cards/1234' })
-      .run();
-  });
-
-  it('updates the history so the previous URL reflects the saved card', () => {
-    const cardStore = {
-      putCard: card => ({ ...card, _id: '1234' }),
-    };
-    const card = { question: 'yer' };
-    const formId = 12;
-
-    return expectSaga(saveCardSaga, cardStore,
-                      editActions.saveCard(formId, card))
-      .withState(dirtyNewState(formId + 1))
-      .call([ cardStore, 'putCard' ], card)
-      .put(editActions.finishSaveCard(formId,
-           { ...card, _id: '1234' }))
-      .put({ type: 'INSERT_HISTORY', url: '/cards/1234' })
       .run();
   });
 
@@ -209,9 +182,9 @@ describe('sagas:edit saveCard', () => {
     const card = { question: 'yer', _id: '1234' };
     const formId = '1234';
 
-    return expectSaga(saveCardSaga, cardStore,
-                      editActions.saveCard(formId, card))
-      .withState(dirtyEditState(formId))
+    return expectSaga(saveEditCardSaga, cardStore,
+                      editActions.saveEditCard(formId))
+      .withState(dirtyEditState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
       .not.put({ type: 'INSERT_HISTORY', url: '/cards/1234' })
@@ -227,8 +200,9 @@ describe('sagas:edit saveCard', () => {
     const card = { question: 'yer' };
     const formId = 13;
 
-    return expectSaga(saveCardSaga, cardStore,
-                      editActions.saveCard(formId, card))
+    return expectSaga(saveEditCardSaga, cardStore,
+                      editActions.saveEditCard(formId))
+      .withState(dirtyNewState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.failSaveCard(formId, error))
       .run();

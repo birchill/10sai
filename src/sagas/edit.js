@@ -44,24 +44,22 @@ export function* navigate(cardStore, action) {
   }
 }
 
-export function* saveCard(cardStore, action) {
+export function* saveEditCard(cardStore, action) {
   try {
-    const savedCard = yield call([ cardStore, 'putCard' ], action.card);
+    const activeRecord = yield select(getActiveRecord);
+    // In future we'll probably need to look through the different forms
+    // to find the correct one, but for now this should hold.
+    console.assert(activeRecord.formId === action.formId,
+                   'Active record mismatch');
+
+    const savedCard = yield call([ cardStore, 'putCard' ], activeRecord.card);
     yield put(editActions.finishSaveCard(action.formId, savedCard));
 
     // If it is a new card, update the URL.
-    if (!action.card._id) {
-      const activeRecord = yield select(getActiveRecord);
+    if (!activeRecord.card._id) {
       const editURL = URLFromRoute({ screen: 'edit-card',
                                      card: savedCard._id });
-      // If we are still editing the saved card, just update the current URL.
-      if (activeRecord.formId === action.formId) {
-        yield put({ type: 'UPDATE_URL', url: editURL });
-      // Otherwise, make the previous entry in the history reflect the saved
-      // card. Presumably, it is the previous card we saved.
-      } else {
-        yield put({ type: 'INSERT_HISTORY', url: editURL });
-      }
+      yield put({ type: 'UPDATE_URL', url: editURL });
     }
   } catch (error) {
     yield put(editActions.failSaveCard(action.formId, error));
@@ -71,7 +69,7 @@ export function* saveCard(cardStore, action) {
 function* editSagas(cardStore) {
   /* eslint-disable indent */
   yield* [ takeEvery('NAVIGATE', navigate, cardStore),
-           takeEvery('SAVE_CARD', saveCard, cardStore) ];
+           takeEvery('SAVE_EDIT_CARD', saveEditCard, cardStore) ];
   /* eslint-enable indent */
 }
 
