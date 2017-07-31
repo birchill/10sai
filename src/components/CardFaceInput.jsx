@@ -24,18 +24,18 @@ export class CardFaceInput extends React.Component {
 
   componentWillMount() {
     if (this.props.value) {
-      this.updateValueFromProps();
+      this.updateValueFromProps(this.props);
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.value !== nextProps.value) {
-      this.updateValueFromProps();
+      this.updateValueFromProps(nextProps);
     }
   }
 
-  updateValueFromProps() {
-    const contentState = ContentState.createFromText(this.props.value || '');
+  updateValueFromProps(props) {
+    const contentState = ContentState.createFromText(props.value || '');
     const editorState = EditorState.push(this.state.editorState, contentState);
     this.setState({ editorState });
   }
@@ -43,10 +43,13 @@ export class CardFaceInput extends React.Component {
   handleChange(editorState) {
     this.setState({ editorState });
 
-    if (this.props.onChange) {
-      this.props.onChange(this.state.editorState
-                                    .getCurrentContent()
-                                    .getPlainText());
+    if (!this.props.onChange) {
+      return;
+    }
+
+    const valueAsString = editorState.getCurrentContent().getPlainText();
+    if (valueAsString !== this.props.value) {
+      this.props.onChange(valueAsString);
     }
   }
 

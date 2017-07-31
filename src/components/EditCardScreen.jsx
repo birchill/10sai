@@ -6,19 +6,27 @@ import EditCardToolbar from './EditCardToolbar.jsx';
 import EditCardForm from './EditCardForm.jsx';
 import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit-states';
+import * as editActions from '../actions/edit';
 
 export class EditCardScreen extends React.Component {
   static get propTypes() {
     return {
       forms: PropTypes.shape({
         active: PropTypes.shape({
+          formId: PropTypes.any,
           editState: PropTypes.symbol.isRequired,
           card: PropTypes.object,
         }).isRequired
       }),
       active: PropTypes.bool.isRequired,
-      onAdd: PropTypes.func.isRequired,
+      onEdit: PropTypes.func,
     };
+  }
+
+  constructor(props) {
+    super(props);
+
+    this.handleFormChange = this.handleFormChange.bind(this);
   }
 
   componentDidMount() {
@@ -52,12 +60,10 @@ export class EditCardScreen extends React.Component {
     }
   }
 
-  handlePromptChange(value) {
-    this.setState({ prompt: value });
-  }
-
-  handleAnswerChange(value) {
-    this.setState({ answer: value });
+  handleFormChange(field, value) {
+    if (this.props.onEdit) {
+      this.props.onEdit(this.props.forms.active.formId, { [field]: value });
+    }
   }
 
   render() {
@@ -69,8 +75,9 @@ export class EditCardScreen extends React.Component {
         { this.props.forms.active.editState !== EditState.NOT_FOUND
           ? <EditCardForm
             active={this.props.active}
+            onChange={this.handleFormChange}
             {...this.props.forms.active} />
-          : <EditCardNotFound onAdd={this.props.onAdd} /> }
+          : <EditCardNotFound /> }
       </section>
     );
   }
@@ -80,7 +87,7 @@ const mapStateToProps = state => ({
   forms: state.edit.forms,
 });
 const mapDispatchToProps = dispatch => ({
-  onAdd: card => { dispatch({ type: 'ADD_CARD', card }); }
+  onEdit: (formId, card) => { dispatch(editActions.editCard(formId, card)); },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditCardScreen);

@@ -10,13 +10,13 @@ export class EditCardForm extends React.Component {
       active: PropTypes.bool.isRequired,
       editState: PropTypes.symbol.isRequired,
       card: PropTypes.object.isRequired,
+      onChange: PropTypes.func,
     };
   }
 
   constructor(props) {
     super(props);
 
-    this.state = { prompt: '', answer: '' };
     this.assignSearchBox = elem => { this.searchBox = elem; };
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
@@ -43,11 +43,15 @@ export class EditCardForm extends React.Component {
   }
 
   handlePromptChange(value) {
-    this.setState({ prompt: value });
+    if (this.props.onChange) {
+      this.props.onChange('prompt', value);
+    }
   }
 
   handleAnswerChange(value) {
-    this.setState({ answer: value });
+    if (this.props.onChange) {
+      this.props.onChange('answer', value);
+    }
   }
 
   render() {
@@ -62,14 +66,14 @@ export class EditCardForm extends React.Component {
         </div>
         <CardFaceInput
           name="prompt"
-          value={this.props.card.question}
+          value={this.props.card.prompt || ''}
           className="-textpanel -large"
           placeholder="Prompt"
           required
           onChange={this.handlePromptChange} />
         <CardFaceInput
           name="answer"
-          value={this.props.card.answer}
+          value={this.props.card.answer || ''}
           className="-textpanel -large"
           placeholder="Answer"
           onChange={this.handleAnswerChange} />
