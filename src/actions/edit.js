@@ -8,10 +8,10 @@ function newCardId() {
   return ++id;
 }
 
-export function newCard() {
+export function newCard(id) {
   return {
     type: 'NEW_CARD',
-    id: newCardId(),
+    id: typeof id === 'undefined' ? newCardId() : id,
   };
 }
 
@@ -37,7 +37,7 @@ export function failLoadCard(formId) {
   };
 }
 
-// |card| here only needs to specify the _id and changed fields
+// |card| here only needs to specify the changed fields
 export function editCard(formId, card) {
   return {
     type: 'EDIT_CARD',

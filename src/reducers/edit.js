@@ -82,10 +82,15 @@ export default function edit(state = initialState, action) {
         return state;
       }
 
-      const dirtyFields = Object.keys(action.card).filter(field =>
+      const dirtyFields = state.forms.active.dirtyFields || [];
+      dirtyFields.push(...Object.keys(action.card).filter(field =>
         field !== '_id' &&
-        !deepEqual(action.card[field], state.forms.active.card[field])
-      );
+        !deepEqual(action.card[field], state.forms.active.card[field]) &&
+        // This use of indexOf is not awesome but generally dirtyFields will be
+        // 0 ~ 1 items so it's probably ok.
+        dirtyFields.indexOf(field) === -1
+      ));
+
       const editState = state.forms.active.editState === EditState.EMPTY ||
                         state.forms.active.editState === EditState.DIRTY_NEW
                         ? EditState.DIRTY_NEW

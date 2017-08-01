@@ -86,7 +86,7 @@ describe('reducer:edit', () => {
   });
 
   it('should update formId on NEW_CARD', () => {
-    const updatedState = subject(undefined, actions.newCard());
+    const updatedState = subject(undefined, actions.newCard(1));
 
     assert.deepEqual(updatedState, emptyState(1));
   });
@@ -97,7 +97,7 @@ describe('reducer:edit', () => {
       [ 'prompt', 'answer' ]
     );
 
-    const updatedState = subject(initialState, actions.newCard());
+    const updatedState = subject(initialState, actions.newCard(2));
 
     assert.deepEqual(updatedState, emptyState(2));
   });
@@ -212,6 +212,21 @@ describe('reducer:edit', () => {
     const updatedState = subject(initialState, actions.editCard('def', change));
 
     assert.deepEqual(updatedState, initialState);
+  });
+
+  it('should append set of dirty fields on subsequent on EDIT_CARD', () => {
+    const initialState = dirtyEditState(
+      { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
+      [ 'prompt' ]
+    );
+    const change = { answer: 'Updated answer' };
+
+    const updatedState = subject(initialState, actions.editCard('abc', change));
+
+    assert.deepEqual(updatedState, dirtyEditState(
+      { _id: 'abc', prompt: 'Updated prompt', answer: 'Updated answer' },
+      [ 'prompt', 'answer' ]
+    ));
   });
 
   it('should update state on FINISH_SAVE_CARD', () => {
