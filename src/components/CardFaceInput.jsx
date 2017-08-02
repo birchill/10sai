@@ -2,12 +2,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { ContentState, Editor, EditorState } from 'draft-js';
 
+function getEditorContent(editorState) {
+  return editorState.getCurrentContent().getPlainText();
+}
+
 export class CardFaceInput extends React.Component {
   static get propTypes() {
     return {
       value: PropTypes.string,
       className: PropTypes.string,
       placeholder: PropTypes.string,
+      // eslint-disable-next-line react/no-unused-prop-types
       onChange: PropTypes.func,
     };
   }
@@ -24,33 +29,43 @@ export class CardFaceInput extends React.Component {
 
   componentWillMount() {
     if (this.props.value) {
-      this.updateValueFromProps(this.props);
+      this.updateValue(this.props.value);
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.value !== nextProps.value) {
-      this.updateValueFromProps(nextProps);
+      this.updateValue(nextProps.value);
     }
   }
 
-  updateValueFromProps(props) {
-    const contentState = ContentState.createFromText(props.value || '');
+  updateValue(value) {
+    // Setting editorState can reset the selection so we should avoid doing it
+    // when the content hasn't changed (since it can interrupt typing).
+    const currentValue = getEditorContent(this.state.editorState);
+    if (currentValue === value) {
+      return;
+    }
+
+    const contentState = ContentState.createFromText(value || '');
     const editorState = EditorState.push(this.state.editorState, contentState);
     this.setState({ editorState });
   }
 
   handleChange(editorState) {
-    this.setState({ editorState });
+    // We defer calling |onChange| until the state is actually updated so that
+    // if that triggers a call to updateValue we can successfully recognize it
+    // as a redundant change and avoid re-setting the editor state.
+    this.setState((prevState, props) => {
+      if (props.onChange) {
+        const valueAsString = getEditorContent(editorState);
+        if (valueAsString !== this.props.value) {
+          props.onChange(valueAsString);
+        }
+      }
 
-    if (!this.props.onChange) {
-      return;
-    }
-
-    const valueAsString = editorState.getCurrentContent().getPlainText();
-    if (valueAsString !== this.props.value) {
-      this.props.onChange(valueAsString);
-    }
+      return { editorState };
+    });
   }
 
   handleFocus() {
