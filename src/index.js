@@ -45,7 +45,7 @@ if (process.env.NODE_ENV === 'development') {
 const cardStore = new CardStore();
 
 cardStore.changes.on('change', change => {
-  const cardBeingEdited = store.getState().edit.form.active.card;
+  const cardBeingEdited = store.getState().edit.forms.active.card;
   if (cardBeingEdited &&
       cardBeingEdited._id === change.id) {
     store.dispatch({ type: 'SYNC_CARD', card: change.doc });

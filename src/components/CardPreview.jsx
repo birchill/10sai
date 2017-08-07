@@ -5,7 +5,7 @@ export class CardPreview extends React.Component {
   static get propTypes() {
     return {
       _id: PropTypes.string.isRequired,
-      question: PropTypes.string.isRequired,
+      question: PropTypes.string,
       onDelete: PropTypes.func.isRequired,
     };
   }

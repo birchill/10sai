@@ -27,7 +27,7 @@
     "linebreak-style": [ "off" ],
     "prefer-template": [ "off" ],
     "no-continue": [ "off" ],
-    "no-console": [ "error", { "allow": ["assert", "warn", "error"] } ],
+    "no-console": [ "off" ],
     "no-mixed-operators": [ "off" ],
     "no-multi-spaces": [ "off" ],
     "no-param-reassign": [ "off" ],

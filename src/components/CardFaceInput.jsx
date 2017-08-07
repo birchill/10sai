@@ -14,6 +14,7 @@ export class CardFaceInput extends React.Component {
       placeholder: PropTypes.string,
       // eslint-disable-next-line react/no-unused-prop-types
       onChange: PropTypes.func,
+      onBlur: PropTypes.func,
     };
   }
 
@@ -74,6 +75,9 @@ export class CardFaceInput extends React.Component {
 
   handleBlur() {
     this.setState({ hasFocus: false });
+    if (this.props.onBlur) {
+      this.props.onBlur();
+    }
   }
 
   render() {

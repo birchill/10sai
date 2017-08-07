@@ -19,7 +19,8 @@ export class EditCardScreen extends React.Component {
         }).isRequired
       }),
       active: PropTypes.bool.isRequired,
-      onEdit: PropTypes.func,
+      onEdit: PropTypes.func.isRequired,
+      save: PropTypes.func.isRequired,
     };
   }
 
@@ -27,6 +28,7 @@ export class EditCardScreen extends React.Component {
     super(props);
 
     this.handleFormChange = this.handleFormChange.bind(this);
+    this.handleFormControlBlur = this.handleFormControlBlur.bind(this);
   }
 
   componentDidMount() {
@@ -61,8 +63,12 @@ export class EditCardScreen extends React.Component {
   }
 
   handleFormChange(field, value) {
-    if (this.props.onEdit) {
-      this.props.onEdit(this.props.forms.active.formId, { [field]: value });
+    this.props.onEdit(this.props.forms.active.formId, { [field]: value });
+  }
+
+  handleFormControlBlur() {
+    if (this.props.forms.active.editState === EditState.DIRTY) {
+      this.props.save(this.props.forms.active.formId);
     }
   }
 
@@ -76,6 +82,7 @@ export class EditCardScreen extends React.Component {
           ? <EditCardForm
             active={this.props.active}
             onChange={this.handleFormChange}
+            onControlBlur={this.handleFormControlBlur}
             {...this.props.forms.active} />
           : <EditCardNotFound /> }
       </section>
@@ -88,6 +95,7 @@ const mapStateToProps = state => ({
 });
 const mapDispatchToProps = dispatch => ({
   onEdit: (formId, card) => { dispatch(editActions.editCard(formId, card)); },
+  save: formId => { dispatch(editActions.saveEditCard(formId)); },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditCardScreen);

@@ -8,8 +8,8 @@ import EditState from '../edit-states';
 //     active: {
 //       formId: card ID or a sequence number (for yet-to-be-saved cards),
 //       editState: EditState,
-//       card: { _id: ..., prompt: ..., ... },
-//       dirtyFields: [ 'prompt', 'question' etc. ]
+//       card: { _id: ..., question: ..., ... },
+//       dirtyFields: [ 'question', 'question' etc. ]
 //     }
 //     [ next: { " " } ]
 //     [ prev: { " " } ]
@@ -148,7 +148,8 @@ export default function edit(state = initialState, action) {
       const card = {};
       for (const field in action.card) {
         if (action.card.hasOwnProperty(field)) {
-          card[field] = state.forms.active.dirtyFields.includes(field)
+          card[field] = state.forms.active.dirtyFields &&
+                        state.forms.active.dirtyFields.includes(field)
                         ? state.forms.active.card[field]
                         : action.card[field];
         }

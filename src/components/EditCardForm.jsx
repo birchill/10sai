@@ -11,6 +11,7 @@ export class EditCardForm extends React.Component {
       editState: PropTypes.symbol.isRequired,
       card: PropTypes.object.isRequired,
       onChange: PropTypes.func,
+      onControlBlur: PropTypes.func,
     };
   }
 
@@ -20,6 +21,7 @@ export class EditCardForm extends React.Component {
     this.assignSearchBox = elem => { this.searchBox = elem; };
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
+    this.handleControlBlur = this.handleControlBlur.bind(this);
   }
 
   componentDidMount() {
@@ -44,13 +46,19 @@ export class EditCardForm extends React.Component {
 
   handlePromptChange(value) {
     if (this.props.onChange) {
-      this.props.onChange('prompt', value);
+      this.props.onChange('question', value);
     }
   }
 
   handleAnswerChange(value) {
     if (this.props.onChange) {
       this.props.onChange('answer', value);
+    }
+  }
+
+  handleControlBlur() {
+    if (this.props.onControlBlur) {
+      this.props.onControlBlur();
     }
   }
 
@@ -66,27 +74,31 @@ export class EditCardForm extends React.Component {
         </div>
         <CardFaceInput
           name="prompt"
-          value={this.props.card.prompt || ''}
+          value={this.props.card.question || ''}
           className="-textpanel -large"
           placeholder="Prompt"
           required
-          onChange={this.handlePromptChange} />
+          onChange={this.handlePromptChange}
+          onBlur={this.handleControlBlur} />
         <CardFaceInput
           name="answer"
           value={this.props.card.answer || ''}
           className="-textpanel -large"
           placeholder="Answer"
-          onChange={this.handleAnswerChange} />
+          onChange={this.handleAnswerChange}
+          onBlur={this.handleControlBlur} />
         <input
           type="text"
           name="keywords"
           className="-textpanel -yellow"
-          placeholder="Keywords" />
+          placeholder="Keywords"
+          onBlur={this.handleControlBlur} />
         <input
           type="text"
           name="tags"
           className="-textpanel"
-          placeholder="Tags" />
+          placeholder="Tags"
+          onBlur={this.handleControlBlur} />
       </form>
     );
   }
