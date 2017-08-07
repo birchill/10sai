@@ -1,6 +1,7 @@
 import { takeEvery, call, put, select } from 'redux-saga/effects';
 import { routeFromURL, routeFromPath, URLFromRoute } from '../router';
 import * as editActions from '../actions/edit';
+import EditState from '../edit-states';
 
 // Selectors
 
@@ -44,6 +45,20 @@ export function* saveEditCard(cardStore, action) {
     // to find the correct one, but for now this should hold.
     console.assert(activeRecord.formId === action.formId,
                    'Active record mismatch');
+
+    // Don't save if there's nothing to save.
+    if (activeRecord.editState === EditState.EMPTY ||
+        activeRecord.editState === EditState.NOT_FOUND) {
+      yield put(editActions.failSaveCard(action.formId, 'No card to save'));
+      return;
+    }
+
+    // Don't save if the card is not dirty (but do dispatch a finished action or
+    // else the dispatcher might be waiting forever).
+    if (activeRecord.editState === EditState.OK) {
+      yield put(editActions.finishSaveCard(action.formId, activeRecord.card));
+      return;
+    }
 
     const savedCard = yield call([ cardStore, 'putCard' ], activeRecord.card);
     yield put(editActions.finishSaveCard(action.formId, savedCard));

@@ -122,6 +122,21 @@ const dirtyNewState = (formId, cardToUse) => {
   };
 };
 
+const okState = (formId, cardToUse) => {
+  const card = cardToUse || { prompt: 'Prompt', answer: 'Answer' };
+  return {
+    edit: {
+      forms: {
+        active: {
+          formId,
+          editState: EditState.OK,
+          card,
+        }
+      },
+    }
+  };
+};
+
 describe('sagas:edit saveEditCard', () => {
   it('saves the card', () => {
     const cardStore = {
@@ -134,6 +149,21 @@ describe('sagas:edit saveEditCard', () => {
                       editActions.saveEditCard(formId))
       .withState(dirtyNewState(formId, card))
       .call([ cardStore, 'putCard' ], card)
+      .put(editActions.finishSaveCard(formId, card))
+      .run();
+  });
+
+  it('does NOT save the card if it is not dirty', () => {
+    const cardStore = {
+      putCard: card => card,
+    };
+    const card = { question: 'yer' };
+    const formId = 'abc';
+
+    return expectSaga(saveEditCardSaga, cardStore,
+                      editActions.saveEditCard(formId))
+      .withState(okState(formId, card))
+      .not.call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
       .run();
   });
