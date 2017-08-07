@@ -91,16 +91,11 @@ export default function edit(state = initialState, action) {
         dirtyFields.indexOf(field) === -1
       ));
 
-      const editState = state.forms.active.editState === EditState.EMPTY ||
-                        state.forms.active.editState === EditState.DIRTY_NEW
-                        ? EditState.DIRTY_NEW
-                        : EditState.DIRTY_EDIT;
-
       return {
         forms: {
           active: {
             formId: action.formId,
-            editState,
+            editState: EditState.DIRTY,
             card: { ...state.forms.active.card, ...action.card },
             dirtyFields
           }
@@ -118,7 +113,7 @@ export default function edit(state = initialState, action) {
         !deepEqual(action.card[field], state.forms.active.card[field])
       );
       const editState = dirtyFields.length
-                        ? EditState.DIRTY_EDIT
+                        ? EditState.DIRTY
                         : EditState.OK;
 
       const result = {

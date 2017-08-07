@@ -20,14 +20,14 @@ const loadingState = formId => ({
   }
 });
 
-const dirtyEditState = (formId, cardToUse) => {
+const dirtyState = (formId, cardToUse) => {
   const card = cardToUse || { prompt: 'Updated', answer: 'Answer' };
   return {
     edit: {
       forms: {
         active: {
           formId,
-          editState: EditState.DIRTY_EDIT,
+          editState: EditState.DIRTY,
           card,
           dirtyFields: [ 'prompt' ],
         }
@@ -106,22 +106,6 @@ describe('sagas:edit navigate', () => {
   });
 });
 
-const dirtyNewState = (formId, cardToUse) => {
-  const card = cardToUse || { prompt: 'Prompt', answer: 'Answer' };
-  return {
-    edit: {
-      forms: {
-        active: {
-          formId,
-          editState: EditState.DIRTY_NEW,
-          card,
-          dirtyFields: [ 'prompt', 'answer' ],
-        }
-      },
-    }
-  };
-};
-
 const okState = (formId, cardToUse) => {
   const card = cardToUse || { prompt: 'Prompt', answer: 'Answer' };
   return {
@@ -171,7 +155,7 @@ describe('sagas:edit saveEditCard', () => {
 
     return expectSaga(saveEditCardSaga, cardStore,
                       editActions.saveEditCard(formId))
-      .withState(dirtyNewState(formId, card))
+      .withState(dirtyState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
       .run();
@@ -225,7 +209,7 @@ describe('sagas:edit saveEditCard', () => {
 
     return expectSaga(saveEditCardSaga, cardStore,
                       editActions.saveEditCard(formId))
-      .withState(dirtyNewState(formId, card))
+      .withState(dirtyState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: 'generated-id' }))
@@ -241,7 +225,7 @@ describe('sagas:edit saveEditCard', () => {
 
     return expectSaga(saveEditCardSaga, cardStore,
                       editActions.saveEditCard(formId))
-      .withState(dirtyNewState(formId, card))
+      .withState(dirtyState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: '1234' }))
@@ -256,7 +240,7 @@ describe('sagas:edit saveEditCard', () => {
 
     return expectSaga(saveEditCardSaga, cardStore,
                       editActions.saveEditCard(formId))
-      .withState(dirtyEditState(formId, card))
+      .withState(dirtyState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
       .not.put({ type: 'INSERT_HISTORY', url: '/cards/1234' })
@@ -274,7 +258,7 @@ describe('sagas:edit saveEditCard', () => {
 
     return expectSaga(saveEditCardSaga, cardStore,
                       editActions.saveEditCard(formId))
-      .withState(dirtyNewState(formId, card))
+      .withState(dirtyState(formId, card))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.failSaveCard(formId, error))
       .run();

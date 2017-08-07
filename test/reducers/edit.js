@@ -44,22 +44,11 @@ const loadingState = formId => ({
   }
 });
 
-const dirtyEditState = (card, dirtyFields) => ({
-  forms: {
-    active: {
-      formId: card._id,
-      editState: EditState.DIRTY_EDIT,
-      card,
-      dirtyFields,
-    }
-  }
-});
-
-const dirtyNewState = (formId, card, dirtyFields) => ({
+const dirtyState = (formId, card, dirtyFields) => ({
   forms: {
     active: {
       formId,
-      editState: EditState.DIRTY_NEW,
+      editState: EditState.DIRTY,
       card,
       dirtyFields,
     }
@@ -176,7 +165,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.editCard('abc', change));
 
-    assert.deepEqual(updatedState, dirtyEditState(
+    assert.deepEqual(updatedState, dirtyState('abc',
       { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
       [ 'prompt' ]
     ));
@@ -192,7 +181,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.editCard(7, change));
 
-    assert.deepEqual(updatedState, dirtyNewState(7,
+    assert.deepEqual(updatedState, dirtyState(7,
       { prompt: 'Updated prompt', answer: 'Updated answer' },
       [ 'prompt', 'answer' ]
     ));
@@ -215,7 +204,7 @@ describe('reducer:edit', () => {
   });
 
   it('should append set of dirty fields on subsequent on EDIT_CARD', () => {
-    const initialState = dirtyEditState(
+    const initialState = dirtyState('abc',
       { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
       [ 'prompt' ]
     );
@@ -223,14 +212,14 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.editCard('abc', change));
 
-    assert.deepEqual(updatedState, dirtyEditState(
+    assert.deepEqual(updatedState, dirtyState('abc',
       { _id: 'abc', prompt: 'Updated prompt', answer: 'Updated answer' },
       [ 'prompt', 'answer' ]
     ));
   });
 
   it('should update state on FINISH_SAVE_CARD', () => {
-    const initialState = dirtyEditState(
+    const initialState = dirtyState('abc',
       { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
       [ 'prompt' ]
     );
@@ -250,7 +239,7 @@ describe('reducer:edit', () => {
 
   it('should only update dirty-ness with regards to fields that have not'
      + ' since changed on FINISH_SAVE_CARD', () => {
-    const initialState = dirtyEditState(
+    const initialState = dirtyState('abc',
       { _id: 'abc', prompt: 'Updated #2', answer: 'Updated answer' },
       [ 'prompt', 'answer' ]
     );
@@ -263,14 +252,14 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.finishSaveCard('abc', card));
 
-    assert.deepEqual(updatedState, dirtyEditState(
+    assert.deepEqual(updatedState, dirtyState('abc',
       { _id: 'abc', prompt: 'Updated #2', answer: 'Updated answer' },
       [ 'prompt' ]
     ));
   });
 
   it('should NOT update state on FINISH_SAVE_CARD if formIds differ', () => {
-    const initialState = dirtyEditState(
+    const initialState = dirtyState('abc',
       { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
       [ 'prompt' ]
     );
@@ -287,7 +276,7 @@ describe('reducer:edit', () => {
   });
 
   it('should update state on FINISH_SAVE_CARD with new card', () => {
-    const initialState = dirtyNewState(12,
+    const initialState = dirtyState(12,
       { prompt: 'Prompt', answer: 'Answer' },
       [ 'prompt', 'answer' ]
     );
@@ -307,7 +296,7 @@ describe('reducer:edit', () => {
 
   it('should only update dirty-ness with regards to fields that have not'
      + ' since changed on FINISH_SAVE_CARD with new card', () => {
-    const initialState = dirtyNewState(17,
+    const initialState = dirtyState(17,
       { prompt: 'Updated #1', answer: 'Updated #2' },
       [ 'prompt', 'answer' ]
     );
@@ -320,7 +309,7 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.finishSaveCard(17, card));
 
-    assert.deepEqual(updatedState, dirtyEditState(
+    assert.deepEqual(updatedState, dirtyState('abc',
       { _id: 'abc', prompt: 'Updated #1', answer: 'Updated #2' },
       [ 'answer' ]
     ));
@@ -328,7 +317,7 @@ describe('reducer:edit', () => {
 
   it('should NOT update state on FINISH_SAVE_CARD with new card if formIds'
      + ' differ', () => {
-    const initialState = dirtyNewState(12,
+    const initialState = dirtyState(12,
       { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
       [ 'prompt' ]
     );
@@ -345,7 +334,7 @@ describe('reducer:edit', () => {
   });
 
   it('should update save error message on FAIL_SAVE_CARD', () => {
-    const initialState = dirtyEditState(
+    const initialState = dirtyState('abc',
       { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
       [ 'prompt' ]
     );
@@ -353,7 +342,7 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.failSaveCard('abc', 'Bad bad bad'));
 
-    assert.deepEqual(updatedState, withSaveError(dirtyEditState(
+    assert.deepEqual(updatedState, withSaveError(dirtyState('abc',
       { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
       [ 'prompt' ]
     ), 'Bad bad bad'));
@@ -361,7 +350,7 @@ describe('reducer:edit', () => {
 
   it('should NOT update save error message on FAIL_SAVE_CARD if formIds'
      + ' differ', () => {
-    const initialState = dirtyEditState(
+    const initialState = dirtyState('abc',
       { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
       [ 'prompt' ]
     );
@@ -373,7 +362,7 @@ describe('reducer:edit', () => {
   });
 
   it('should update non-dirty fields on SYNC_CARD', () => {
-    const initialState = dirtyEditState(
+    const initialState = dirtyState('abc',
       { _id: 'abc', prompt: 'Prompt A', answer: 'Answer' },
       [ 'prompt' ]
     );
@@ -386,14 +375,14 @@ describe('reducer:edit', () => {
     const updatedState =
       subject(initialState, actions.syncCard(card));
 
-    assert.deepEqual(updatedState, dirtyEditState(
+    assert.deepEqual(updatedState, dirtyState('abc',
       { _id: 'abc', prompt: 'Prompt A', answer: 'Answer B' },
       [ 'prompt' ]
     ));
   });
 
   it('should NOT update fields on SYNC_CARD when card IDs differ', () => {
-    const initialState = dirtyEditState(
+    const initialState = dirtyState('abc',
       { _id: 'abc', prompt: 'Prompt A', answer: 'Answer' },
       [ 'prompt' ]
     );
