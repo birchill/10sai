@@ -137,6 +137,30 @@ const okState = (formId, cardToUse) => {
   };
 };
 
+const emptyState = formId => ({
+  edit: {
+    forms: {
+      active: {
+        formId,
+        editState: EditState.EMPTY,
+        card: {},
+      }
+    }
+  }
+});
+
+const notFoundState = formId => ({
+  edit: {
+    forms: {
+      active: {
+        formId,
+        editState: EditState.NOT_FOUND,
+        card: {},
+      }
+    }
+  }
+});
+
 describe('sagas:edit saveEditCard', () => {
   it('saves the card', () => {
     const cardStore = {
@@ -165,6 +189,30 @@ describe('sagas:edit saveEditCard', () => {
       .withState(okState(formId, card))
       .not.call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
+      .run();
+  });
+
+  it('fails if there is no card to save', () => {
+    const cardStore = { putCard: card => card };
+    const formId = 'abc';
+
+    return expectSaga(saveEditCardSaga, cardStore,
+                      editActions.saveEditCard(formId))
+      .withState(emptyState(formId))
+      .not.call([ cardStore, 'putCard' ], {})
+      .put(editActions.failSaveCard(formId, 'No card to save'))
+      .run();
+  });
+
+  it('fails if there is no card to save because it was not found', () => {
+    const cardStore = { putCard: card => card };
+    const formId = 'abc';
+
+    return expectSaga(saveEditCardSaga, cardStore,
+                      editActions.saveEditCard(formId))
+      .withState(notFoundState(formId))
+      .not.call([ cardStore, 'putCard' ], {})
+      .put(editActions.failSaveCard(formId, 'No card to save'))
       .run();
   });
 
