@@ -693,13 +693,13 @@ form[name=sync-server-settings] {
   position: relative;
   background: white;
   border-radius: .2rem;
-  border: $border-width solid #c5c5c5;
-  box-shadow: 0 1.5px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.15);
   margin: .6rem;
   height: 8rem;
   width: 8rem;
   text-align: center;
   overflow: hidden;
+  color: black;
 }
 .card-preview .flex-container {
   display: flex;
@@ -726,4 +726,13 @@ form[name=sync-server-settings] {
     display: inline-block;
     background: url("img/icons.svg#cross") 0 / 0.8rem 0.8rem content-box;
   }
+}
+// Hover states
+.card-preview {
+  transition: transform 0.2s;
+  box-sizing: border-box;
+}
+.card-preview:hover {
+  border: $border-width solid $hover-highlight;
+  transform: scale(1.07);
 }

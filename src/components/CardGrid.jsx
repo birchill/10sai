@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { collate } from 'pouchdb-collate';
 import CardPreview from './CardPreview.jsx';
+import Link from './Link.jsx';
 import VirtualGrid from './VirtualGrid.jsx';
 
 // Perform a binary search in |cards| for card with _id |id|.
@@ -84,7 +85,10 @@ export class CardGrid extends React.Component {
   }
 
   renderCard(item) {
-    return <CardPreview onDelete={this.handleDelete} {...item} />;
+    return (
+      <Link href={`/cards/${item._id}`}>
+        <CardPreview onDelete={this.handleDelete} {...item} />
+      </Link>);
   }
 
   render() {
