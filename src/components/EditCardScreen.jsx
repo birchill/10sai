@@ -7,6 +7,7 @@ import EditCardForm from './EditCardForm.jsx';
 import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit-states';
 import * as editActions from '../actions/edit';
+import { saveEditCardIfNeeded } from '../sagas/edit';
 
 export class EditCardScreen extends React.Component {
   static get propTypes() {
@@ -68,7 +69,9 @@ export class EditCardScreen extends React.Component {
 
   handleFormControlBlur() {
     if (this.props.forms.active.editState === EditState.DIRTY) {
-      this.props.save(this.props.forms.active.formId);
+      this.props.save(this.props.forms.active.formId).catch(err => {
+        console.log(err);
+      });
     }
   }
 
@@ -95,7 +98,7 @@ const mapStateToProps = state => ({
 });
 const mapDispatchToProps = dispatch => ({
   onEdit: (formId, card) => { dispatch(editActions.editCard(formId, card)); },
-  save: formId => { dispatch(editActions.saveEditCard(formId)); },
+  save: formId => saveEditCardIfNeeded(formId, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditCardScreen);

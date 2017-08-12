@@ -3,6 +3,26 @@ import { routeFromURL, routeFromPath, URLFromRoute } from '../router';
 import * as editActions from '../actions/edit';
 import EditState from '../edit-states';
 
+// Local state
+
+let saveEditCardPromise;
+let saveEditCardPromiseFns = { resolve: () => {}, reject: () => {} };
+
+// Public utility functions
+
+// Dispatches a SAVE_EDIT_CARD action only if needed and returns a Promise that
+// resolves when the save has completed.
+export function saveEditCardIfNeeded(formId, dispatch) {
+  if (!saveEditCardPromise) {
+    saveEditCardPromise = new Promise((resolve, reject) => {
+      saveEditCardPromiseFns = { resolve, reject };
+    });
+    dispatch(editActions.saveEditCard(formId));
+  }
+
+  return saveEditCardPromise;
+}
+
 // Selectors
 
 const getActiveRecord = state => (state ? state.edit.forms.active : {});
@@ -25,6 +45,7 @@ export function* navigate(cardStore, action) {
   }
 
   yield put(editActions.loadCard(route.card));
+  saveEditCardPromise = undefined;
 
   const activeRecord = yield select(getActiveRecord);
   const formId = activeRecord.formId;
@@ -35,6 +56,13 @@ export function* navigate(cardStore, action) {
   } catch (error) {
     console.error(`Failed to load card: ${route.card}`);
     yield put(editActions.failLoadCard(formId));
+  }
+}
+
+export function* editCard() {
+  const activeRecord = yield select(getActiveRecord);
+  if (activeRecord.editState === EditState.DIRTY) {
+    saveEditCardPromise = undefined;
   }
 }
 
@@ -50,6 +78,7 @@ export function* saveEditCard(cardStore, action) {
     if (activeRecord.editState === EditState.EMPTY ||
         activeRecord.editState === EditState.NOT_FOUND) {
       yield put(editActions.failSaveCard(action.formId, 'No card to save'));
+      saveEditCardPromiseFns.reject('No card to save');
       return;
     }
 
@@ -57,11 +86,13 @@ export function* saveEditCard(cardStore, action) {
     // else the dispatcher might be waiting forever).
     if (activeRecord.editState === EditState.OK) {
       yield put(editActions.finishSaveCard(action.formId, activeRecord.card));
+      saveEditCardPromiseFns.resolve(activeRecord.card);
       return;
     }
 
     const savedCard = yield call([ cardStore, 'putCard' ], activeRecord.card);
     yield put(editActions.finishSaveCard(action.formId, savedCard));
+    saveEditCardPromiseFns.resolve(savedCard);
 
     // If it is a new card, update the URL.
     if (!activeRecord.card._id) {
@@ -71,12 +102,14 @@ export function* saveEditCard(cardStore, action) {
     }
   } catch (error) {
     yield put(editActions.failSaveCard(action.formId, error));
+    saveEditCardPromiseFns.reject(error);
   }
 }
 
 function* editSagas(cardStore) {
   /* eslint-disable indent */
   yield* [ takeEvery('NAVIGATE', navigate, cardStore),
+           takeEvery('EDIT_CARD', editCard),
            takeEvery('SAVE_EDIT_CARD', saveEditCard, cardStore) ];
   /* eslint-enable indent */
 }
