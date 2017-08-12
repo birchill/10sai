@@ -33,8 +33,7 @@ export function* navigate(cardStore, action) {
   // Look for navigation actions that should load a card
   const route = action.url
                 ? routeFromURL(action.url)
-                : routeFromPath(action.path, action.search,
-                                action.fragment);
+                : routeFromPath(action.path, action.search, action.fragment);
   if (route.screen !== 'edit-card') {
     return;
   }
