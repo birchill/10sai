@@ -58,4 +58,14 @@ const mapDispatchToProps = (dispatch, props) => ({
   }
 });
 
-export default connect(null, mapDispatchToProps)(Link);
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+  // If the component has its own 'onClick' prop, then use that and pass the
+  // default implementation (from |dispatchProps|) as an argument to it.
+  const onClickWrapper = ownProps.onClick
+    ? { onClick: href =>
+          ownProps.onClick(href, dispatchProps.onClick.bind(this, href)) }
+    : undefined;
+  return Object.assign({}, ownProps, stateProps, dispatchProps, onClickWrapper);
+};
+
+export default connect(null, mapDispatchToProps, mergeProps)(Link);

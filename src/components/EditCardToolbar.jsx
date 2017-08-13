@@ -8,12 +8,18 @@ export class EditCardToolbar extends React.Component {
   static get propTypes() {
     return {
       editState: PropTypes.symbol.isRequired,
+      onClose: PropTypes.func.isRequired,
     };
   }
 
   constructor(props) {
     super(props);
     this.state = { editState: EditState.LOADING };
+    this.handleClose = this.handleClose.bind(this);
+  }
+
+  handleClose(href, doClose) {
+    this.props.onClose(doClose);
   }
 
   render() {
@@ -35,7 +41,8 @@ export class EditCardToolbar extends React.Component {
           <Link
             href="/"
             className="close-button"
-            direction="backwards">Close</Link>
+            direction="backwards"
+            onClick={this.handleClose}>Close</Link>
         </div>
       </nav>
     );
