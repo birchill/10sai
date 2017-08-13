@@ -5,7 +5,7 @@
     width: 100%;
   }
 
-  input[type=text], textarea {
+  input[type=text], input[type=search], textarea {
     &::placeholder {
       opacity: initial;
       color: $dark-grey;

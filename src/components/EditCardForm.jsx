@@ -67,7 +67,7 @@ export class EditCardForm extends React.Component {
       <form className="form editcard-form" autoComplete="off">
         <div className="search-box">
           <input
-            type="text"
+            type="search"
             placeholder="Lookup"
             className="text-box -compact -rounded -search"
             ref={this.assignSearchBox} />

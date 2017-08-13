@@ -254,6 +254,10 @@ input, button {
   outline: none;
   vertical-align: middle;
 }
+input[type=search] {
+  // Undo changes from normalize.css
+  box-sizing: border-box;
+}
 input[type=button], input[type=submit], button, a.button {
   background: transparent;
   border: $border-width solid $highlight;
@@ -489,15 +493,6 @@ fieldset {
   margin-top: 1rem;
   padding: 1.2rem 1.8rem;
 }
-legend {
-  /* Normalization from normalize.css */
-  box-sizing: border-box;
-  color: inherit;
-  display: table;
-  max-width: 100%;
-  padding: 0 0.4rem;
-  white-space: normal;
-}
 
 /*
  * Error panel
@@ -543,7 +538,8 @@ legend {
 .cancelable-textbox-cancel:hover::after {
   color: grey;
 }
-.cancelable-textbox-group input[type="text"]::-ms-clear {
+.cancelable-textbox-group input[type="text"]::-ms-clear,
+.cancelable-textbox-group input[type="search"]::-ms-clear {
   display: none;
 }
 
