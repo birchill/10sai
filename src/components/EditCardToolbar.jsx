@@ -34,8 +34,9 @@ export class EditCardToolbar extends React.Component {
             disabled={disabled}>Discard</button>
         </div>
         <div className="-center">
-          <button
-            className="add -icon -plus -link">Add</button>
+          <Link
+            href="/cards/new"
+            className="add button -icon -plus -link">Add</Link>
         </div>
         <div>
           <Link
