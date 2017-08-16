@@ -46,10 +46,11 @@ export function editCard(formId, card) {
   };
 }
 
-export function saveEditCard(formId) {
+export function saveEditCard(formId, onSuccess) {
   return {
     type: 'SAVE_EDIT_CARD',
     formId,
+    onSuccess,
   };
 }
 

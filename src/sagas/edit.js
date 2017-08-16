@@ -1,28 +1,11 @@
-import { call, delay, fork, put, race, select, spawn, take, takeEvery }
+import { call, fork, put, race, select, take, takeEvery }
        from 'redux-saga/effects';
+import { delay } from 'redux-saga';
 import { routeFromURL, routeFromPath, URLFromRoute } from '../router';
 import * as editActions from '../actions/edit';
 import EditState from '../edit-states';
 
-// Local state
-
-let saveEditCardPromise;
-let saveEditCardPromiseFns = { resolve: () => {}, reject: () => {} };
-
-// Public utility functions
-
-// Dispatches a SAVE_EDIT_CARD action only if needed and returns a Promise that
-// resolves when the save has completed.
-export function saveEditCardIfNeeded(formId, dispatch) {
-  if (!saveEditCardPromise) {
-    saveEditCardPromise = new Promise((resolve, reject) => {
-      saveEditCardPromiseFns = { resolve, reject };
-    });
-    dispatch(editActions.saveEditCard(formId));
-  }
-
-  return saveEditCardPromise;
-}
+const SAVE_DELAY = 2000;
 
 // Selectors
 
@@ -45,7 +28,6 @@ export function* navigate(cardStore, action) {
   }
 
   yield put(editActions.loadCard(route.card));
-  saveEditCardPromise = undefined;
 
   const activeRecord = yield select(getActiveRecord);
   const formId = activeRecord.formId;
@@ -54,59 +36,10 @@ export function* navigate(cardStore, action) {
     const card = yield call([ cardStore, 'getCard' ], route.card);
     yield put(editActions.finishLoadCard(formId, card));
   } catch (error) {
-    console.error(`Failed to load card: ${route.card}`);
+    console.error(`Failed to load card: ${error}`);
     yield put(editActions.failLoadCard(formId));
   }
 }
-
-export function* editCard() {
-  const activeRecord = yield select(getActiveRecord);
-  if (activeRecord.editState === EditState.DIRTY) {
-    saveEditCardPromise = undefined;
-  }
-}
-
-export function* saveEditCard(cardStore, action) {
-  try {
-    const activeRecord = yield select(getActiveRecord);
-    // In future we'll probably need to look through the different forms
-    // to find the correct one, but for now this should hold.
-    console.assert(activeRecord.formId === action.formId,
-                   'Active record mismatch');
-
-    // Don't save if there's nothing to save.
-    if (activeRecord.editState === EditState.EMPTY ||
-        activeRecord.editState === EditState.NOT_FOUND) {
-      yield put(editActions.failSaveCard(action.formId, 'No card to save'));
-      saveEditCardPromiseFns.reject('No card to save');
-      return;
-    }
-
-    // Don't save if the card is not dirty (but do dispatch a finished action or
-    // else the dispatcher might be waiting forever).
-    if (activeRecord.editState === EditState.OK) {
-      yield put(editActions.finishSaveCard(action.formId, activeRecord.card));
-      saveEditCardPromiseFns.resolve(activeRecord.card);
-      return;
-    }
-
-    const savedCard = yield call([ cardStore, 'putCard' ], activeRecord.card);
-    yield put(editActions.finishSaveCard(action.formId, savedCard));
-    saveEditCardPromiseFns.resolve(savedCard);
-
-    // If it is a new card, update the URL.
-    if (!activeRecord.card._id) {
-      const editURL = URLFromRoute({ screen: 'edit-card',
-                                     card: savedCard._id });
-      yield put({ type: 'UPDATE_URL', url: editURL });
-    }
-  } catch (error) {
-    yield put(editActions.failSaveCard(action.formId, error));
-    saveEditCardPromiseFns.reject(error);
-  }
-}
-
-const SAVE_DELAY = 2000;
 
 function* save(cardStore, formId, card) {
   try {
@@ -122,7 +55,9 @@ function* save(cardStore, formId, card) {
 
     return savedCard._id;
   } catch (error) {
+    console.error(`Failed to save: ${error}`);
     yield put(editActions.failSaveCard(formId, error));
+    // Re-throw error since when saving synchronously we want to know about it
     throw error;
   }
 }
@@ -141,12 +76,16 @@ function* autoSave(cardStore, formId, card) {
 
   // The remaining steps should not be cancelled since otherwise we risk
   // writing the card twice with different IDs.
-  return yield save(cardStore, formId, card);
+  try {
+    return yield save(cardStore, formId, card);
+  } catch (error) {
+    // Nothing special to do here. We'll have already dispatched the appropriate
+    // action and that's enough for auto-saving.
+    return formId;
+  }
 }
 
-// XXX
-// eslint-disable-next-line no-unused-vars
-function* watchCardEdits(cardStore) {
+export function* watchCardEdits(cardStore) {
   let autoSaveTask;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -160,8 +99,8 @@ function* watchCardEdits(cardStore) {
 
     // Check if anything needs saving
     if (activeRecord.editState !== EditState.DIRTY) {
-      if (action.onSuccess) {
-        yield spawn(put, action.onSuccess);
+      if (typeof action.onSuccess === 'function') {
+        yield call(action.onSuccess);
       }
       continue;
     }
@@ -170,7 +109,7 @@ function* watchCardEdits(cardStore) {
     // If there is an auto save in progress, cancel it.
     if (autoSaveTask) {
       if (autoSaveTask.isRunning()) {
-        yield put('CANCEL_AUTO_SAVE');
+        yield put({ type: 'CANCEL_AUTO_SAVE' });
       }
       // Get the possibly updated card ID.
       try {
@@ -187,8 +126,8 @@ function* watchCardEdits(cardStore) {
     } else if (action.type === 'SAVE_EDIT_CARD') {
       try {
         yield save(cardStore, id, activeRecord.card);
-        if (action.onSuccess) {
-          yield spawn(put, action.onSuccess);
+        if (typeof action.onSuccess === 'function') {
+          yield call(action.onSuccess);
         }
       } catch (error) {
         // Don't do anything, but don't trigger the onSuccess action.
@@ -200,8 +139,7 @@ function* watchCardEdits(cardStore) {
 function* editSagas(cardStore) {
   /* eslint-disable indent */
   yield* [ takeEvery('NAVIGATE', navigate, cardStore),
-           takeEvery('EDIT_CARD', editCard),
-           takeEvery('SAVE_EDIT_CARD', saveEditCard, cardStore) ];
+           watchCardEdits(cardStore) ];
   /* eslint-enable indent */
 }
 

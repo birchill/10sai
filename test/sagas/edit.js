@@ -3,7 +3,7 @@
 
 import { expectSaga } from 'redux-saga-test-plan';
 import { navigate as navigateSaga,
-         saveEditCard as saveEditCardSaga } from '../../src/sagas/edit';
+         watchCardEdits as watchCardEditsSaga } from '../../src/sagas/edit';
 import EditState from '../../src/edit-states';
 import * as editActions from '../../src/actions/edit';
 import * as routeActions from '../../src/actions/route';
@@ -133,71 +133,43 @@ const emptyState = formId => ({
   }
 });
 
-const notFoundState = formId => ({
-  edit: {
-    forms: {
-      active: {
-        formId,
-        editState: EditState.NOT_FOUND,
-        card: {},
-      }
-    }
-  }
-});
-
-describe('sagas:edit saveEditCard', () => {
+describe('sagas:edit watchCardEdits', () => {
   it('saves the card', () => {
-    const cardStore = {
-      putCard: card => card,
-    };
+    const cardStore = { putCard: card => card };
     const card = { question: 'yer' };
     const formId = 'abc';
 
-    return expectSaga(saveEditCardSaga, cardStore,
-                      editActions.saveEditCard(formId))
+    return expectSaga(watchCardEditsSaga, cardStore)
       .withState(dirtyState(formId, card))
+      .dispatch(editActions.saveEditCard(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
-      .run();
+      .silentRun(100);
   });
 
   it('does NOT save the card if it is not dirty', () => {
-    const cardStore = {
-      putCard: card => card,
-    };
+    const cardStore = { putCard: card => card };
     const card = { question: 'yer' };
     const formId = 'abc';
 
-    return expectSaga(saveEditCardSaga, cardStore,
-                      editActions.saveEditCard(formId))
+    return expectSaga(watchCardEditsSaga, cardStore)
       .withState(okState(formId, card))
+      .dispatch(editActions.saveEditCard(formId))
       .not.call([ cardStore, 'putCard' ], card)
-      .put(editActions.finishSaveCard(formId, card))
-      .run();
+      .not.put(editActions.finishSaveCard(formId, card))
+      .silentRun(100);
   });
 
   it('fails if there is no card to save', () => {
     const cardStore = { putCard: card => card };
     const formId = 'abc';
 
-    return expectSaga(saveEditCardSaga, cardStore,
-                      editActions.saveEditCard(formId))
+    return expectSaga(watchCardEditsSaga, cardStore)
       .withState(emptyState(formId))
+      .dispatch(editActions.saveEditCard(formId))
       .not.call([ cardStore, 'putCard' ], {})
-      .put(editActions.failSaveCard(formId, 'No card to save'))
-      .run();
-  });
-
-  it('fails if there is no card to save because it was not found', () => {
-    const cardStore = { putCard: card => card };
-    const formId = 'abc';
-
-    return expectSaga(saveEditCardSaga, cardStore,
-                      editActions.saveEditCard(formId))
-      .withState(notFoundState(formId))
-      .not.call([ cardStore, 'putCard' ], {})
-      .put(editActions.failSaveCard(formId, 'No card to save'))
-      .run();
+      .not.put(editActions.failSaveCard(formId, 'No card to save'))
+      .silentRun(100);
   });
 
   it('reports the ID of the saved card', () => {
@@ -207,13 +179,13 @@ describe('sagas:edit saveEditCard', () => {
     const card = { question: 'yer' };
     const formId = 'abc';
 
-    return expectSaga(saveEditCardSaga, cardStore,
-                      editActions.saveEditCard(formId))
+    return expectSaga(watchCardEditsSaga, cardStore)
       .withState(dirtyState(formId, card))
+      .dispatch(editActions.saveEditCard(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: 'generated-id' }))
-      .run();
+      .silentRun(100);
   });
 
   it('updates the history so the current URL reflects the saved card', () => {
@@ -223,14 +195,14 @@ describe('sagas:edit saveEditCard', () => {
     const card = { question: 'yer' };
     const formId = 12;
 
-    return expectSaga(saveEditCardSaga, cardStore,
-                      editActions.saveEditCard(formId))
+    return expectSaga(watchCardEditsSaga, cardStore)
       .withState(dirtyState(formId, card))
+      .dispatch(editActions.saveEditCard(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: '1234' }))
       .put({ type: 'UPDATE_URL', url: '/cards/1234' })
-      .run();
+      .silentRun(100);
   });
 
   it('does NOT update history if the card is not new', () => {
@@ -238,14 +210,13 @@ describe('sagas:edit saveEditCard', () => {
     const card = { question: 'yer', _id: '1234' };
     const formId = '1234';
 
-    return expectSaga(saveEditCardSaga, cardStore,
-                      editActions.saveEditCard(formId))
+    return expectSaga(watchCardEditsSaga, cardStore)
       .withState(dirtyState(formId, card))
+      .dispatch(editActions.saveEditCard(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
-      .not.put({ type: 'INSERT_HISTORY', url: '/cards/1234' })
       .not.put({ type: 'UPDATE_URL', url: '/cards/1234' })
-      .run();
+      .silentRun(100);
   });
 
   it('dispatches a failed action when the card cannot be saved', () => {
@@ -256,11 +227,39 @@ describe('sagas:edit saveEditCard', () => {
     const card = { question: 'yer' };
     const formId = 13;
 
-    return expectSaga(saveEditCardSaga, cardStore,
-                      editActions.saveEditCard(formId))
+    return expectSaga(watchCardEditsSaga, cardStore)
       .withState(dirtyState(formId, card))
+      .dispatch(editActions.saveEditCard(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.failSaveCard(formId, error))
-      .run();
+      .silentRun(100);
+  });
+
+  it('dispatches the onSuccess action when provided', () => {
+    const cardStore = { putCard: card => card };
+    const card = { question: 'yer', _id: '1234' };
+    const formId = '1234';
+    const onSuccess = () => {};
+
+    return expectSaga(watchCardEditsSaga, cardStore)
+      .withState(dirtyState(formId, card))
+      .dispatch(editActions.saveEditCard(formId, onSuccess))
+      .call([ cardStore, 'putCard' ], card)
+      .put(editActions.finishSaveCard(formId, card))
+      .call(onSuccess)
+      .silentRun(100);
+  });
+
+  it('dispatches the onSuccess action even when the card is not saved', () => {
+    const cardStore = { putCard: card => card };
+    const card = { question: 'yer', _id: 'abc' };
+    const formId = 'abc';
+    const onSuccess = () => {};
+
+    return expectSaga(watchCardEditsSaga, cardStore)
+      .withState(okState(formId, card))
+      .dispatch(editActions.saveEditCard(formId, onSuccess))
+      .call(onSuccess)
+      .silentRun(100);
   });
 });
