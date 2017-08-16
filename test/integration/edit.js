@@ -17,6 +17,7 @@ describe('integration:edit', () => {
     let state = reducer(undefined, editActions.newCard(formId));
     state = reducer(state, editActions.editCard(formId, { prompt: 'Prompt' }));
     state = reducer(state, editActions.editCard(formId, { answer: 'Answer' }));
+    state = reducer(state, { type: 'UPDATE_URL', url: '/cards/abc' });
 
     return expectSaga(editSagas, cardStore)
       // Danger -- withReducer must come before withState!
@@ -39,7 +40,7 @@ describe('integration:edit', () => {
           }
         }
       })
-      .run();
+      .silentRun(100);
   });
 
   it('should allow loading, editing, and saving a new card', () => {
