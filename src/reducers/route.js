@@ -2,6 +2,10 @@ import { routeFromPath, routeFromURL } from '../router';
 
 export default function route(state = { }, action) {
   switch (action.type) {
+    case 'UPDATE_URL':
+      action.replace = 'replace';
+      // fall through
+
     case 'NAVIGATE': {
       const route = action.url
                     ? routeFromURL(action.url)
