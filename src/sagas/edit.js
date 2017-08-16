@@ -138,7 +138,8 @@ export function* watchCardEdits(cardStore) {
 
 function* editSagas(cardStore) {
   /* eslint-disable indent */
-  yield* [ takeEvery('NAVIGATE', navigate, cardStore),
+  yield* [ takeEvery([ 'NAVIGATE', 'NAVIGATE_FROM_HISTORY' ],
+                     navigate, cardStore),
            watchCardEdits(cardStore) ];
   /* eslint-enable indent */
 }
