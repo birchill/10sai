@@ -2,7 +2,14 @@ import { routeFromPath, routeFromURL } from '../router';
 
 export default function route(state = { }, action) {
   switch (action.type) {
-    case 'UPDATE_URL':
+    case 'SILENTLY_UPDATE_URL':
+      // Only update the URL if we haven't navigated somewhere else.
+      if (typeof action.index !== 'number' ||
+          action.index < 0 ||
+          action.index !== state.index) {
+        return state;
+      }
+
       action.replace = 'replace';
       // fall through
 

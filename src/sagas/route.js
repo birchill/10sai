@@ -90,11 +90,17 @@ export function* insertHistory(action) {
   }
 }
 
-export function* updateURL(action) {
+export function* silentlyUpdateUrl(action) {
+  // Get current route so we can compare it
   const routeState = yield select(getRoute);
+  if (typeof routeState.index !== 'number' ||
+      routeState.index >= routeState.history.length) {
+    return;
+  }
+  const currentRoute = routeState.history[routeState.index];
 
-  if (typeof routeState.index === 'number' &&
-      routeState.index >= 0) {
+  // Only update the URL if the reducer already did so
+  if (URLFromRoute(currentRoute) === action.url) {
     yield call([ history, 'replaceState' ],
                { index: routeState.index },
                '',
@@ -106,7 +112,7 @@ function* routeSagas() {
   /* eslint-disable indent */
   yield* [ takeEvery('FOLLOW_LINK', followLink),
            takeEvery('INSERT_HISTORY', insertHistory),
-           takeEvery('UPDATE_URL', updateURL) ];
+           takeEvery('SILENTLY_UPDATE_URL', silentlyUpdateUrl) ];
   /* eslint-enable indent */
 }
 

@@ -3,12 +3,16 @@ import { call, fork, put, race, select, take, takeEvery }
 import { delay } from 'redux-saga';
 import { routeFromURL, routeFromPath, URLFromRoute } from '../router';
 import * as editActions from '../actions/edit';
+import * as routeActions from '../actions/route';
 import EditState from '../edit-states';
 
 const SAVE_DELAY = 2000;
 
 // Selectors
 
+const getHistoryIndex = state => (
+  state.route && typeof state.route.index === 'number' ? state.route.index : -1
+);
 const getActiveRecord = state => (state ? state.edit.forms.active : {});
 
 // Sagas
@@ -43,14 +47,21 @@ export function* navigate(cardStore, action) {
 
 function* save(cardStore, formId, card) {
   try {
+    const historyIndex = yield select(getHistoryIndex);
+
     const savedCard = yield call([ cardStore, 'putCard' ], card);
     yield put(editActions.finishSaveCard(formId, savedCard));
 
     // If it is a new card, update the URL.
+    //
+    // The reducer/saga for SILENTLY_UPDATE_URL check if we have navigated to
+    // another page since triggering the save and won't update the URL in that
+    // case. In that case the history may be wrong but there's not much else we
+    // can do short of blocking all navigation until saves are done.
     if (!card._id) {
-      const editURL = URLFromRoute({ screen: 'edit-card',
+      const newUrl  = URLFromRoute({ screen: 'edit-card',
                                      card: savedCard._id });
-      yield put({ type: 'UPDATE_URL', url: editURL });
+      yield put(routeActions.silentlyUpdateUrl(historyIndex, newUrl));
     }
 
     return savedCard._id;

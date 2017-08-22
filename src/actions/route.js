@@ -18,6 +18,16 @@ export function navigateFromHistory(index, path) {
   };
 }
 
+// Similar to navigate except it doesn't trigger the side effects and only
+// updates the current URL if it matches |prevUrl|.
+export function silentlyUpdateUrl(index, newUrl) {
+  return {
+    type: 'SILENTLY_UPDATE_URL',
+    index,
+    url: newUrl,
+  };
+}
+
 export function followLink(url, direction) {
   return {
     type: 'FOLLOW_LINK',
