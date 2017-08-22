@@ -65,11 +65,6 @@ const dispatchSettingUpdates = settings => {
 settingsStore.getSettings().then(dispatchSettingUpdates);
 settingsStore.onUpdate(dispatchSettingUpdates);
 
-// XXX setup thing to watch for updates on the cardStore and if the updated
-// card matches one in the edit part of state, dispatch an appropriate action.
-// (Or, if we can't inspect the state easily, just dispatch an action
-// unconditionally and inspect it in an appropriate saga.)
-
 //
 // Sagas
 //
