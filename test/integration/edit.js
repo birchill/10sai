@@ -26,6 +26,13 @@ describe('integration:edit', () => {
       .dispatch(editActions.saveEditCard(formId))
       .hasFinalState({
         ...state,
+        route: {
+          index: 0,
+          history: [ {
+            screen: 'edit-card',
+            card: 'abc',
+          } ],
+        },
         edit: {
           forms: {
             active: {

@@ -202,7 +202,7 @@ describe('sagas:edit watchCardEdits', () => {
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: '1234' }))
-      .put(routeActions.silentlyUpdateUrl(0, '/cards/1234'))
+      .put(routeActions.silentlyUpdateUrl('/cards/1234'))
       .silentRun(100);
   });
 
@@ -216,7 +216,7 @@ describe('sagas:edit watchCardEdits', () => {
       .dispatch(editActions.saveEditCard(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
-      .not.put(routeActions.silentlyUpdateUrl(0, '/cards/1234'))
+      .not.put(routeActions.silentlyUpdateUrl('/cards/1234'))
       .silentRun(100);
   });
 

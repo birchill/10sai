@@ -18,13 +18,12 @@ export function navigateFromHistory(index, path) {
   };
 }
 
-// Similar to navigate except it doesn't trigger the side effects and only
-// updates the current URL if it matches |prevUrl|.
-export function silentlyUpdateUrl(index, newUrl) {
+// Similar to NAVIGATE except it doesn't trigger the side effects (e.g. loading
+// a card etc.).
+export function silentlyUpdateUrl(url) {
   return {
     type: 'SILENTLY_UPDATE_URL',
-    index,
-    url: newUrl,
+    url,
   };
 }
 

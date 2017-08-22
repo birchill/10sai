@@ -1,6 +1,7 @@
 import { call, fork, put, race, select, take, takeEvery }
        from 'redux-saga/effects';
 import { delay } from 'redux-saga';
+import deepEqual from 'deep-equal';
 import { routeFromURL, routeFromPath, URLFromRoute } from '../router';
 import * as editActions from '../actions/edit';
 import * as routeActions from '../actions/route';
@@ -13,6 +14,15 @@ const SAVE_DELAY = 2000;
 const getHistoryIndex = state => (
   state.route && typeof state.route.index === 'number' ? state.route.index : -1
 );
+const getCurrentRoute = state => {
+  const index = getHistoryIndex(state);
+  if (index < 0 ||
+      !Array.isArray(state.route.history) ||
+      index >= state.route.history.length) {
+    return {};
+  }
+  return state.route.history[index];
+};
 const getActiveRecord = state => (state ? state.edit.forms.active : {});
 
 // Sagas
@@ -45,23 +55,30 @@ export function* navigate(cardStore, action) {
   }
 }
 
-function* save(cardStore, formId, card) {
+function* save(cardStore, formId, card, options) {
   try {
-    const historyIndex = yield select(getHistoryIndex);
+    const [ index, route ] =
+      [ yield select(getHistoryIndex),
+        yield select(getCurrentRoute) ];
+    const silent = options && options.silent;
 
     const savedCard = yield call([ cardStore, 'putCard' ], card);
     yield put(editActions.finishSaveCard(formId, savedCard));
 
     // If it is a new card, update the URL.
     //
-    // The reducer/saga for SILENTLY_UPDATE_URL check if we have navigated to
-    // another page since triggering the save and won't update the URL in that
-    // case. In that case the history may be wrong but there's not much else we
-    // can do short of blocking all navigation until saves are done.
-    if (!card._id) {
-      const newUrl  = URLFromRoute({ screen: 'edit-card',
-                                     card: savedCard._id });
-      yield put(routeActions.silentlyUpdateUrl(historyIndex, newUrl));
+    // However, there's a chance that the user has navigated to a new URL in
+    // between when we started the save and now so check that's not the case
+    // first.
+    if (!card._id && !silent) {
+      const [ currentIndex, currentRoute ] =
+        [ yield select(getHistoryIndex),
+          yield select(getCurrentRoute) ];
+      if (currentIndex === index && deepEqual(currentRoute, route)) {
+        const newUrl  = URLFromRoute({ screen: 'edit-card',
+                                       card: savedCard._id });
+        yield put(routeActions.silentlyUpdateUrl(newUrl));
+      }
     }
 
     return savedCard._id;
@@ -100,13 +117,16 @@ export function* watchCardEdits(cardStore) {
   let autoSaveTask;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const action = yield take([ 'EDIT_CARD', 'SAVE_EDIT_CARD' ]);
+    const action = yield take(
+      [ 'EDIT_CARD', 'SAVE_EDIT_CARD', 'NAVIGATE', 'NAVIGATE_FROM_HISTORY' ]
+    );
 
     const activeRecord = yield select(getActiveRecord);
     // In future we'll probably need to look through the different forms
     // to find the correct one, but for now this should hold.
-    console.assert(activeRecord.formId === action.formId,
-                   'Active record mismatch');
+    console.assert(!action.formId || activeRecord.formId === action.formId,
+                   'Active record mismatch ' +
+                   `${activeRecord.formId} vs ${action.formId}`);
 
     // Check if anything needs saving
     if (activeRecord.editState !== EditState.DIRTY) {
@@ -116,7 +136,7 @@ export function* watchCardEdits(cardStore) {
       continue;
     }
 
-    let id = action.formId;
+    let id = action.formId || activeRecord.formId;
     // If there is an auto save in progress, cancel it.
     if (autoSaveTask) {
       if (autoSaveTask.isRunning()) {
@@ -132,17 +152,35 @@ export function* watchCardEdits(cardStore) {
     }
     autoSaveTask = undefined;
 
-    if (action.type === 'EDIT_CARD') {
-      autoSaveTask = yield fork(autoSave, cardStore, id, activeRecord.card);
-    } else if (action.type === 'SAVE_EDIT_CARD') {
-      try {
-        yield save(cardStore, id, activeRecord.card);
-        if (typeof action.onSuccess === 'function') {
-          yield call(action.onSuccess);
+    switch (action.type) {
+      case 'EDIT_CARD':
+        autoSaveTask = yield fork(autoSave, cardStore, id, activeRecord.card);
+        break;
+
+      case 'SAVE_EDIT_CARD':
+        try {
+          yield save(cardStore, id, activeRecord.card);
+          if (typeof action.onSuccess === 'function') {
+            yield call(action.onSuccess);
+          }
+        } catch (error) {
+          // Don't do anything, but don't trigger the onSuccess action.
         }
-      } catch (error) {
-        // Don't do anything, but don't trigger the onSuccess action.
-      }
+        break;
+
+      case 'NAVIGATE':
+      case 'NAVIGATE_FROM_HISTORY':
+        try {
+          yield save(cardStore, id, activeRecord.card, { silent: true });
+        } catch (error) {
+          // Someone, somewhere, is listening for failed save actions, right?
+          // Right?
+        }
+        break;
+
+      default:
+        console.log(`Unexpected action ${action.type}`);
+        break;
     }
   }
 }

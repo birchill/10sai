@@ -91,16 +91,10 @@ export function* insertHistory(action) {
 }
 
 export function* silentlyUpdateUrl(action) {
-  // Get current route so we can compare it
   const routeState = yield select(getRoute);
-  if (typeof routeState.index !== 'number' ||
-      routeState.index >= routeState.history.length) {
-    return;
-  }
-  const currentRoute = routeState.history[routeState.index];
 
-  // Only update the URL if the reducer already did so
-  if (URLFromRoute(currentRoute) === action.url) {
+  if (typeof routeState.index === 'number' &&
+      routeState.index >= 0) {
     yield call([ history, 'replaceState' ],
                { index: routeState.index },
                '',
