@@ -1,8 +1,8 @@
 import { call, fork, put, race, select, take, takeEvery }
        from 'redux-saga/effects';
 import { delay } from 'redux-saga';
-import deepEqual from 'deep-equal';
-import { routeFromURL, routeFromPath, URLFromRoute } from '../router';
+import { routeFromURL, routeFromPath, URLFromRoute, routesEqual }
+       from '../router';
 import * as editActions from '../actions/edit';
 import * as routeActions from '../actions/route';
 import EditState from '../edit-states';
@@ -74,7 +74,7 @@ function* save(cardStore, formId, card, options) {
       const [ currentIndex, currentRoute ] =
         [ yield select(getHistoryIndex),
           yield select(getCurrentRoute) ];
-      if (currentIndex === index && deepEqual(currentRoute, route)) {
+      if (currentIndex === index && routesEqual(currentRoute, route)) {
         const newUrl  = URLFromRoute({ screen: 'edit-card',
                                        card: savedCard._id });
         yield put(routeActions.silentlyUpdateUrl(newUrl));
