@@ -35,7 +35,7 @@ describe('reducer:route', () => {
   });
 
   it('updates the current route on an initial NAVIGATE given a URL', () => {
-    const action = actions.navigate(urlA);
+    const action = actions.navigate({ url: urlA });
 
     const updatedState = subject(undefined, action);
 
@@ -44,7 +44,7 @@ describe('reducer:route', () => {
 
   it('updates the current route on an initial NAVIGATE given a (non-empty) URL',
   () => {
-    const action = actions.navigate(urlB);
+    const action = actions.navigate({ url: urlB });
 
     const updatedState = subject(undefined, action);
 
@@ -53,7 +53,7 @@ describe('reducer:route', () => {
 
   it('updates the current route on a initial NAVIGATE even if replace is true',
   () => {
-    const action = actions.navigate(pathA, 'replace');
+    const action = actions.navigate({ replace: true, ...pathA });
 
     const updatedState = subject(undefined, action);
 
@@ -72,7 +72,7 @@ describe('reducer:route', () => {
 
   it('appends the route on a subsequent NAVIGATE when replace is false', () => {
     const initialState = { history: [ routeA ], index: 0 };
-    const action = actions.navigate(pathB);
+    const action = actions.navigate({ replace: false, ...pathB });
 
     const updatedState = subject(initialState, action);
 
@@ -81,7 +81,7 @@ describe('reducer:route', () => {
 
   it('updates the route on a subsequent NAVIGATE when replace is true', () => {
     const initialState = { history: [ routeA ], index: 0 };
-    const action = actions.navigate(pathB, 'replace');
+    const action = actions.navigate({ replace: true, ...pathB });
 
     const updatedState = subject(initialState, action);
 
@@ -102,7 +102,7 @@ describe('reducer:route', () => {
      + ' is true',
   () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 1 };
-    const action = actions.navigate(pathD, 'replace');
+    const action = actions.navigate({ replace: true, ...pathD });
 
     const updatedState = subject(initialState, action);
 
@@ -110,10 +110,11 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeD, routeC ], index: 1 });
   });
 
-  it('updates the index on NAVIGATE_FROM_HISTORY when index is previous item',
+  it('updates the index on NAVIGATE (source:history) when index is previous'
+     + ' item',
   () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 2 };
-    const action = actions.navigateFromHistory(1, pathB);
+    const action = actions.navigate({ index: 1, source: 'history', ...pathB });
 
     const updatedState = subject(initialState, action);
 
@@ -121,12 +122,12 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeB, routeC ], index: 1 });
   });
 
-  it('updates the index on NAVIGATE_FROM_HISTORY when index is a few steps'
+  it('updates the index on NAVIGATE (source:history) when index is a few steps'
      + ' back',
   () => {
     const initialState = { history: [ routeA, routeB, routeC, routeD ],
                            index: 3 };
-    const action = actions.navigateFromHistory(1, pathB);
+    const action = actions.navigate({ index: 1, source: 'history', ...pathB });
 
     const updatedState = subject(initialState, action);
 
@@ -134,9 +135,10 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeB, routeC, routeD ], index: 1 });
   });
 
-  it('does nothing on NAVIGATE_FROM_HISTORY when index is current item', () => {
+  it('does nothing on NAVIGATE (source:history) when index is current'
+     + ' item', () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 1 };
-    const action = actions.navigateFromHistory(1, pathB);
+    const action = actions.navigate({ index: 1, source: 'history', ...pathB });
 
     const updatedState = subject(initialState, action);
 
@@ -144,9 +146,10 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeB, routeC ], index: 1 });
   });
 
-  it('updates the index on NAVIGATE_FROM_HISTORY when index is zero', () => {
+  it('updates the index on NAVIGATE (source:history) when index is'
+     + ' zero', () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 2 };
-    const action = actions.navigateFromHistory(0, pathA);
+    const action = actions.navigate({ index: 0, source: 'history', ...pathA });
 
     const updatedState = subject(initialState, action);
 
@@ -154,10 +157,12 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeB, routeC ], index: 0 });
   });
 
-  it('does nothing on NAVIGATE_FROM_HISTORY when index is null',
+  it('does nothing on NAVIGATE (source:history) when index is null',
   () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 2 };
-    const action = actions.navigateFromHistory(null, pathA);
+    const action = actions.navigate({ index: null,
+                                      source: 'history',
+                                      ...pathA });
 
     const updatedState = subject(initialState, action);
 
@@ -165,9 +170,9 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeB, routeC ], index: 2 });
   });
 
-  it('does nothing on NAVIGATE_FROM_HISTORY when index is missing', () => {
+  it('does nothing on NAVIGATE (source:history) when index is missing', () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 2 };
-    const action = { type: 'NAVIGATE_FROM_HISTORY', ...pathB };
+    const action = actions.navigate({ source: 'history', ...pathB });
 
     const updatedState = subject(initialState, action);
 
@@ -175,10 +180,10 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeB, routeC ], index: 2 });
   });
 
-  it('updates the index on NAVIGATE_FROM_HISTORY when index is future item',
-  () => {
+  it('updates the index on NAVIGATE (source:history) when index is future'
+     + ' item', () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 0 };
-    const action = { type: 'NAVIGATE_FROM_HISTORY', index: 2 };
+    const action = actions.navigate({ source: 'history', index: 2, ...pathC });
 
     const updatedState = subject(initialState, action);
 
@@ -186,11 +191,10 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeB, routeC ], index: 2 });
   });
 
-  it('pushes to history on NAVIGATE_FROM_HISTORY when index is beyond history'
-     + ' bounds',
-  () => {
+  it('pushes to history on NAVIGATE (source:history) when index is beyond'
+     + ' history bounds', () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 2 };
-    const action = actions.navigateFromHistory(4, pathD);
+    const action = actions.navigate({ source: 'history', index: 4, ...pathD });
 
     const updatedState = subject(initialState, action);
 
@@ -198,39 +202,14 @@ describe('reducer:route', () => {
                      { history: [ routeA, routeB, routeC, routeD ], index: 3 });
   });
 
-  it('updates the history item on NAVIGATE_FROM_HISTORY when passed route'
-     + ' differs',
-  () => {
+  it('updates the history item on NAVIGATE (source:history) when passed route'
+     + ' differs', () => {
     const initialState = { history: [ routeA, routeB, routeC ], index: 2 };
-    const action = actions.navigateFromHistory(1, pathA);
+    const action = actions.navigate({ source: 'history', index: 1, ...pathA });
 
     const updatedState = subject(initialState, action);
 
     assert.deepEqual(updatedState,
                      { history: [ routeA, routeA, routeC ], index: 1 });
-  });
-
-  it('does not update the history item on NAVIGATE_FROM_HISTORY when no route'
-     + ' is passed',
-  () => {
-    const initialState = { history: [ routeA, routeB, routeC ], index: 2 };
-    const action = { type: 'NAVIGATE_FROM_HISTORY', index: 1 };
-
-    const updatedState = subject(initialState, action);
-
-    assert.deepEqual(updatedState,
-                     { history: [ routeA, routeB, routeC ], index: 1 });
-  });
-
-  it('does nothing on NAVIGATE_FROM_HISTORY when no route is passed and the'
-     + ' index is out of bounds',
-  () => {
-    const initialState = { history: [ routeA, routeB, routeC ], index: 2 };
-    const action = { type: 'NAVIGATE_FROM_HISTORY', index: 5 };
-
-    const updatedState = subject(initialState, action);
-
-    assert.deepEqual(updatedState,
-                     { history: [ routeA, routeB, routeC ], index: 2 });
   });
 });

@@ -1,7 +1,7 @@
 import { call, fork, put, race, select, take, takeEvery }
        from 'redux-saga/effects';
 import { delay } from 'redux-saga';
-import { routeFromURL, routeFromPath, URLFromRoute, routesEqual }
+import { routeFromURL, routeFromPath, URLFromRoute }
        from '../router';
 import * as editActions from '../actions/edit';
 import * as routeActions from '../actions/route';
@@ -11,18 +11,6 @@ const SAVE_DELAY = 2000;
 
 // Selectors
 
-const getHistoryIndex = state => (
-  state.route && typeof state.route.index === 'number' ? state.route.index : -1
-);
-const getCurrentRoute = state => {
-  const index = getHistoryIndex(state);
-  if (index < 0 ||
-      !Array.isArray(state.route.history) ||
-      index >= state.route.history.length) {
-    return {};
-  }
-  return state.route.history[index];
-};
 const getActiveRecord = state => (state ? state.edit.forms.active : {});
 
 // Sagas
@@ -55,30 +43,21 @@ export function* navigate(cardStore, action) {
   }
 }
 
-function* save(cardStore, formId, card, options) {
+export function* save(cardStore, formId, card) {
   try {
-    const [ index, route ] =
-      [ yield select(getHistoryIndex),
-        yield select(getCurrentRoute) ];
-    const silent = options && options.silent;
-
     const savedCard = yield call([ cardStore, 'putCard' ], card);
+
+    // Get the active record since we may have navigated while the card was
+    // being saved.
+    const activeRecord = yield select(getActiveRecord);
     yield put(editActions.finishSaveCard(formId, savedCard));
 
-    // If it is a new card, update the URL.
-    //
-    // However, there's a chance that the user has navigated to a new URL in
-    // between when we started the save and now so check that's not the case
-    // first.
-    if (!card._id && !silent) {
-      const [ currentIndex, currentRoute ] =
-        [ yield select(getHistoryIndex),
-          yield select(getCurrentRoute) ];
-      if (currentIndex === index && routesEqual(currentRoute, route)) {
-        const newUrl  = URLFromRoute({ screen: 'edit-card',
-                                       card: savedCard._id });
-        yield put(routeActions.silentlyUpdateUrl(newUrl));
-      }
+    // If it is a new card, and we haven't navigated to another card already,
+    // update the URL.
+    if (!card._id && formId === activeRecord.formId) {
+      const newUrl  = URLFromRoute({ screen: 'edit-card',
+                                     card: savedCard._id });
+      yield put(routeActions.updateUrl(newUrl));
     }
 
     return savedCard._id;
@@ -117,9 +96,7 @@ export function* watchCardEdits(cardStore) {
   let autoSaveTask;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const action = yield take(
-      [ 'EDIT_CARD', 'SAVE_EDIT_CARD', 'NAVIGATE', 'NAVIGATE_FROM_HISTORY' ]
-    );
+    const action = yield take([ 'EDIT_CARD', 'SAVE_EDIT_CARD' ]);
 
     const activeRecord = yield select(getActiveRecord);
     // In future we'll probably need to look through the different forms
@@ -168,16 +145,6 @@ export function* watchCardEdits(cardStore) {
         }
         break;
 
-      case 'NAVIGATE':
-      case 'NAVIGATE_FROM_HISTORY':
-        try {
-          yield save(cardStore, id, activeRecord.card, { silent: true });
-        } catch (error) {
-          // Someone, somewhere, is listening for failed save actions, right?
-          // Right?
-        }
-        break;
-
       default:
         console.log(`Unexpected action ${action.type}`);
         break;
@@ -187,8 +154,7 @@ export function* watchCardEdits(cardStore) {
 
 function* editSagas(cardStore) {
   /* eslint-disable indent */
-  yield* [ takeEvery([ 'NAVIGATE', 'NAVIGATE_FROM_HISTORY' ],
-                     navigate, cardStore),
+  yield* [ takeEvery([ 'NAVIGATE' ], navigate, cardStore),
            watchCardEdits(cardStore) ];
   /* eslint-enable indent */
 }

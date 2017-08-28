@@ -86,11 +86,16 @@ store.dispatch(routeActions.navigate({
                  search: window.location.search,
                  fragment: window.location.hash }));
 window.addEventListener('popstate', evt => {
-  store.dispatch(routeActions.navigateFromHistory(
-    evt.state ? evt.state.index : 0,
+  // Dispatch before change and navigate actions in parallel. The URL
+  // has already been updated so there's no going back and no need to
+  // wait to see if any before change screen actions succeed.
+  store.dispatch(routeActions.beforeChangeScreen());
+  store.dispatch(routeActions.navigate(
     { path: window.location.pathname,
       search: window.location.search,
-      fragment: window.location.hash }
+      fragment: window.location.hash,
+      index: evt.state ? evt.state.index : 0,
+      source: 'history' }
   ));
 });
 

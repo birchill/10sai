@@ -1,28 +1,29 @@
-export function navigate(urlOrPath, replace = false) {
-  const result = typeof urlOrPath === 'object'
-                 ? { type: 'NAVIGATE',
-                     ...urlOrPath }
-                 : { type: 'NAVIGATE',
-                     url: urlOrPath };
-  if (replace) {
-    result.replace = true;
-  }
-  return result;
-}
-
-export function navigateFromHistory(index, path) {
+// NAVIGATE parameters:
+//
+// {
+//    url: <string>,
+//    path: <string>,
+//    search: <string>,
+//    fragment: <string>,
+//    source: 'history'? = ''
+//    replace: <bool> = false
+// }
+//
+// * One of 'url' or 'path' should be set.
+// * 'path', 'search', and 'fragment' are ignored if 'url' is set.
+// * 'source' and 'replace' are optional
+export function navigate(params) {
   return {
-    type: 'NAVIGATE_FROM_HISTORY',
-    index,
-    ...path,
+    type: 'NAVIGATE',
+    ...params,
   };
 }
 
 // Similar to NAVIGATE except it doesn't trigger the side effects (e.g. loading
 // a card etc.).
-export function silentlyUpdateUrl(url) {
+export function updateUrl(url) {
   return {
-    type: 'SILENTLY_UPDATE_URL',
+    type: 'UPDATE_URL',
     url,
   };
 }
@@ -32,5 +33,11 @@ export function followLink(url, direction) {
     type: 'FOLLOW_LINK',
     url: url || '/',
     direction,
+  };
+}
+
+export function beforeScreenChange() {
+  return {
+    type: 'BEFORE_SCREEN_CHANGE',
   };
 }

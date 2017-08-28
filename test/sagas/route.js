@@ -3,8 +3,11 @@
 
 import { expectSaga } from 'redux-saga-test-plan';
 import { followLink as followLinkSaga,
-         insertHistory as insertHistorySaga } from '../../src/sagas/route';
+         beforeScreenChange as beforeScreenChangeSaga }
+       from '../../src/sagas/route';
+import EditState from '../../src/edit-states';
 import * as routeActions from '../../src/actions/route';
+import * as editActions from '../../src/actions/edit';
 
 const followLink = (direction, url) => ({
   type: 'FOLLOW_LINK',
@@ -24,14 +27,14 @@ describe('sagas:route followLink', () => {
   it('does forwards navigation when direction is forwards', () => {
     return expectSaga(followLinkSaga, followLink('forwards'))
       .call([ history, 'pushState' ], { index: 0 }, '', '/')
-      .put(routeActions.navigate('/'))
+      .put(routeActions.navigate({ url: '/' }))
       .run();
   });
 
   it('does forwards navigation when direction is not specified', () => {
     return expectSaga(followLinkSaga, followLink())
       .call([ history, 'pushState' ], { index: 0 }, '', '/')
-      .put(routeActions.navigate('/'))
+      .put(routeActions.navigate({ url: '/' }))
       .run();
   });
 
@@ -40,7 +43,7 @@ describe('sagas:route followLink', () => {
     () => {
       return expectSaga(followLinkSaga, followLink('replace'))
         .call([ history, 'pushState' ], { index: 0 }, '', '/')
-        .put(routeActions.navigate('/'))
+        .put(routeActions.navigate({ url: '/' }))
         .run();
     }
   );
@@ -49,7 +52,7 @@ describe('sagas:route followLink', () => {
     return expectSaga(followLinkSaga, followLink('replace', '/?abc=123'))
       .withState({ route: { index: 0, history: [ { screen: '/' } ] } })
       .call([ history, 'replaceState' ], { index: 0 }, '', '/?abc=123')
-      .put(routeActions.navigate('/?abc=123', 'replace'))
+      .put(routeActions.navigate({ url: '/?abc=123', replace: true }))
       .run();
   });
 
@@ -80,7 +83,7 @@ describe('sagas:route followLink', () => {
           }
         })
         .call([ history, 'pushState' ], { index: 2 }, '', '/settings')
-        .put(routeActions.navigate('/settings'))
+        .put(routeActions.navigate({ url: '/settings' }))
         .run();
     }
   );
@@ -102,7 +105,7 @@ describe('sagas:route followLink', () => {
           }
         })
         .call([ history, 'pushState' ], { index: 2 }, '', '/?abc=123')
-        .put(routeActions.navigate('/?abc=123'))
+        .put(routeActions.navigate({ url: '/?abc=123' }))
         .run();
     }
   );
@@ -121,7 +124,7 @@ describe('sagas:route followLink', () => {
           }
         })
         .call([ history, 'pushState' ], { index: 2 }, '', '/#ghi')
-        .put(routeActions.navigate('/#ghi'))
+        .put(routeActions.navigate({ url: '/#ghi' }))
         .run();
     }
   );
@@ -131,7 +134,7 @@ describe('sagas:route followLink', () => {
     () => {
       return expectSaga(followLinkSaga, followLink('backwards', '/#abc'))
         .call([ history, 'pushState' ], { index: 0 }, '', '/#abc')
-        .put(routeActions.navigate('/#abc'))
+        .put(routeActions.navigate({ url: '/#abc' }))
         .run();
     }
   );
@@ -151,7 +154,7 @@ describe('sagas:route followLink', () => {
         })
         .not.call([ history, 'back' ])
         .not.call([ history, 'pushState' ], { index: 2 }, '', '/#def')
-        .not.put(routeActions.navigate('/#def'))
+        .not.put(routeActions.navigate({ url: '/#def' }))
         .run();
     }
   );
@@ -167,7 +170,7 @@ describe('sagas:route followLink', () => {
           }
         })
         .not.call([ history, 'replaceState' ], { index: 0 }, '', '/#abc')
-        .not.put(routeActions.navigate('/#abc'))
+        .not.put(routeActions.navigate({ url: '/#abc' }))
         .run();
     }
   );
@@ -183,34 +186,72 @@ describe('sagas:route followLink', () => {
           }
         })
         .not.call([ history, 'pushState' ], { index: 1 }, '', '/#abc')
-        .not.put(routeActions.navigate('/#abc'))
+        .not.put(routeActions.navigate({ url: '/#abc' }))
         .run();
     }
   );
 });
 
-const insertHistory = url => ({ type: 'INSERT_HISTORY', url });
-
-describe('sagas:route insertHistory', () => {
-  beforeEach('setup global', () => {
-    global.history = {
-      pushState: () => {},
-      replaceState: () => {},
-      back: () => {}
+describe('sagas:route beforeScreenChange', () => {
+  it('posts a SAVE_EDIT_CHANGE if the screen is the edit card screen and'
+     + ' its dirty', () => {
+    const formId = 'abc';
+    const state = {
+      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+      route: {
+        index: 0,
+        history: [ { screen: 'edit-card' } ]
+      },
     };
-  });
 
-  it('adds history item', () => {
-    return expectSaga(insertHistorySaga, insertHistory('/cards/1234'))
-      .withState({ route: { index: 0, history: [ { screen: 'edit-card' } ] } })
-      .call([ history, 'replaceState' ], { index: 0 }, '', '/cards/1234')
-      .call([ history, 'pushState' ], { index: 1 }, '', '/cards/new')
+    return expectSaga(beforeScreenChangeSaga)
+      .withState(state)
+      .put(editActions.saveEditCard(formId))
+      .dispatch(editActions.finishSaveCard(formId, {}))
       .run();
   });
 
-  it('does nothing when there is no current route', () => {
-    return expectSaga(insertHistorySaga, insertHistory('/cards/1234'))
-      .not.call([ history, 'replaceState' ], { index: 0 }, '', '/cards/1234')
+  it('does not post a SAVE_EDIT_CHANGE if the card is not dirty', () => {
+    const onSuccess = () => {};
+    const formId = 'abc';
+    const state = {
+      edit: { forms: { active: { formId, editState: EditState.OK } } },
+      route: {
+        index: 0,
+        history: [ { screen: 'edit-card' } ]
+      },
+    };
+
+    return expectSaga(beforeScreenChangeSaga, { onSuccess })
+      .withState(state)
+      .not.put(editActions.saveEditCard(formId))
       .run();
+  });
+
+  it('cancels itself if the card is not saved successfully', () => {
+    const formId = 'abc';
+    const state = {
+      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+      route: {
+        index: 0,
+        history: [ { screen: 'edit-card' } ]
+      },
+    };
+    const error = { message: 'too bad' };
+
+    return expectSaga(beforeScreenChangeSaga)
+      .withState(state)
+      .put(editActions.saveEditCard(formId))
+      .dispatch(editActions.failSaveCard(formId, error))
+      // XXX How to test the saga is cancelled???
+      // Or should this actually throw???
+      .run();
+  });
+
+  it('is cancelled if there is a navigation while the card is being saved',
+  () => {
+  });
+
+  it('calls onSuccess immediately for all other cases', () => {
   });
 });

@@ -3,7 +3,8 @@
 
 import { expectSaga } from 'redux-saga-test-plan';
 import { navigate as navigateSaga,
-         watchCardEdits as watchCardEditsSaga } from '../../src/sagas/edit';
+         watchCardEdits as watchCardEditsSaga,
+         save as saveSaga } from '../../src/sagas/edit';
 import EditState from '../../src/edit-states';
 import * as editActions from '../../src/actions/edit';
 import * as routeActions from '../../src/actions/route';
@@ -42,7 +43,7 @@ describe('sagas:edit navigate', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore,
-                      routeActions.navigate('/cards/123'))
+                      routeActions.navigate({ url: '/cards/123' }))
       .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .run();
@@ -62,7 +63,7 @@ describe('sagas:edit navigate', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore,
-                      routeActions.navigate('/cards/new'))
+                      routeActions.navigate({ url: '/cards/new' }))
       .not.put(editActions.loadCard('123'))
       .put(editActions.newCard(1))
       .not.call([ cardStore, 'getCard' ], '123')
@@ -73,7 +74,7 @@ describe('sagas:edit navigate', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore,
-                      routeActions.navigate('/'))
+                      routeActions.navigate({ url: '/' }))
       .not.put(editActions.loadCard('123'))
       .not.call([ cardStore, 'getCard' ], '123')
       .run();
@@ -83,7 +84,7 @@ describe('sagas:edit navigate', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
     return expectSaga(navigateSaga, cardStore,
-                      routeActions.navigate('/cards/123'))
+                      routeActions.navigate({ url: '/cards/123' }))
       .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .withState(loadingState('123'))
@@ -98,12 +99,12 @@ describe('sagas:edit navigate', () => {
     };
 
     return expectSaga(navigateSaga, cardStore,
-                      routeActions.navigate('/cards/123'))
+                      routeActions.navigate({ url: '/cards/123' }))
       .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .withState(loadingState('123'))
       .put(editActions.failLoadCard('123'))
-      .run();
+      .silentRun(100);
   });
 });
 
@@ -202,7 +203,7 @@ describe('sagas:edit watchCardEdits', () => {
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId,
            { ...card, _id: '1234' }))
-      .put(routeActions.silentlyUpdateUrl('/cards/1234'))
+      .put(routeActions.updateUrl('/cards/1234'))
       .silentRun(100);
   });
 
@@ -216,7 +217,7 @@ describe('sagas:edit watchCardEdits', () => {
       .dispatch(editActions.saveEditCard(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
-      .not.put(routeActions.silentlyUpdateUrl('/cards/1234'))
+      .not.put(routeActions.updateUrl('/cards/1234'))
       .silentRun(100);
   });
 
@@ -261,6 +262,27 @@ describe('sagas:edit watchCardEdits', () => {
       .withState(okState(formId, card))
       .dispatch(editActions.saveEditCard(formId, onSuccess))
       .call(onSuccess)
+      .silentRun(100);
+  });
+});
+
+// This is largely covered by the watchCardEditsSaga tests above but there are
+// a few things we can't test there with redux-test-plan (like changing state
+// mid-course).
+describe('sagas:edit save', () => {
+  it('does NOT update history if the app is navigated while saving', () => {
+    const cardStore = {
+      putCard: card => ({ ...card, _id: '4567' }),
+    };
+    const card = { question: 'yer' };
+    const oldFormId = 17;
+    const newFormId = 18;
+
+    return expectSaga(saveSaga, cardStore, oldFormId, card)
+      .withState(emptyState(newFormId))
+      .call([ cardStore, 'putCard' ], card)
+      .put(editActions.finishSaveCard(oldFormId, { ...card, _id: '4567' }))
+      .not.put(routeActions.updateUrl('/cards/4567'))
       .silentRun(100);
   });
 });

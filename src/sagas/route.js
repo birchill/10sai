@@ -1,10 +1,27 @@
-import { takeEvery, call, put, select } from 'redux-saga/effects';
-import { URLFromRoute, routeFromURL, routesEqual } from '../router';
+import { takeEvery, call, cancel, put, take, select } from 'redux-saga/effects';
+import { routeFromURL, routesEqual } from '../router';
 import * as routeActions from '../actions/route';
+import * as editActions from '../actions/edit';
+import EditState from '../edit-states';
 
 // Selectors
 
 const getRoute = state => (state ? state.route || {} : {});
+
+// XXX Share this with sagas/edit.js
+const getHistoryIndex = state => (
+  state.route && typeof state.route.index === 'number' ? state.route.index : -1
+);
+const getCurrentRoute = state => {
+  const index = getHistoryIndex(state);
+  if (index < 0 ||
+      !Array.isArray(state.route.history) ||
+      index >= state.route.history.length) {
+    return {};
+  }
+  return state.route.history[index];
+};
+const getActiveRecord = state => (state ? state.edit.forms.active : {});
 
 // Sagas
 
@@ -48,49 +65,43 @@ export function* followLink(action) {
       routeState.index >= 0) {
     yield call([ history, 'replaceState' ], { index: routeState.index }, '',
                action.url);
-    yield put(routeActions.navigate(action.url, 'replace'));
+    yield put(routeActions.navigate({ url: action.url, replace: true }));
   } else {
     const index = typeof routeState.index === 'number'
                   ? routeState.index + 1
                   : 0;
     yield call([ history, 'pushState' ], { index }, '', action.url);
-    yield put(routeActions.navigate(action.url));
+    yield put(routeActions.navigate({ url: action.url }));
   }
 }
 
-// A special-case action to take the current URL, replace it with some other
-// URL, then push the previous current URL on. Used when adding cards so that we
-// can go from, e.g.:
-//
-//   0: /
-//   1: /cards/new
-//
-// to:
-//
-//   0: /
-//   1: /cards/123
-//   2: /cards/new
-//
-// That way if the user enters a new card and then presses back, they navigate
-// back to the edit screen of the card they just created.
-export function* insertHistory(action) {
-  const routeState = yield select(getRoute);
+export function* beforeScreenChange() {
+  const currentRoute = yield select(getCurrentRoute);
 
-  if (typeof routeState.index === 'number' &&
-      routeState.index >= 0) {
-    const previousRoute = routeState.history[routeState.index];
-    yield call([ history, 'replaceState' ],
-               { index: routeState.index },
-               '',
-               action.url);
-    yield call([ history, 'pushState' ],
-               { index: routeState.index + 1 },
-               '',
-               URLFromRoute(previousRoute));
+  if (currentRoute.screen === 'edit-card') {
+    // XXX Fork this to something defined in edit.js (and move the tests as
+    // well)
+    const activeRecord = yield select(getActiveRecord);
+    if (activeRecord.editState === EditState.DIRTY) {
+      yield put(editActions.saveEditCard(activeRecord.formId));
+      // XXX Once we fork this, NAVIGATE should be watched for here
+      const action = yield take(
+        [ 'FINISH_SAVE_CARD',
+          'FAIL_SAVE_CARD',
+          'NAVIGATE'
+        ]);
+      if (action.type !== 'FINISH_SAVE_CARD') {
+        // XXX Should we throw for the FAIL case? Probably yes.
+        // For the NAVIGATE case, we don't want to cancel prematurely, but
+        // actually join the forked process and then cancel()
+        // Probably likewise for another BEFORE_SCREEN_CHANGE
+        yield cancel();
+      }
+    }
   }
 }
 
-export function* silentlyUpdateUrl(action) {
+export function* updateUrl(action) {
   const routeState = yield select(getRoute);
 
   if (typeof routeState.index === 'number' &&
@@ -105,8 +116,8 @@ export function* silentlyUpdateUrl(action) {
 function* routeSagas() {
   /* eslint-disable indent */
   yield* [ takeEvery('FOLLOW_LINK', followLink),
-           takeEvery('INSERT_HISTORY', insertHistory),
-           takeEvery('SILENTLY_UPDATE_URL', silentlyUpdateUrl) ];
+           takeEvery('BEFORE_SCREEN_CHANGE', beforeScreenChange),
+           takeEvery('UPDATE_URL', updateUrl) ];
   /* eslint-enable indent */
 }
 
