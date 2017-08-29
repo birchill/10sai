@@ -2,6 +2,8 @@
 /* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
+import { assert } from 'chai';
+
 import { followLink as followLinkSaga,
          beforeScreenChange as beforeScreenChangeSaga }
        from '../../src/sagas/route';
@@ -193,42 +195,7 @@ describe('sagas:route followLink', () => {
 });
 
 describe('sagas:route beforeScreenChange', () => {
-  it('posts a SAVE_EDIT_CHANGE if the screen is the edit card screen and'
-     + ' its dirty', () => {
-    const formId = 'abc';
-    const state = {
-      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
-      route: {
-        index: 0,
-        history: [ { screen: 'edit-card' } ]
-      },
-    };
-
-    return expectSaga(beforeScreenChangeSaga)
-      .withState(state)
-      .put(editActions.saveEditCard(formId))
-      .dispatch(editActions.finishSaveCard(formId, {}))
-      .run();
-  });
-
-  it('does not post a SAVE_EDIT_CHANGE if the card is not dirty', () => {
-    const onSuccess = () => {};
-    const formId = 'abc';
-    const state = {
-      edit: { forms: { active: { formId, editState: EditState.OK } } },
-      route: {
-        index: 0,
-        history: [ { screen: 'edit-card' } ]
-      },
-    };
-
-    return expectSaga(beforeScreenChangeSaga, { onSuccess })
-      .withState(state)
-      .not.put(editActions.saveEditCard(formId))
-      .run();
-  });
-
-  it('cancels itself if the card is not saved successfully', () => {
+  it('throws if the screen-specific actions throw', () => {
     const formId = 'abc';
     const state = {
       edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
@@ -243,15 +210,39 @@ describe('sagas:route beforeScreenChange', () => {
       .withState(state)
       .put(editActions.saveEditCard(formId))
       .dispatch(editActions.failSaveCard(formId, error))
-      // XXX How to test the saga is cancelled???
-      // Or should this actually throw???
-      .run();
+      .run()
+      .then(() => {
+        assert.fail('Should have failed');
+      })
+      .catch(e => {
+        assert.strictEqual(e, error, 'Throws expected message');
+      });
   });
 
-  it('is cancelled if there is a navigation while the card is being saved',
-  () => {
-  });
+  it('throws if there is a navigation while the actions are happenning', () => {
+    const formId = 'abc';
+    const state = {
+      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+      route: {
+        index: 0,
+        history: [ { screen: 'edit-card' } ]
+      },
+    };
 
-  it('calls onSuccess immediately for all other cases', () => {
+    return expectSaga(beforeScreenChangeSaga)
+      .withState(state)
+      .put(editActions.saveEditCard(formId))
+      .dispatch(routeActions.navigate({ url: '/' }))
+      .run()
+      .then(() => {
+        assert.fail('Should have failed');
+      })
+      .catch(e => {
+        assert.deepEqual(
+          e.message,
+          'Before screen change handling canceled by subsequent navigation',
+          'Throws expected message'
+        );
+      });
   });
 });

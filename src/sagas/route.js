@@ -1,14 +1,11 @@
-import { takeEvery, call, cancel, put, take, select } from 'redux-saga/effects';
+import { takeEvery, call, put, race, select, take } from 'redux-saga/effects';
 import { routeFromURL, routesEqual } from '../router';
+import { beforeEditScreenChange } from './edit';
 import * as routeActions from '../actions/route';
-import * as editActions from '../actions/edit';
-import EditState from '../edit-states';
 
 // Selectors
 
 const getRoute = state => (state ? state.route || {} : {});
-
-// XXX Share this with sagas/edit.js
 const getHistoryIndex = state => (
   state.route && typeof state.route.index === 'number' ? state.route.index : -1
 );
@@ -21,7 +18,6 @@ const getCurrentRoute = state => {
   }
   return state.route.history[index];
 };
-const getActiveRecord = state => (state ? state.edit.forms.active : {});
 
 // Sagas
 
@@ -79,24 +75,17 @@ export function* beforeScreenChange() {
   const currentRoute = yield select(getCurrentRoute);
 
   if (currentRoute.screen === 'edit-card') {
-    // XXX Fork this to something defined in edit.js (and move the tests as
-    // well)
-    const activeRecord = yield select(getActiveRecord);
-    if (activeRecord.editState === EditState.DIRTY) {
-      yield put(editActions.saveEditCard(activeRecord.formId));
-      // XXX Once we fork this, NAVIGATE should be watched for here
-      const action = yield take(
-        [ 'FINISH_SAVE_CARD',
-          'FAIL_SAVE_CARD',
-          'NAVIGATE'
-        ]);
-      if (action.type !== 'FINISH_SAVE_CARD') {
-        // XXX Should we throw for the FAIL case? Probably yes.
-        // For the NAVIGATE case, we don't want to cancel prematurely, but
-        // actually join the forked process and then cancel()
-        // Probably likewise for another BEFORE_SCREEN_CHANGE
-        yield cancel();
-      }
+    // eslint-disable-next-line no-unused-vars
+    const { beforeChange, navigate } = yield race({
+      beforeEditScreenChange: call(beforeEditScreenChange),
+      navigate: take('NAVIGATE'),
+    });
+
+    // If we were interrupted by a navigation, notify the caller so it knows
+    // not to proceed with the original navigation.
+    if (navigate) {
+      throw new Error('Before screen change handling canceled by subsequent'
+                      + ' navigation');
     }
   }
 }

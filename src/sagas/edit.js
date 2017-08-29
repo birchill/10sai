@@ -107,9 +107,7 @@ export function* watchCardEdits(cardStore) {
 
     // Check if anything needs saving
     if (activeRecord.editState !== EditState.DIRTY) {
-      if (typeof action.onSuccess === 'function') {
-        yield call(action.onSuccess);
-      }
+      // XXX This should fetch the card and dispatch a finishSaveCard action
       continue;
     }
 
@@ -137,11 +135,8 @@ export function* watchCardEdits(cardStore) {
       case 'SAVE_EDIT_CARD':
         try {
           yield save(cardStore, id, activeRecord.card);
-          if (typeof action.onSuccess === 'function') {
-            yield call(action.onSuccess);
-          }
         } catch (error) {
-          // Don't do anything, but don't trigger the onSuccess action.
+          // Don't do anything
         }
         break;
 
@@ -157,6 +152,22 @@ function* editSagas(cardStore) {
   yield* [ takeEvery([ 'NAVIGATE' ], navigate, cardStore),
            watchCardEdits(cardStore) ];
   /* eslint-enable indent */
+}
+
+export function* beforeEditScreenChange() {
+  const activeRecord = yield select(getActiveRecord);
+  if (activeRecord.editState !== EditState.DIRTY) {
+    return;
+  }
+
+  yield put(editActions.saveEditCard(activeRecord.formId));
+
+  const action = yield take([ 'FINISH_SAVE_CARD', 'FAIL_SAVE_CARD' ]);
+
+  // Re-throw error so that the caller knows not to proceed
+  if (action.type === 'FAIL_SAVE_CARD') {
+    throw action.error;
+  }
 }
 
 export default editSagas;

@@ -2,9 +2,13 @@
 /* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
+import { assert } from 'chai';
+
 import { navigate as navigateSaga,
          watchCardEdits as watchCardEditsSaga,
-         save as saveSaga } from '../../src/sagas/edit';
+         save as saveSaga,
+         beforeEditScreenChange as beforeEditScreenChangeSaga }
+       from '../../src/sagas/edit';
 import EditState from '../../src/edit-states';
 import * as editActions from '../../src/actions/edit';
 import * as routeActions from '../../src/actions/route';
@@ -236,34 +240,6 @@ describe('sagas:edit watchCardEdits', () => {
       .put(editActions.failSaveCard(formId, error))
       .silentRun(100);
   });
-
-  it('dispatches the onSuccess action when provided', () => {
-    const cardStore = { putCard: card => card };
-    const card = { question: 'yer', _id: '1234' };
-    const formId = '1234';
-    const onSuccess = () => {};
-
-    return expectSaga(watchCardEditsSaga, cardStore)
-      .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveEditCard(formId, onSuccess))
-      .call([ cardStore, 'putCard' ], card)
-      .put(editActions.finishSaveCard(formId, card))
-      .call(onSuccess)
-      .silentRun(100);
-  });
-
-  it('dispatches the onSuccess action even when the card is not saved', () => {
-    const cardStore = { putCard: card => card };
-    const card = { question: 'yer', _id: 'abc' };
-    const formId = 'abc';
-    const onSuccess = () => {};
-
-    return expectSaga(watchCardEditsSaga, cardStore)
-      .withState(okState(formId, card))
-      .dispatch(editActions.saveEditCard(formId, onSuccess))
-      .call(onSuccess)
-      .silentRun(100);
-  });
 });
 
 // This is largely covered by the watchCardEditsSaga tests above but there are
@@ -284,5 +260,52 @@ describe('sagas:edit save', () => {
       .put(editActions.finishSaveCard(oldFormId, { ...card, _id: '4567' }))
       .not.put(routeActions.updateUrl('/cards/4567'))
       .silentRun(100);
+  });
+});
+
+describe('sagas:edit beforeEditScreenChange', () => {
+  it('dispatches SAVE_EDIT_CARD if the card is dirty', () => {
+    const formId = 'abc';
+    const state = {
+      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+    };
+
+    return expectSaga(beforeEditScreenChangeSaga)
+      .withState(state)
+      .put(editActions.saveEditCard(formId))
+      .dispatch(editActions.finishSaveCard(formId, {}))
+      .run();
+  });
+
+  it('does nothing if the card is not dirty', () => {
+    const formId = 'abc';
+    const state = {
+      edit: { forms: { active: { formId, editState: EditState.OK } } },
+    };
+
+    return expectSaga(beforeEditScreenChangeSaga)
+      .withState(state)
+      .not.put(editActions.saveEditCard(formId))
+      .run();
+  });
+
+  it('throws if the card fails to save', () => {
+    const formId = 'abc';
+    const state = {
+      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+    };
+    const error = { message: 'too bad' };
+
+    return expectSaga(beforeEditScreenChangeSaga)
+      .withState(state)
+      .put(editActions.saveEditCard(formId))
+      .dispatch(editActions.failSaveCard(formId, error))
+      .run()
+      .then(() => {
+        assert.fail('Should have failed');
+      })
+      .catch(e => {
+        assert.strictEqual(e, error, 'Throws expected message');
+      });
   });
 });
