@@ -3,6 +3,7 @@
 
 import { expectSaga } from 'redux-saga-test-plan';
 import { assert } from 'chai';
+import * as matchers from 'redux-saga-test-plan/matchers';
 
 import { followLink as followLinkSaga,
          beforeScreenChange as beforeScreenChangeSaga }
@@ -28,6 +29,9 @@ describe('sagas:route followLink', () => {
 
   it('does forwards navigation when direction is forwards', () => {
     return expectSaga(followLinkSaga, followLink('forwards'))
+      .provide([
+        [ matchers.call.fn(beforeScreenChangeSaga), {} ],
+      ])
       .call([ history, 'pushState' ], { index: 0 }, '', '/')
       .put(routeActions.navigate({ url: '/' }))
       .run();
@@ -35,6 +39,9 @@ describe('sagas:route followLink', () => {
 
   it('does forwards navigation when direction is not specified', () => {
     return expectSaga(followLinkSaga, followLink())
+      .provide([
+        [ matchers.call.fn(beforeScreenChangeSaga), {} ],
+      ])
       .call([ history, 'pushState' ], { index: 0 }, '', '/')
       .put(routeActions.navigate({ url: '/' }))
       .run();
@@ -44,6 +51,9 @@ describe('sagas:route followLink', () => {
      ' history',
     () => {
       return expectSaga(followLinkSaga, followLink('replace'))
+        .provide([
+          [ matchers.call.fn(beforeScreenChangeSaga), {} ],
+        ])
         .call([ history, 'pushState' ], { index: 0 }, '', '/')
         .put(routeActions.navigate({ url: '/' }))
         .run();
@@ -135,6 +145,9 @@ describe('sagas:route followLink', () => {
      ' does not match because it is empty',
     () => {
       return expectSaga(followLinkSaga, followLink('backwards', '/#abc'))
+        .provide([
+          [ matchers.call.fn(beforeScreenChangeSaga), {} ],
+        ])
         .call([ history, 'pushState' ], { index: 0 }, '', '/#abc')
         .put(routeActions.navigate({ url: '/#abc' }))
         .run();
@@ -172,22 +185,6 @@ describe('sagas:route followLink', () => {
           }
         })
         .not.call([ history, 'replaceState' ], { index: 0 }, '', '/#abc')
-        .not.put(routeActions.navigate({ url: '/#abc' }))
-        .run();
-    }
-  );
-
-  it('does nothing if the URL matches the current route and direction is' +
-     ' forwards',
-    () => {
-      return expectSaga(followLinkSaga, followLink('forwards', '/#abc'))
-        .withState({
-          route: {
-            index: 0,
-            history: [ { screen: '', fragment: 'abc' } ]
-          }
-        })
-        .not.call([ history, 'pushState' ], { index: 1 }, '', '/#abc')
         .not.put(routeActions.navigate({ url: '/#abc' }))
         .run();
     }

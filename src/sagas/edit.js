@@ -1,7 +1,7 @@
 import { call, fork, put, race, select, take, takeEvery }
        from 'redux-saga/effects';
 import { delay } from 'redux-saga';
-import { routeFromURL, routeFromPath, URLFromRoute }
+import { routeFromURL, routeFromPath, URLFromRoute, routesEqual }
        from '../router';
 import * as editActions from '../actions/edit';
 import * as routeActions from '../actions/route';
@@ -52,9 +52,14 @@ export function* save(cardStore, formId, card) {
     const activeRecord = yield select(getActiveRecord);
     yield put(editActions.finishSaveCard(formId, savedCard));
 
-    // If it is a new card, and we haven't navigated to another card already,
-    // update the URL.
-    if (!card._id && formId === activeRecord.formId) {
+    // If it is a new card, we haven't navigated to another card already,
+    // and we're still on the new card screen, update the URL.
+    if (!card._id &&
+        formId === activeRecord.formId &&
+        routesEqual(routeFromPath(location.pathname,
+                                  location.search,
+                                  location.hash),
+                    { screen: 'edit-card' })) {
       const newUrl  = URLFromRoute({ screen: 'edit-card',
                                      card: savedCard._id });
       yield put(routeActions.updateUrl(newUrl));

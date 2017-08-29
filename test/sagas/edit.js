@@ -1,4 +1,4 @@
-/* global describe, it */
+/* global beforeEach, describe, it */
 /* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
@@ -140,6 +140,14 @@ const emptyState = formId => ({
 });
 
 describe('sagas:edit watchCardEdits', () => {
+  beforeEach('setup global', () => {
+    global.location = {
+      pathname: '',
+      search: '',
+      hash: '',
+    };
+  });
+
   it('saves the card', () => {
     const cardStore = { putCard: card => card };
     const card = { question: 'yer' };
@@ -200,6 +208,7 @@ describe('sagas:edit watchCardEdits', () => {
     };
     const card = { question: 'yer' };
     const formId = 12;
+    global.location.pathname = '/cards/new';
 
     return expectSaga(watchCardEditsSaga, cardStore)
       .withState(dirtyState(formId, card))
@@ -215,6 +224,7 @@ describe('sagas:edit watchCardEdits', () => {
     const cardStore = { putCard: card => card };
     const card = { question: 'yer', _id: '1234' };
     const formId = '1234';
+    global.location.pathname = '/cards/new';
 
     return expectSaga(watchCardEditsSaga, cardStore)
       .withState(dirtyState(formId, card))
@@ -222,6 +232,25 @@ describe('sagas:edit watchCardEdits', () => {
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.finishSaveCard(formId, card))
       .not.put(routeActions.updateUrl('/cards/1234'))
+      .silentRun(100);
+  });
+
+  it('does NOT update history if we are no longer on the new card screen',
+  () => {
+    const cardStore = {
+      putCard: card => ({ ...card, _id: '2345' }),
+    };
+    const card = { question: 'yer' };
+    const formId = 18;
+    global.location.pathname = '/';
+
+    return expectSaga(watchCardEditsSaga, cardStore)
+      .withState(dirtyState(formId, card))
+      .dispatch(editActions.saveEditCard(formId))
+      .call([ cardStore, 'putCard' ], card)
+      .put(editActions.finishSaveCard(formId,
+           { ...card, _id: '2345' }))
+      .not.put(routeActions.updateUrl('/cards/2345'))
       .silentRun(100);
   });
 

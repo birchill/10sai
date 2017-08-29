@@ -25,9 +25,16 @@ export function* followLink(action) {
   const routeState = yield select(getRoute);
   let navigateRoute;
 
-  // First, regardless of direction, if the route matches the current route
-  // ignore the navigation altogether.
-  if (typeof routeState.index === 'number' &&
+  // First, unless the direction is forwards, if the route matches the current
+  // route ignore the navigation altogether.
+  //
+  // We need to allow this in the forwards direction since we can be on the new
+  // card screen, and, before saving the card, click the 'Add card' button which
+  // has the same URL as the current screen. If that happens we should run the
+  // beforeScreenChange action which will update the current URL before we
+  // navigate forwards.
+  if ((action.direction === 'backwards' || action.direction === 'replace') &&
+      typeof routeState.index === 'number' &&
       Array.isArray(routeState.history) &&
       routeState.index >= 0 &&
       routeState.index < routeState.history.length) {
@@ -50,9 +57,22 @@ export function* followLink(action) {
     const previousRoute = routeState.history[routeState.index - 1];
     navigateRoute = navigateRoute || routeFromURL(action.url || '/');
     if (routesEqual(previousRoute, navigateRoute)) {
-      yield call([ history, 'back' ]);
+      try {
+        yield call(beforeScreenChange);
+        yield call([ history, 'back' ]);
+      } catch (e) {
+        // Ignore (but don't call history.back())
+      }
       return;
     }
+  }
+
+  // Try to run the before change actions but if they fail, don't go ahead with
+  // the navigation.
+  try {
+    yield call(beforeScreenChange);
+  } catch (e) {
+    return;
   }
 
   // Otherwise use pushState / replaceState() and dispatch the relevant action.
