@@ -13,6 +13,11 @@ describe('integration:edit', () => {
   it('should allow creating and saving a new card', () => {
     const cardStore = { putCard: card => ({ ...card, _id: 'abc' }) };
     const formId = 12;
+    global.location = {
+      pathname: '/cards/abc',
+      search: '',
+      hash: '',
+    };
 
     let state = reducer(undefined, editActions.newCard(formId));
     state = reducer(state, editActions.editCard(formId, { prompt: 'Prompt' }));
