@@ -42,8 +42,7 @@ export class EditCardToolbar extends React.Component {
           <Link
             href="/"
             className="close-button"
-            direction="backwards"
-            onClick={this.handleClose}>Close</Link>
+            direction="backwards">Close</Link>
         </div>
       </nav>
     );

@@ -50,7 +50,6 @@ export function* save(cardStore, formId, card) {
     // Get the active record since we may have navigated while the card was
     // being saved.
     const activeRecord = yield select(getActiveRecord);
-    yield put(editActions.finishSaveCard(formId, savedCard));
 
     // If it is a new card, we haven't navigated to another card already,
     // and we're still on the new card screen, update the URL.
@@ -64,6 +63,10 @@ export function* save(cardStore, formId, card) {
                                      card: savedCard._id });
       yield put(routeActions.updateUrl(newUrl));
     }
+
+    // This needs to happen after we inspect the location above since it may
+    // trigger a NAVIGATE action.
+    yield put(editActions.finishSaveCard(formId, savedCard));
 
     return savedCard._id;
   } catch (error) {

@@ -90,11 +90,11 @@ window.addEventListener('popstate', evt => {
   // has already been updated so there's no going back and no need to
   // wait to see if any before change screen actions succeed.
   //
-  // XXX I'm not sure if this is right. I think the beforeChangeScreen actions
+  // XXX I'm not sure if this is right. I think the beforeScreenChange actions
   // will actually want a chance to fetch things from the current state before
   // changing screen. Perhaps we should pass along a 'URL updated' flag so that
   // at least we know not to touch the URL.
-  store.dispatch(routeActions.beforeChangeScreen());
+  store.dispatch(routeActions.beforeScreenChange());
   store.dispatch(routeActions.navigate(
     { path: window.location.pathname,
       search: window.location.search,
