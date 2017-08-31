@@ -20,7 +20,6 @@ export class EditCardScreen extends React.Component {
       }),
       active: PropTypes.bool.isRequired,
       onEdit: PropTypes.func.isRequired,
-      onClose: PropTypes.func.isRequired,
     };
   }
 
@@ -28,7 +27,6 @@ export class EditCardScreen extends React.Component {
     super(props);
 
     this.handleFormChange = this.handleFormChange.bind(this);
-    this.handleClose = this.handleClose.bind(this);
   }
 
   componentDidMount() {
@@ -66,18 +64,12 @@ export class EditCardScreen extends React.Component {
     this.props.onEdit(this.props.forms.active.formId, { [field]: value });
   }
 
-  handleClose(doClose) {
-    this.props.onClose(this.props.forms.active.formId, doClose);
-  }
-
   render() {
     return (
       <section
         className="edit-screen"
         aria-hidden={!this.props.active} >
-        <EditCardToolbar
-          editState={this.props.forms.active.editState}
-          onClose={this.handleClose} />
+        <EditCardToolbar editState={this.props.forms.active.editState} />
         { this.props.forms.active.editState !== EditState.NOT_FOUND
           ? <EditCardForm
             active={this.props.active}
@@ -94,9 +86,6 @@ const mapStateToProps = state => ({
 });
 const mapDispatchToProps = dispatch => ({
   onEdit: (formId, card) => { dispatch(editActions.editCard(formId, card)); },
-  onClose: (formId, doClose) => {
-    dispatch(editActions.saveEditCard(formId, doClose));
-  },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditCardScreen);
