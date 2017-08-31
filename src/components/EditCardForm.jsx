@@ -11,7 +11,6 @@ export class EditCardForm extends React.Component {
       editState: PropTypes.symbol.isRequired,
       card: PropTypes.object.isRequired,
       onChange: PropTypes.func,
-      onControlBlur: PropTypes.func,
     };
   }
 
@@ -21,7 +20,6 @@ export class EditCardForm extends React.Component {
     this.assignSearchBox = elem => { this.searchBox = elem; };
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
-    this.handleControlBlur = this.handleControlBlur.bind(this);
   }
 
   componentDidMount() {
@@ -56,12 +54,6 @@ export class EditCardForm extends React.Component {
     }
   }
 
-  handleControlBlur() {
-    if (this.props.onControlBlur) {
-      this.props.onControlBlur();
-    }
-  }
-
   render() {
     return (
       <form className="form editcard-form" autoComplete="off">
@@ -78,27 +70,23 @@ export class EditCardForm extends React.Component {
           className="-textpanel -large"
           placeholder="Prompt"
           required
-          onChange={this.handlePromptChange}
-          onBlur={this.handleControlBlur} />
+          onChange={this.handlePromptChange} />
         <CardFaceInput
           name="answer"
           value={this.props.card.answer || ''}
           className="-textpanel -large"
           placeholder="Answer"
-          onChange={this.handleAnswerChange}
-          onBlur={this.handleControlBlur} />
+          onChange={this.handleAnswerChange} />
         <input
           type="text"
           name="keywords"
           className="-textpanel -yellow"
-          placeholder="Keywords"
-          onBlur={this.handleControlBlur} />
+          placeholder="Keywords" />
         <input
           type="text"
           name="tags"
           className="-textpanel"
-          placeholder="Tags"
-          onBlur={this.handleControlBlur} />
+          placeholder="Tags" />
       </form>
     );
   }
