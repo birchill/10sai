@@ -169,7 +169,7 @@ describe('sagas:edit watchCardEdits', () => {
       .withState(okState(formId, card))
       .dispatch(editActions.saveEditCard(formId))
       .not.call([ cardStore, 'putCard' ], card)
-      .not.put(editActions.finishSaveCard(formId, card))
+      .put(editActions.finishSaveCard(formId, card))
       .silentRun(100);
   });
 

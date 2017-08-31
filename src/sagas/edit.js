@@ -115,7 +115,13 @@ export function* watchCardEdits(cardStore) {
 
     // Check if anything needs saving
     if (activeRecord.editState !== EditState.DIRTY) {
-      // XXX This should fetch the card and dispatch a finishSaveCard action
+      // Put the finish action regardless in case someone has dispatched a save
+      // action and is waiting on either a finished or fail to indicate
+      // completion.
+      if (action.type === 'SAVE_EDIT_CARD') {
+        yield put(editActions.finishSaveCard(activeRecord.formId,
+                                            activeRecord.card));
+      }
       continue;
     }
 
