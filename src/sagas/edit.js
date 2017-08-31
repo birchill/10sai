@@ -165,17 +165,14 @@ function* editSagas(cardStore) {
 export function* beforeEditScreenChange() {
   const activeRecord = yield select(getActiveRecord);
   if (activeRecord.editState !== EditState.DIRTY) {
-    return;
+    return true;
   }
 
   yield put(editActions.saveEditCard(activeRecord.formId));
 
   const action = yield take([ 'FINISH_SAVE_CARD', 'FAIL_SAVE_CARD' ]);
 
-  // Re-throw error so that the caller knows not to proceed
-  if (action.type === 'FAIL_SAVE_CARD') {
-    throw action.error;
-  }
+  return action.type !== 'FAIL_SAVE_CARD';
 }
 
 export default editSagas;

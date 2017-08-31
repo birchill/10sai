@@ -2,7 +2,6 @@
 /* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
-import { assert } from 'chai';
 
 import { navigate as navigateSaga,
          watchCardEdits as watchCardEditsSaga,
@@ -303,6 +302,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
       .withState(state)
       .put(editActions.saveEditCard(formId))
       .dispatch(editActions.finishSaveCard(formId, {}))
+      .returns(true)
       .run();
   });
 
@@ -315,10 +315,11 @@ describe('sagas:edit beforeEditScreenChange', () => {
     return expectSaga(beforeEditScreenChangeSaga)
       .withState(state)
       .not.put(editActions.saveEditCard(formId))
+      .returns(true)
       .run();
   });
 
-  it('throws if the card fails to save', () => {
+  it('returns false if the card fails to save', () => {
     const formId = 'abc';
     const state = {
       edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
@@ -329,12 +330,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
       .withState(state)
       .put(editActions.saveEditCard(formId))
       .dispatch(editActions.failSaveCard(formId, error))
-      .run()
-      .then(() => {
-        assert.fail('Should have failed');
-      })
-      .catch(e => {
-        assert.strictEqual(e, error, 'Throws expected message');
-      });
+      .returns(false)
+      .run();
   });
 });

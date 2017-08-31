@@ -57,21 +57,18 @@ export function* followLink(action) {
     const previousRoute = routeState.history[routeState.index - 1];
     navigateRoute = navigateRoute || routeFromURL(action.url || '/');
     if (routesEqual(previousRoute, navigateRoute)) {
-      try {
-        yield call(beforeScreenChange);
+      const screenChangeResult = yield call(beforeScreenChange);
+      if (screenChangeResult) {
         yield call([ history, 'back' ]);
-      } catch (e) {
-        // Ignore (but don't call history.back())
       }
       return;
     }
   }
 
-  // Try to run the before change actions but if they fail, don't go ahead with
+  // Try to run the before change actions and if they fail, don't go ahead with
   // the navigation.
-  try {
-    yield call(beforeScreenChange);
-  } catch (e) {
+  const screenChangeResult = yield call(beforeScreenChange);
+  if (!screenChangeResult) {
     return;
   }
 
@@ -96,18 +93,18 @@ export function* beforeScreenChange() {
 
   if (currentRoute.screen === 'edit-card') {
     // eslint-disable-next-line no-unused-vars
-    const { beforeChange, navigate } = yield race({
-      beforeEditScreenChange: call(beforeEditScreenChange),
+    const { beforeChangeResult, navigate } = yield race({
+      beforeChangeResult: call(beforeEditScreenChange),
       navigate: take('NAVIGATE'),
     });
 
-    // If we were interrupted by a navigation, notify the caller so it knows
-    // not to proceed with the original navigation.
     if (navigate) {
-      throw new Error('Before screen change handling canceled by subsequent'
-                      + ' navigation');
+      return false;
     }
+    return beforeChangeResult;
   }
+
+  return true;
 }
 
 export function* updateUrl(action) {

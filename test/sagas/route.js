@@ -2,7 +2,6 @@
 /* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
-import { assert } from 'chai';
 import * as matchers from 'redux-saga-test-plan/matchers';
 
 import { followLink as followLinkSaga,
@@ -192,7 +191,7 @@ describe('sagas:route followLink', () => {
 });
 
 describe('sagas:route beforeScreenChange', () => {
-  it('throws if the screen-specific actions throw', () => {
+  it('returns false if the screen-specific action does', () => {
     const formId = 'abc';
     const state = {
       edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
@@ -207,16 +206,12 @@ describe('sagas:route beforeScreenChange', () => {
       .withState(state)
       .put(editActions.saveEditCard(formId))
       .dispatch(editActions.failSaveCard(formId, error))
-      .run()
-      .then(() => {
-        assert.fail('Should have failed');
-      })
-      .catch(e => {
-        assert.strictEqual(e, error, 'Throws expected message');
-      });
+      .returns(false)
+      .run();
   });
 
-  it('throws if there is a navigation while the actions are happenning', () => {
+  it('returns false if there is a navigation while the actions are'
+     + ' happenning', () => {
     const formId = 'abc';
     const state = {
       edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
@@ -230,16 +225,7 @@ describe('sagas:route beforeScreenChange', () => {
       .withState(state)
       .put(editActions.saveEditCard(formId))
       .dispatch(routeActions.navigate({ url: '/' }))
-      .run()
-      .then(() => {
-        assert.fail('Should have failed');
-      })
-      .catch(e => {
-        assert.deepEqual(
-          e.message,
-          'Before screen change handling canceled by subsequent navigation',
-          'Throws expected message'
-        );
-      });
+      .returns(false)
+      .run();
   });
 });
