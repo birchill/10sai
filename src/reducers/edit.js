@@ -66,10 +66,9 @@ export default function edit(state = initialState, action) {
         return state;
       }
 
-      const deleted = action.error &&
-                      action.error.reason &&
-                      action.error.reason === 'deleted';
-
+      const deleted = Boolean(action.error &&
+                              action.error.reason &&
+                              action.error.reason === 'deleted');
       return {
         forms: {
           active: {

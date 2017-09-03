@@ -95,7 +95,7 @@ describe('sagas:edit navigate', () => {
       .run();
   });
 
-  it('dispatches a failed action if the load successfully complete', () => {
+  it('dispatches a failed action if the load failed to complete', () => {
     const error = { status: 404, name: 'not_found' };
     const cardStore = {
       getCard: () => new Promise((resolve, reject) => { reject(error); })
@@ -106,7 +106,7 @@ describe('sagas:edit navigate', () => {
       .put(editActions.loadCard('123'))
       .call([ cardStore, 'getCard' ], '123')
       .withState(loadingState('123'))
-      .put(editActions.failLoadCard('123'))
+      .put(editActions.failLoadCard('123', error))
       .silentRun(100);
   });
 });

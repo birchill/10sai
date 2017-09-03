@@ -55,12 +55,13 @@ const dirtyState = (formId, card, dirtyFields) => ({
   }
 });
 
-const notFoundState = formId => ({
+const notFoundState = (formId, deleted) => ({
   forms: {
     active: {
       formId,
       editState: EditState.NOT_FOUND,
       card: {},
+      deleted
     }
   }
 });
@@ -142,7 +143,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.failLoadCard('abc'));
 
-    assert.deepEqual(updatedState, notFoundState('abc'));
+    assert.deepEqual(updatedState, notFoundState('abc', false));
   });
 
   it('should NOT update state on FAIL_LOAD_CARD if formIds differ', () => {
