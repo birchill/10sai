@@ -30,10 +30,11 @@ export function finishLoadCard(formId, card) {
   };
 }
 
-export function failLoadCard(formId) {
+export function failLoadCard(formId, error) {
   return {
     type: 'FAIL_LOAD_CARD',
     formId,
+    error,
   };
 }
 

@@ -16,6 +16,7 @@ export class EditCardScreen extends React.Component {
           formId: PropTypes.any,
           editState: PropTypes.symbol.isRequired,
           card: PropTypes.object,
+          deleted: PropTypes.bool,
         }).isRequired
       }),
       active: PropTypes.bool.isRequired,
@@ -75,7 +76,7 @@ export class EditCardScreen extends React.Component {
             active={this.props.active}
             onChange={this.handleFormChange}
             {...this.props.forms.active} />
-          : <EditCardNotFound /> }
+          : <EditCardNotFound deleted={this.props.forms.active.deleted} /> }
       </section>
     );
   }

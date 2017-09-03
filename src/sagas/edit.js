@@ -39,7 +39,7 @@ export function* navigate(cardStore, action) {
     yield put(editActions.finishLoadCard(formId, card));
   } catch (error) {
     console.error(`Failed to load card: ${error}`);
-    yield put(editActions.failLoadCard(formId));
+    yield put(editActions.failLoadCard(formId, error));
   }
 }
 

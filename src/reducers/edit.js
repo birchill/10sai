@@ -66,12 +66,17 @@ export default function edit(state = initialState, action) {
         return state;
       }
 
+      const deleted = action.error &&
+                      action.error.reason &&
+                      action.error.reason === 'deleted';
+
       return {
         forms: {
           active: {
             formId: action.formId,
             editState: EditState.NOT_FOUND,
             card: {},
+            deleted,
           }
         }
       };
@@ -145,6 +150,19 @@ export default function edit(state = initialState, action) {
         return state;
       }
 
+      if (action.card._deleted) {
+        return {
+          forms: {
+            active: {
+              formId: action.formId,
+              editState: EditState.NOT_FOUND,
+              card: {},
+              deleted: true,
+            }
+          }
+        };
+      }
+
       const card = {};
       for (const field in action.card) {
         if (action.card.hasOwnProperty(field)) {
@@ -158,6 +176,19 @@ export default function edit(state = initialState, action) {
       return {
         forms: {
           active: { ...state.forms.active, card }
+        }
+      };
+    }
+
+    case 'DELETE_CARD': {
+      return {
+        forms: {
+          active: {
+            formId: action.formId,
+            editState: EditState.NOT_FOUND,
+            card: {},
+            deleted: true,
+          }
         }
       };
     }
