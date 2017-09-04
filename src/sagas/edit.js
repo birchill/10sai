@@ -50,7 +50,9 @@ export function* navigate(cardStore, action) {
     const card = yield call([cardStore, 'getCard'], route.card);
     yield put(editActions.finishLoadCard(formId, card));
   } catch (error) {
-    console.error(`Failed to load card: ${error}`);
+    if (error && error.reason !== 'deleted') {
+      console.error(`Failed to load card: ${error}`);
+    }
     yield put(editActions.failLoadCard(formId, error));
   }
 }
