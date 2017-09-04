@@ -7,6 +7,7 @@ import EditCardForm from './EditCardForm.jsx';
 import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit-states';
 import * as editActions from '../actions/edit';
+import * as routeActions from '../actions/route';
 
 export class EditCardScreen extends React.Component {
   static get propTypes() {
@@ -97,6 +98,7 @@ const mapDispatchToProps = dispatch => ({
   },
   onDelete: formId => {
     dispatch(editActions.deleteEditCard(formId));
+    dispatch(routeActions.followLink('/'));
   },
 });
 
