@@ -1,8 +1,20 @@
-import { call, fork, put, race, select, take, takeEvery }
-       from 'redux-saga/effects';
+// @format
+import {
+  call,
+  fork,
+  put,
+  race,
+  select,
+  take,
+  takeEvery,
+} from 'redux-saga/effects';
 import { delay } from 'redux-saga';
-import { routeFromURL, routeFromPath, URLFromRoute, routesEqual }
-       from '../router';
+import {
+  routeFromURL,
+  routeFromPath,
+  URLFromRoute,
+  routesEqual,
+} from '../router';
 import * as editActions from '../actions/edit';
 import * as routeActions from '../actions/route';
 import EditState from '../edit-states';
@@ -18,8 +30,8 @@ const getActiveRecord = state => (state ? state.edit.forms.active : {});
 export function* navigate(cardStore, action) {
   // Look for navigation actions that should load a card
   const route = action.url
-                ? routeFromURL(action.url)
-                : routeFromPath(action.path, action.search, action.fragment);
+    ? routeFromURL(action.url)
+    : routeFromPath(action.path, action.search, action.fragment);
   if (route.screen !== 'edit-card') {
     return;
   }
@@ -35,7 +47,7 @@ export function* navigate(cardStore, action) {
   const formId = activeRecord.formId;
 
   try {
-    const card = yield call([ cardStore, 'getCard' ], route.card);
+    const card = yield call([cardStore, 'getCard'], route.card);
     yield put(editActions.finishLoadCard(formId, card));
   } catch (error) {
     console.error(`Failed to load card: ${error}`);
@@ -45,7 +57,7 @@ export function* navigate(cardStore, action) {
 
 export function* save(cardStore, formId, card) {
   try {
-    const savedCard = yield call([ cardStore, 'putCard' ], card);
+    const savedCard = yield call([cardStore, 'putCard'], card);
 
     // Get the active record since we may have navigated while the card was
     // being saved.
@@ -53,14 +65,18 @@ export function* save(cardStore, formId, card) {
 
     // If it is a new card, we haven't navigated to another card already,
     // and we're still on the new card screen, update the URL.
-    if (!card._id &&
-        formId === activeRecord.formId &&
-        routesEqual(routeFromPath(location.pathname,
-                                  location.search,
-                                  location.hash),
-                    { screen: 'edit-card' })) {
-      const newUrl  = URLFromRoute({ screen: 'edit-card',
-                                     card: savedCard._id });
+    if (
+      !card._id &&
+      formId === activeRecord.formId &&
+      routesEqual(
+        routeFromPath(location.pathname, location.search, location.hash),
+        { screen: 'edit-card' }
+      )
+    ) {
+      const newUrl = URLFromRoute({
+        screen: 'edit-card',
+        card: savedCard._id,
+      });
       yield put(routeActions.updateUrl(newUrl));
     }
 
@@ -104,25 +120,32 @@ export function* watchCardEdits(cardStore) {
   let autoSaveTask;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const action =
-      yield take([ 'EDIT_CARD', 'SAVE_EDIT_CARD', 'DELETE_EDIT_CARD' ]);
+    const action = yield take([
+      'EDIT_CARD',
+      'SAVE_EDIT_CARD',
+      'DELETE_EDIT_CARD',
+    ]);
 
     const activeRecord = yield select(getActiveRecord);
     // In future we'll probably need to look through the different forms
     // to find the correct one, but for now this should hold.
-    console.assert(!action.formId || activeRecord.formId === action.formId,
-                   'Active record mismatch ' +
-                   `${activeRecord.formId} vs ${action.formId}`);
+    console.assert(
+      !action.formId || activeRecord.formId === action.formId,
+      `Active record mismatch ${activeRecord.formId} vs ${action.formId}`
+    );
 
     // Check if anything needs saving
-    if (activeRecord.editState !== EditState.DIRTY &&
-        action.type !== 'DELETE_EDIT_CARD') {
+    if (
+      activeRecord.editState !== EditState.DIRTY &&
+      action.type !== 'DELETE_EDIT_CARD'
+    ) {
       // If we are responding to a save action, put the finish action anyway
       // in case someone is waiting on either a finished or fail to indicate
       // completion of the save.
       if (action.type === 'SAVE_EDIT_CARD') {
-        yield put(editActions.finishSaveCard(activeRecord.formId,
-                                             activeRecord.card));
+        yield put(
+          editActions.finishSaveCard(activeRecord.formId, activeRecord.card)
+        );
       }
       continue;
     }
@@ -159,7 +182,7 @@ export function* watchCardEdits(cardStore) {
       case 'DELETE_EDIT_CARD':
         if (activeRecord.deleted) {
           try {
-            yield call([ cardStore, 'deleteCard' ], { _id: id });
+            yield call([cardStore, 'deleteCard'], { _id: id });
           } catch (error) {
             console.error(`Failed to delete card: ${error}`);
           }
@@ -174,10 +197,10 @@ export function* watchCardEdits(cardStore) {
 }
 
 function* editSagas(cardStore) {
-  /* eslint-disable indent */
-  yield* [ takeEvery([ 'NAVIGATE' ], navigate, cardStore),
-           watchCardEdits(cardStore) ];
-  /* eslint-enable indent */
+  yield* [
+    takeEvery(['NAVIGATE'], navigate, cardStore),
+    watchCardEdits(cardStore),
+  ];
 }
 
 export function* beforeEditScreenChange() {
@@ -188,7 +211,7 @@ export function* beforeEditScreenChange() {
 
   yield put(editActions.saveEditCard(activeRecord.formId));
 
-  const action = yield take([ 'FINISH_SAVE_CARD', 'FAIL_SAVE_CARD' ]);
+  const action = yield take(['FINISH_SAVE_CARD', 'FAIL_SAVE_CARD']);
 
   return action.type !== 'FAIL_SAVE_CARD';
 }
