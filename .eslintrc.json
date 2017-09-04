@@ -18,6 +18,7 @@
     "arrow-parens": [ "error", "as-needed" ],
     "comma-dangle": [ "error", { "objects": "only-multiline",
                                  "arrays": "only-multiline",
+                                 "imports": "only-multiline",
                                  "functions": "never" } ],
     "indent": [ "error", 2, { "ObjectExpression": "first", "SwitchCase": 1 } ],
     "import/no-named-as-default": [ "off" ],
