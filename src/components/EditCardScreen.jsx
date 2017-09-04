@@ -17,10 +17,11 @@ export class EditCardScreen extends React.Component {
           editState: PropTypes.symbol.isRequired,
           card: PropTypes.object,
           deleted: PropTypes.bool,
-        }).isRequired
+        }).isRequired,
       }),
       active: PropTypes.bool.isRequired,
       onEdit: PropTypes.func.isRequired,
+      onDelete: PropTypes.func.isRequired,
     };
   }
 
@@ -28,6 +29,7 @@ export class EditCardScreen extends React.Component {
     super(props);
 
     this.handleFormChange = this.handleFormChange.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
   }
 
   componentDidMount() {
@@ -65,18 +67,22 @@ export class EditCardScreen extends React.Component {
     this.props.onEdit(this.props.forms.active.formId, { [field]: value });
   }
 
+  handleDelete() {
+    this.props.onDelete(this.props.forms.active.formId);
+  }
+
   render() {
     return (
-      <section
-        className="edit-screen"
-        aria-hidden={!this.props.active} >
-        <EditCardToolbar editState={this.props.forms.active.editState} />
-        { this.props.forms.active.editState !== EditState.NOT_FOUND
+      <section className="edit-screen" aria-hidden={!this.props.active}>
+        <EditCardToolbar
+          editState={this.props.forms.active.editState}
+          onDelete={this.handleDelete} />
+        {this.props.forms.active.editState !== EditState.NOT_FOUND
           ? <EditCardForm
             active={this.props.active}
             onChange={this.handleFormChange}
             {...this.props.forms.active} />
-          : <EditCardNotFound deleted={this.props.forms.active.deleted} /> }
+          : <EditCardNotFound deleted={this.props.forms.active.deleted} />}
       </section>
     );
   }
@@ -86,7 +92,12 @@ const mapStateToProps = state => ({
   forms: state.edit.forms,
 });
 const mapDispatchToProps = dispatch => ({
-  onEdit: (formId, card) => { dispatch(editActions.editCard(formId, card)); },
+  onEdit: (formId, card) => {
+    dispatch(editActions.editCard(formId, card));
+  },
+  onDelete: formId => {
+    dispatch(editActions.deleteEditCard(formId));
+  },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditCardScreen);
