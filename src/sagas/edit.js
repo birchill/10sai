@@ -104,7 +104,8 @@ export function* watchCardEdits(cardStore) {
   let autoSaveTask;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const action = yield take([ 'EDIT_CARD', 'SAVE_EDIT_CARD' ]);
+    const action =
+      yield take([ 'EDIT_CARD', 'SAVE_EDIT_CARD', 'DELETE_EDIT_CARD' ]);
 
     const activeRecord = yield select(getActiveRecord);
     // In future we'll probably need to look through the different forms
@@ -114,7 +115,8 @@ export function* watchCardEdits(cardStore) {
                    `${activeRecord.formId} vs ${action.formId}`);
 
     // Check if anything needs saving
-    if (activeRecord.editState !== EditState.DIRTY) {
+    if (activeRecord.editState !== EditState.DIRTY &&
+        action.type !== 'DELETE_EDIT_CARD') {
       // If we are responding to a save action, put the finish action anyway
       // in case someone is waiting on either a finished or fail to indicate
       // completion of the save.
@@ -151,6 +153,16 @@ export function* watchCardEdits(cardStore) {
           yield save(cardStore, id, activeRecord.card);
         } catch (error) {
           // Don't do anything
+        }
+        break;
+
+      case 'DELETE_EDIT_CARD':
+        if (activeRecord.deleted) {
+          try {
+            yield call([ cardStore, 'deleteCard' ], { _id: id });
+          } catch (error) {
+            console.error(`Failed to delete card: ${error}`);
+          }
         }
         break;
 

@@ -108,7 +108,8 @@ export default function edit(state = initialState, action) {
     }
 
     case 'FINISH_SAVE_CARD': {
-      if (action.formId !== state.forms.active.formId) {
+      if (action.formId !== state.forms.active.formId ||
+          state.forms.active.deleted) {
         return state;
       }
 
@@ -137,7 +138,8 @@ export default function edit(state = initialState, action) {
     }
 
     case 'FAIL_SAVE_CARD': {
-      if (action.formId !== state.forms.active.formId) {
+      if (action.formId !== state.forms.active.formId ||
+          state.forms.active.deleted) {
         return state;
       }
 
@@ -153,7 +155,7 @@ export default function edit(state = initialState, action) {
         return {
           forms: {
             active: {
-              formId: action.formId,
+              formId: state.forms.active.formId,
               editState: EditState.NOT_FOUND,
               card: {},
               deleted: true,
@@ -179,7 +181,21 @@ export default function edit(state = initialState, action) {
       };
     }
 
-    case 'DELETE_CARD': {
+    case 'DELETE_EDIT_CARD': {
+      if (action.formId !== state.forms.active.formId) {
+        return state;
+      }
+
+      if (!state.forms.active.card._id) {
+        return {
+          forms: {
+            active: { formId: action.formId,
+                      editState: EditState.EMPTY,
+                      card: {} }
+          }
+        };
+      }
+
       return {
         forms: {
           active: {

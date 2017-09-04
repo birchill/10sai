@@ -13,7 +13,7 @@
     "react"
   ],
   "rules": {
-    "array-bracket-spacing": [ "warn", "always" ],
+    "array-bracket-spacing": [ "off" ],
     "arrow-body-style": [ "off" ],
     "arrow-parens": [ "error", "as-needed" ],
     "comma-dangle": [ "error", { "objects": "only-multiline",

@@ -76,3 +76,10 @@ export function syncCard(card) {
     card,
   };
 }
+
+export function deleteEditCard(formId) {
+  return {
+    type: 'DELETE_EDIT_CARD',
+    formId,
+  };
+}

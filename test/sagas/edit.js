@@ -8,6 +8,7 @@ import { navigate as navigateSaga,
          save as saveSaga,
          beforeEditScreenChange as beforeEditScreenChangeSaga }
        from '../../src/sagas/edit';
+import reducer from '../../src/reducers/index';
 import EditState from '../../src/edit-states';
 import * as editActions from '../../src/actions/edit';
 import * as routeActions from '../../src/actions/route';
@@ -138,6 +139,19 @@ const emptyState = formId => ({
   }
 });
 
+const notFoundState = (formId, deleted) => ({
+  edit: {
+    forms: {
+      active: {
+        formId,
+        editState: EditState.NOT_FOUND,
+        card: {},
+        deleted,
+      },
+    },
+  },
+});
+
 describe('sagas:edit watchCardEdits', () => {
   beforeEach('setup global', () => {
     global.location = {
@@ -266,6 +280,57 @@ describe('sagas:edit watchCardEdits', () => {
       .dispatch(editActions.saveEditCard(formId))
       .call([ cardStore, 'putCard' ], card)
       .put(editActions.failSaveCard(formId, error))
+      .silentRun(100);
+  });
+
+  it('deletes the card when requested', () => {
+    const cardStore = { deleteCard: () => {} };
+    const formId = 'abc';
+
+    return expectSaga(watchCardEditsSaga, cardStore)
+      .withState(notFoundState(formId, true))
+      .dispatch(editActions.deleteEditCard(formId))
+      .call([ cardStore, 'deleteCard' ], { _id: 'abc' })
+      .silentRun(100);
+  });
+
+  it('does NOT delete the card if it has not been saved', () => {
+    const cardStore = { deleteCard: () => {} };
+    const card = { _id: 'abc', prompt: 'Prompt', answer: 'Answer' };
+    const formId = 'abc';
+
+    return expectSaga(watchCardEditsSaga, cardStore)
+      .withState(dirtyState(formId, card))
+      .dispatch(editActions.deleteEditCard(formId))
+      .not.call([ cardStore, 'deleteCard' ], { _id: 'abc' })
+      .silentRun(100);
+  });
+
+  it('ignores any errors when deleting', () => {
+    const error = { status: 404, name: 'not_found', reason: 'deleted' };
+    const cardStore = {
+      deleteCard: () => new Promise((resolve, reject) => { reject(error); })
+    };
+    const formId = 'abc';
+
+    return expectSaga(watchCardEditsSaga, cardStore)
+      .withState(notFoundState(formId, true))
+      .dispatch(editActions.deleteEditCard(formId))
+      .call([ cardStore, 'deleteCard' ], { _id: 'abc' })
+      .silentRun(100);
+  });
+
+  it('cancels autosaving when the card is deleted', () => {
+    const cardStore = { deleteCard: () => {} };
+    const card = { _id: 'abc', prompt: 'Prompt', answer: 'Answer' };
+    const formId = 'abc';
+
+    return expectSaga(watchCardEditsSaga, cardStore)
+      .withReducer(reducer)
+      .withState(okState(formId, card))
+      .dispatch(editActions.editCard(formId, card))
+      .dispatch(editActions.deleteEditCard(formId))
+      .put({ type: 'CANCEL_AUTO_SAVE' })
       .silentRun(100);
   });
 });
