@@ -42,19 +42,20 @@ export class CardGrid extends React.Component {
   static renderTemplateCard() {
     return (
       <CardPreview
-        onDelete={() => {}}
         _id="template"
         question="Template" />);
+  }
+
+  static renderCard(item) {
+    return (
+      <Link href={`/cards/${item._id}`}>
+        <CardPreview {...item} />
+      </Link>);
   }
 
   constructor(props) {
     super(props);
     this.state = { cards: [] };
-
-    // Bind handlers
-    [ 'handleDelete', 'renderCard' ].forEach(
-      handler => { this[handler] = this[handler].bind(this); }
-    );
   }
 
   componentDidMount() {
@@ -80,23 +81,12 @@ export class CardGrid extends React.Component {
     });
   }
 
-  handleDelete(id) {
-    this.context.cardStore.deleteCard({ _id: id });
-  }
-
-  renderCard(item) {
-    return (
-      <Link href={`/cards/${item._id}`}>
-        <CardPreview onDelete={this.handleDelete} {...item} />
-      </Link>);
-  }
-
   render() {
     return (
       <VirtualGrid
         items={this.state.cards}
         className="card-grid"
-        renderItem={this.renderCard}
+        renderItem={CardGrid.renderCard}
         renderTemplateItem={CardGrid.renderTemplateCard} />);
   }
 }
