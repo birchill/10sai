@@ -76,7 +76,8 @@ describe('CardStore remote sync', () => {
                         'Expected error for inaccessible server');
             done();
           },
-      });
+      })
+      .catch(() => { /* Ok */ });
   });
 
   it('rejects a non-http/https database', () => {
