@@ -6,6 +6,9 @@ PouchDB.plugin(require('pouchdb-upsert'));
 
 let prevTimeStamp = 0;
 
+const CARD_PREFIX = 'card-';
+const stripPrefix = id => id.substr(CARD_PREFIX.length);
+
 class CardStore {
   constructor(options) {
     this.db = new PouchDB('cards', { storage: 'persistant', ...options });
@@ -15,8 +18,13 @@ class CardStore {
     const result = await this.db.allDocs({
       include_docs: true,
       descending: true,
+      startkey: CARD_PREFIX + '\ufff0',
+      endkey: CARD_PREFIX,
     });
-    return result.rows.map(row => row.doc);
+    return result.rows.map(row => ({
+      ...row.doc,
+      _id: stripPrefix(row.doc._id),
+    }));
   }
 
   async putCard(card) {
@@ -25,10 +33,10 @@ class CardStore {
       return (async function tryPutNewCard(card, db) {
         try {
           const result = await db.put({
-            _id: CardStore.generateCardId(),
+            _id: CARD_PREFIX + CardStore.generateCardId(),
             ...card,
           });
-          return { ...card, _id: result.id, _rev: result.rev };
+          return { ...card, _id: stripPrefix(result.id), _rev: result.rev };
         } catch (err) {
           if (err.status !== 409) {
             throw err;
@@ -42,12 +50,12 @@ class CardStore {
 
     // Delta update to an existing card
     let completeCard;
-    const result = await this.db.upsert(card._id, doc => {
+    const result = await this.db.upsert(CARD_PREFIX + card._id, doc => {
       // Doc was not found -- must have been deleted
       if (!doc._id) {
         return false;
       }
-      completeCard = { ...doc, ...card };
+      completeCard = { ...doc, ...card, _id: CARD_PREFIX + card._id };
       return completeCard;
     });
     if (!result.updated) {
@@ -56,11 +64,12 @@ class CardStore {
       err.name = 'not_found';
       throw err;
     }
-    return completeCard;
+    return { ...completeCard, _id: card._id };
   }
 
-  getCard(id) {
-    return this.db.get(id);
+  async getCard(id) {
+    const card = await this.db.get(CARD_PREFIX + id);
+    return { ...card, _id: stripPrefix(card._id) };
   }
 
   deleteCard(card) {
@@ -75,7 +84,7 @@ class CardStore {
         card = await db.get(card._id);
         return tryToDeleteCard(card, db);
       }
-    }(card, this.db));
+    }({ ...card, _id: CARD_PREFIX + card._id }, this.db));
   }
 
   static generateCardId() {
@@ -104,11 +113,39 @@ class CardStore {
   }
 
   get changes() {
-    return this.db.changes({
+    const eventEmitter = this.db.changes({
       since: 'now',
       live: true,
       include_docs: true,
     });
+
+    // Wrap callbacks to strip ID prefix
+    const originalOnFn = eventEmitter.on;
+    eventEmitter.on = (eventName, listener) => {
+      if (eventName !== 'change') {
+        console.error('Events other than \'change\' are not yet supported');
+        // (Read, I haven't botherered wrapping them yet.)
+        return;
+      }
+      originalOnFn.call(eventEmitter, eventName, arg => {
+        console.assert(arg.changes && arg.doc, 'Unexpected changes event');
+
+        // The following could probably done with a selector, but I've
+        // a feeling I'll be rewriting this function fairly soon anyway so
+        // let's just do it in JS for now.
+        if (!arg.doc._id.startsWith(CARD_PREFIX)) {
+          return;
+        }
+
+        const doc = {
+          ...arg.doc,
+          _id: stripPrefix(arg.doc._id),
+        };
+        listener({ ...arg, id: stripPrefix(arg.id), doc });
+      });
+    };
+
+    return eventEmitter;
   }
 
   // Sets a server for synchronizing with and begins live synchonization.

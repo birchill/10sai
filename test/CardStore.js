@@ -59,6 +59,33 @@ describe('CardStore', () => {
     }
   });
 
+  it('does not return the prefix when putting a card', async () => {
+    const card = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    assert.notEqual(card._id.substr(0, 5), 'card-');
+  });
+
+  it('does not return the prefix when getting a single card', async () => {
+    let card = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    card = await subject.getCard(card._id);
+    assert.notEqual(card._id.substr(0, 5), 'card-');
+  });
+
+  it('doesn\'t return the prefix when getting multiple cards', async () => {
+    await subject.putCard({ question: 'Q1', answer: 'A1' });
+    await subject.putCard({ question: 'Q2', answer: 'A2' });
+
+    const cards = await subject.getCards();
+    for (const card of cards) {
+      assert.notEqual(card._id.substr(0, 5), 'card-');
+    }
+  });
+
   it('returns added cards in order', async () => {
     const card1 = await subject.putCard({ question: 'Q1', answer: 'A1' });
     const card2 = await subject.putCard({ question: 'Q2', answer: 'A2' });

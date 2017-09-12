@@ -8,6 +8,8 @@ import { assert, AssertionError } from 'chai';
 import CardStore from '../src/CardStore';
 import { waitForEvents } from './testcommon';
 
+const cardForDirectPut = card => ({ ...card, _id: 'card-' + card._id });
+
 describe('CardStore remote sync', () => {
   let subject;
   let testRemote;
@@ -149,11 +151,11 @@ describe('CardStore remote sync', () => {
     );
 
     testRemote
-      .put(firstCard)
+      .put(cardForDirectPut(firstCard))
       .then(result => {
         firstCard._rev = result.rev;
       })
-      .then(() => testRemote.put(secondCard))
+      .then(() => testRemote.put(cardForDirectPut(secondCard)))
       .then(result => {
         secondCard._rev = result.rev;
       })
@@ -189,7 +191,7 @@ describe('CardStore remote sync', () => {
 
     await subject.setSyncServer(testRemote);
     await subject.setSyncServer(alternateRemote);
-    await testRemote.put(card);
+    await testRemote.put(cardForDirectPut(card));
 
     await waitForEvents(20);
     await alternateRemote.destroy();
@@ -238,7 +240,7 @@ describe('CardStore remote sync', () => {
     testRemote.put({
       question: 'Question',
       answer: 'Answer',
-      _id: CardStore.generateCardId(),
+      _id: 'card-' + CardStore.generateCardId(),
     });
   });
 
