@@ -1,4 +1,5 @@
 /* eslint-disable no-shadow */
+// @format
 
 import PouchDB from 'pouchdb';
 
@@ -7,13 +8,15 @@ PouchDB.plugin(require('pouchdb-upsert'));
 let prevTimeStamp = 0;
 
 const CARD_PREFIX = 'card-';
-const stripPrefix = id => id.substr(CARD_PREFIX.length);
+const PROGRESS_PREFIX = 'progress-';
+
+const stripCardPrefix = id => id.substr(CARD_PREFIX.length);
 
 // Take a card from the DB and turn it into a more appropriate form for
 // client consumption
 const parseCard = card => ({
   ...card,
-  _id: stripPrefix(card._id),
+  _id: stripCardPrefix(card._id),
   // We deliberately *don't* parse the 'created' or 'modified' fields into
   // Date objects since they're currently not used in the app and so
   // speculatively parsing them would be a waste.
@@ -37,25 +40,7 @@ class CardStore {
   async putCard(card) {
     // New card
     if (!card._id) {
-      return (async function tryPutNewCard(card, db) {
-        try {
-          const cardToPut = {
-            _id: CARD_PREFIX + CardStore.generateCardId(),
-            ...card,
-            created: JSON.parse(JSON.stringify(new Date())),
-            modified: JSON.parse(JSON.stringify(new Date())),
-          };
-          const result = await db.put(cardToPut);
-          return parseCard({ ...cardToPut, _rev: result.rev });
-        } catch (err) {
-          if (err.status !== 409) {
-            throw err;
-          }
-          // If we put the card and there was a conflict, it must mean we
-          // chose an overlapping ID. Just keep trying until it succeeds.
-          return tryPutNewCard(card, db);
-        }
-      })(card, this.db);
+      return this._putNewCard(card);
     }
 
     // Delta update to an existing card
@@ -83,6 +68,52 @@ class CardStore {
       throw err;
     }
     return parseCard(completeCard);
+  }
+
+  async _putNewCard(card) {
+    const cardToPut = {
+      ...card,
+      created: JSON.parse(JSON.stringify(new Date())),
+      modified: JSON.parse(JSON.stringify(new Date())),
+    };
+
+    return (async function tryPutNewCard(card, db, id) {
+      let putCardResult;
+      try {
+        putCardResult = await db.put({ ...cardToPut, _id: CARD_PREFIX + id });
+      } catch (err) {
+        if (err.status !== 409) {
+          throw err;
+        }
+        // If we put the card and there was a conflict, it must mean we
+        // chose an overlapping ID. Just keep trying until it succeeds.
+        return tryPutNewCard(card, db, CardStore.generateCard());
+      }
+
+      const newCard = parseCard({
+        ...cardToPut,
+        _id: CARD_PREFIX + id,
+        _rev: putCardResult.rev,
+      });
+
+      // Succeeded in putting the card. Now to add a corresponding progress
+      // record. We have a unique card ID so there can't be any overlapping
+      // progress record unless something is very wrong.
+      const progressToPut = {
+        _id: PROGRESS_PREFIX + id,
+        reviewed: null,
+        level: 0,
+      };
+      try {
+        await db.put(progressToPut);
+      } catch (err) {
+        console.err(`Unexpected error putting progress record: ${err}`);
+        await db.remove(newCard);
+        throw err;
+      }
+
+      return newCard;
+    })(cardToPut, this.db, CardStore.generateCardId());
   }
 
   async getCard(id) {
@@ -155,7 +186,11 @@ class CardStore {
           return;
         }
 
-        listener({ ...arg, id: stripPrefix(arg.id), doc: parseCard(arg.doc) });
+        listener({
+          ...arg,
+          id: stripCardPrefix(arg.id),
+          doc: parseCard(arg.doc),
+        });
       });
     };
 
@@ -343,6 +378,8 @@ class CardStore {
     if (options) {
       // eslint-disable-next-line guard-for-in
       for (const evt in callbackMap) {
+        // TODO: This probably needs to call parseCard for the onChange
+        // callback.
         this.remoteSync.on(evt, wrapCallback(evt, options[callbackMap[evt]]));
       }
     }
@@ -361,6 +398,14 @@ class CardStore {
   }
   getSyncServer() {
     return this.remoteDb;
+  }
+  async hasProgressRecord(id) {
+    try {
+      await this.db.get(PROGRESS_PREFIX + id);
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 }
 

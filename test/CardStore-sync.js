@@ -231,6 +231,8 @@ describe('CardStore remote sync', () => {
     const remoteCards = await testRemote.allDocs({
       include_docs: true,
       descending: true,
+      startkey: 'card-\ufff0',
+      endkey: 'card-',
     });
     assert.strictEqual(remoteCards.rows.length, 2);
   });
@@ -320,24 +322,27 @@ describe('CardStore remote sync', () => {
     await subject.setSyncServer(testRemote, {
       onChange: changes => allChanges.push(changes),
       onIdle: () => resolveAllDone(),
-      batchSize: 2,
+      batchSize: 3,
     });
     await allDone;
 
+    // Note that although there are 5 cards, there are 10 documents since there
+    // is a corresponding 'progress' document for each card. So we should have
+    // batch sizes: 3, 3, 3, 1.
     assert.strictEqual(
       allChanges.length,
-      3,
-      'Should be three batches of changes'
+      4,
+      'Should be four batches of changes'
     );
     assert.deepEqual(
       allChanges.map(change => change.progress),
-      [0.4, 0.8, 1.0],
+      [0.3, 0.6, 0.9, 1.0],
       'Each batch has expected progress'
     );
   });
 
   it('reports indeterminate progress on balanced bi-directional sync', async () => {
-    const localCards = 5;
+    const localCards = 4;
     const putPromises = [];
     for (let i = 0; i < localCards; i++) {
       putPromises.push(
@@ -348,7 +353,7 @@ describe('CardStore remote sync', () => {
       );
     }
 
-    const remoteCards = 5;
+    const remoteCards = 4;
     const remoteDocs = [];
     for (let i = 0; i < remoteCards; i++) {
       remoteDocs.push({
@@ -369,14 +374,19 @@ describe('CardStore remote sync', () => {
     await subject.setSyncServer(testRemote, {
       onChange: changes => allChanges.push(changes),
       onIdle: () => resolveAllDone(),
-      batchSize: 2,
+      batchSize: 3,
     });
     await allDone;
 
+    // As with the previous test, bear in mind that 5 cards produce 10 documents
+    // since we have a corresponding 'progress' document for each card.
+    // That said, I don't really understand why 4 cards in 2 directions (i.e. 16
+    // documents total), with a batch size of 3 should happen in five batches.
+    // It's some PouchDB magic, but it seems to be deterministic at least.
     assert.strictEqual(
       allChanges.length,
-      6,
-      'Should be six batches of changes'
+      5,
+      'Should be eight batches of changes'
     );
     assert.deepEqual(
       allChanges.map(change => change.progress),
