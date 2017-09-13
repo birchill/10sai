@@ -172,7 +172,7 @@ describe('CardStore remote sync', () => {
           } else {
             done();
           }
-        }());
+        })();
       });
   });
 
