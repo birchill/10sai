@@ -322,6 +322,28 @@ describe('CardStore', () => {
     assert.withinTime(new Date(card.created), beginDate, new Date());
   });
 
+  it('stores the last modified date when adding a new card', async () => {
+    const beginDate = new Date();
+    const card = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    assert.withinTime(new Date(card.modified), beginDate, new Date());
+  });
+
+  it('updates the last modified date when updating a card', async () => {
+    let card = await subject.putCard({
+      question: 'Original question',
+      answer: 'Answer',
+    });
+    const beginDate = new Date();
+    card = await subject.putCard({
+      _id: card._id,
+      question: 'Updated question',
+    });
+    assert.withinTime(new Date(card.modified), beginDate, new Date());
+  });
+
   it('reports changes to cards', async () => {
     const updates = [];
     subject.changes.on('change', info => {

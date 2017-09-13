@@ -44,6 +44,7 @@
       "error", { "selfClosing": "after-props", "nonEmpty": "after-props" }
     ],
     "react/jsx-filename-extension": [ "off" ],
-    "react/require-default-props": [ "off" ]
+    "react/require-default-props": [ "off" ],
+    "wrap-iife": [ "off" ]
   }
 }

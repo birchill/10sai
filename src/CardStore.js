@@ -14,7 +14,7 @@ const stripPrefix = id => id.substr(CARD_PREFIX.length);
 const parseCard = card => ({
   ...card,
   _id: stripPrefix(card._id),
-  // We deliberately *don't* parse the 'created' or 'lastModified' fields into
+  // We deliberately *don't* parse the 'created' or 'modified' fields into
   // Date objects since they're currently not used in the app and so
   // speculatively parsing them would be a waste.
 });
@@ -43,6 +43,7 @@ class CardStore {
             _id: CARD_PREFIX + CardStore.generateCardId(),
             ...card,
             created: JSON.parse(JSON.stringify(new Date())),
+            modified: JSON.parse(JSON.stringify(new Date())),
           };
           const result = await db.put(cardToPut);
           return parseCard({ ...cardToPut, _rev: result.rev });
@@ -54,7 +55,7 @@ class CardStore {
           // chose an overlapping ID. Just keep trying until it succeeds.
           return tryPutNewCard(card, db);
         }
-      }(card, this.db));
+      })(card, this.db);
     }
 
     // Delta update to an existing card
@@ -67,7 +68,12 @@ class CardStore {
       // If we ever end up speculatively parsing date fields into Date objects
       // in parseCard, then we'll need special handling here to make sure we
       // write and return the correct formats.
-      completeCard = { ...doc, ...card, _id: CARD_PREFIX + card._id };
+      completeCard = {
+        ...doc,
+        ...card,
+        _id: CARD_PREFIX + card._id,
+        modified: JSON.parse(JSON.stringify(new Date())),
+      };
       return completeCard;
     });
     if (!result.updated) {
@@ -96,7 +102,7 @@ class CardStore {
         card = await db.get(card._id);
         return tryToDeleteCard(card, db);
       }
-    }({ ...card, _id: CARD_PREFIX + card._id }, this.db));
+    })({ ...card, _id: CARD_PREFIX + card._id }, this.db);
   }
 
   static generateCardId() {
@@ -135,7 +141,7 @@ class CardStore {
     const originalOnFn = eventEmitter.on;
     eventEmitter.on = (eventName, listener) => {
       if (eventName !== 'change') {
-        console.error('Events other than \'change\' are not yet supported');
+        console.error("Events other than 'change' are not yet supported");
         // (Read, I haven't botherered wrapping them yet.)
         return;
       }
