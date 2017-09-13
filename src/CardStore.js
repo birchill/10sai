@@ -9,6 +9,16 @@ let prevTimeStamp = 0;
 const CARD_PREFIX = 'card-';
 const stripPrefix = id => id.substr(CARD_PREFIX.length);
 
+// Take a card from the DB and turn it into a more appropriate form for
+// client consumption
+const parseCard = card => ({
+  ...card,
+  _id: stripPrefix(card._id),
+  // We deliberately *don't* parse the 'created' or 'lastModified' fields into
+  // Date objects since they're currently not used in the app and so
+  // speculatively parsing them would be a waste.
+});
+
 class CardStore {
   constructor(options) {
     this.db = new PouchDB('cards', { storage: 'persistant', ...options });
@@ -21,10 +31,7 @@ class CardStore {
       startkey: CARD_PREFIX + '\ufff0',
       endkey: CARD_PREFIX,
     });
-    return result.rows.map(row => ({
-      ...row.doc,
-      _id: stripPrefix(row.doc._id),
-    }));
+    return result.rows.map(row => parseCard(row.doc));
   }
 
   async putCard(card) {
@@ -32,11 +39,13 @@ class CardStore {
     if (!card._id) {
       return (async function tryPutNewCard(card, db) {
         try {
-          const result = await db.put({
+          const cardToPut = {
             _id: CARD_PREFIX + CardStore.generateCardId(),
             ...card,
-          });
-          return { ...card, _id: stripPrefix(result.id), _rev: result.rev };
+            created: JSON.parse(JSON.stringify(new Date())),
+          };
+          const result = await db.put(cardToPut);
+          return parseCard({ ...cardToPut, _rev: result.rev });
         } catch (err) {
           if (err.status !== 409) {
             throw err;
@@ -55,6 +64,9 @@ class CardStore {
       if (!doc._id) {
         return false;
       }
+      // If we ever end up speculatively parsing date fields into Date objects
+      // in parseCard, then we'll need special handling here to make sure we
+      // write and return the correct formats.
       completeCard = { ...doc, ...card, _id: CARD_PREFIX + card._id };
       return completeCard;
     });
@@ -64,12 +76,12 @@ class CardStore {
       err.name = 'not_found';
       throw err;
     }
-    return { ...completeCard, _id: card._id };
+    return parseCard(completeCard);
   }
 
   async getCard(id) {
     const card = await this.db.get(CARD_PREFIX + id);
-    return { ...card, _id: stripPrefix(card._id) };
+    return parseCard(card);
   }
 
   deleteCard(card) {
@@ -137,11 +149,7 @@ class CardStore {
           return;
         }
 
-        const doc = {
-          ...arg.doc,
-          _id: stripPrefix(arg.doc._id),
-        };
-        listener({ ...arg, id: stripPrefix(arg.id), doc });
+        listener({ ...arg, id: stripPrefix(arg.id), doc: parseCard(arg.doc) });
       });
     };
 

@@ -2,9 +2,12 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import memdown from 'memdown';
-import { assert } from 'chai';
+import chai, { assert } from 'chai';
+import chaiDateTime from 'chai-datetime';
 import CardStore from '../src/CardStore';
 import { waitForEvents } from './testcommon';
+
+chai.use(chaiDateTime);
 
 describe('CardStore', () => {
   let subject;
@@ -76,7 +79,7 @@ describe('CardStore', () => {
     assert.notEqual(card._id.substr(0, 5), 'card-');
   });
 
-  it('doesn\'t return the prefix when getting multiple cards', async () => {
+  it('does not return the prefix when getting multiple cards', async () => {
     await subject.putCard({ question: 'Q1', answer: 'A1' });
     await subject.putCard({ question: 'Q2', answer: 'A2' });
 
@@ -308,6 +311,15 @@ describe('CardStore', () => {
       assert.strictEqual(err.name, 'not_found');
       assert.strictEqual(err.message, 'missing');
     }
+  });
+
+  it('stores the created date when adding a new card', async () => {
+    const beginDate = new Date();
+    const card = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    assert.withinTime(new Date(card.created), beginDate, new Date());
   });
 
   it('reports changes to cards', async () => {

@@ -8,7 +8,10 @@ import { assert, AssertionError } from 'chai';
 import CardStore from '../src/CardStore';
 import { waitForEvents } from './testcommon';
 
-const cardForDirectPut = card => ({ ...card, _id: 'card-' + card._id });
+const cardForDirectPut = card => ({
+  ...card,
+  _id: 'card-' + card._id,
+});
 
 describe('CardStore remote sync', () => {
   let subject;
@@ -134,11 +137,13 @@ describe('CardStore remote sync', () => {
       question: 'Question 1',
       answer: 'Answer 1',
       _id: CardStore.generateCardId(),
+      created: JSON.parse(JSON.stringify(new Date())),
     };
     const secondCard = {
       question: 'Question 2',
       answer: 'Answer 2',
       _id: CardStore.generateCardId(),
+      created: JSON.parse(JSON.stringify(new Date())),
     };
 
     const expectedCards = [firstCard, secondCard];
@@ -176,6 +181,7 @@ describe('CardStore remote sync', () => {
       question: 'Question',
       answer: 'Answer',
       _id: CardStore.generateCardId(),
+      created: JSON.parse(JSON.stringify(new Date())),
     };
 
     const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
