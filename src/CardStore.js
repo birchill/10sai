@@ -87,7 +87,7 @@ class CardStore {
         }
         // If we put the card and there was a conflict, it must mean we
         // chose an overlapping ID. Just keep trying until it succeeds.
-        return tryPutNewCard(card, db, CardStore.generateCard());
+        return tryPutNewCard(card, db, CardStore.generateCardId());
       }
 
       const newCard = parseCard({
@@ -107,8 +107,8 @@ class CardStore {
       try {
         await db.put(progressToPut);
       } catch (err) {
-        console.err(`Unexpected error putting progress record: ${err}`);
-        await db.remove(newCard);
+        console.error(`Unexpected error putting progress record: ${err}`);
+        await db.remove({ _id: CARD_PREFIX + id, _rev: putCardResult.rev });
         throw err;
       }
 
