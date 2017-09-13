@@ -13,7 +13,7 @@ describe('CardStore', () => {
   let subject;
 
   beforeEach('setup new store', () => {
-    subject = new CardStore({ db: memdown });
+    subject = new CardStore({ pouch: { db: memdown } });
   });
 
   afterEach('clean up store', () => subject.destroy());
