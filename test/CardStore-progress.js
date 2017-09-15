@@ -7,6 +7,8 @@ import memdown from 'memdown';
 import { assert, AssertionError } from 'chai';
 import CardStore from '../src/CardStore';
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 describe('CardStore progress reporting', () => {
   let subject;
 
@@ -68,9 +70,8 @@ describe('CardStore progress reporting', () => {
     }
   });
 
-  it('returns cards based on their overdueness', async () => {
-    // First add a bunch of cards
-    const cards = new Array(5);
+  async function addCards(num) {
+    const cards = new Array(num);
     for (let i = 0; i < cards.length; i++) {
       // eslint-disable-next-line no-await-in-loop
       cards[i] = await subject.putCard({
@@ -78,8 +79,13 @@ describe('CardStore progress reporting', () => {
         answer: `Answer ${i + 1}`,
       });
     }
+    return cards;
+  }
 
-    const MS_PER_DAY = 1000 * 60 * 60;
+  it('returns cards based on their overdueness', async () => {
+    // First add a bunch of cards
+    const cards = await addCards(5);
+
     const relativeTime = diffInDays =>
       new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
 
@@ -125,17 +131,9 @@ describe('CardStore progress reporting', () => {
 
   it('respects the limit set when returning overdue cards', async () => {
     // Add cards
-    const cards = new Array(4);
-    for (let i = 0; i < cards.length; i++) {
-      // eslint-disable-next-line no-await-in-loop
-      cards[i] = await subject.putCard({
-        question: `Question ${i + 1}`,
-        answer: `Answer ${i + 1}`,
-      });
-    }
+    const cards = await addCards(4);
 
     // Make the cards progressively overdue.
-    const MS_PER_DAY = 1000 * 60 * 60;
     const reviewed = new Date(subject.reviewTime.getTime() - 3 * MS_PER_DAY);
     for (const card of cards) {
       reviewed.setTime(reviewed.getTime() - MS_PER_DAY);
@@ -152,5 +150,42 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[1].question, 'Question 3');
   });
 
-  // TODO: Test updating review time
+  it('allows the review time to be updated', async () => {
+    const cards = await addCards(3);
+
+    const relativeTime = diffInDays =>
+      new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
+
+    // Card 1: Level now: -1, in 10 days' time: 9
+    await subject.updateProgress(cards[0]._id, {
+      reviewed: subject.reviewTime,
+      level: 1,
+    });
+    // Card 2: Level now: 0.2, in 10 days' time: 10.2
+    await subject.updateProgress(cards[1]._id, {
+      reviewed: relativeTime(-1.2),
+      level: 1,
+    });
+    // Card 3: Level now: 0.333, in 10 days' time: 0.666
+    await subject.updateProgress(cards[2]._id, {
+      reviewed: relativeTime(-40),
+      level: 30,
+    });
+
+    // Initially only cards 3 and 2 are due, and in that order ...
+    let result = await subject.getOverdueCards();
+    assert.strictEqual(result.length, 2);
+    assert.strictEqual(result[0].question, 'Question 3');
+    assert.strictEqual(result[1].question, 'Question 2');
+
+    // ... but in 10 days' time ...
+    await subject.setReviewTime(relativeTime(10));
+
+    // ... we should get card 2, card 1, card 3
+    result = await subject.getOverdueCards();
+    assert.strictEqual(result.length, 3);
+    assert.strictEqual(result[0].question, 'Question 2');
+    assert.strictEqual(result[1].question, 'Question 1');
+    assert.strictEqual(result[2].question, 'Question 3');
+  });
 });

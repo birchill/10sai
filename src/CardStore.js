@@ -21,7 +21,7 @@ const parseCard = card => ({
   // speculatively parsing them would be a waste.
 });
 
-const DAYS_PER_MS = 1000 * 60 * 60;
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
 const getOverduenessFunction = reviewTime =>
   `function(doc) {
     if (
@@ -38,7 +38,7 @@ const getOverduenessFunction = reviewTime =>
       });
     }
 
-    const daysDiff = (${reviewTime.getTime()} - doc.reviewed) / ${DAYS_PER_MS};
+    const daysDiff = (${reviewTime.getTime()} - doc.reviewed) / ${MS_PER_DAY};
     const overdueValue = (daysDiff - doc.level) / doc.level;
     emit(overdueValue, {
       _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
@@ -50,27 +50,11 @@ class CardStore {
     const pouchOptions = options && options.pouch ? options.pouch : {};
     this.db = new PouchDB('cards', { storage: 'persistant', ...pouchOptions });
 
-    this.reviewTime =
+    const reviewTime =
       options && options.reviewTime && options.reviewTime instanceof Date
         ? options.reviewTime
         : new Date();
-    this.initDone = this.db
-      .info()
-      .then(() => {
-        return this.db.upsert('_design/overdueness', () => ({
-          _id: '_design/overdueness',
-          views: {
-            overdueness: {
-              map: getOverduenessFunction(this.reviewTime),
-            },
-          },
-        }));
-      })
-      .then(() => {
-        // Don't return the promise from this. Just trigger the query so it can
-        // run in the background.
-        this.db.query('overdueness', { limit: 0 });
-      });
+    this.initDone = this.db.info().then(() => this._setReviewTime(reviewTime));
   }
 
   async getCards() {
@@ -282,21 +266,45 @@ class CardStore {
   }
 
   async getOverdueCards(options) {
-    return this.initDone
+    return (
+      this.initDone
+        .then(() => {
+          const queryOptions = {
+            include_docs: true,
+            descending: true,
+            endkey: 0,
+          };
+          if (options && typeof options.limit === 'number') {
+            queryOptions.limit = options.limit;
+          }
+          return this.db.query('overdueness', queryOptions);
+        })
+        // (Note the 'key' field for each row contains the overdue factor as
+        // a number if we ever discover we need it.
+        .then(result => result.rows.map(row => parseCard(row.doc)))
+    );
+  }
+
+  async _setReviewTime(reviewTime) {
+    this.reviewTime = reviewTime;
+    return this.db
+      .upsert('_design/overdueness', () => ({
+        _id: '_design/overdueness',
+        views: {
+          overdueness: {
+            map: getOverduenessFunction(reviewTime),
+          },
+        },
+      }))
       .then(() => {
-        const queryOptions = {
-          include_docs: true,
-          descending: true,
-          endkey: 0,
-        };
-        if (options && typeof options.limit === 'number') {
-          queryOptions.limit = options.limit;
-        }
-        return this.db.query('overdueness', queryOptions);
-      })
-      // (Note the 'key' field for each row contains the overdue factor as
-      // a number if we ever discover we need it.
-      .then(result => result.rows.map(row => parseCard(row.doc)));
+        // Don't return the promise from this. Just trigger the query so it can
+        // run in the background.
+        this.db.query('overdueness', { limit: 0 });
+      });
+  }
+
+  async setReviewTime(reviewTime) {
+    return this.initDone.then(() => this._setReviewTime(reviewTime));
   }
 
   // Sets a server for synchronizing with and begins live synchonization.
