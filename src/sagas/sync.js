@@ -1,4 +1,5 @@
 import { takeEvery, takeLatest, put, select } from 'redux-saga/effects';
+import { waitForDocLoad, waitForIdle } from '../utils';
 
 // Selector wrappers
 
@@ -48,6 +49,13 @@ function* startReplication(cardStore, server, dispatch) {
       username: server.username,
       password: server.username ? server.password : undefined,
     };
+
+    // Wait until the doc is fully loaded first since otherwise the browser
+    // might treat the long-poll resulting from this as part of the initial load
+    // and will indicate that page is loading, like, forever.
+    yield waitForDocLoad();
+    // And just for good measure.
+    yield waitForIdle();
 
     yield cardStore.setSyncServer(syncServer, options);
   } catch (e) {
