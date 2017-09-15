@@ -33,30 +33,30 @@ function* startReplication(cardStore, server, dispatch) {
     return;
   }
 
+  const syncServer = server ? server.name : undefined;
+  const options = {
+    onChange: changes => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
+                                    progress: changes.progress }),
+    onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
+    onActive: () => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
+                               progress: undefined }),
+    onError: details => dispatch({ type: 'NOTIFY_SYNC_ERROR', details }),
+    username: server.username,
+    password: server.username ? server.password : undefined,
+  };
+
+  // Wait until the doc is fully loaded first since otherwise the browser
+  // might treat the long-poll resulting from this as part of the initial load
+  // and will indicate that page is loading, like, forever.
+  yield waitForDocLoad();
+  // And just for good measure.
+  yield waitForIdle();
+
   if (server) {
     yield put({ type: 'UPDATE_SYNC_PROGRESS', progress: undefined });
   }
 
   try {
-    const syncServer = server ? server.name : undefined;
-    const options = {
-      onChange: changes => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
-                                      progress: changes.progress }),
-      onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
-      onActive: () => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
-                                 progress: undefined }),
-      onError: details => dispatch({ type: 'NOTIFY_SYNC_ERROR', details }),
-      username: server.username,
-      password: server.username ? server.password : undefined,
-    };
-
-    // Wait until the doc is fully loaded first since otherwise the browser
-    // might treat the long-poll resulting from this as part of the initial load
-    // and will indicate that page is loading, like, forever.
-    yield waitForDocLoad();
-    // And just for good measure.
-    yield waitForIdle();
-
     yield cardStore.setSyncServer(syncServer, options);
   } catch (e) {
     // Ignore errors from setSyncServer since we deal with them in the onError
