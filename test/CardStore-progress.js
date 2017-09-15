@@ -70,6 +70,16 @@ describe('CardStore progress reporting', () => {
     }
   });
 
+  it('deletes the corresponding progress record when deleting a card', async () => {
+    const card = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    await subject.deleteCard(card);
+
+    assert.isFalse(await subject.hasProgressRecord(card._id));
+  });
+
   async function addCards(num) {
     const cards = new Array(num);
     for (let i = 0; i < cards.length; i++) {

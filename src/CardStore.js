@@ -66,6 +66,9 @@ const getOverdueDaysFunction = reviewTime =>
 class CardStore {
   constructor(options) {
     const pouchOptions = options && options.pouch ? options.pouch : {};
+    if (typeof pouchOptions.auto_compaction === 'undefined') {
+      pouchOptions.auto_compaction = true;
+    }
     this.db = new PouchDB('cards', { storage: 'persistant', ...pouchOptions });
 
     this.reviewTime =
@@ -177,19 +180,34 @@ class CardStore {
     return parseCard(card);
   }
 
-  deleteCard(card) {
-    return (async function tryToDeleteCard(card, db) {
+  async deleteCard(card) {
+    const stubbornDelete = async (doc, db) => {
       try {
-        return await db.remove(card);
+        return await db.remove(doc);
       } catch (err) {
         if (err.status !== 409) {
           throw err;
         }
         // If there is a conflict, just keep trying
-        card = await db.get(card._id);
-        return tryToDeleteCard(card, db);
+        doc = await db.get(doc._id);
+        return stubbornDelete(doc, db);
       }
-    })({ ...card, _id: CARD_PREFIX + card._id }, this.db);
+    };
+
+    await stubbornDelete({ ...card, _id: CARD_PREFIX + card._id }, this.db);
+
+    let progress;
+    try {
+      progress = await this.db.get(PROGRESS_PREFIX + card._id);
+    } catch (err) {
+      // If the progress record doesn't exist, that's fine.
+      if (err.status === 404) {
+        return;
+      }
+      throw err;
+    }
+
+    await stubbornDelete(progress, this.db);
   }
 
   static generateCardId() {
