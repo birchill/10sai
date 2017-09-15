@@ -63,6 +63,20 @@ const getOverdueDaysFunction = reviewTime =>
     });
   }`;
 
+const newCardFunction =
+  `function(doc) {
+    if (
+      !doc._id.startsWith('${PROGRESS_PREFIX}') ||
+      doc.reviewed !== null
+    ) {
+      return;
+    }
+
+    emit(doc._id, {
+      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
+    });
+  }`;
+
 class CardStore {
   constructor(options) {
     const pouchOptions = options && options.pouch ? options.pouch : {};
@@ -79,6 +93,7 @@ class CardStore {
       .info()
       .then(() => this.updateOverduenessView())
       .then(() => this.updateOverdueDaysView())
+      .then(() => this.updateNewCardsView())
       .then(() => {
         // Don't return this since we don't want to block on it
         this.db.viewCleanup();
@@ -379,6 +394,50 @@ class CardStore {
       .then(() => {
         // Don't return this because we don't want to block on it
         this.db.viewCleanup();
+      });
+  }
+
+  async getNewCards(options) {
+    return (
+      this.initDone
+        .then(() => {
+          const queryOptions = {
+            include_docs: true,
+            descending: true,
+          };
+          if (options && typeof options.limit === 'number') {
+            queryOptions.limit = options.limit;
+          }
+          return this.db.query('new_cards', queryOptions);
+        })
+        .then(result => result.rows.map(row => parseCard(row.doc)))
+    );
+  }
+
+  async updateNewCardsView() {
+    return this.db
+      .upsert('_design/new_cards', currentDoc => {
+        const doc = {
+          _id: '_design/new_cards',
+          views: {
+            new_cards: {
+              map: newCardFunction,
+            },
+          },
+        };
+
+        if (currentDoc &&
+            currentDoc.views &&
+            currentDoc.views.new_cards &&
+            currentDoc.views.new_cards.map &&
+            currentDoc.views.new_cards.map === doc.views.new_cards.map) {
+          return false;
+        }
+
+        return doc;
+      })
+      .then(() => {
+        this.db.query('new_cards', { limit: 0 }).catch(() => { /* Ignore */ });
       });
   }
 

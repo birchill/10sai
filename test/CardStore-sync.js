@@ -264,7 +264,7 @@ describe('CardStore remote sync', () => {
   });
 
   it('reports sync progress on initial download', async () => {
-    const numCards = 5;
+    const numCards = 9;
     const docs = [];
     for (let i = 0; i < numCards; i++) {
       docs.push({
@@ -290,17 +290,23 @@ describe('CardStore remote sync', () => {
 
     assert.strictEqual(
       allChanges.length,
-      3,
-      'Should be three batches of changes'
+      5,
+      'Should be five batches of changes'
     );
     // (Some of these numbers are bit different to what we'd normally expect but
     // that's because the design docs which we *don't* sync are included in the
     // total.)
+    //
+    // This feature has been disabled for now. We should just wait until PouchDB
+    // reports the pending flag:
+    // https://github.com/pouchdb/pouchdb/issues/5710
+    /*
     assert.deepEqual(
       allChanges.map(change => change.progress),
       [0, 2 / 3, 1.0],
       'Each batch has expected progress'
     );
+    */
   });
 
   it('reports sync progress on initial upload', async () => {

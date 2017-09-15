@@ -241,4 +241,27 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[2].question, 'Question 2');
     assert.strictEqual(result[3].question, 'Question 4');
   });
+
+  it('returns new cards, oldest first', async () => {
+    // Create some cards with creation time spaced out
+    const waitASec = () => new Promise(resolve => {
+      setTimeout(resolve, 1);
+    });
+    const cards = new Array(3);
+    for (let i = 0; i < cards.length; i++) {
+      // eslint-disable-next-line no-await-in-loop
+      cards[i] = await subject.putCard({
+        question: `Question ${i + 1}`,
+        answer: `Answer ${i + 1}`,
+      });
+      // eslint-disable-next-line no-await-in-loop
+      await waitASec();
+    }
+
+    const result = await subject.getNewCards();
+    assert.strictEqual(result.length, 3);
+    assert.strictEqual(result[0].question, 'Question 3');
+    assert.strictEqual(result[1].question, 'Question 2');
+    assert.strictEqual(result[2].question, 'Question 1');
+  });
 });
