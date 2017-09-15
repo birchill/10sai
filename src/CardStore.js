@@ -327,7 +327,11 @@ class CardStore {
       .then(() => {
         // Don't return the promise from this. Just trigger the query so it can
         // run in the background.
-        this.db.query('overdueness', { limit: 0 });
+        this.db.query('overdueness', { limit: 0 })
+        .catch(() => {
+          // Ignore errors from this. We hit this often during unit tests where
+          // we destroy the database before the query gets a change to run.
+        });
       });
   }
 
@@ -343,7 +347,11 @@ class CardStore {
       }))
       .then(() => {
         // As above, just trigger without blocking.
-        this.db.query('overdue_days', { limit: 0 });
+        this.db.query('overdue_days', { limit: 0 })
+        .catch(() => {
+          // Ignore errors from this. We hit this often during unit tests where
+          // we destroy the database before the query gets a change to run.
+        });
       });
   }
 
