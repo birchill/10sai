@@ -1,5 +1,5 @@
 import { takeEvery, takeLatest, put, select } from 'redux-saga/effects';
-import { waitForDocLoad, waitForIdle } from '../utils';
+import { waitForDocLoad } from '../utils';
 
 // Selector wrappers
 
@@ -49,8 +49,6 @@ function* startReplication(cardStore, server, dispatch) {
   // might treat the long-poll resulting from this as part of the initial load
   // and will indicate that page is loading, like, forever.
   yield waitForDocLoad();
-  // And just for good measure.
-  yield waitForIdle();
 
   if (server) {
     yield put({ type: 'UPDATE_SYNC_PROGRESS', progress: undefined });
