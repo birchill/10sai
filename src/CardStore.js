@@ -54,7 +54,12 @@ class CardStore {
       options && options.reviewTime && options.reviewTime instanceof Date
         ? options.reviewTime
         : new Date();
-    this.initDone = this.db.info().then(() => this._setReviewTime(reviewTime));
+    this.initDone = this.db.info()
+      .then(() => this._setReviewTime(reviewTime))
+      .then(() => {
+        // Don't return this since we don't want to block on it
+        this.db.viewCleanup();
+      });
   }
 
   async getCards() {
@@ -304,7 +309,11 @@ class CardStore {
   }
 
   async setReviewTime(reviewTime) {
-    return this.initDone.then(() => this._setReviewTime(reviewTime));
+    return this.initDone.then(() => this._setReviewTime(reviewTime))
+      .then(() => {
+        // Don't return this because we don't want to block on it
+        this.db.viewCleanup();
+      });
   }
 
   // Sets a server for synchronizing with and begins live synchonization.
