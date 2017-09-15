@@ -367,6 +367,8 @@ class CardStore {
       }
     }
 
+    await this.initDone;
+
     if (this.remoteSync) {
       this.remoteSync.cancel();
       this.remoteSync = undefined;
@@ -419,11 +421,20 @@ class CardStore {
       options && options.batchSize
         ? { batch_size: options.batchSize }
         : undefined;
+    // Don't push design docs since in many cases we'll be authenticating as
+    // a user that doesn't have permission to write design docs. A number of the
+    // design docs we create are also very temporary.
+    const pushOpts = {
+      ...pushPullOpts,
+      filter: doc => {
+        return !doc._id.startsWith('_design/');
+      },
+    };
     this.remoteSync = this.db.sync(this.remoteDb, {
       live: true,
       retry: true,
       pull: pushPullOpts,
-      push: pushPullOpts,
+      push: pushOpts,
     });
 
     // Wrap and set callbacks

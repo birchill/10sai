@@ -288,23 +288,19 @@ describe('CardStore remote sync', () => {
     });
     await allDone;
 
-    // We end up with four batches of changes because we first push the design
-    // doc that gets created on CardStore initialization, then we pull down the
-    // five cards in three batches. Or something like that.
     assert.strictEqual(
       allChanges.length,
-      4,
-      'Should be four batches of changes'
+      3,
+      'Should be three batches of changes'
     );
-    // There seems to be some indeterminancy regarding the batching, perhaps
-    // due to racing with creating the data doc? So just check that the values
-    // are increasings.
-    const progressValues = allChanges.map(change => change.progress);
-    assert.isBelow(progressValues[0], 1);
-    assert.isBelow(progressValues[0], progressValues[1]);
-    assert.isBelow(progressValues[1], progressValues[2]);
-    assert.isBelow(progressValues[2], progressValues[3]);
-    assert.strictEqual(progressValues[3], 1);
+    // (Some of these numbers are bit different to what we'd normally expect but
+    // that's because the design doc which we *don't* sync is included in the
+    // total.)
+    assert.deepEqual(
+      allChanges.map(change => change.progress),
+      [0.25, 0.75, 1.0],
+      'Each batch has expected progress'
+    );
   });
 
   it('reports sync progress on initial upload', async () => {
