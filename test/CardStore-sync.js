@@ -294,11 +294,11 @@ describe('CardStore remote sync', () => {
       'Should be three batches of changes'
     );
     // (Some of these numbers are bit different to what we'd normally expect but
-    // that's because the design doc which we *don't* sync is included in the
+    // that's because the design docs which we *don't* sync are included in the
     // total.)
     assert.deepEqual(
       allChanges.map(change => change.progress),
-      [0.25, 0.75, 1.0],
+      [0, 2 / 3, 1.0],
       'Each batch has expected progress'
     );
   });

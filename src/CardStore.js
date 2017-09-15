@@ -22,6 +22,7 @@ const parseCard = card => ({
 });
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 const getOverduenessFunction = reviewTime =>
   `function(doc) {
     if (
@@ -45,17 +46,35 @@ const getOverduenessFunction = reviewTime =>
     });
   }`;
 
+const getOverdueDaysFunction = reviewTime =>
+  `function(doc) {
+    if (
+      !doc._id.startsWith('${PROGRESS_PREFIX}') ||
+      typeof doc.level !== 'number' ||
+      typeof doc.reviewed !== 'number'
+    ) {
+      return;
+    }
+
+    const daysDiff = (${reviewTime.getTime()} - doc.reviewed) / ${MS_PER_DAY};
+    const overdueDays = daysDiff - doc.level;
+    emit(overdueDays, {
+      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
+    });
+  }`;
+
 class CardStore {
   constructor(options) {
     const pouchOptions = options && options.pouch ? options.pouch : {};
     this.db = new PouchDB('cards', { storage: 'persistant', ...pouchOptions });
 
-    const reviewTime =
+    this.reviewTime =
       options && options.reviewTime && options.reviewTime instanceof Date
         ? options.reviewTime
         : new Date();
     this.initDone = this.db.info()
-      .then(() => this._setReviewTime(reviewTime))
+      .then(() => this.updateOverduenessView())
+      .then(() => this.updateOverdueDaysView())
       .then(() => {
         // Don't return this since we don't want to block on it
         this.db.viewCleanup();
@@ -282,22 +301,26 @@ class CardStore {
           if (options && typeof options.limit === 'number') {
             queryOptions.limit = options.limit;
           }
-          return this.db.query('overdueness', queryOptions);
+          const view = options &&
+                       options.method &&
+                       options.method === 'overdueDays'
+                       ? 'overdue_days'
+                       : 'overdueness';
+          return this.db.query(view, queryOptions);
         })
         // (Note the 'key' field for each row contains the overdue factor as
-        // a number if we ever discover we need it.
+        // a number if we ever discover we need it.)
         .then(result => result.rows.map(row => parseCard(row.doc)))
     );
   }
 
-  async _setReviewTime(reviewTime) {
-    this.reviewTime = reviewTime;
+  async updateOverduenessView() {
     return this.db
       .upsert('_design/overdueness', () => ({
         _id: '_design/overdueness',
         views: {
           overdueness: {
-            map: getOverduenessFunction(reviewTime),
+            map: getOverduenessFunction(this.reviewTime),
           },
         },
       }))
@@ -308,8 +331,27 @@ class CardStore {
       });
   }
 
+  async updateOverdueDaysView() {
+    return this.db
+      .upsert('_design/overdue_days', () => ({
+        _id: '_design/overdue_days',
+        views: {
+          overdue_days: {
+            map: getOverdueDaysFunction(this.reviewTime),
+          },
+        },
+      }))
+      .then(() => {
+        // As above, just trigger without blocking.
+        this.db.query('overdue_days', { limit: 0 });
+      });
+  }
+
   async setReviewTime(reviewTime) {
-    return this.initDone.then(() => this._setReviewTime(reviewTime))
+    this.reviewTime = reviewTime;
+    return this.initDone
+      .then(() => this.updateOverduenessView())
+      .then(() => this.updateOverdueDaysView())
       .then(() => {
         // Don't return this because we don't want to block on it
         this.db.viewCleanup();
