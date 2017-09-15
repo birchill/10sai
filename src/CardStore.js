@@ -1,5 +1,5 @@
-/* eslint-disable no-shadow */
 // @format
+/* eslint-disable no-shadow */
 
 import PouchDB from 'pouchdb';
 
@@ -72,7 +72,8 @@ class CardStore {
       options && options.reviewTime && options.reviewTime instanceof Date
         ? options.reviewTime
         : new Date();
-    this.initDone = this.db.info()
+    this.initDone = this.db
+      .info()
       .then(() => this.updateOverduenessView())
       .then(() => this.updateOverdueDaysView())
       .then(() => {
@@ -301,11 +302,10 @@ class CardStore {
           if (options && typeof options.limit === 'number') {
             queryOptions.limit = options.limit;
           }
-          const view = options &&
-                       options.method &&
-                       options.method === 'overdueDays'
-                       ? 'overdue_days'
-                       : 'overdueness';
+          const view =
+            options && options.method && options.method === 'overdueDays'
+              ? 'overdue_days'
+              : 'overdueness';
           return this.db.query(view, queryOptions);
         })
         // (Note the 'key' field for each row contains the overdue factor as
@@ -327,8 +327,7 @@ class CardStore {
       .then(() => {
         // Don't return the promise from this. Just trigger the query so it can
         // run in the background.
-        this.db.query('overdueness', { limit: 0 })
-        .catch(() => {
+        this.db.query('overdueness', { limit: 0 }).catch(() => {
           // Ignore errors from this. We hit this often during unit tests where
           // we destroy the database before the query gets a change to run.
         });
@@ -347,8 +346,7 @@ class CardStore {
       }))
       .then(() => {
         // As above, just trigger without blocking.
-        this.db.query('overdue_days', { limit: 0 })
-        .catch(() => {
+        this.db.query('overdue_days', { limit: 0 }).catch(() => {
           // Ignore errors from this. We hit this often during unit tests where
           // we destroy the database before the query gets a change to run.
         });
