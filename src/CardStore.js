@@ -23,6 +23,15 @@ const parseCard = card => ({
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
+// We add a small exponential factor when calculating the overdue score of
+// cards. This is to prevent high-level but very overdue cards from being
+// starved by low-level overdue cards.
+//
+// The value below is chosen so that a card of level 365 that is half a year
+// overdue will have a very slightly higher overdueness than a level 1 card that
+// is one day overdue.
+const EXP_FACTOR = 0.00225;
+
 const getOverduenessFunction = reviewTime =>
   `function(doc) {
     if (
@@ -40,25 +49,11 @@ const getOverduenessFunction = reviewTime =>
     }
 
     const daysDiff = (${reviewTime.getTime()} - doc.reviewed) / ${MS_PER_DAY};
-    const overdueValue = (daysDiff - doc.level) / doc.level;
+    const daysOverdue = daysDiff - doc.level;
+    const linearComponent = daysOverdue / doc.level;
+    const expComponent = Math.exp(${EXP_FACTOR} * daysOverdue) - 1;
+    const overdueValue = linearComponent + expComponent;
     emit(overdueValue, {
-      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
-    });
-  }`;
-
-const getOverdueDaysFunction = reviewTime =>
-  `function(doc) {
-    if (
-      !doc._id.startsWith('${PROGRESS_PREFIX}') ||
-      typeof doc.level !== 'number' ||
-      typeof doc.reviewed !== 'number'
-    ) {
-      return;
-    }
-
-    const daysDiff = (${reviewTime.getTime()} - doc.reviewed) / ${MS_PER_DAY};
-    const overdueDays = daysDiff - doc.level;
-    emit(overdueDays, {
       _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
     });
   }`;
@@ -92,7 +87,6 @@ class CardStore {
     this.initDone = this.db
       .info()
       .then(() => this.updateOverduenessView())
-      .then(() => this.updateOverdueDaysView())
       .then(() => this.updateNewCardsView())
       .then(() => {
         // Don't return this since we don't want to block on it
@@ -335,11 +329,7 @@ class CardStore {
           if (options && typeof options.limit === 'number') {
             queryOptions.limit = options.limit;
           }
-          const view =
-            options && options.method && options.method === 'overdueDays'
-              ? 'overdue_days'
-              : 'overdueness';
-          return this.db.query(view, queryOptions);
+          return this.db.query('overdueness', queryOptions);
         })
         // (Note the 'key' field for each row contains the overdue factor as
         // a number if we ever discover we need it.)
@@ -367,30 +357,10 @@ class CardStore {
       });
   }
 
-  async updateOverdueDaysView() {
-    return this.db
-      .upsert('_design/overdue_days', () => ({
-        _id: '_design/overdue_days',
-        views: {
-          overdue_days: {
-            map: getOverdueDaysFunction(this.reviewTime),
-          },
-        },
-      }))
-      .then(() => {
-        // As above, just trigger without blocking.
-        this.db.query('overdue_days', { limit: 0 }).catch(() => {
-          // Ignore errors from this. We hit this often during unit tests where
-          // we destroy the database before the query gets a change to run.
-        });
-      });
-  }
-
   async setReviewTime(reviewTime) {
     this.reviewTime = reviewTime;
     return this.initDone
       .then(() => this.updateOverduenessView())
-      .then(() => this.updateOverdueDaysView())
       .then(() => {
         // Don't return this because we don't want to block on it
         this.db.viewCleanup();
@@ -426,19 +396,35 @@ class CardStore {
           },
         };
 
-        if (currentDoc &&
-            currentDoc.views &&
-            currentDoc.views.new_cards &&
-            currentDoc.views.new_cards.map &&
-            currentDoc.views.new_cards.map === doc.views.new_cards.map) {
+        if (
+          currentDoc &&
+          currentDoc.views &&
+          currentDoc.views.new_cards &&
+          currentDoc.views.new_cards.map &&
+          currentDoc.views.new_cards.map === doc.views.new_cards.map
+        ) {
           return false;
         }
 
         return doc;
-      })
-      .then(() => {
-        this.db.query('new_cards', { limit: 0 }).catch(() => { /* Ignore */ });
       });
+      // We'd like to trigger a pre-emptive query on the new_cards view at
+      // this point. However, if we do that unit tests will time out. I haven't
+      // quite worked out where things go astray, but if we add the exact same
+      // view several times and destroy the database in betweens, in seems like
+      // these pre-emptive queries all queue up and we time out.
+      //
+      // - If we do so much as put a comment with a random number in the map
+      //   function so that the functions are unique we don't time out. This is
+      //   why this is only a problem for this view since its static.
+      //
+      // - If we move the the test that calls getNewCards first, there's no
+      //   problem so it does seem to be some sort of queueing or conflict that
+      //   takes place.
+      //
+      // - If we initialize other views before this one or even so much as
+      //   trigger an extra upsert before adding this view the problem goes away
+      //   so it does seem to be some kind of timing issue too.
   }
 
   // Sets a server for synchronizing with and begins live synchonization.

@@ -199,54 +199,12 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[2].question, 'Question 3');
   });
 
-  it('returns cards based on the number of days overdue', async () => {
-    const cards = await addCards(5);
-
-    const relativeTime = diffInDays =>
-      new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
-
-    // Card 1: 3 days overdue
-    await subject.updateProgress(cards[0]._id, {
-      reviewed: relativeTime(-4),
-      level: 1,
-    });
-    // Card 2: 1 day overdue
-    await subject.updateProgress(cards[1]._id, {
-      reviewed: relativeTime(-3),
-      level: 2,
-    });
-    // Card 3: Not overdue
-    await subject.updateProgress(cards[2]._id, {
-      reviewed: relativeTime(-10),
-      level: 11,
-    });
-    // Card 4: Just overdue
-    await subject.updateProgress(cards[3]._id, {
-      reviewed: relativeTime(-10),
-      level: 10,
-    });
-    // Card 5: 5 days overdue
-    await subject.updateProgress(cards[4]._id, {
-      reviewed: relativeTime(-15),
-      level: 10,
-    });
-
-    // Given, the above we'd expect the result to be:
-    //
-    //     [ Card 5, Card 1, Card 2, Card 4 ]
-    const result = await subject.getOverdueCards({ method: 'overdueDays' });
-    assert.strictEqual(result.length, 4);
-    assert.strictEqual(result[0].question, 'Question 5');
-    assert.strictEqual(result[1].question, 'Question 1');
-    assert.strictEqual(result[2].question, 'Question 2');
-    assert.strictEqual(result[3].question, 'Question 4');
-  });
-
   it('returns new cards, oldest first', async () => {
     // Create some cards with creation time spaced out
-    const waitASec = () => new Promise(resolve => {
-      setTimeout(resolve, 1);
-    });
+    const waitASec = () =>
+      new Promise(resolve => {
+        setTimeout(resolve, 1);
+      });
     const cards = new Array(3);
     for (let i = 0; i < cards.length; i++) {
       // eslint-disable-next-line no-await-in-loop
