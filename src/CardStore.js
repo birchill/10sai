@@ -58,8 +58,7 @@ const getOverduenessFunction = reviewTime =>
     });
   }`;
 
-const newCardFunction =
-  `function(doc) {
+const newCardFunction = `function(doc) {
     if (
       !doc._id.startsWith('${PROGRESS_PREFIX}') ||
       doc.reviewed !== null
@@ -359,72 +358,67 @@ class CardStore {
 
   async setReviewTime(reviewTime) {
     this.reviewTime = reviewTime;
-    return this.initDone
-      .then(() => this.updateOverduenessView())
-      .then(() => {
-        // Don't return this because we don't want to block on it
-        this.db.viewCleanup();
-      });
+    return this.initDone.then(() => this.updateOverduenessView()).then(() => {
+      // Don't return this because we don't want to block on it
+      this.db.viewCleanup();
+    });
   }
 
   async getNewCards(options) {
-    return (
-      this.initDone
-        .then(() => {
-          const queryOptions = {
-            include_docs: true,
-            descending: true,
-          };
-          if (options && typeof options.limit === 'number') {
-            queryOptions.limit = options.limit;
-          }
-          return this.db.query('new_cards', queryOptions);
-        })
-        .then(result => result.rows.map(row => parseCard(row.doc)))
-    );
+    return this.initDone
+      .then(() => {
+        const queryOptions = {
+          include_docs: true,
+          descending: true,
+        };
+        if (options && typeof options.limit === 'number') {
+          queryOptions.limit = options.limit;
+        }
+        return this.db.query('new_cards', queryOptions);
+      })
+      .then(result => result.rows.map(row => parseCard(row.doc)));
   }
 
   async updateNewCardsView() {
-    return this.db
-      .upsert('_design/new_cards', currentDoc => {
-        const doc = {
-          _id: '_design/new_cards',
-          views: {
-            new_cards: {
-              map: newCardFunction,
-            },
+    return this.db.upsert('_design/new_cards', currentDoc => {
+      const doc = {
+        _id: '_design/new_cards',
+        views: {
+          new_cards: {
+            map: newCardFunction,
           },
-        };
+        },
+      };
 
-        if (
-          currentDoc &&
-          currentDoc.views &&
-          currentDoc.views.new_cards &&
-          currentDoc.views.new_cards.map &&
-          currentDoc.views.new_cards.map === doc.views.new_cards.map
-        ) {
-          return false;
-        }
+      if (
+        currentDoc &&
+        currentDoc.views &&
+        currentDoc.views.new_cards &&
+        currentDoc.views.new_cards.map &&
+        currentDoc.views.new_cards.map === doc.views.new_cards.map
+      ) {
+        return false;
+      }
 
-        return doc;
-      });
-      // We'd like to trigger a pre-emptive query on the new_cards view at
-      // this point. However, if we do that unit tests will time out. I haven't
-      // quite worked out where things go astray, but if we add the exact same
-      // view several times and destroy the database in betweens, in seems like
-      // these pre-emptive queries all queue up and we time out.
-      //
-      // - If we do so much as put a comment with a random number in the map
-      //   function so that the functions are unique we don't time out. This is
-      //   why this is only a problem for this view since its static.
-      //
-      // - If we move the the test that calls getNewCards first, there's no
-      //   problem so it does seem to be some sort of queueing or conflict that
-      //   takes place.
-      //
-      // - If we initialize other views before this one or even so much as
-      //   trigger an extra upsert before adding this view the problem goes away
-      //   so it does seem to be some kind of timing issue too.
+      return doc;
+    });
+    // We'd like to trigger a pre-emptive query on the new_cards view at
+    // this point. However, if we do that unit tests will time out. I haven't
+    // quite worked out where things go astray, but if we add the exact same
+    // view several times and destroy the database in betweens, in seems like
+    // these pre-emptive queries all queue up and we time out.
+    //
+    // - If we do so much as put a comment with a random number in the map
+    //   function so that the functions are unique we don't time out. This is
+    //   why this is only a problem for this view since its static.
+    //
+    // - If we move the the test that calls getNewCards first, there's no
+    //   problem so it does seem to be some sort of queueing or conflict that
+    //   takes place.
+    //
+    // - If we initialize other views before this one or even so much as
+    //   trigger an extra upsert before adding this view the problem goes away
+    //   so it does seem to be some kind of timing issue too.
   }
 
   // Sets a server for synchronizing with and begins live synchonization.
