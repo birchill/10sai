@@ -37,7 +37,10 @@ describe('ReviewMaster', () => {
    * Initial selection
    */
 
-  it('respects the total limit', async () => {
+  it('respects the total limit', async function test() {
+    // This test takes a while
+    this.timeout(3000);
+
     // Add 20 new cards
     const cards = await addCards(20);
 
