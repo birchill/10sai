@@ -33,6 +33,16 @@ describe('ReviewMaster', () => {
     return Promise.all(promises);
   }
 
+  async function makeOverdue(card, daysOverdue, level) {
+    const progress = {
+      reviewed: new Date(store.reviewTime.getTime() - daysOverdue * MS_PER_DAY),
+    };
+    if (typeof level !== 'undefined') {
+      progress.level = level;
+    }
+    return store.updateProgress(card._id, progress);
+  }
+
   /*
    * Initial selection
    */
@@ -45,19 +55,9 @@ describe('ReviewMaster', () => {
     const cards = await addCards(20);
 
     // Make 15 overdue
-    // TODO: Factor this out
     const progressPromises = [];
     for (let i = 0; i < 15; i++) {
-      progressPromises.push(
-        store.updateProgress(
-          cards[i]._id,
-          // Make it reviewed two days ago
-          {
-            reviewed: new Date(store.reviewTime.getTime() - 2 * MS_PER_DAY),
-            level: 1,
-          }
-        )
-      );
+      progressPromises.push(makeOverdue(cards[i], 2, 1));
     }
     await Promise.all(progressPromises);
 
