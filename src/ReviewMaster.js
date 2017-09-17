@@ -68,7 +68,9 @@ class ReviewMaster {
 
     // Create a new promise for others to wait on.
     let updateFinished;
-    this.queueUpdate = new Promise(resolve => { updateFinished = resolve; });
+    this.queueUpdate = new Promise(resolve => {
+      updateFinished = resolve;
+    });
 
     // First fill up with the maximum number of new cards
     const newCardSlots = Math.max(
