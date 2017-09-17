@@ -47,7 +47,7 @@ describe('ReviewMaster', () => {
    * Initial selection
    */
 
-  it('respects the total limit', async function test() {
+  it('respects the limits set', async function test() {
     // This test takes a while
     this.timeout(3000);
 
@@ -62,24 +62,21 @@ describe('ReviewMaster', () => {
     await Promise.all(progressPromises);
 
     await subject.setReviewLimits({ total: 10, unreviewed: 2 });
-    assert.strictEqual(subject.questionsRemaining, 10, 'questions remaining');
     assert.strictEqual(subject.completeCount, 0, 'complete count');
+    assert.strictEqual(subject.failCount, 0, 'fail count');
     assert.strictEqual(subject.newCount, 2, 'new count');
-    assert.strictEqual(
-      subject.repeatQuestionsRemaining,
-      0,
-      'repeat questions remaining'
-    );
+    assert.strictEqual(subject.unseenCount, 10, 'unseen count');
+    assert.strictEqual(subject.questionsRemaining, 10, 'questions remaining');
   });
-
-  it('respects the new limit', async () => {});
-
-  it('chooses cards that are relatively less overdue but overall more overdue', async () => {});
 
   /*
    * Current, next, and previous cards
    *
+   * (Should we have two next cards? Next if correct, next if incorrect?)
+   *
    * -- test we choose them randomly
+   * -- test that when the queues are updated (by calling setReviewLimits) that
+   *    the current card is not changed
    */
 
   /*

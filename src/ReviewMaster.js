@@ -22,22 +22,6 @@ class ReviewMaster {
     this.queueUpdate = Promise.resolve();
   }
 
-  // The number of times we anticipate prompting the user assuming they get
-  // everything right.
-  get questionsRemaining() {
-    return (
-      this._overdueCards.length +
-      this._newCards.length +
-      this.repeatQuestionsRemaining
-    );
-  }
-
-  // The number of questions we have queued based on answering previous
-  // questions incorrectly.
-  get repeatQuestionsRemaining() {
-    return this._failedCardsLevel2.length * 2 + this._failedCardsLevel1.length;
-  }
-
   // The number of cards that have been successfully answered, including cards
   // that we failed but then successfully answered twice in a row.
   get completeCount() {
@@ -46,9 +30,34 @@ class ReviewMaster {
     return this._completeCards.length;
   }
 
+  // The number of cards we've failed at least once and have yet to get to get
+  // right twice in a row.
+  get failCount() {
+    return this._failedCardsLevel2.length + this._failedCardsLevel1.length;
+  }
+
   // The number of unseen new cards.
   get newCount() {
     return this._newCards.length;
+  }
+
+  // The total number of unseen cards.
+  get unseenCount() {
+    return this._newCards.length + this._overdueCards.length;
+  }
+
+  // The number of times we anticipate prompting the user assuming they get
+  // everything right.
+  //
+  // (Not sure if we actually need this yet but it might come in handy if we
+  // later decide to try to estimate how long until the review is complete...)
+  get questionsRemaining() {
+    return (
+      this._overdueCards.length +
+      this._newCards.length +
+      this._failedCardsLevel2.length * 2 +
+      this._failedCardsLevel1.length
+    );
   }
 
   async setReviewLimits(limits) {
