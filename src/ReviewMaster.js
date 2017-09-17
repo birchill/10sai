@@ -1,8 +1,5 @@
 // @format
 
-const DEFAULT_MAX_CARDS = 50;
-const DEFAULT_MAX_NEW_CARDS = 10;
-
 class ReviewMaster {
   constructor(cardStore) {
     this._cardStore = cardStore;
@@ -18,11 +15,11 @@ class ReviewMaster {
     // Cards we have answered correctly.
     this._completeCards = [];
 
-    this.maxCardsLimit = DEFAULT_MAX_CARDS;
-    this.maxNewCardsLimit = DEFAULT_MAX_NEW_CARDS;
+    this.maxCardsLimit = 0;
+    this.maxNewCardsLimit = 0;
     this.newCardsInPlay = 0;
 
-    this._updateQueues();
+    this.queueUpdate = Promise.resolve();
   }
 
   // The number of times we anticipate prompting the user assuming they get
@@ -66,6 +63,13 @@ class ReviewMaster {
   }
 
   async _updateQueues() {
+    // Wait in case another queue update is in progress
+    await this.queueUpdate;
+
+    // Create a new promise for others to wait on.
+    let updateFinished;
+    this.queueUpdate = new Promise(resolve => { updateFinished = resolve; });
+
     // First fill up with the maximum number of new cards
     const newCardSlots = Math.max(
       this.maxNewCardsLimit - this.newCardsInPlay,
@@ -94,6 +98,8 @@ class ReviewMaster {
 
     // TODO: Make sure we preserve the current card in the above
     // TODO: Update the next card if it is no longer is in any of the lists
+
+    updateFinished();
   }
 
   /*
