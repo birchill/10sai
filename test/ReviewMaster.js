@@ -23,10 +23,12 @@ describe('ReviewMaster', () => {
   async function addCards(num) {
     const promises = [];
     for (let i = 0; i < num; i++) {
-      promises.push(store.putCard({
-        question: `Question ${i + 1}`,
-        answer: `Answer ${i + 1}`,
-      }));
+      promises.push(
+        store.putCard({
+          question: `Question ${i + 1}`,
+          answer: `Answer ${i + 1}`,
+        })
+      );
     }
     return Promise.all(promises);
   }
@@ -43,10 +45,16 @@ describe('ReviewMaster', () => {
     // TODO: Factor this out
     const progressPromises = [];
     for (let i = 0; i < 15; i++) {
-      progressPromises.push(store.updateProgress(cards[i]._id,
-        // Make it reviewed two days ago
-        { reviewed: new Date(store.reviewTime.getTime() - 2 * MS_PER_DAY),
-          level: 1 }));
+      progressPromises.push(
+        store.updateProgress(
+          cards[i]._id,
+          // Make it reviewed two days ago
+          {
+            reviewed: new Date(store.reviewTime.getTime() - 2 * MS_PER_DAY),
+            level: 1,
+          }
+        )
+      );
     }
     await Promise.all(progressPromises);
 
@@ -54,15 +62,16 @@ describe('ReviewMaster', () => {
     assert.strictEqual(subject.questionsRemaining, 10, 'questions remaining');
     assert.strictEqual(subject.completeCount, 0, 'complete count');
     assert.strictEqual(subject.newCount, 2, 'new count');
-    assert.strictEqual(subject.repeatQuestionsRemaining, 0,
-      'repeat questions remaining');
+    assert.strictEqual(
+      subject.repeatQuestionsRemaining,
+      0,
+      'repeat questions remaining'
+    );
   });
 
-  it('respects the new limit', async () => {
-  });
+  it('respects the new limit', async () => {});
 
-  it('chooses cards that are relatively less overdue but overall more overdue', async () => {
-  });
+  it('chooses cards that are relatively less overdue but overall more overdue', async () => {});
 
   /*
    * Current, next, and previous cards
