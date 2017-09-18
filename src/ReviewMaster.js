@@ -112,13 +112,6 @@ class ReviewMaster {
 
     updateFinished();
   }
-
-  /*
-   * TODO: Some sort promise to indicate the queues have been populated
-   * (rather than making all the getters above async?)
-  get ready() {
-  }
-  */
 }
 
 export default ReviewMaster;

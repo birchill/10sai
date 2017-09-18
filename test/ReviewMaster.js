@@ -79,6 +79,19 @@ describe('ReviewMaster', () => {
    *    the current card is not changed
    */
 
+  it('chooses the current card randomly', async () => {
+  });
+
+  it('weights the choice towards the more overdue cards', async () => {
+    // Basically make every second card more overdue than the others then repeat
+    // the above over and over many times and check that the even cards get
+    // chosen more.
+  });
+
+  it('does not change the current or previous cards when the review queues are regenerated', async () => {
+    // (Might be hard to test the previous card at this point)
+  });
+
   /*
    * Updating progress
    */
