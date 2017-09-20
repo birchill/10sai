@@ -329,6 +329,15 @@ class CardStore {
           if (options && typeof options.limit === 'number') {
             queryOptions.limit = options.limit;
           }
+          if (options && options.skipFailedCards) {
+            // This really should be Number.MAX_VALUE - .0001 or something like
+            // that but that doesn't seem to work and I haven't debugged far
+            // enough into PouchDB to find out why.
+            //
+            // (Really getOverduenessFunction should use Infinity and this
+            // should use Number.MAX_VALUE but that too doesn't work.)
+            queryOptions.startkey = Number.MAX_SAFE_INTEGER;
+          }
           return this.db.query('overdueness', queryOptions);
         })
         // (Note the 'key' field for each row contains the overdue factor as

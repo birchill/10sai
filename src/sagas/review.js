@@ -35,9 +35,6 @@ export function* updateQueues(cardStore, action) {
     const options = { limit: overdueCardSlots };
     // If we are updating the queues mid-review then avoid getting cards that
     // are already in our failed queues.
-    // TODO: Actually implement this in CardStore -- basically make such cards
-    // have an overdueness score of Infinity (currently I think it ends up being
-    // zero).
     if (action.type === 'SET_REVIEW_LIMITS') {
       options.skipFailedCards = true;
     }

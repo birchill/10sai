@@ -189,6 +189,34 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[2].question, 'Question 1');
   });
 
+  it('allows skipping failed cards', async () => {
+    const cards = await addCards(3);
+
+    const relativeTime = diffInDays =>
+      new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
+
+    // Card 1: Just overdue
+    await subject.updateProgress(cards[0]._id, {
+      reviewed: relativeTime(-2.1),
+      level: 2,
+    });
+    // Card 2: Failed (and overdue)
+    await subject.updateProgress(cards[1]._id, {
+      reviewed: relativeTime(-2.1),
+      level: 0,
+    });
+    // Card 3: Just overdue
+    await subject.updateProgress(cards[2]._id, {
+      reviewed: relativeTime(-2.1),
+      level: 2,
+    });
+
+    const result = await subject.getOverdueCards({ skipFailedCards: true });
+    assert.strictEqual(result.length, 2);
+    assert.strictEqual(result[0].question, 'Question 3');
+    assert.strictEqual(result[1].question, 'Question 1');
+  });
+
   it('allows the review time to be updated', async () => {
     const cards = await addCards(3);
 
