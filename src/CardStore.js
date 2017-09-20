@@ -43,7 +43,8 @@ const getOverduenessFunction = reviewTime =>
     }
 
     if (doc.level === 0) {
-      emit(0, {
+      // Unfortunately 'Infinity' doesn't seem to work here
+      emit(Number.MAX_VALUE, {
         _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
       });
     }
