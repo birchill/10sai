@@ -1,4 +1,4 @@
-export function newReview(maxCards, maxNewCards) {
+export function newReview(maxNewCards, maxCards) {
   return {
     type: 'NEW_REVIEW',
     maxCards,
@@ -6,11 +6,18 @@ export function newReview(maxCards, maxNewCards) {
   };
 }
 
-export function reviewLoaded(newCards, overdueCards) {
+export function setReviewLimit(maxNewCards, maxCards) {
+  return {
+    type: 'SET_REVIEW_LIMIT',
+    maxCards,
+    maxNewCards,
+  };
+}
+
+export function reviewLoaded(cards) {
   return {
     type: 'REVIEW_LOADED',
-    newCards,
-    overdueCards,
+    cards,
   };
 }
 

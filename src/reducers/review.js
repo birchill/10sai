@@ -17,16 +17,12 @@ const initialState = {
   // presented again in this review.
   completed: 0,
 
-  // The number of cards that *were* in |newCards| but are now in one of the
-  // queues or are the current card.
+  // The number of cards that *were* in the heap but are now in one of
+  // the failed queues or are the current card.
   newCardsInPlay: 0,
 
-  // Cards we have queued based on their 'overdueness' score but have yet to
-  // show to the user.
-  overdueCards: [],
-
-  // Cards that have never been reviewed before including in this review.
-  newCards: [],
+  // Cards we have queued but have yet to show to the user.
+  heap: [],
 
   // Cards which we once failed but have since answered correctly once.
   failedCardsLevel1: [],
@@ -43,15 +39,10 @@ const initialState = {
   // review in progress (or it is complete, or loading).
   currentCard: null,
 
-  // The next card to present if the current card is answered correctly.
+  // The next card to present if the current card.
   // May be null if there are no more cards to be reviewed or if there is no
   // review in progress.
-  nextCardIfCorrect: null,
-
-  // The next card to present if the current card is answered correctly.
-  // May be null if there is no review in progress. It may also be equal to
-  // |nextCardIfCorrect| or |currentCard|.
-  nextCardIfIncorrect: null,
+  nextCard: null,
 };
 
 export default function review(state = initialState, action) {
@@ -65,12 +56,20 @@ export default function review(state = initialState, action) {
       };
     }
 
+    case 'SET_REVIEW_LIMIT': {
+      return {
+        ...state,
+        reviewState: ReviewState.LOADING,
+        maxCards: action.maxCards,
+        maxNewCards: action.maxNewCards,
+      };
+    }
+
     case 'REVIEW_LOADED': {
       return {
         ...state,
         reviewState: ReviewState.QUESTION,
-        newCards: action.newCards,
-        overdueCards: action.overdueCards,
+        heap: action.cards,
       };
     }
 

@@ -8,48 +8,39 @@ const getReviewInfo = state => (state ? state.review : {});
 
 // Sagas
 
-export function* updateQueues(cardStore, action) {
+export function* updateQueue(cardStore, action) {
   const reviewInfo = yield select(getReviewInfo);
-
-  // First fill up with the maximum number of new cards
-  const newCardSlots = Math.max(
-    reviewInfo.maxNewCardsLimit - reviewInfo.newCardsInPlay,
-    0
-  );
-  let newCards = [];
-  if (newCardSlots) {
-    newCards = yield call([cardStore, 'getNewCards'], { limit: newCardSlots });
-  }
-
-  // Now fill up the overdue slots
-  const overdueCardSlots = Math.max(
+  let freeSlots = Math.max(
     0,
-    reviewInfo.maxCardsLimit -
-      newCards.length -
+    reviewInfo.maxCards -
       reviewInfo.completed -
       reviewInfo.failedCardsLevel1.length -
       reviewInfo.failedCardsLevel2.length
   );
-  let overdueCards = [];
-  if (overdueCardSlots) {
-    const options = { limit: overdueCardSlots };
-    // If we are updating the queues mid-review then avoid getting cards that
-    // are already in our failed queues.
-    if (action.type === 'SET_REVIEW_LIMITS') {
-      options.skipFailedCards = true;
-    }
-    overdueCards = yield call([cardStore, 'getOverdueCards'], options);
+
+  // First fill up with the maximum number of new cards
+  const newCardSlots = Math.max(
+    Math.min(reviewInfo.maxNewCards - reviewInfo.newCardsInPlay, freeSlots),
+    0
+  );
+  let cards = [];
+  if (newCardSlots) {
+    cards = yield call([cardStore, 'getNewCards'], { limit: newCardSlots });
+    freeSlots -= cards.length;
   }
 
-  // TODO: See comment in updateProgress below -- regarding choosing the current
-  // card we should probably create a single queue and randomize it here (with
-  // appropriate weighting so new cards and more overdue cards appear towards
-  // the front).
-  //
-  // (And we'll need to remember to rename this function to updateQueue -- i.e.
-  // singular in that case.)
+  // Now fill up the overdue slots
+  if (freeSlots) {
+    const options = { limit: freeSlots };
+    // If we are updating the queues mid-review then avoid getting cards that
+    // are already in our failed queues.
+    if (action.type === 'SET_REVIEW_LIMIT') {
+      options.skipFailedCards = true;
+    }
+    cards.push(...yield call([cardStore, 'getOverdueCards'], options));
+  }
 
-  yield put(reviewActions.reviewLoaded(newCards, overdueCards));
+  yield put(reviewActions.reviewLoaded(cards));
 }
 
 export function* updateProgress(cardStore, action) {
@@ -93,7 +84,7 @@ export function* updateProgress(cardStore, action) {
 
 function* reviewSagas(cardStore) {
   yield* [
-    takeEvery(['NEW_REVIEW', 'SET_REVIEW_LIMITS'], updateQueues, cardStore),
+    takeEvery(['NEW_REVIEW', 'SET_REVIEW_LIMITS'], updateQueue, cardStore),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
   ];
 }

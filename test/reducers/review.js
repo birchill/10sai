@@ -9,7 +9,7 @@ import * as actions from '../../src/actions/review';
 
 describe('reducer:review', () => {
   it('should go to the loading state on NEW_REVIEW', () => {
-    const updatedState = subject(undefined, actions.newReview(10, 2));
+    const updatedState = subject(undefined, actions.newReview(2, 10));
     assert(updatedState.reviewState === ReviewState.LOADING);
     assert(updatedState.maxCards === 10);
     assert(updatedState.maxNewCards === 2);
