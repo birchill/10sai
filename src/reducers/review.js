@@ -17,12 +17,12 @@ const initialState = {
   // presented again in this review.
   completed: 0,
 
-  // The number of cards that *were* in the heap but are now in one of
+  // The number of cards that *were* in the queue but are now in one of
   // the failed queues or are the current card.
   newCardsInPlay: 0,
 
   // Cards we have queued but have yet to show to the user.
-  heap: [],
+  queue: [],
 
   // Cards which we once failed but have since answered correctly once.
   failedCardsLevel1: [],
@@ -69,7 +69,7 @@ export default function review(state = initialState, action) {
       return {
         ...state,
         reviewState: ReviewState.QUESTION,
-        heap: action.cards,
+        queue: action.cards,
       };
     }
 
