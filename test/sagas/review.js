@@ -4,11 +4,11 @@
 import { expectSaga } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
 
-import { updateQueue as updateQueueSaga } from '../../src/sagas/review';
+import { updateHeap as updateHeapSaga } from '../../src/sagas/review';
 import * as reviewActions from '../../src/actions/review';
 import reducer from '../../src/reducers/index';
 
-describe('sagas:review updateQueue', () => {
+describe('sagas:review updateHeap', () => {
   const cardStore = {
     getNewCards: () => {},
     getOverdueCards: () => {},
@@ -20,7 +20,7 @@ describe('sagas:review updateQueue', () => {
     const allCards = newCards.concat(overdueCards);
     const action = reviewActions.newReview(2, 3);
 
-    return expectSaga(updateQueueSaga, cardStore, action)
+    return expectSaga(updateHeapSaga, cardStore, action)
       .provide([
         [matchers.call.fn(cardStore.getNewCards), newCards],
         [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
@@ -36,7 +36,7 @@ describe('sagas:review updateQueue', () => {
     const newCards = ['New card 1', 'New card 2'];
     const action = reviewActions.newReview(3, 2);
 
-    return expectSaga(updateQueueSaga, cardStore, action)
+    return expectSaga(updateHeapSaga, cardStore, action)
       .provide([[matchers.call.fn(cardStore.getNewCards), newCards]])
       .withState(reducer(undefined, action))
       .call([cardStore, 'getNewCards'], { limit: 2 })
@@ -49,7 +49,7 @@ describe('sagas:review updateQueue', () => {
     const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
     const action = reviewActions.newReview(2, 3);
 
-    return expectSaga(updateQueueSaga, cardStore, action)
+    return expectSaga(updateHeapSaga, cardStore, action)
       .provide([
         [matchers.call.fn(cardStore.getNewCards), []],
         [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
@@ -72,7 +72,7 @@ describe('sagas:review updateQueue', () => {
     const overdueCards = ['Overdue card 3', 'Overdue card 4'];
     const allCards = newCards.concat(overdueCards);
 
-    return expectSaga(updateQueueSaga, cardStore, action)
+    return expectSaga(updateHeapSaga, cardStore, action)
       .provide([
         [matchers.call.fn(cardStore.getNewCards), newCards],
         [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
@@ -92,7 +92,7 @@ describe('sagas:review updateQueue', () => {
     state.review.completed = 2;
     state.review.failedCardsLevel1 = [ {} ];
 
-    return expectSaga(updateQueueSaga, cardStore, action)
+    return expectSaga(updateHeapSaga, cardStore, action)
       .withState(state)
       .not.call.fn([cardStore, 'getNewCards'])
       .not.call.fn([cardStore, 'getOverdueCards'])
@@ -107,7 +107,7 @@ describe('sagas:review updateQueue', () => {
     state.review.newCardsInPlay = 2;
     state.review.completed = 2;
 
-    return expectSaga(updateQueueSaga, cardStore, action)
+    return expectSaga(updateHeapSaga, cardStore, action)
       .withState(state)
       .not.call.fn([cardStore, 'getNewCards'])
       .not.call.fn([cardStore, 'getOverdueCards'])

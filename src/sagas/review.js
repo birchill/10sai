@@ -8,7 +8,7 @@ const getReviewInfo = state => (state ? state.review : {});
 
 // Sagas
 
-export function* updateQueue(cardStore, action) {
+export function* updateHeap(cardStore, action) {
   const reviewInfo = yield select(getReviewInfo);
   let freeSlots = Math.max(
     0,
@@ -32,8 +32,8 @@ export function* updateQueue(cardStore, action) {
   // Now fill up the overdue slots
   if (freeSlots) {
     const options = { limit: freeSlots };
-    // If we are updating the queues mid-review then avoid getting cards that
-    // are already in our failed queues.
+    // If we are updating the heap mid-review then avoid getting cards that
+    // are already in our failed heaps.
     if (action.type === 'SET_REVIEW_LIMIT') {
       options.skipFailedCards = true;
     }
@@ -44,16 +44,6 @@ export function* updateQueue(cardStore, action) {
 }
 
 export function* updateProgress(cardStore, action) {
-  // TODO: Since we choose the next card randomly, I think we probably want to
-  // choose the next card here in the saga and dispatch an action to set the
-  // next card (so long as we do this before triggering any long-running async
-  // operations I guess we should have the next card ready in time).
-  //
-  // Or, instead, should we choose the order of cards once when we build the
-  // queues and then just have the reducer pull things from the lists in
-  // a deterministic fashion. That's probably better. If we do that we probably
-  // don't even need a separate new queue.
-
   try {
     let level;
     if (action.type === 'FAIL_CARD') {
@@ -84,7 +74,7 @@ export function* updateProgress(cardStore, action) {
 
 function* reviewSagas(cardStore) {
   yield* [
-    takeEvery(['NEW_REVIEW', 'SET_REVIEW_LIMITS'], updateQueue, cardStore),
+    takeEvery(['NEW_REVIEW', 'SET_REVIEW_LIMITS'], updateHeap, cardStore),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
   ];
 }
