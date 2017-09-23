@@ -66,6 +66,10 @@ export default function review(state = initialState, action) {
     }
 
     case 'REVIEW_LOADED': {
+      // TODO: This should replace the next card regardless. The 'cards'
+      // included in the action *includes* a card to be used for the next card
+      // since that simplifies the case where the review limits are adjusted
+      // such that there should no longer be a next card.
       return {
         ...state,
         reviewState: ReviewState.QUESTION,

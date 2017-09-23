@@ -15,8 +15,14 @@ export function* updateHeap(cardStore, action) {
     reviewInfo.maxCards -
       reviewInfo.completed -
       reviewInfo.failedCardsLevel1.length -
-      reviewInfo.failedCardsLevel2.length
+      reviewInfo.failedCardsLevel2.length -
+      (reviewInfo.currentCard ? 1 : 0)
   );
+  // Note that we ignore 'nextCard' above since we assume that the reducer that
+  // handles REVIEW_LOADED will update nextCard so we need to include it in the
+  // set of cards we provide.
+
+  // TODO: Error handling for the below
 
   // First fill up with the maximum number of new cards
   const newCardSlots = Math.max(
@@ -44,26 +50,27 @@ export function* updateHeap(cardStore, action) {
 }
 
 export function* updateProgress(cardStore, action) {
-  try {
-    let level;
-    if (action.type === 'FAIL_CARD') {
-      level = 0;
-    } else if (action.card.level === 0) {
-      level = 1;
-    } else {
-      level = action.card.level * 2;
-    }
+  let level;
+  if (action.type === 'FAIL_CARD') {
+    level = 0;
+  } else if (action.card.level === 0) {
+    level = 1;
+  } else {
+    level = action.card.level * 2;
+  }
 
-    const update = {
-      // Using the CardStore's review time (as opposed to, say, `new Date()`
-      // means that say you review just after 7am each morning then the next
-      // morning any failed cards will show up in the 7am window the next
-      // morning).
-      // TODO: This is after we normalize CardStore's review times to hour
-      // intervals.
-      reviewed: cardStore.reviewTime,
-      level,
-    };
+  const update = {
+    // Using the CardStore's review time (as opposed to, say, `new Date()`
+    // means that say you review just after 7am each morning then the next
+    // morning any failed cards will show up in the 7am window the next
+    // morning).
+    // TODO: This is after we normalize CardStore's review times to hour
+    // intervals.
+    reviewed: cardStore.reviewTime,
+    level,
+  };
+
+  try {
     yield call([cardStore, 'updateProgress'], update);
   } catch (error) {
     console.error(`Failed to update progress of card: ${error}`);

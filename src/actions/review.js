@@ -18,10 +18,16 @@ export function reviewLoaded(cards) {
   return {
     type: 'REVIEW_LOADED',
     cards,
+    // The way we avoid caring about if these two overlap is that we assign the
+    // current card and then remove if from the corresponding list. That way
+    // nextCard is guaranteed to be different. This also helps with the case
+    // where there is only one card left.
+    currentCardSeed: Math.random(),
+    nextCardSeed: Math.random(),
   };
 }
 
-// TODO: setReviewLimits
 // TODO: failCard -- needs to include the card
 // TODO: passCard -- needs to include the card
 // TODO: failUpdateProgress
+// TODO: failLoadReview (rename reviewLoaded to finishLoadReview?)

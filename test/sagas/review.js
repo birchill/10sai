@@ -115,5 +115,24 @@ describe('sagas:review updateHeap', () => {
       .run();
   });
 
-  // TODO: Handle current card and next card!!!
+  it('counts the current card as an occupied slot', async () => {
+    let state = reducer(undefined, reviewActions.newReview(2, 3));
+    const action = reviewActions.setReviewLimit(3, 4);
+    state = reducer(state, action);
+    state.review.newCardsInPlay = 2;
+    state.review.completed = 2;
+    state.review.currentCard = {};
+
+    const newCards = ['New card 3'];
+
+    return expectSaga(updateHeapSaga, cardStore, action)
+      .provide([
+        [matchers.call.fn(cardStore.getNewCards), newCards],
+      ])
+      .withState(state)
+      .call([cardStore, 'getNewCards'], { limit: 1 })
+      .not.call.fn([cardStore, 'getOverdueCards'])
+      .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
+      .run();
+  });
 });
