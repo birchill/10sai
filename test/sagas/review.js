@@ -136,3 +136,15 @@ describe('sagas:review updateHeap', () => {
       .run();
   });
 });
+
+describe('sagas:review updateProgress', () => {
+  /*
+  const cardStore = {
+    updateProgress: () => {},
+  };
+  */
+
+  it('updates the progress of a failed card', async () => {
+    // TODO
+  });
+});

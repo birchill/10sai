@@ -50,6 +50,9 @@ export function* updateHeap(cardStore, action) {
 }
 
 export function* updateProgress(cardStore, action) {
+  // XXX This should not happen here, but in the reducer instead.
+  // Instead, we need to be careful to read the level from *state* and not from
+  // the action.
   let level;
   if (action.type === 'FAIL_CARD') {
     level = 0;

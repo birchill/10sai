@@ -27,7 +27,21 @@ export function reviewLoaded(cards) {
   };
 }
 
-// TODO: failCard -- needs to include the card
-// TODO: passCard -- needs to include the card
+export function failCard(card) {
+  return {
+    type: 'FAIL_CARD',
+    card,
+    nextCardSeed: Math.random(),
+  };
+}
+
+export function passCard(card) {
+  return {
+    type: 'PASS_CARD',
+    card,
+    nextCardSeed: Math.random(),
+  };
+}
+
 // TODO: failUpdateProgress
 // TODO: failLoadReview (rename reviewLoaded to finishLoadReview?)
