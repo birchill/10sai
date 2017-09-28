@@ -11,9 +11,12 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 describe('CardStore progress reporting', () => {
   let subject;
+  let relativeTime;
 
   beforeEach('setup new store', () => {
     subject = new CardStore({ pouch: { db: memdown } });
+    relativeTime = diffInDays =>
+      new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
   });
 
   afterEach('clean up store', () => subject.destroy());
@@ -96,9 +99,6 @@ describe('CardStore progress reporting', () => {
     // First add a bunch of cards
     const cards = await addCards(5);
 
-    const relativeTime = diffInDays =>
-      new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
-
     // Set their progress somewhat randomly so we can test the sorting of the
     // result.
     //
@@ -163,9 +163,6 @@ describe('CardStore progress reporting', () => {
   it('sorts failed cards first', async () => {
     const cards = await addCards(3);
 
-    const relativeTime = diffInDays =>
-      new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
-
     // Card 1: Just overdue
     await subject.updateProgress(cards[0]._id, {
       reviewed: relativeTime(-2.1),
@@ -192,9 +189,6 @@ describe('CardStore progress reporting', () => {
   it('allows skipping failed cards', async () => {
     const cards = await addCards(3);
 
-    const relativeTime = diffInDays =>
-      new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
-
     // Card 1: Just overdue
     await subject.updateProgress(cards[0]._id, {
       reviewed: relativeTime(-2.1),
@@ -219,9 +213,6 @@ describe('CardStore progress reporting', () => {
 
   it('allows the review time to be updated', async () => {
     const cards = await addCards(3);
-
-    const relativeTime = diffInDays =>
-      new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
 
     // Card 1: Level now: -1, in 10 days' time: 9
     await subject.updateProgress(cards[0]._id, {
@@ -278,5 +269,50 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[0].question, 'Question 3');
     assert.strictEqual(result[1].question, 'Question 2');
     assert.strictEqual(result[2].question, 'Question 1');
+  });
+
+  it('returns the review level along with overdue cards', async () => {
+    const cards = await addCards(2);
+
+    await subject.updateProgress(cards[0]._id, {
+      reviewed: relativeTime(-1),
+      level: 1,
+    });
+    await subject.updateProgress(cards[1]._id, {
+      reviewed: relativeTime(-4),
+      level: 2,
+    });
+
+    const result = await subject.getOverdueCards();
+    assert.strictEqual(result.length, 2);
+    assert.strictEqual(result[0].question, 'Question 2');
+    assert.strictEqual(result[0].level, 2, 'Level of first card');
+    assert.strictEqual(result[1].question, 'Question 1');
+    assert.strictEqual(result[1].level, 1, 'Level of second card');
+  });
+
+  it('returns the review level along with new cards', async () => {
+    await addCards(2);
+
+    const result = await subject.getNewCards();
+    assert.strictEqual(result.length, 2);
+    assert.strictEqual(result[0].question, 'Question 2');
+    assert.strictEqual(result[0].level, 0, 'Level of first card');
+    assert.strictEqual(result[1].question, 'Question 1');
+    assert.strictEqual(result[1].level, 0, 'Level of second card');
+  });
+
+  it('does NOT save the level attached to a card', async () => {
+    const card = await subject.putCard({
+      question: 'Question 1',
+      answer: 'Answer 1',
+      level: 2,
+    });
+    assert.isUndefined(card.level,
+      'Card level should not be defined on put card');
+
+    const fetchedCard = await subject.getCard(card._id);
+    assert.isUndefined(fetchedCard.level,
+      'Card level should not be defined on get card');
   });
 });

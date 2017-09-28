@@ -45,7 +45,8 @@ const getOverduenessFunction = reviewTime =>
     if (doc.level === 0) {
       // Unfortunately 'Infinity' doesn't seem to work here
       emit(Number.MAX_VALUE, {
-        _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
+        _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+        level: 0,
       });
     }
 
@@ -55,7 +56,8 @@ const getOverduenessFunction = reviewTime =>
     const expComponent = Math.exp(${EXP_FACTOR} * daysOverdue) - 1;
     const overdueValue = linearComponent + expComponent;
     emit(overdueValue, {
-      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
+      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+      level: doc.level,
     });
   }`;
 
@@ -68,7 +70,8 @@ const newCardFunction = `function(doc) {
     }
 
     emit(doc._id, {
-      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length)
+      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+      level: doc.level,
     });
   }`;
 
@@ -104,7 +107,22 @@ class CardStore {
     return result.rows.map(row => parseCard(row.doc));
   }
 
-  async putCard(card) {
+  async putCard(rawCard) {
+    // Sometimes we return cards with a level attached (e.g. when using
+    // getOverdueCards and getNewCards). However, we don't want to save that
+    // level since it should be saved in a separate progress document using
+    // updateProgress and saving it on the card itself as well would just be
+    // confusing.
+    //
+    // (Long-term it would probably be better to just do that here and drop
+    // updateProgress but I'm not sure how the _rev handling would work in that
+    // case.)
+    let card = rawCard;
+    if (typeof card.level !== 'undefined') {
+      card = { ...rawCard };
+      delete card.level;
+    }
+
     // New card
     if (!card._id) {
       return this._putNewCard(card);
@@ -342,7 +360,9 @@ class CardStore {
         })
         // (Note the 'key' field for each row contains the overdue factor as
         // a number if we ever discover we need it.)
-        .then(result => result.rows.map(row => parseCard(row.doc)))
+        .then(result => result.rows.map(row =>
+          ({ ...parseCard(row.doc), level: row.value.level })
+        ))
     );
   }
 
@@ -386,7 +406,9 @@ class CardStore {
         }
         return this.db.query('new_cards', queryOptions);
       })
-      .then(result => result.rows.map(row => parseCard(row.doc)));
+      .then(result => result.rows.map(row =>
+        ({ ...parseCard(row.doc), level: row.value.level })
+      ));
   }
 
   async updateNewCardsView() {
