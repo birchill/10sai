@@ -28,7 +28,6 @@ function idleSync() {
   });
 
   let timeout = setTimeout(resolver, idleTimeout);
-
   const idleCallback = () => {
     clearTimeout(timeout);
     timeout = setTimeout(resolver, idleTimeout);
