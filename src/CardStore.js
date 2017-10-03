@@ -21,6 +21,33 @@ const parseCard = card => ({
   // speculatively parsing them would be a waste.
 });
 
+const cardMapFunction = `function(doc) {
+    if (!doc._id.startsWith('${PROGRESS_PREFIX}')) {
+      return;
+    }
+
+    emit(doc._id, {
+      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+      level: doc.level,
+      reviewed: doc.reviewed,
+    });
+  }`;
+
+const newCardMapFunction = `function(doc) {
+    if (
+      !doc._id.startsWith('${PROGRESS_PREFIX}') ||
+      doc.reviewed !== null
+    ) {
+      return;
+    }
+
+    emit(doc._id, {
+      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+      level: doc.level,
+      reviewed: doc.reviewed,
+    });
+  }`;
+
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 // We add a small exponential factor when calculating the overdue score of
@@ -47,6 +74,7 @@ const getOverduenessFunction = reviewTime =>
       emit(Number.MAX_VALUE, {
         _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
         level: 0,
+        reviewed: doc.reviewed,
       });
     }
 
@@ -58,20 +86,7 @@ const getOverduenessFunction = reviewTime =>
     emit(overdueValue, {
       _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
       level: doc.level,
-    });
-  }`;
-
-const newCardFunction = `function(doc) {
-    if (
-      !doc._id.startsWith('${PROGRESS_PREFIX}') ||
-      doc.reviewed !== null
-    ) {
-      return;
-    }
-
-    emit(doc._id, {
-      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
-      level: doc.level,
+      reviewed: doc.reviewed,
     });
   }`;
 
@@ -87,29 +102,88 @@ class CardStore {
       options && options.reviewTime && options.reviewTime instanceof Date
         ? options.reviewTime
         : new Date();
+
+    this.prefetchViews = !options || options.prefetchViews;
     this.initDone = this.db
       .info()
-      .then(() => this.updateOverduenessView())
+      .then(() => this.updateCardsView())
       .then(() => this.updateNewCardsView())
+      .then(() => this.updateOverduenessView())
       .then(() => {
         // Don't return this since we don't want to block on it
         this.db.viewCleanup();
       });
   }
 
-  async getCards() {
-    const result = await this.db.allDocs({
-      include_docs: true,
-      descending: true,
-      startkey: CARD_PREFIX + '\ufff0',
-      endkey: CARD_PREFIX,
-    });
-    return result.rows.map(row => parseCard(row.doc));
+  async getCards(options) {
+    return this.initDone
+      .then(() => {
+        const queryOptions = {
+          include_docs: true,
+          descending: true,
+        };
+        if (options && typeof options.limit === 'number') {
+          queryOptions.limit = options.limit;
+        }
+        const view = options && options.newOnly ? 'new_cards' : 'cards';
+        return this.db.query(view, queryOptions);
+      })
+      .then(result =>
+        result.rows.map(row => ({
+          ...parseCard(row.doc),
+          level: row.value.level,
+          reviewed: row.value.reviewed,
+        }))
+      );
+  }
+
+  async updateCardsView() {
+    return this._updateMapView('cards', cardMapFunction);
+  }
+
+  async updateNewCardsView() {
+    return this._updateMapView('new_cards', newCardMapFunction);
+  }
+
+  async _updateMapView(view, mapFunction) {
+    return this.db
+      .upsert(`_design/${view}`, currentDoc => {
+        const doc = {
+          _id: `_design/${view}`,
+          views: {
+            [view]: {
+              map: mapFunction,
+            },
+          },
+        };
+
+        if (
+          currentDoc &&
+          currentDoc.views &&
+          currentDoc.views[view] &&
+          currentDoc.views[view].map &&
+          currentDoc.views[view].map === doc.views[view].map
+        ) {
+          return false;
+        }
+
+        return doc;
+      })
+      .then(result => {
+        if (!result.updated || !this.prefetchViews) {
+          return;
+        }
+
+        this.db.query(view, { limit: 0 }).catch(() => {
+          // Ignore errors from this. We hit this often during unit tests where
+          // we destroy the database before the query gets a change to run.
+        });
+      });
   }
 
   async putCard(rawCard) {
     // Sometimes we return cards with a level attached (e.g. when using
-    // getOverdueCards and getNewCards). However, we don't want to save that
+    // getOverdueCards and getCards). However, we don't want to save that
     // level since it should be saved in a separate progress document using
     // updateProgress and saving it on the card itself as well would just be
     // confusing.
@@ -118,9 +192,11 @@ class CardStore {
     // updateProgress but I'm not sure how the _rev handling would work in that
     // case.)
     let card = rawCard;
-    if (typeof card.level !== 'undefined') {
+    if (typeof card.level !== 'undefined' ||
+        typeof card.reviewed !== 'undefined') {
       card = { ...rawCard };
       delete card.level;
+      delete card.reviewed;
     }
 
     // New card
@@ -335,6 +411,8 @@ class CardStore {
     return eventEmitter;
   }
 
+  // TODO: Merge this with getCards
+
   async getOverdueCards(options) {
     return (
       this.initDone
@@ -360,9 +438,13 @@ class CardStore {
         })
         // (Note the 'key' field for each row contains the overdue factor as
         // a number if we ever discover we need it.)
-        .then(result => result.rows.map(row =>
-          ({ ...parseCard(row.doc), level: row.value.level })
-        ))
+        .then(result =>
+          result.rows.map(row => ({
+            ...parseCard(row.doc),
+            level: row.value.level,
+            reviewed: row.value.reviewed,
+          }))
+        )
     );
   }
 
@@ -377,6 +459,10 @@ class CardStore {
         },
       }))
       .then(() => {
+        if (!this.prefetchViews) {
+          return;
+        }
+
         // Don't return the promise from this. Just trigger the query so it can
         // run in the background.
         this.db.query('overdueness', { limit: 0 }).catch(() => {
@@ -392,65 +478,6 @@ class CardStore {
       // Don't return this because we don't want to block on it
       this.db.viewCleanup();
     });
-  }
-
-  async getNewCards(options) {
-    return this.initDone
-      .then(() => {
-        const queryOptions = {
-          include_docs: true,
-          descending: true,
-        };
-        if (options && typeof options.limit === 'number') {
-          queryOptions.limit = options.limit;
-        }
-        return this.db.query('new_cards', queryOptions);
-      })
-      .then(result => result.rows.map(row =>
-        ({ ...parseCard(row.doc), level: row.value.level })
-      ));
-  }
-
-  async updateNewCardsView() {
-    return this.db.upsert('_design/new_cards', currentDoc => {
-      const doc = {
-        _id: '_design/new_cards',
-        views: {
-          new_cards: {
-            map: newCardFunction,
-          },
-        },
-      };
-
-      if (
-        currentDoc &&
-        currentDoc.views &&
-        currentDoc.views.new_cards &&
-        currentDoc.views.new_cards.map &&
-        currentDoc.views.new_cards.map === doc.views.new_cards.map
-      ) {
-        return false;
-      }
-
-      return doc;
-    });
-    // We'd like to trigger a pre-emptive query on the new_cards view at
-    // this point. However, if we do that unit tests will time out. I haven't
-    // quite worked out where things go astray, but if we add the exact same
-    // view several times and destroy the database in betweens, in seems like
-    // these pre-emptive queries all queue up and we time out.
-    //
-    // - If we do so much as put a comment with a random number in the map
-    //   function so that the functions are unique we don't time out. This is
-    //   why this is only a problem for this view since its static.
-    //
-    // - If we move the the test that calls getNewCards first, there's no
-    //   problem so it does seem to be some sort of queueing or conflict that
-    //   takes place.
-    //
-    // - If we initialize other views before this one or even so much as
-    //   trigger an extra upsert before adding this view the problem goes away
-    //   so it does seem to be some kind of timing issue too.
   }
 
   // Sets a server for synchronizing with and begins live synchonization.
@@ -568,7 +595,7 @@ class CardStore {
         ? { batch_size: options.batchSize }
         : undefined;
     // Don't push design docs since in many cases we'll be authenticating as
-    // a user that doesn't have permission to write design docs. A number of the
+    // a user that doesn't have permission to write design docs. Some of the
     // design docs we create are also very temporary.
     const pushOpts = {
       ...pushPullOpts,

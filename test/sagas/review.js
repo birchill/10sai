@@ -10,7 +10,7 @@ import reducer from '../../src/reducers/index';
 
 describe('sagas:review updateHeap', () => {
   const cardStore = {
-    getNewCards: () => {},
+    getCards: () => {},
     getOverdueCards: () => {},
   };
 
@@ -22,11 +22,11 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, cardStore, action)
       .provide([
-        [matchers.call.fn(cardStore.getNewCards), newCards],
+        [matchers.call.fn(cardStore.getCards), newCards],
         [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
       ])
       .withState(reducer(undefined, action))
-      .call([cardStore, 'getNewCards'], { limit: 2 })
+      .call([cardStore, 'getCards'], { limit: 2, newOnly: true })
       .call([cardStore, 'getOverdueCards'], { limit: 1 })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: allCards } })
       .run();
@@ -37,9 +37,9 @@ describe('sagas:review updateHeap', () => {
     const action = reviewActions.newReview(3, 2);
 
     return expectSaga(updateHeapSaga, cardStore, action)
-      .provide([[matchers.call.fn(cardStore.getNewCards), newCards]])
+      .provide([[matchers.call.fn(cardStore.getCards), newCards]])
       .withState(reducer(undefined, action))
-      .call([cardStore, 'getNewCards'], { limit: 2 })
+      .call([cardStore, 'getCards'], { limit: 2, newOnly: true })
       .not.call.fn([cardStore, 'getOverdueCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();
@@ -51,11 +51,11 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, cardStore, action)
       .provide([
-        [matchers.call.fn(cardStore.getNewCards), []],
+        [matchers.call.fn(cardStore.getCards), []],
         [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
       ])
       .withState(reducer(undefined, action))
-      .call([cardStore, 'getNewCards'], { limit: 2 })
+      .call([cardStore, 'getCards'], { limit: 2, newOnly: true })
       .call([cardStore, 'getOverdueCards'], { limit: 3 })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: overdueCards } })
       .run();
@@ -74,11 +74,11 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, cardStore, action)
       .provide([
-        [matchers.call.fn(cardStore.getNewCards), newCards],
+        [matchers.call.fn(cardStore.getCards), newCards],
         [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
       ])
       .withState(state)
-      .call([cardStore, 'getNewCards'], { limit: 1 })
+      .call([cardStore, 'getCards'], { limit: 1, newOnly: true })
       .call([cardStore, 'getOverdueCards'], { limit: 2, skipFailedCards: true })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: allCards } })
       .run();
@@ -94,7 +94,7 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, cardStore, action)
       .withState(state)
-      .not.call.fn([cardStore, 'getNewCards'])
+      .not.call.fn([cardStore, 'getCards'])
       .not.call.fn([cardStore, 'getOverdueCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
       .run();
@@ -109,7 +109,7 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, cardStore, action)
       .withState(state)
-      .not.call.fn([cardStore, 'getNewCards'])
+      .not.call.fn([cardStore, 'getCards'])
       .not.call.fn([cardStore, 'getOverdueCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
       .run();
@@ -127,10 +127,10 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, cardStore, action)
       .provide([
-        [matchers.call.fn(cardStore.getNewCards), newCards],
+        [matchers.call.fn(cardStore.getCards), newCards],
       ])
       .withState(state)
-      .call([cardStore, 'getNewCards'], { limit: 1 })
+      .call([cardStore, 'getCards'], { limit: 1, newOnly: true })
       .not.call.fn([cardStore, 'getOverdueCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();

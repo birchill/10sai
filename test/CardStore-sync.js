@@ -13,6 +13,30 @@ const cardForDirectPut = card => ({
   _id: 'card-' + card._id,
 });
 
+// Sometimes we want to wait for the sync to settle down which we do by waiting
+// for its onIdle callback to be called. However, due to instability on startup
+// (particularly when setting up design docs) it can temporarily go idle then go
+// active again so we add a little timeout after getting an initial onIdle
+// callback to make sure it really is idle.
+
+function idleSync() {
+  const idleTimeout = 50; // ms
+
+  let resolver;
+  const idlePromise = new Promise(resolve => {
+    resolver = resolve;
+  });
+
+  let timeout = setTimeout(resolver, idleTimeout);
+
+  const idleCallback = () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(resolver, idleTimeout);
+  };
+
+  return [ idleCallback, idlePromise ];
+}
+
 describe('CardStore remote sync', () => {
   let subject;
   let testRemote;
@@ -40,7 +64,7 @@ describe('CardStore remote sync', () => {
   }
 
   beforeEach('setup new store', () => {
-    subject = new CardStore({ pouch: { db: memdown } });
+    subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
 
     failedAssertion = undefined;
 
@@ -219,15 +243,13 @@ describe('CardStore remote sync', () => {
   });
 
   it('uploads existing local cards', async () => {
-    let resolveIdle;
-    const idlePromise = new Promise(resolve => {
-      resolveIdle = resolve;
-    });
+    const [ idleCallback, idlePromise ] = idleSync();
 
     await subject.putCard({ question: 'Question 1', answer: 'Answer 1' });
     await subject.putCard({ question: 'Question 2', answer: 'Answer 2' });
-    await subject.setSyncServer(testRemote, { onIdle: () => resolveIdle() });
+    await subject.setSyncServer(testRemote, { onIdle: idleCallback });
     await idlePromise;
+
     const remoteCards = await testRemote.allDocs({
       include_docs: true,
       descending: true,

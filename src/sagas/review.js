@@ -31,7 +31,10 @@ export function* updateHeap(cardStore, action) {
   );
   let cards = [];
   if (newCardSlots) {
-    cards = yield call([cardStore, 'getNewCards'], { limit: newCardSlots });
+    cards = yield call([cardStore, 'getCards'], {
+      limit: newCardSlots,
+      newOnly: true,
+    });
     freeSlots -= cards.length;
   }
 
@@ -43,7 +46,7 @@ export function* updateHeap(cardStore, action) {
     if (action.type === 'SET_REVIEW_LIMIT') {
       options.skipFailedCards = true;
     }
-    cards.push(...yield call([cardStore, 'getOverdueCards'], options));
+    cards.push(...(yield call([cardStore, 'getOverdueCards'], options)));
   }
 
   yield put(reviewActions.reviewLoaded(cards));

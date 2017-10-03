@@ -14,20 +14,23 @@ describe('CardStore progress reporting', () => {
   let relativeTime;
 
   beforeEach('setup new store', () => {
-    subject = new CardStore({ pouch: { db: memdown } });
+    // Pre-fetching views seems to be a real bottle-neck when running tests
+    subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
     relativeTime = diffInDays =>
       new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
   });
 
   afterEach('clean up store', () => subject.destroy());
 
-  it('creates a progress record when adding a new card', async () => {
-    const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
-    });
-    assert.isTrue(await subject.hasProgressRecord(card._id));
+  it('returns the progress when getting cards', async () => {
+    await subject.putCard({ question: 'Question', answer: 'Answer' });
+    const cards = await subject.getCards();
+    assert.strictEqual(cards.length, 1, 'Length of getCards() result');
+    assert.strictEqual(cards[0].level, 0);
+    assert.strictEqual(cards[0].reviewed, null);
   });
+
+  // TODO: The above but using getCard
 
   it('deletes the card when the corresponding progress record cannot be created', async () => {
     // Override ID generation so we can ensure there will be a conflicting
@@ -264,7 +267,7 @@ describe('CardStore progress reporting', () => {
       await waitASec();
     }
 
-    const result = await subject.getNewCards();
+    const result = await subject.getCards({ newOnly: true });
     assert.strictEqual(result.length, 3);
     assert.strictEqual(result[0].question, 'Question 3');
     assert.strictEqual(result[1].question, 'Question 2');
@@ -294,7 +297,7 @@ describe('CardStore progress reporting', () => {
   it('returns the review level along with new cards', async () => {
     await addCards(2);
 
-    const result = await subject.getNewCards();
+    const result = await subject.getCards({ newOnly: true });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[0].level, 0, 'Level of first card');
@@ -308,11 +311,15 @@ describe('CardStore progress reporting', () => {
       answer: 'Answer 1',
       level: 2,
     });
-    assert.isUndefined(card.level,
-      'Card level should not be defined on put card');
+    assert.isUndefined(
+      card.level,
+      'Card level should not be defined on put card'
+    );
 
     const fetchedCard = await subject.getCard(card._id);
-    assert.isUndefined(fetchedCard.level,
-      'Card level should not be defined on get card');
+    assert.isUndefined(
+      fetchedCard.level,
+      'Card level should not be defined on get card'
+    );
   });
 });
