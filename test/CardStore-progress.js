@@ -208,7 +208,10 @@ describe('CardStore progress reporting', () => {
       level: 2,
     });
 
-    const result = await subject.getCards({ type: 'overdue', skipFailedCards: true });
+    const result = await subject.getCards({
+      type: 'overdue',
+      skipFailedCards: true,
+    });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 3');
     assert.strictEqual(result[1].question, 'Question 1');
