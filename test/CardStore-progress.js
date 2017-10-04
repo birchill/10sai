@@ -134,7 +134,7 @@ describe('CardStore progress reporting', () => {
     // Given, the above we'd expect the result to be:
     //
     //     [ Card 2, Card 5, Card 3, Card 4 ]
-    const result = await subject.getOverdueCards();
+    const result = await subject.getCards({ type: 'overdue' });
     assert.strictEqual(result.length, 4);
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[1].question, 'Question 5');
@@ -157,7 +157,7 @@ describe('CardStore progress reporting', () => {
       });
     }
 
-    const result = await subject.getOverdueCards({ limit: 2 });
+    const result = await subject.getCards({ type: 'overdue', limit: 2 });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 4');
     assert.strictEqual(result[1].question, 'Question 3');
@@ -182,7 +182,7 @@ describe('CardStore progress reporting', () => {
       level: 2,
     });
 
-    const result = await subject.getOverdueCards();
+    const result = await subject.getCards({ type: 'overdue' });
     assert.strictEqual(result.length, 3);
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[1].question, 'Question 3');
@@ -208,7 +208,7 @@ describe('CardStore progress reporting', () => {
       level: 2,
     });
 
-    const result = await subject.getOverdueCards({ skipFailedCards: true });
+    const result = await subject.getCards({ type: 'overdue', skipFailedCards: true });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 3');
     assert.strictEqual(result[1].question, 'Question 1');
@@ -234,7 +234,7 @@ describe('CardStore progress reporting', () => {
     });
 
     // Initially only cards 3 and 2 are due, and in that order ...
-    let result = await subject.getOverdueCards();
+    let result = await subject.getCards({ type: 'overdue' });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 3');
     assert.strictEqual(result[1].question, 'Question 2');
@@ -243,7 +243,7 @@ describe('CardStore progress reporting', () => {
     await subject.setReviewTime(relativeTime(10));
 
     // ... we should get card 2, card 1, card 3
-    result = await subject.getOverdueCards();
+    result = await subject.getCards({ type: 'overdue' });
     assert.strictEqual(result.length, 3);
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[1].question, 'Question 1');
@@ -267,7 +267,7 @@ describe('CardStore progress reporting', () => {
       await waitASec();
     }
 
-    const result = await subject.getCards({ newOnly: true });
+    const result = await subject.getCards({ type: 'new' });
     assert.strictEqual(result.length, 3);
     assert.strictEqual(result[0].question, 'Question 3');
     assert.strictEqual(result[1].question, 'Question 2');
@@ -286,7 +286,7 @@ describe('CardStore progress reporting', () => {
       level: 2,
     });
 
-    const result = await subject.getOverdueCards();
+    const result = await subject.getCards({ type: 'overdue' });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[0].level, 2, 'Level of first card');
@@ -297,7 +297,7 @@ describe('CardStore progress reporting', () => {
   it('returns the review level along with new cards', async () => {
     await addCards(2);
 
-    const result = await subject.getCards({ newOnly: true });
+    const result = await subject.getCards({ type: 'new' });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[0].level, 0, 'Level of first card');

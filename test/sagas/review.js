@@ -11,7 +11,23 @@ import reducer from '../../src/reducers/index';
 describe('sagas:review updateHeap', () => {
   const cardStore = {
     getCards: () => {},
-    getOverdueCards: () => {},
+  };
+
+  const getCardStoreProvider = (newCards, overdueCards) => {
+    return {
+      call(effect, next) {
+        if (effect.fn === cardStore.getCards) {
+          const type = effect.args[0] ? effect.args[0].type : '';
+          if (type === 'new') {
+            return newCards;
+          } else if (type === 'overdue') {
+            return overdueCards;
+          }
+        }
+
+        return next();
+      },
+    };
   };
 
   it('respects the limits set for a new review', async () => {
@@ -21,13 +37,10 @@ describe('sagas:review updateHeap', () => {
     const action = reviewActions.newReview(2, 3);
 
     return expectSaga(updateHeapSaga, cardStore, action)
-      .provide([
-        [matchers.call.fn(cardStore.getCards), newCards],
-        [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
-      ])
+      .provide(getCardStoreProvider(newCards, overdueCards))
       .withState(reducer(undefined, action))
-      .call([cardStore, 'getCards'], { limit: 2, newOnly: true })
-      .call([cardStore, 'getOverdueCards'], { limit: 1 })
+      .call([cardStore, 'getCards'], { limit: 2, type: 'new' })
+      .call([cardStore, 'getCards'], { limit: 1, type: 'overdue' })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: allCards } })
       .run();
   });
@@ -39,8 +52,8 @@ describe('sagas:review updateHeap', () => {
     return expectSaga(updateHeapSaga, cardStore, action)
       .provide([[matchers.call.fn(cardStore.getCards), newCards]])
       .withState(reducer(undefined, action))
-      .call([cardStore, 'getCards'], { limit: 2, newOnly: true })
-      .not.call.fn([cardStore, 'getOverdueCards'])
+      .call([cardStore, 'getCards'], { limit: 2, type: 'new' })
+      .not.call.fn([cardStore, 'getCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();
   });
@@ -50,13 +63,10 @@ describe('sagas:review updateHeap', () => {
     const action = reviewActions.newReview(2, 3);
 
     return expectSaga(updateHeapSaga, cardStore, action)
-      .provide([
-        [matchers.call.fn(cardStore.getCards), []],
-        [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
-      ])
+      .provide(getCardStoreProvider([], overdueCards))
       .withState(reducer(undefined, action))
-      .call([cardStore, 'getCards'], { limit: 2, newOnly: true })
-      .call([cardStore, 'getOverdueCards'], { limit: 3 })
+      .call([cardStore, 'getCards'], { limit: 2, type: 'new' })
+      .call([cardStore, 'getCards'], { limit: 3, type: 'overdue' })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: overdueCards } })
       .run();
   });
@@ -73,13 +83,14 @@ describe('sagas:review updateHeap', () => {
     const allCards = newCards.concat(overdueCards);
 
     return expectSaga(updateHeapSaga, cardStore, action)
-      .provide([
-        [matchers.call.fn(cardStore.getCards), newCards],
-        [matchers.call.fn(cardStore.getOverdueCards), overdueCards],
-      ])
+      .provide(getCardStoreProvider(newCards, overdueCards))
       .withState(state)
-      .call([cardStore, 'getCards'], { limit: 1, newOnly: true })
-      .call([cardStore, 'getOverdueCards'], { limit: 2, skipFailedCards: true })
+      .call([cardStore, 'getCards'], { limit: 1, type: 'new' })
+      .call([cardStore, 'getCards'], {
+        limit: 2,
+        type: 'overdue',
+        skipFailedCards: true,
+      })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: allCards } })
       .run();
   });
@@ -90,12 +101,12 @@ describe('sagas:review updateHeap', () => {
     state = reducer(state, action);
     state.review.newCardsInPlay = 1;
     state.review.completed = 2;
-    state.review.failedCardsLevel1 = [ {} ];
+    state.review.failedCardsLevel1 = [{}];
 
     return expectSaga(updateHeapSaga, cardStore, action)
       .withState(state)
       .not.call.fn([cardStore, 'getCards'])
-      .not.call.fn([cardStore, 'getOverdueCards'])
+      .not.call.fn([cardStore, 'getCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
       .run();
   });
@@ -110,7 +121,7 @@ describe('sagas:review updateHeap', () => {
     return expectSaga(updateHeapSaga, cardStore, action)
       .withState(state)
       .not.call.fn([cardStore, 'getCards'])
-      .not.call.fn([cardStore, 'getOverdueCards'])
+      .not.call.fn([cardStore, 'getCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
       .run();
   });
@@ -126,12 +137,10 @@ describe('sagas:review updateHeap', () => {
     const newCards = ['New card 3'];
 
     return expectSaga(updateHeapSaga, cardStore, action)
-      .provide([
-        [matchers.call.fn(cardStore.getCards), newCards],
-      ])
+      .provide([[matchers.call.fn(cardStore.getCards), newCards]])
       .withState(state)
-      .call([cardStore, 'getCards'], { limit: 1, newOnly: true })
-      .not.call.fn([cardStore, 'getOverdueCards'])
+      .call([cardStore, 'getCards'], { limit: 1, type: 'new' })
+      .not.call.fn([cardStore, 'getCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();
   });

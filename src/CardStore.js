@@ -125,7 +125,25 @@ class CardStore {
         if (options && typeof options.limit === 'number') {
           queryOptions.limit = options.limit;
         }
-        const view = options && options.newOnly ? 'new_cards' : 'cards';
+
+        let view = 'cards';
+        const type = options ? options.type : '';
+        if (type === 'new') {
+          view = 'new_cards';
+        } else if (type === 'overdue') {
+          view = 'overdueness';
+          queryOptions.endkey = 0;
+          if (options && options.skipFailedCards) {
+            // This really should be Number.MAX_VALUE - .0001 or something like
+            // that but that doesn't seem to work and I haven't debugged far
+            // enough into PouchDB to find out why.
+            //
+            // (Really getOverduenessFunction should use Infinity and this
+            // should use Number.MAX_VALUE but that too doesn't work.)
+            queryOptions.startkey = Number.MAX_SAFE_INTEGER;
+          }
+        }
+
         return this.db.query(view, queryOptions);
       })
       .then(result =>
@@ -183,10 +201,9 @@ class CardStore {
 
   async putCard(rawCard) {
     // Sometimes we return cards with a level attached (e.g. when using
-    // getOverdueCards and getCards). However, we don't want to save that
-    // level since it should be saved in a separate progress document using
-    // updateProgress and saving it on the card itself as well would just be
-    // confusing.
+    // getCards). However, we don't want to save that level since it should be
+    // saved in a separate progress document using updateProgress and saving it
+    // on the card itself as well would just be confusing.
     //
     // (Long-term it would probably be better to just do that here and drop
     // updateProgress but I'm not sure how the _rev handling would work in that
@@ -409,43 +426,6 @@ class CardStore {
     };
 
     return eventEmitter;
-  }
-
-  // TODO: Merge this with getCards
-
-  async getOverdueCards(options) {
-    return (
-      this.initDone
-        .then(() => {
-          const queryOptions = {
-            include_docs: true,
-            descending: true,
-            endkey: 0,
-          };
-          if (options && typeof options.limit === 'number') {
-            queryOptions.limit = options.limit;
-          }
-          if (options && options.skipFailedCards) {
-            // This really should be Number.MAX_VALUE - .0001 or something like
-            // that but that doesn't seem to work and I haven't debugged far
-            // enough into PouchDB to find out why.
-            //
-            // (Really getOverduenessFunction should use Infinity and this
-            // should use Number.MAX_VALUE but that too doesn't work.)
-            queryOptions.startkey = Number.MAX_SAFE_INTEGER;
-          }
-          return this.db.query('overdueness', queryOptions);
-        })
-        // (Note the 'key' field for each row contains the overdue factor as
-        // a number if we ever discover we need it.)
-        .then(result =>
-          result.rows.map(row => ({
-            ...parseCard(row.doc),
-            level: row.value.level,
-            reviewed: row.value.reviewed,
-          }))
-        )
-    );
   }
 
   async updateOverduenessView() {

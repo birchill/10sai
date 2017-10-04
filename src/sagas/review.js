@@ -33,20 +33,20 @@ export function* updateHeap(cardStore, action) {
   if (newCardSlots) {
     cards = yield call([cardStore, 'getCards'], {
       limit: newCardSlots,
-      newOnly: true,
+      type: 'new',
     });
     freeSlots -= cards.length;
   }
 
   // Now fill up the overdue slots
   if (freeSlots) {
-    const options = { limit: freeSlots };
+    const options = { type: 'overdue', limit: freeSlots };
     // If we are updating the heap mid-review then avoid getting cards that
     // are already in our failed heaps.
     if (action.type === 'SET_REVIEW_LIMIT') {
       options.skipFailedCards = true;
     }
-    cards.push(...(yield call([cardStore, 'getOverdueCards'], options)));
+    cards.push(...(yield call([cardStore, 'getCards'], options)));
   }
 
   yield put(reviewActions.reviewLoaded(cards));
