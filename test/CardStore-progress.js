@@ -30,7 +30,17 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(cards[0].reviewed, null);
   });
 
-  // TODO: The above but using getCard
+  it('returns the progress when getting a single card', async () => {
+    const newCard = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    const card = await subject.getCard(newCard._id);
+    assert.strictEqual(card.level, 0);
+    assert.strictEqual(card.reviewed, null);
+  });
+
+  // TODO: Test that the card returned when putting a card includes the progress
 
   it('deletes the card when the corresponding progress record cannot be created', async () => {
     // Override ID generation so we can ensure there will be a conflicting
@@ -306,23 +316,5 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[0].level, 0, 'Level of first card');
     assert.strictEqual(result[1].question, 'Question 1');
     assert.strictEqual(result[1].level, 0, 'Level of second card');
-  });
-
-  it('does NOT save the level attached to a card', async () => {
-    const card = await subject.putCard({
-      question: 'Question 1',
-      answer: 'Answer 1',
-      level: 2,
-    });
-    assert.isUndefined(
-      card.level,
-      'Card level should not be defined on put card'
-    );
-
-    const fetchedCard = await subject.getCard(card._id);
-    assert.isUndefined(
-      fetchedCard.level,
-      'Card level should not be defined on get card'
-    );
   });
 });

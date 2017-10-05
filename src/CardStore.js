@@ -209,8 +209,10 @@ class CardStore {
     // updateProgress but I'm not sure how the _rev handling would work in that
     // case.)
     let card = rawCard;
-    if (typeof card.level !== 'undefined' ||
-        typeof card.reviewed !== 'undefined') {
+    if (
+      typeof card.level !== 'undefined' ||
+      typeof card.reviewed !== 'undefined'
+    ) {
       card = { ...rawCard };
       delete card.level;
       delete card.reviewed;
@@ -297,7 +299,11 @@ class CardStore {
 
   async getCard(id) {
     const card = await this.db.get(CARD_PREFIX + id);
-    return parseCard(card);
+    const progress = await this.db.get(PROGRESS_PREFIX + id);
+
+    // We stack the card fields on top of the progress fields since parseCard
+    // expects the _id to be prefixed by CARD_PREFIX not PROGRESS_PREFIX.
+    return parseCard({ ...progress, ...card });
   }
 
   async deleteCard(card) {
