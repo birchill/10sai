@@ -6,6 +6,7 @@ import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 import { assert, AssertionError } from 'chai';
 import CardStore from '../src/CardStore';
+import { waitForEvents } from './testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -40,7 +41,23 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(card.reviewed, null);
   });
 
+  it('returns the progress when reporting added cards', async () => {
+    let updateInfo;
+    subject.changes.on('change', info => {
+      updateInfo = info;
+    });
+
+    await subject.putCard({ question: 'Q1', answer: 'A1' });
+    // Wait for a few rounds of events so the update can take place
+    await waitForEvents(3);
+
+    assert.isOk(updateInfo, 'Change was recorded');
+    assert.strictEqual(updateInfo.doc.level, 0);
+    assert.strictEqual(updateInfo.doc.reviewed, null);
+  });
+
   // TODO: Test that the card returned when putting a card includes the progress
+  // TODO: Test that changes to the progress are reported
 
   it('deletes the card when the corresponding progress record cannot be created', async () => {
     // Override ID generation so we can ensure there will be a conflicting

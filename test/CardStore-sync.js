@@ -168,6 +168,10 @@ describe('CardStore remote sync', () => {
       _id: CardStore.generateCardId(),
       created: JSON.parse(JSON.stringify(new Date())),
     };
+    const initialProgress = {
+      level: 0,
+      reviewed: null,
+    };
 
     const expectedCards = [firstCard, secondCard];
 
@@ -183,9 +187,21 @@ describe('CardStore remote sync', () => {
       .then(result => {
         firstCard._rev = result.rev;
       })
+      .then(() => testRemote.put(
+        { _id: 'progress-' + firstCard._id, ...initialProgress }
+      ))
+      .then(() => {
+        expectedCards[0] = { ...firstCard, ...initialProgress };
+      })
       .then(() => testRemote.put(cardForDirectPut(secondCard)))
       .then(result => {
         secondCard._rev = result.rev;
+      })
+      .then(() => testRemote.put(
+        { _id: 'progress-' + secondCard._id, ...initialProgress }
+      ))
+      .then(() => {
+        expectedCards[1] = { ...secondCard, ...initialProgress };
       })
       .then(() => subject.setSyncServer(testRemote))
       .then(() => {

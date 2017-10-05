@@ -413,21 +413,20 @@ class CardStore {
         // (Read, I haven't botherered wrapping them yet.)
         return;
       }
-      originalOnFn.call(eventEmitter, eventName, arg => {
+      originalOnFn.call(eventEmitter, eventName, async arg => {
         console.assert(arg.changes && arg.doc, 'Unexpected changes event');
 
-        // The following could probably done with a selector, but I've
-        // a feeling I'll be rewriting this function fairly soon anyway so
-        // let's just do it in JS for now.
-        if (!arg.doc._id.startsWith(CARD_PREFIX)) {
-          return;
+        if (arg.doc._id.startsWith(CARD_PREFIX)) {
+          const id = stripCardPrefix(arg.id);
+          const progress = await this.db.get(PROGRESS_PREFIX + id);
+          listener({
+            ...arg,
+            id,
+            doc: parseCard({ ...progress, ...arg.doc }),
+          });
+        } else if (arg.doc._id.startsWith(PROGRESS_PREFIX)) {
+          // TODO
         }
-
-        listener({
-          ...arg,
-          id: stripCardPrefix(arg.id),
-          doc: parseCard(arg.doc),
-        });
       });
     };
 
