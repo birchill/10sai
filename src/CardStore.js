@@ -10,6 +10,7 @@ const CARD_PREFIX = 'card-';
 const PROGRESS_PREFIX = 'progress-';
 
 const stripCardPrefix = id => id.substr(CARD_PREFIX.length);
+const stripProgressPrefix = id => id.substr(PROGRESS_PREFIX.length);
 
 // Take a card from the DB and turn it into a more appropriate form for
 // client consumption
@@ -436,6 +437,11 @@ class CardStore {
       include_docs: true,
     });
 
+    // TODO: Maintain a map here of the last ~10? cards' progress information so
+    // that when we get subsequent progress records we can skip dispatching them
+    // if the progress hasn't changed.
+    // ~10 is pretty arbitrary. Make it time based?
+
     // Wrap callbacks to strip ID prefix
     const originalOnFn = eventEmitter.on;
     eventEmitter.on = (eventName, listener) => {
@@ -453,10 +459,16 @@ class CardStore {
           listener({
             ...arg,
             id,
-            doc: parseCard({ ...progress, ...arg.doc }),
+            doc: mergeRecords(arg.doc, progress),
           });
         } else if (arg.doc._id.startsWith(PROGRESS_PREFIX)) {
-          // TODO
+          const id = stripProgressPrefix(arg.id);
+          const card = await this.db.get(CARD_PREFIX + id);
+          listener({
+            ...arg,
+            id,
+            doc: mergeRecords(card, arg.doc),
+          });
         }
       });
     };

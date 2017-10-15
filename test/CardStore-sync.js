@@ -156,24 +156,27 @@ describe('CardStore remote sync', () => {
   });
 
   it('downloads existing cards on the remote server', done => {
+    const now = JSON.parse(JSON.stringify(new Date()));
     const firstCard = {
       question: 'Question 1',
       answer: 'Answer 1',
       _id: CardStore.generateCardId(),
-      created: JSON.parse(JSON.stringify(new Date())),
+      created: now,
+      modified: now,
     };
     const secondCard = {
       question: 'Question 2',
       answer: 'Answer 2',
       _id: CardStore.generateCardId(),
-      created: JSON.parse(JSON.stringify(new Date())),
+      created: now,
+      modified: now,
     };
     const initialProgress = {
       level: 0,
       reviewed: null,
     };
 
-    const expectedCards = [firstCard, secondCard];
+    const expectedCards = [firstCard, secondCard, firstCard, secondCard];
 
     subject.changes.on(
       'change',
@@ -192,6 +195,7 @@ describe('CardStore remote sync', () => {
       ))
       .then(() => {
         expectedCards[0] = { ...firstCard, ...initialProgress };
+        expectedCards[2] = expectedCards[0];
       })
       .then(() => testRemote.put(cardForDirectPut(secondCard)))
       .then(result => {
@@ -202,6 +206,7 @@ describe('CardStore remote sync', () => {
       ))
       .then(() => {
         expectedCards[1] = { ...secondCard, ...initialProgress };
+        expectedCards[3] = expectedCards[1];
       })
       .then(() => subject.setSyncServer(testRemote))
       .then(() => {

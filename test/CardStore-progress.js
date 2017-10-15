@@ -49,7 +49,7 @@ describe('CardStore progress reporting', () => {
 
     await subject.putCard({ question: 'Q1', answer: 'A1' });
     // Wait for a few rounds of events so the update can take place
-    await waitForEvents(3);
+    await waitForEvents(5);
 
     assert.isOk(updateInfo, 'Change was recorded');
     assert.strictEqual(updateInfo.doc.level, 0);
@@ -128,7 +128,24 @@ describe('CardStore progress reporting', () => {
   });
 
   it('reports changes to the progress', async () => {
-    // TODO
+    const updates = [];
+    subject.changes.on('change', info => {
+      updates.push(info);
+    });
+
+    const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
+    await subject.putCard({ _id: card._id, level: 1 });
+
+    // Wait for a few rounds of events so the update records can happen
+    await waitForEvents(8);
+
+    assert.strictEqual(
+      updates.length,
+      3,
+      'Should get three change records: add, add, update'
+    );
+    assert.strictEqual(updates[2].doc.level, 1);
+    assert.strictEqual(updates[2].doc.question, 'Q1');
   });
 
   it('deletes the card when the corresponding progress record cannot be created', async () => {
