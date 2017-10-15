@@ -1,4 +1,3 @@
-// @format
 /* eslint-disable no-shadow */
 
 import PouchDB from 'pouchdb';
@@ -9,6 +8,7 @@ let prevTimeStamp = 0;
 
 const CARD_PREFIX = 'card-';
 const PROGRESS_PREFIX = 'progress-';
+
 const stripCardPrefix = id => id.substr(CARD_PREFIX.length);
 
 // Take a card from the DB and turn it into a more appropriate form for
@@ -20,6 +20,15 @@ const parseCard = card => ({
   // Date objects since they're currently not used in the app and so
   // speculatively parsing them would be a waste.
 });
+
+const progressFields = ['reviewed', 'level'];
+const mergeRecords = (card, progress) => {
+  const result = parseCard(card);
+  for (const field of progressFields) {
+    result[field] = progress[field];
+  }
+  return result;
+};
 
 const cardMapFunction = `function(doc) {
     if (!doc._id.startsWith('${PROGRESS_PREFIX}')) {
@@ -199,56 +208,36 @@ class CardStore {
       });
   }
 
-  async putCard(rawCard) {
-    // Sometimes we return cards with a level attached (e.g. when using
-    // getCards). However, we don't want to save that level since it should be
-    // saved in a separate progress document using updateProgress and saving it
-    // on the card itself as well would just be confusing.
-    //
-    // (Long-term it would probably be better to just do that here and drop
-    // updateProgress but I'm not sure how the _rev handling would work in that
-    // case.)
-    let card = rawCard;
-    if (
-      typeof card.level !== 'undefined' ||
-      typeof card.reviewed !== 'undefined'
-    ) {
-      card = { ...rawCard };
-      delete card.level;
-      delete card.reviewed;
-    }
-
+  async putCard(card) {
     // New card
     if (!card._id) {
       return this._putNewCard(card);
     }
 
-    // Delta update to an existing card
-    let completeCard;
-    const result = await this.db.upsert(CARD_PREFIX + card._id, doc => {
-      // Doc was not found -- must have been deleted
-      if (!doc._id) {
-        return false;
+    // Split out changes into changes to the progress record vs changes to the
+    // card itself.
+    const commonFields = ['_id', '_rev'];
+    const progressUpdate = {};
+    const cardUpdate = {};
+    for (const [field, value] of Object.entries(card)) {
+      if (commonFields.includes(field)) {
+        continue;
       }
-      // If we ever end up speculatively parsing date fields into Date objects
-      // in parseCard, then we'll need special handling here to make sure we
-      // write and return the correct formats.
-      completeCard = {
-        ...doc,
-        ...card,
-        _id: CARD_PREFIX + card._id,
-        modified: JSON.parse(JSON.stringify(new Date())),
-      };
-      return completeCard;
-    });
 
-    if (!result.updated) {
-      const err = new Error('missing');
-      err.status = 404;
-      err.name = 'not_found';
-      throw err;
+      if (progressFields.includes(field)) {
+        progressUpdate[field] = value;
+      } else {
+        cardUpdate[field] = value;
+      }
     }
-    return parseCard(completeCard);
+
+    const cardRecord = await this._updateCard(card._id, cardUpdate);
+    const progressRecord = await this._updateProgress(
+      card._id,
+      progressUpdate
+    );
+
+    return mergeRecords(cardRecord, progressRecord);
   }
 
   async _putNewCard(card) {
@@ -271,11 +260,11 @@ class CardStore {
         return tryPutNewCard(card, db, CardStore.generateCardId());
       }
 
-      const newCard = parseCard({
+      const newCard = {
         ...cardToPut,
         _id: CARD_PREFIX + id,
         _rev: putCardResult.rev,
-      });
+      };
 
       // Succeeded in putting the card. Now to add a corresponding progress
       // record. We have a unique card ID so there can't be any overlapping
@@ -293,8 +282,89 @@ class CardStore {
         throw err;
       }
 
-      return newCard;
+      return mergeRecords(newCard, progressToPut);
     })(cardToPut, this.db, CardStore.generateCardId());
+  }
+
+  async _updateCard(id, update) {
+    let card;
+    let missing = false;
+    await this.db.upsert(CARD_PREFIX + id, doc => {
+      // Doc was not found -- must have been deleted
+      if (!doc._id) {
+        missing = true;
+        return false;
+      }
+
+      // If we ever end up speculatively parsing date fields into Date objects
+      // in parseCard, then we'll need special handling here to make sure we
+      // write and return the correct formats.
+      card = {
+        ...doc,
+        ...update,
+        _id: CARD_PREFIX + id,
+        modified: JSON.parse(JSON.stringify(new Date())),
+      };
+
+      if (!Object.keys(update).length) {
+        return false;
+      }
+
+      return card;
+    });
+
+    if (missing) {
+      const err = new Error('missing');
+      err.status = 404;
+      err.name = 'not_found';
+      throw err;
+    }
+
+    return card;
+  }
+
+  async _updateProgress(id, update) {
+    let progress;
+    let missing = false;
+    await this.db.upsert(PROGRESS_PREFIX + id, doc => {
+      // Doc was not found -- must have been deleted
+      if (!doc._id) {
+        missing = true;
+        return false;
+      }
+
+      let hasChange = false;
+      if (
+        update &&
+        update.reviewed &&
+        update.reviewed instanceof Date &&
+        doc.reviewed !== update.reviewed.getTime()
+      ) {
+        doc.reviewed = update.reviewed.getTime();
+        hasChange = true;
+      }
+      if (update && update.level && doc.level !== update.level) {
+        doc.level = update.level;
+        hasChange = true;
+      }
+
+      progress = doc;
+
+      if (!hasChange) {
+        return false;
+      }
+
+      return doc;
+    });
+
+    if (missing) {
+      const err = new Error('missing');
+      err.status = 404;
+      err.name = 'not_found';
+      throw err;
+    }
+
+    return progress;
   }
 
   async getCard(id) {
@@ -359,43 +429,6 @@ class CardStore {
       // millisecond.
       `00${Math.floor(Math.random() * 46656).toString(36)}`.slice(-3);
     return id;
-  }
-
-  async updateProgress(id, update) {
-    const result = await this.db.upsert(PROGRESS_PREFIX + id, doc => {
-      // Doc was not found -- must have been deleted
-      if (!doc._id) {
-        return false;
-      }
-
-      let hasChange = false;
-      if (
-        update &&
-        update.reviewed &&
-        update.reviewed instanceof Date &&
-        doc.reviewed !== update.reviewed.getTime()
-      ) {
-        doc.reviewed = update.reviewed.getTime();
-        hasChange = true;
-      }
-      if (update && update.level && doc.level !== update.level) {
-        doc.level = update.level;
-        hasChange = true;
-      }
-
-      if (!hasChange) {
-        return false;
-      }
-
-      return doc;
-    });
-
-    if (!result.id) {
-      const err = new Error('missing');
-      err.status = 404;
-      err.name = 'not_found';
-      throw err;
-    }
   }
 
   get changes() {

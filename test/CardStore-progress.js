@@ -56,8 +56,39 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(updateInfo.doc.reviewed, null);
   });
 
-  // TODO: Test that the card returned when putting a card includes the progress
-  // TODO: Test that changes to the progress are reported
+  it('returns the progress when adding cards', async () => {
+    const newCard = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    assert.strictEqual(newCard.level, 0);
+    assert.strictEqual(newCard.reviewed, null);
+  });
+
+  it('returns the progress when updating cards', async () => {
+    const newCard = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    const updatedCard = await subject.putCard({
+      _id: newCard._id,
+      question: 'Updated question',
+    });
+    assert.strictEqual(updatedCard.level, 0);
+    assert.strictEqual(updatedCard.reviewed, null);
+  });
+
+  it('does not update the card modified time when only updating the progress', async () => {
+    // TODO
+  });
+
+  it('allows updating the card contents and progress simultaneously', async () => {
+    // TODO
+  });
+
+  it('reports changes to the progress', async () => {
+    // TODO
+  });
 
   it('deletes the card when the corresponding progress record cannot be created', async () => {
     // Override ID generation so we can ensure there will be a conflicting
@@ -133,27 +164,32 @@ describe('CardStore progress reporting', () => {
     // result.
     //
     // Card 1: Not *quite* overdue yet
-    await subject.updateProgress(cards[0]._id, {
+    await subject.putCard({
+      _id: cards[0]._id,
       reviewed: relativeTime(-1.9),
       level: 2,
     });
     // Card 2: Very overdue
-    await subject.updateProgress(cards[1]._id, {
+    await subject.putCard({
+      _id: cards[1]._id,
       reviewed: relativeTime(-200),
       level: 20,
     });
     // Card 3: Just overdue
-    await subject.updateProgress(cards[2]._id, {
+    await subject.putCard({
+      _id: cards[2]._id,
       reviewed: relativeTime(-2.1),
       level: 2,
     });
     // Card 4: Precisely overdue to the second
-    await subject.updateProgress(cards[3]._id, {
+    await subject.putCard({
+      _id: cards[3]._id,
       reviewed: relativeTime(-1),
       level: 1,
     });
     // Card 5: Somewhat overdue
-    await subject.updateProgress(cards[4]._id, {
+    await subject.putCard({
+      _id: cards[4]._id,
       reviewed: relativeTime(-12),
       level: 8,
     });
@@ -178,7 +214,8 @@ describe('CardStore progress reporting', () => {
     for (const card of cards) {
       reviewed.setTime(reviewed.getTime() - MS_PER_DAY);
       // eslint-disable-next-line no-await-in-loop
-      await subject.updateProgress(card._id, {
+      await subject.putCard({
+        _id: card._id,
         reviewed,
         level: 3,
       });
@@ -194,17 +231,20 @@ describe('CardStore progress reporting', () => {
     const cards = await addCards(3);
 
     // Card 1: Just overdue
-    await subject.updateProgress(cards[0]._id, {
+    await subject.putCard({
+      _id: cards[0]._id,
       reviewed: relativeTime(-2.1),
       level: 2,
     });
     // Card 2: Failed (and overdue)
-    await subject.updateProgress(cards[1]._id, {
+    await subject.putCard({
+      _id: cards[1]._id,
       reviewed: relativeTime(-2.1),
       level: 0,
     });
     // Card 3: Just overdue
-    await subject.updateProgress(cards[2]._id, {
+    await subject.putCard({
+      _id: cards[2]._id,
       reviewed: relativeTime(-2.1),
       level: 2,
     });
@@ -220,17 +260,20 @@ describe('CardStore progress reporting', () => {
     const cards = await addCards(3);
 
     // Card 1: Just overdue
-    await subject.updateProgress(cards[0]._id, {
+    await subject.putCard({
+      _id: cards[0]._id,
       reviewed: relativeTime(-2.1),
       level: 2,
     });
     // Card 2: Failed (and overdue)
-    await subject.updateProgress(cards[1]._id, {
+    await subject.putCard({
+      _id: cards[1]._id,
       reviewed: relativeTime(-2.1),
       level: 0,
     });
     // Card 3: Just overdue
-    await subject.updateProgress(cards[2]._id, {
+    await subject.putCard({
+      _id: cards[2]._id,
       reviewed: relativeTime(-2.1),
       level: 2,
     });
@@ -248,17 +291,20 @@ describe('CardStore progress reporting', () => {
     const cards = await addCards(3);
 
     // Card 1: Level now: -1, in 10 days' time: 9
-    await subject.updateProgress(cards[0]._id, {
+    await subject.putCard({
+      _id: cards[0]._id,
       reviewed: subject.reviewTime,
       level: 1,
     });
     // Card 2: Level now: 0.2, in 10 days' time: 10.2
-    await subject.updateProgress(cards[1]._id, {
+    await subject.putCard({
+      _id: cards[1]._id,
       reviewed: relativeTime(-1.2),
       level: 1,
     });
     // Card 3: Level now: 0.333, in 10 days' time: 0.666
-    await subject.updateProgress(cards[2]._id, {
+    await subject.putCard({
+      _id: cards[2]._id,
       reviewed: relativeTime(-40),
       level: 30,
     });
@@ -307,11 +353,13 @@ describe('CardStore progress reporting', () => {
   it('returns the review level along with overdue cards', async () => {
     const cards = await addCards(2);
 
-    await subject.updateProgress(cards[0]._id, {
+    await subject.putCard({
+      _id: cards[0]._id,
       reviewed: relativeTime(-1),
       level: 1,
     });
-    await subject.updateProgress(cards[1]._id, {
+    await subject.putCard({
+      _id: cards[1]._id,
       reviewed: relativeTime(-4),
       level: 2,
     });
