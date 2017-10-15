@@ -84,12 +84,18 @@ describe('CardStore progress reporting', () => {
       answer: 'Answer',
     });
     const updatedCard = await subject.putCard({ _id: newCard._id, level: 1 });
-    assert.strictEqual(updatedCard.modified, newCard.modified,
-                       'Modified time on card returned from putCard');
+    assert.strictEqual(
+      updatedCard.modified,
+      newCard.modified,
+      'Modified time on card returned from putCard'
+    );
 
     const fetchedCard = await subject.getCard(newCard._id);
-    assert.strictEqual(fetchedCard.modified, newCard.modified,
-                       'Modified time on card returned from getCard');
+    assert.strictEqual(
+      fetchedCard.modified,
+      newCard.modified,
+      'Modified time on card returned from getCard'
+    );
   });
 
   it('allows updating the card contents and progress simultaneously', async () => {
@@ -101,18 +107,24 @@ describe('CardStore progress reporting', () => {
     const updatedCard = await subject.putCard({
       _id: newCard._id,
       question: 'Updated question',
-      level: 1
+      level: 1,
     });
     assert.strictEqual(updatedCard.question, 'Updated question');
     assert.strictEqual(updatedCard.level, 1);
-    assert.notEqual(updatedCard.modified, newCard.modified,
-                    'Modified time is updated');
+    assert.notEqual(
+      updatedCard.modified,
+      newCard.modified,
+      'Modified time is updated'
+    );
 
     const fetchedCard = await subject.getCard(newCard._id);
     assert.strictEqual(fetchedCard.question, 'Updated question');
     assert.strictEqual(fetchedCard.level, 1);
-    assert.notEqual(fetchedCard.modified, newCard.modified,
-                    'Modified time is updated');
+    assert.notEqual(
+      fetchedCard.modified,
+      newCard.modified,
+      'Modified time is updated'
+    );
   });
 
   it('reports changes to the progress', async () => {
