@@ -93,7 +93,26 @@ describe('CardStore progress reporting', () => {
   });
 
   it('allows updating the card contents and progress simultaneously', async () => {
-    // TODO
+    const newCard = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+
+    const updatedCard = await subject.putCard({
+      _id: newCard._id,
+      question: 'Updated question',
+      level: 1
+    });
+    assert.strictEqual(updatedCard.question, 'Updated question');
+    assert.strictEqual(updatedCard.level, 1);
+    assert.notEqual(updatedCard.modified, newCard.modified,
+                    'Modified time is updated');
+
+    const fetchedCard = await subject.getCard(newCard._id);
+    assert.strictEqual(fetchedCard.question, 'Updated question');
+    assert.strictEqual(fetchedCard.level, 1);
+    assert.notEqual(fetchedCard.modified, newCard.modified,
+                    'Modified time is updated');
   });
 
   it('reports changes to the progress', async () => {
