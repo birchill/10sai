@@ -79,7 +79,17 @@ describe('CardStore progress reporting', () => {
   });
 
   it('does not update the card modified time when only updating the progress', async () => {
-    // TODO
+    const newCard = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    const updatedCard = await subject.putCard({ _id: newCard._id, level: 1 });
+    assert.strictEqual(updatedCard.modified, newCard.modified,
+                       'Modified time on card returned from putCard');
+
+    const fetchedCard = await subject.getCard(newCard._id);
+    assert.strictEqual(fetchedCard.modified, newCard.modified,
+                       'Modified time on card returned from getCard');
   });
 
   it('allows updating the card contents and progress simultaneously', async () => {

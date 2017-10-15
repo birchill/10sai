@@ -232,10 +232,7 @@ class CardStore {
     }
 
     const cardRecord = await this._updateCard(card._id, cardUpdate);
-    const progressRecord = await this._updateProgress(
-      card._id,
-      progressUpdate
-    );
+    const progressRecord = await this._updateProgress(card._id, progressUpdate);
 
     return mergeRecords(cardRecord, progressRecord);
   }
@@ -303,12 +300,13 @@ class CardStore {
         ...doc,
         ...update,
         _id: CARD_PREFIX + id,
-        modified: JSON.parse(JSON.stringify(new Date())),
       };
 
       if (!Object.keys(update).length) {
         return false;
       }
+
+      card.modified = JSON.parse(JSON.stringify(new Date()));
 
       return card;
     });
@@ -443,7 +441,7 @@ class CardStore {
     eventEmitter.on = (eventName, listener) => {
       if (eventName !== 'change') {
         console.error("Events other than 'change' are not yet supported");
-        // (Read, I haven't botherered wrapping them yet.)
+        // (Read: I haven't botherered wrapping them yet.)
         return;
       }
       originalOnFn.call(eventEmitter, eventName, async arg => {
