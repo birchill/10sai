@@ -86,6 +86,14 @@ export default function edit(state = initialState, action) {
         return state;
       }
 
+      if (process.env.NODE_ENV === 'development') {
+        console.assert(
+          !Object.keys(action.card).includes('progress') &&
+          !Object.keys(action.card).includes('reviewed'),
+          'Should not be passing review fields as part of editing a card'
+        );
+      }
+
       const dirtyFields = state.forms.active.dirtyFields || [];
       dirtyFields.push(...Object.keys(action.card).filter(field =>
         field !== '_id' &&

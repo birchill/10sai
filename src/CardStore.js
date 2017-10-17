@@ -25,8 +25,10 @@ const parseCard = card => ({
 const progressFields = ['reviewed', 'level'];
 const mergeRecords = (card, progress) => {
   const result = parseCard(card);
-  for (const field of progressFields) {
-    result[field] = progress[field];
+  if (progress) {
+    for (const field of progressFields) {
+      result[field] = progress[field];
+    }
   }
   return result;
 };
@@ -376,6 +378,7 @@ class CardStore {
   }
 
   async deleteCard(card) {
+    // TODO: This should strip the progress fields before trying to delete
     const stubbornDelete = async (doc, db) => {
       try {
         return await db.remove(doc);
@@ -478,7 +481,18 @@ class CardStore {
 
         if (arg.doc._id.startsWith(CARD_PREFIX)) {
           const id = stripCardPrefix(arg.id);
-          const progress = await this.db.get(PROGRESS_PREFIX + id);
+          let progress;
+          if (!arg.deleted) {
+            try {
+              progress = await this.db.get(PROGRESS_PREFIX + id);
+            } catch (e) {
+              // If we can't find the progress record because it has been
+              // deleted, don't worry.
+              if (e.status !== 404 || e.reason !== 'deleted') {
+                throw e;
+              }
+            }
+          }
           // We have to check this after the async call above since while
           // fetching the progress record, it might be reported here.
           if (alreadyReturnedCard(arg.doc)) {
@@ -486,7 +500,7 @@ class CardStore {
           }
           returnedCards[id] = {
             cardRev: arg.doc._rev,
-            progressRev: progress._rev,
+            progressRev: progress ? progress._rev : null,
           };
           listener({
             ...arg,
@@ -494,8 +508,23 @@ class CardStore {
             doc: mergeRecords(arg.doc, progress),
           });
         } else if (arg.doc._id.startsWith(PROGRESS_PREFIX)) {
+          // If the progress has been deleted, we'll report the deletion when
+          // the corresponding card is dropped.
+          if (arg.deleted) {
+            return;
+          }
           const id = stripProgressPrefix(arg.id);
-          const card = await this.db.get(CARD_PREFIX + id);
+          let card;
+          try {
+            card = await this.db.get(CARD_PREFIX + id);
+          } catch (e) {
+            // If the card was deleted, just ignore. We'll report when we get
+            // the corresponding change for the card.
+            if (e.status === 404 && e.reason === 'deleted') {
+              return;
+            }
+            throw e;
+          }
           if (alreadyReturnedCard(arg.doc)) {
             return;
           }

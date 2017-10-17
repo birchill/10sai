@@ -148,6 +148,31 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(updates[1].doc.question, 'Q1');
   });
 
+  it('only reports once when a card and its progress are deleted', async () => {
+    const updates = [];
+    subject.changes.on('change', info => {
+      updates.push(info);
+    });
+
+    const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
+    await subject.deleteCard(card);
+
+    // Wait for a few rounds of events so the update records can happen
+    await waitForEvents(8);
+
+    assert.strictEqual(
+      updates.length,
+      2,
+      'Should get two change records: add, delete'
+    );
+    assert.strictEqual(updates[1].deleted, true);
+
+    // Progress information won't be included because it's too difficult to look
+    // up the latest revision and return it.
+    assert.strictEqual(updates[1].doc.progress, undefined);
+    assert.strictEqual(updates[1].doc.reviewed, undefined);
+  });
+
   it('deletes the card when the corresponding progress record cannot be created', async () => {
     // Override ID generation so we can ensure there will be a conflicting
     // progress record.
