@@ -141,11 +141,11 @@ describe('CardStore progress reporting', () => {
 
     assert.strictEqual(
       updates.length,
-      3,
-      'Should get three change records: add, add, update'
+      2,
+      'Should get two change records: add, update'
     );
-    assert.strictEqual(updates[2].doc.level, 1);
-    assert.strictEqual(updates[2].doc.question, 'Q1');
+    assert.strictEqual(updates[1].doc.level, 1);
+    assert.strictEqual(updates[1].doc.question, 'Q1');
   });
 
   it('deletes the card when the corresponding progress record cannot be created', async () => {

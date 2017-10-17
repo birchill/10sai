@@ -357,13 +357,13 @@ describe('CardStore', () => {
     await subject.putCard({ ...card, question: 'Updated question' });
 
     // Wait for a few rounds of events so the update records can happen
-    await waitForEvents(8);
+    await waitForEvents(5);
 
     assert.strictEqual(
       updates.length,
-      3,
-      'Should get three change records: add, add, update'
+      2,
+      'Should get two change records: add, update'
     );
-    assert.strictEqual(updates[2].doc.question, 'Updated question');
+    assert.strictEqual(updates[1].doc.question, 'Updated question');
   });
 });

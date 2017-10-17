@@ -437,10 +437,33 @@ class CardStore {
       include_docs: true,
     });
 
-    // TODO: Maintain a map here of the last ~10? cards' progress information so
-    // that when we get subsequent progress records we can skip dispatching them
-    // if the progress hasn't changed.
-    // ~10 is pretty arbitrary. Make it time based?
+    // When a new card is added we'll get a change callback for both the card
+    // record and the progress record but, since we lookup the other half before
+    // calling the callback, we'd end up calling the callback with the same
+    // document twice. Likewise for any change that touches both records at
+    // once.
+    //
+    // That's wasteful particularly if we are doing a big sync -- we'll end up
+    // calling the callback twice as many times as we need to. Furthermore it's
+    // exposing an implementation detail of this class that we should really
+    // hide.
+    //
+    // To mediate that, we maintain a map of all the card/progress revisions we
+    // have returned so we can avoid returning
+    // the same thing twice.
+    const returnedCards = {};
+    const alreadyReturnedCard = record => {
+      if (record._id.startsWith(CARD_PREFIX)) {
+        const id = stripCardPrefix(record._id);
+        return returnedCards[id] && returnedCards[id].cardRev === record._rev;
+      } else if (record._id.startsWith(PROGRESS_PREFIX)) {
+        const id = stripProgressPrefix(record._id);
+        return (
+          returnedCards[id] && returnedCards[id].progressRev === record._rev
+        );
+      }
+      return false;
+    };
 
     // Wrap callbacks to strip ID prefix
     const originalOnFn = eventEmitter.on;
@@ -456,6 +479,15 @@ class CardStore {
         if (arg.doc._id.startsWith(CARD_PREFIX)) {
           const id = stripCardPrefix(arg.id);
           const progress = await this.db.get(PROGRESS_PREFIX + id);
+          // We have to check this after the async call above since while
+          // fetching the progress record, it might be reported here.
+          if (alreadyReturnedCard(arg.doc)) {
+            return;
+          }
+          returnedCards[id] = {
+            cardRev: arg.doc._rev,
+            progressRev: progress._rev,
+          };
           listener({
             ...arg,
             id,
@@ -464,6 +496,10 @@ class CardStore {
         } else if (arg.doc._id.startsWith(PROGRESS_PREFIX)) {
           const id = stripProgressPrefix(arg.id);
           const card = await this.db.get(CARD_PREFIX + id);
+          if (alreadyReturnedCard(arg.doc)) {
+            return;
+          }
+          returnedCards[id] = { cardRev: card._rev, progressRev: arg.doc._rev };
           listener({
             ...arg,
             id,
