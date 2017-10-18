@@ -378,7 +378,6 @@ class CardStore {
   }
 
   async deleteCard(card) {
-    // TODO: This should strip the progress fields before trying to delete
     const stubbornDelete = async (doc, db) => {
       try {
         return await db.remove(doc);
