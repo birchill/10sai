@@ -19,7 +19,7 @@ export function reviewLoaded(cards) {
     type: 'REVIEW_LOADED',
     cards,
     // The way we avoid caring about if these two overlap is that we assign the
-    // current card and then remove if from the corresponding list. That way
+    // current card and then remove it from the corresponding list. That way
     // nextCard is guaranteed to be different. This also helps with the case
     // where there is only one card left.
     currentCardSeed: Math.random(),

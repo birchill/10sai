@@ -32,7 +32,7 @@ const initialState = {
 
   // An array of the IDs of cards we've presented to the user in order from most
   // to least recently seen. If a card has been shown more than once only the
-  // most recentl occurence is included.
+  // most recent occurence is included.
   history: [],
 
   // The card currently being presented to the user. May be null if there is no
@@ -66,21 +66,155 @@ export default function review(state = initialState, action) {
     }
 
     case 'REVIEW_LOADED': {
-      // TODO: This should replace the next card regardless. The 'cards'
-      // included in the action *includes* a card to be used for the next card
-      // since that simplifies the case where the review limits are adjusted
-      // such that there should no longer be a next card.
-      return {
+      // This should replace the next card regardless. The 'cards' included in
+      // the action *includes* a card to be used for the next card since that
+      // simplifies the case where the review limits are adjusted such that
+      // there should no longer be a next card.
+      let updatedState = {
         ...state,
-        reviewState: ReviewState.QUESTION,
         heap: action.cards,
       };
+
+      // Update the next card
+      updatedState = updateNextCard(initialState, action.nextCardSeed);
+
+      // When we first load, or after we have completed once, neither the next
+      // card nor the current card will be filled-in so we will need to call
+      // updateNextCard twice.
+      if (updatedState.nextCard && !updatedState.currentCard) {
+        updatedState = updateNextCard(initialState, action.currentCardSeed);
+      }
+
+      // If we were complete but now have cards we need to go back to the
+      // question state.
+      if (
+        (updatedState.reviewState === ReviewState.COMPLETED ||
+          updatedState.reviewState === ReviewState.LOADING) &&
+        updatedState.currentCard
+      ) {
+        updatedState.reviewState = ReviewState.QUESTION;
+      }
+
+      return updatedState;
     }
 
-    // TODO: PASS_CARD -- Don't forget to check for completion
-    // TODO: FAIL_CARD
+    case 'PASS_CARD': {
+      // We use passedCard to search arrays
+      const passedCard = state.currentCard;
+      // But we push a copy of it that we will (probably) update
+      const updatedCard = { ...passedCard };
+
+      // Update failed queues
+      let finished = true;
+      let failedCardsLevel2 = state.failedCardsLevel2;
+      let failedCardsLevel1 = state.failedCardsLevel1;
+      if (passedCard.level === 0) {
+        let failedIndex = failedCardsLevel2.indexOf(passedCard);
+        if (failedIndex !== -1) {
+          // Move from queue two queue one
+          failedCardsLevel2 = failedCardsLevel2.splice(failedIndex, 1);
+          failedCardsLevel1.push(updatedCard);
+          finished = false;
+        } else {
+          failedIndex = failedCardsLevel1.indexOf(passedCard);
+          if (failedIndex !== -1) {
+            // Drop from queue one
+            failedCardsLevel1 = failedCardsLevel1.splice(failedIndex, 1);
+          }
+        }
+      }
+
+      // Update the passed card
+      if (finished) {
+        // XXX This should take into account the review time on the card
+        // Which suggests we should update the review time here
+        updatedCard.level = updatedCard.level ? updatedCard.level * 2 : 1;
+      }
+      const completed = finished ? state.completed + 1 : state.completed;
+
+      // Drop from history if it already exists then add to the end
+      let history = state.history;
+      const historyIndex = history.indexOf(passedCard);
+      history =
+        historyIndex === -1 ? history.slice() : history.splice(historyIndex, 1);
+      history.push(updatedCard);
+
+      const intermediateState = {
+        ...state,
+        reviewState: ReviewState.QUESTION,
+        completed,
+        failedCardsLevel2,
+        failedCardsLevel1,
+        history,
+      };
+
+      // TODO: Make nextCardSeed be weighted towards zero
+      return updateNextCard(intermediateState, action.nextCardSeed);
+    }
+
+    case 'FAIL_CARD': {
+      // TODO -- should be quite similar to PASS_CARD
+      return state;
+    }
 
     default:
       return state;
   }
+}
+
+function updateNextCard(state, seed) {
+  // The fields we might update
+  let reviewState = state.reviewState;
+  let currentCard;
+  let nextCard;
+  let heap = state.heap;
+  let newCardsInPlay = state.newCardsInPlay;
+
+  const cardsAvailable =
+    state.failedCardsLevel2.length +
+    state.failedCardsLevel1.length +
+    heap.length;
+  if (!cardsAvailable) {
+    reviewState = ReviewState.COMPLETE;
+    currentCard = null;
+    nextCard = null;
+  } else {
+    currentCard = state.nextCard;
+    // Drop current card from heap
+    const heapIndex = currentCard ? heap.indexOf(currentCard) : -1;
+    if (heapIndex !== -1) {
+      heap = heap.splice(heapIndex, 1);
+      // If we found a level zero card that hasn't been reviewed in the heap
+      // it's fair to say it's a new card.
+      if (currentCard.level === 0 && currentCard.reviewed === null) {
+        newCardsInPlay++;
+      }
+    }
+
+    // Find next card
+    if (cardsAvailable) {
+      const cardIndex = Math.floor(seed * cardsAvailable);
+      const level1Start = state.failedCardsLevel2.length;
+      const heapStart =
+        state.failedCardsLevel2.length + state.failedCardsLevel1.length;
+      if (cardIndex < level1Start) {
+        nextCard = state.failedCardsLevel2[cardIndex];
+      } else if (cardIndex < heapStart) {
+        nextCard = state.failedCardsLevel1[cardIndex - level1Start];
+      } else {
+        nextCard = heap[cardIndex - heapStart];
+      }
+    } else {
+      nextCard = null;
+    }
+  }
+
+  return {
+    ...state,
+    reviewState,
+    newCardsInPlay,
+    heap,
+    currentCard,
+    nextCard,
+  };
 }

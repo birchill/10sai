@@ -53,27 +53,21 @@ export function* updateHeap(cardStore, action) {
 }
 
 export function* updateProgress(cardStore, action) {
-  // XXX This should not happen here, but in the reducer instead.
-  // Instead, we need to be careful to read the level from *state* and not from
-  // the action.
-  let level;
-  if (action.type === 'FAIL_CARD') {
-    level = 0;
-  } else if (action.card.level === 0) {
-    level = 1;
-  } else {
-    level = action.card.level * 2;
-  }
-
   const update = {
+    // XXX This won't be the updated card --- should we make the reducer also
+    // update it and then copy it? Or should we just look up the last history
+    // item / current card as needed?
+    _id: action.card._id,
+    level: action.card.level,
     // Using the CardStore's review time (as opposed to, say, `new Date()`
     // means that say you review just after 7am each morning then the next
     // morning any failed cards will show up in the 7am window the next
     // morning).
     // TODO: This is after we normalize CardStore's review times to hour
     // intervals.
+    // XXX I'm planning to update this in the reducer instead so we won't need
+    // to do that here.
     reviewed: cardStore.reviewTime,
-    level,
   };
 
   try {
