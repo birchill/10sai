@@ -1,4 +1,3 @@
-// @format
 import { call, put, select, takeEvery } from 'redux-saga/effects';
 import * as reviewActions from '../actions/review';
 

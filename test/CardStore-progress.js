@@ -27,8 +27,8 @@ describe('CardStore progress reporting', () => {
     await subject.putCard({ question: 'Question', answer: 'Answer' });
     const cards = await subject.getCards();
     assert.strictEqual(cards.length, 1, 'Length of getCards() result');
-    assert.strictEqual(cards[0].level, 0);
-    assert.strictEqual(cards[0].reviewed, null);
+    assert.strictEqual(cards[0].progress.level, 0);
+    assert.strictEqual(cards[0].progress.reviewed, null);
   });
 
   it('returns the progress when getting a single card', async () => {
@@ -37,8 +37,8 @@ describe('CardStore progress reporting', () => {
       answer: 'Answer',
     });
     const card = await subject.getCard(newCard._id);
-    assert.strictEqual(card.level, 0);
-    assert.strictEqual(card.reviewed, null);
+    assert.strictEqual(card.progress.level, 0);
+    assert.strictEqual(card.progress.reviewed, null);
   });
 
   it('returns the progress when reporting added cards', async () => {
@@ -52,8 +52,8 @@ describe('CardStore progress reporting', () => {
     await waitForEvents(5);
 
     assert.isOk(updateInfo, 'Change was recorded');
-    assert.strictEqual(updateInfo.doc.level, 0);
-    assert.strictEqual(updateInfo.doc.reviewed, null);
+    assert.strictEqual(updateInfo.doc.progress.level, 0);
+    assert.strictEqual(updateInfo.doc.progress.reviewed, null);
   });
 
   it('returns the progress when adding cards', async () => {
@@ -61,8 +61,8 @@ describe('CardStore progress reporting', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    assert.strictEqual(newCard.level, 0);
-    assert.strictEqual(newCard.reviewed, null);
+    assert.strictEqual(newCard.progress.level, 0);
+    assert.strictEqual(newCard.progress.reviewed, null);
   });
 
   it('returns the progress when updating cards', async () => {
@@ -74,8 +74,8 @@ describe('CardStore progress reporting', () => {
       _id: newCard._id,
       question: 'Updated question',
     });
-    assert.strictEqual(updatedCard.level, 0);
-    assert.strictEqual(updatedCard.reviewed, null);
+    assert.strictEqual(updatedCard.progress.level, 0);
+    assert.strictEqual(updatedCard.progress.reviewed, null);
   });
 
   it('does not update the card modified time when only updating the progress', async () => {
@@ -83,7 +83,10 @@ describe('CardStore progress reporting', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    const updatedCard = await subject.putCard({ _id: newCard._id, level: 1 });
+    const updatedCard = await subject.putCard({
+      _id: newCard._id,
+      progress: { level: 1 },
+    });
     assert.strictEqual(
       updatedCard.modified,
       newCard.modified,
@@ -107,10 +110,10 @@ describe('CardStore progress reporting', () => {
     const updatedCard = await subject.putCard({
       _id: newCard._id,
       question: 'Updated question',
-      level: 1,
+      progress: { level: 1 },
     });
     assert.strictEqual(updatedCard.question, 'Updated question');
-    assert.strictEqual(updatedCard.level, 1);
+    assert.strictEqual(updatedCard.progress.level, 1);
     assert.notEqual(
       updatedCard.modified,
       newCard.modified,
@@ -119,7 +122,7 @@ describe('CardStore progress reporting', () => {
 
     const fetchedCard = await subject.getCard(newCard._id);
     assert.strictEqual(fetchedCard.question, 'Updated question');
-    assert.strictEqual(fetchedCard.level, 1);
+    assert.strictEqual(fetchedCard.progress.level, 1);
     assert.notEqual(
       fetchedCard.modified,
       newCard.modified,
@@ -134,7 +137,7 @@ describe('CardStore progress reporting', () => {
     });
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
-    await subject.putCard({ _id: card._id, level: 1 });
+    await subject.putCard({ _id: card._id, progress: { level: 1 } });
 
     // Wait for a few rounds of events so the update records can happen
     await waitForEvents(8);
@@ -144,7 +147,7 @@ describe('CardStore progress reporting', () => {
       2,
       'Should get two change records: add, update'
     );
-    assert.strictEqual(updates[1].doc.level, 1);
+    assert.strictEqual(updates[1].doc.progress.level, 1);
     assert.strictEqual(updates[1].doc.question, 'Q1');
   });
 
@@ -170,7 +173,6 @@ describe('CardStore progress reporting', () => {
     // Progress information won't be included because it's too difficult to look
     // up the latest revision and return it.
     assert.strictEqual(updates[1].doc.progress, undefined);
-    assert.strictEqual(updates[1].doc.reviewed, undefined);
   });
 
   it('deletes the card when the corresponding progress record cannot be created', async () => {
@@ -249,32 +251,27 @@ describe('CardStore progress reporting', () => {
     // Card 1: Not *quite* overdue yet
     await subject.putCard({
       _id: cards[0]._id,
-      reviewed: relativeTime(-1.9),
-      level: 2,
+      progress: { reviewed: relativeTime(-1.9), level: 2 },
     });
     // Card 2: Very overdue
     await subject.putCard({
       _id: cards[1]._id,
-      reviewed: relativeTime(-200),
-      level: 20,
+      progress: { reviewed: relativeTime(-200), level: 20 },
     });
     // Card 3: Just overdue
     await subject.putCard({
       _id: cards[2]._id,
-      reviewed: relativeTime(-2.1),
-      level: 2,
+      progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
     // Card 4: Precisely overdue to the second
     await subject.putCard({
       _id: cards[3]._id,
-      reviewed: relativeTime(-1),
-      level: 1,
+      progress: { reviewed: relativeTime(-1), level: 1 },
     });
     // Card 5: Somewhat overdue
     await subject.putCard({
       _id: cards[4]._id,
-      reviewed: relativeTime(-12),
-      level: 8,
+      progress: { reviewed: relativeTime(-12), level: 8 },
     });
 
     // Given, the above we'd expect the result to be:
@@ -299,8 +296,7 @@ describe('CardStore progress reporting', () => {
       // eslint-disable-next-line no-await-in-loop
       await subject.putCard({
         _id: card._id,
-        reviewed,
-        level: 3,
+        progress: { reviewed, level: 3 },
       });
     }
 
@@ -316,20 +312,17 @@ describe('CardStore progress reporting', () => {
     // Card 1: Just overdue
     await subject.putCard({
       _id: cards[0]._id,
-      reviewed: relativeTime(-2.1),
-      level: 2,
+      progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
     // Card 2: Failed (and overdue)
     await subject.putCard({
       _id: cards[1]._id,
-      reviewed: relativeTime(-2.1),
-      level: 0,
+      progress: { reviewed: relativeTime(-2.1), level: 0 },
     });
     // Card 3: Just overdue
     await subject.putCard({
       _id: cards[2]._id,
-      reviewed: relativeTime(-2.1),
-      level: 2,
+      progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
 
     const result = await subject.getCards({ type: 'overdue' });
@@ -345,20 +338,17 @@ describe('CardStore progress reporting', () => {
     // Card 1: Just overdue
     await subject.putCard({
       _id: cards[0]._id,
-      reviewed: relativeTime(-2.1),
-      level: 2,
+      progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
     // Card 2: Failed (and overdue)
     await subject.putCard({
       _id: cards[1]._id,
-      reviewed: relativeTime(-2.1),
-      level: 0,
+      progress: { reviewed: relativeTime(-2.1), level: 0 },
     });
     // Card 3: Just overdue
     await subject.putCard({
       _id: cards[2]._id,
-      reviewed: relativeTime(-2.1),
-      level: 2,
+      progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
 
     const result = await subject.getCards({
@@ -376,20 +366,17 @@ describe('CardStore progress reporting', () => {
     // Card 1: Level now: -1, in 10 days' time: 9
     await subject.putCard({
       _id: cards[0]._id,
-      reviewed: subject.reviewTime,
-      level: 1,
+      progress: { reviewed: subject.reviewTime, level: 1 },
     });
     // Card 2: Level now: 0.2, in 10 days' time: 10.2
     await subject.putCard({
       _id: cards[1]._id,
-      reviewed: relativeTime(-1.2),
-      level: 1,
+      progress: { reviewed: relativeTime(-1.2), level: 1 },
     });
     // Card 3: Level now: 0.333, in 10 days' time: 0.666
     await subject.putCard({
       _id: cards[2]._id,
-      reviewed: relativeTime(-40),
-      level: 30,
+      progress: { reviewed: relativeTime(-40), level: 30 },
     });
 
     // Initially only cards 3 and 2 are due, and in that order ...
@@ -438,21 +425,19 @@ describe('CardStore progress reporting', () => {
 
     await subject.putCard({
       _id: cards[0]._id,
-      reviewed: relativeTime(-1),
-      level: 1,
+      progress: { reviewed: relativeTime(-1), level: 1 },
     });
     await subject.putCard({
       _id: cards[1]._id,
-      reviewed: relativeTime(-4),
-      level: 2,
+      progress: { reviewed: relativeTime(-4), level: 2 },
     });
 
     const result = await subject.getCards({ type: 'overdue' });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 2');
-    assert.strictEqual(result[0].level, 2, 'Level of first card');
+    assert.strictEqual(result[0].progress.level, 2, 'Level of first card');
     assert.strictEqual(result[1].question, 'Question 1');
-    assert.strictEqual(result[1].level, 1, 'Level of second card');
+    assert.strictEqual(result[1].progress.level, 1, 'Level of second card');
   });
 
   it('returns the review level along with new cards', async () => {
@@ -461,8 +446,8 @@ describe('CardStore progress reporting', () => {
     const result = await subject.getCards({ type: 'new' });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 2');
-    assert.strictEqual(result[0].level, 0, 'Level of first card');
+    assert.strictEqual(result[0].progress.level, 0, 'Level of first card');
     assert.strictEqual(result[1].question, 'Question 1');
-    assert.strictEqual(result[1].level, 0, 'Level of second card');
+    assert.strictEqual(result[1].progress.level, 0, 'Level of second card');
   });
 });

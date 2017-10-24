@@ -194,7 +194,7 @@ describe('CardStore remote sync', () => {
         { _id: 'progress-' + firstCard._id, ...initialProgress }
       ))
       .then(() => {
-        expectedCards[0] = { ...firstCard, ...initialProgress };
+        expectedCards[0].progress = initialProgress;
       })
       .then(() => testRemote.put(cardForDirectPut(secondCard)))
       .then(result => {
@@ -204,7 +204,7 @@ describe('CardStore remote sync', () => {
         { _id: 'progress-' + secondCard._id, ...initialProgress }
       ))
       .then(() => {
-        expectedCards[1] = { ...secondCard, ...initialProgress };
+        expectedCards[1].progress = initialProgress;
       })
       .then(() => subject.setSyncServer(testRemote))
       .then(() => {

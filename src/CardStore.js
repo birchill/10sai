@@ -22,13 +22,12 @@ const parseCard = card => ({
   // speculatively parsing them would be a waste.
 });
 
-const progressFields = ['reviewed', 'level'];
 const mergeRecords = (card, progress) => {
   const result = parseCard(card);
   if (progress) {
-    for (const field of progressFields) {
-      result[field] = progress[field];
-    }
+    result.progress = progress;
+    delete result.progress._id;
+    delete result.progress._rev;
   }
   return result;
 };
@@ -161,8 +160,10 @@ class CardStore {
       .then(result =>
         result.rows.map(row => ({
           ...parseCard(row.doc),
-          level: row.value.level,
-          reviewed: row.value.reviewed,
+          progress: {
+            level: row.value.level,
+            reviewed: row.value.reviewed,
+          }
         }))
       );
   }
@@ -217,22 +218,20 @@ class CardStore {
       return this._putNewCard(card);
     }
 
-    // Split out changes into changes to the progress record vs changes to the
-    // card itself.
-    const commonFields = ['_id', '_rev'];
-    const progressUpdate = {};
-    const cardUpdate = {};
-    for (const [field, value] of Object.entries(card)) {
-      if (commonFields.includes(field)) {
-        continue;
+    // Split progress part out of card and strip any non-content fields
+    const fieldsToSkip = [ '_id', '_rev', 'progress' ];
+    const justTheMeat = record => {
+      const result = {};
+      for (const [field, value] of Object.entries(record)) {
+        if (fieldsToSkip.includes(field)) {
+          continue;
+        }
+        result[field] = value;
       }
-
-      if (progressFields.includes(field)) {
-        progressUpdate[field] = value;
-      } else {
-        cardUpdate[field] = value;
-      }
-    }
+      return result;
+    };
+    const cardUpdate = justTheMeat(card);
+    const progressUpdate = card.progress ? justTheMeat(card.progress) : {};
 
     const cardRecord = await this._updateCard(card._id, cardUpdate);
     const progressRecord = await this._updateProgress(card._id, progressUpdate);
@@ -371,10 +370,7 @@ class CardStore {
   async getCard(id) {
     const card = await this.db.get(CARD_PREFIX + id);
     const progress = await this.db.get(PROGRESS_PREFIX + id);
-
-    // We stack the card fields on top of the progress fields since parseCard
-    // expects the _id to be prefixed by CARD_PREFIX not PROGRESS_PREFIX.
-    return parseCard({ ...progress, ...card });
+    return mergeRecords(card, progress);
   }
 
   async deleteCard(card) {
@@ -391,11 +387,20 @@ class CardStore {
       }
     };
 
-    await stubbornDelete({ ...card, _id: CARD_PREFIX + card._id }, this.db);
+    const cardToDelete = { ...card, _id: CARD_PREFIX + card._id };
+    delete cardToDelete.progress;
+    await stubbornDelete(cardToDelete, this.db);
 
-    let progress;
+    if (!card.progress) {
+      return;
+    }
+
+    const progressToDelete = {
+      ...card.progress,
+      _id: PROGRESS_PREFIX + card._id,
+    };
     try {
-      progress = await this.db.get(PROGRESS_PREFIX + card._id);
+      await stubbornDelete(progressToDelete, this.db);
     } catch (err) {
       // If the progress record doesn't exist, that's fine.
       if (err.status === 404) {
@@ -403,8 +408,6 @@ class CardStore {
       }
       throw err;
     }
-
-    await stubbornDelete(progress, this.db);
   }
 
   static generateCardId() {
