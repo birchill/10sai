@@ -76,13 +76,13 @@ export default function review(state = initialState, action) {
       };
 
       // Update the next card
-      updatedState = updateNextCard(initialState, action.nextCardSeed);
+      updatedState = updateNextCard(updatedState, action.nextCardSeed);
 
       // When we first load, or after we have completed once, neither the next
       // card nor the current card will be filled-in so we will need to call
       // updateNextCard twice.
       if (updatedState.nextCard && !updatedState.currentCard) {
-        updatedState = updateNextCard(initialState, action.currentCardSeed);
+        updatedState = updateNextCard(updatedState, action.currentCardSeed);
       }
 
       // If we were complete but now have cards we need to go back to the
@@ -183,7 +183,9 @@ function updateNextCard(state, seed) {
     // Drop current card from heap
     const heapIndex = currentCard ? heap.indexOf(currentCard) : -1;
     if (heapIndex !== -1) {
-      heap = heap.splice(heapIndex, 1);
+      // TODO: Use an immutable-js List here
+      heap = heap.slice(0);
+      heap.splice(heapIndex, 1);
       // If we found a level zero card that hasn't been reviewed in the heap
       // it's fair to say it's a new card.
       if (currentCard.level === 0 && currentCard.reviewed === null) {
