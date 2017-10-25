@@ -112,6 +112,7 @@ export default function review(state = initialState, action) {
         let failedIndex = failedCardsLevel2.indexOf(passedCard);
         if (failedIndex !== -1) {
           // Move from queue two queue one
+          // XXX This is wrong -- splice mutates the array
           failedCardsLevel2 = failedCardsLevel2.splice(failedIndex, 1);
           failedCardsLevel1.push(updatedCard);
           finished = false;
@@ -119,6 +120,7 @@ export default function review(state = initialState, action) {
           failedIndex = failedCardsLevel1.indexOf(passedCard);
           if (failedIndex !== -1) {
             // Drop from queue one
+            // XXX This is wrong -- splice mutates the array
             failedCardsLevel1 = failedCardsLevel1.splice(failedIndex, 1);
           }
         }
@@ -135,6 +137,7 @@ export default function review(state = initialState, action) {
       // Drop from history if it already exists then add to the end
       let history = state.history;
       const historyIndex = history.indexOf(passedCard);
+      // XXX This is wrong -- splice mutates the array
       history =
         historyIndex === -1 ? history.slice() : history.splice(historyIndex, 1);
       history.push(updatedCard);

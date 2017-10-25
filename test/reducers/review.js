@@ -31,9 +31,9 @@ describe('reducer:review', () => {
       undefined,
       actions.newReview(2, 10, new Date())
     );
-    assert(updatedState.reviewState === ReviewState.LOADING);
-    assert(updatedState.maxCards === 10);
-    assert(updatedState.maxNewCards === 2);
+    assert.strictEqual(updatedState.reviewState, ReviewState.LOADING);
+    assert.strictEqual(updatedState.maxCards, 10);
+    assert.strictEqual(updatedState.maxNewCards, 2);
   });
 
   it('should update the heap on REVIEW_LOADED', () => {
@@ -55,7 +55,19 @@ describe('reducer:review', () => {
     assert.deepEqual(updatedState.heap, cards.slice(1));
   });
 
-  it('should go to the COMPLETE state on REVIEW_LOADED if there are no cards', () => {});
+  it('should go to the COMPLETE state on REVIEW_LOADED if there are no cards', () => {
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 3, new Date())
+    );
+
+    const action = actions.reviewLoaded([]);
+    const updatedState = subject(initialState, action);
+
+    assert.strictEqual(updatedState.reviewState, ReviewState.COMPLETE);
+    assert.strictEqual(updatedState.currentCard, null);
+    assert.strictEqual(updatedState.nextCard, null);
+  });
 
   it('should update the next and current card on REVIEW_LOADED if both are unset', () => {});
 
