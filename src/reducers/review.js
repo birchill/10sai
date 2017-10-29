@@ -151,7 +151,6 @@ export default function review(state = initialState, action) {
         history,
       };
 
-      // TODO: Make nextCardSeed be weighted towards zero
       return updateNextCard(intermediateState, action.nextCardSeed);
     }
 
@@ -191,7 +190,9 @@ function updateNextCard(state, seed) {
       heap.splice(heapIndex, 1);
       // If we found a level zero card that hasn't been reviewed in the heap
       // it's fair to say it's a new card.
-      if (currentCard.level === 0 && currentCard.reviewed === null) {
+      if (currentCard.progress &&
+          currentCard.progress.level === 0 &&
+          currentCard.progress.reviewed === null) {
         newCardsInPlay++;
       }
     }

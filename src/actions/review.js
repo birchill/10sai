@@ -23,6 +23,7 @@ export function reviewLoaded(cards) {
     // current card and then remove it from the corresponding list. That way
     // nextCard is guaranteed to be different. This also helps with the case
     // where there is only one card left.
+    // TODO: Weight these towards zero
     currentCardSeed: Math.random(),
     nextCardSeed: Math.random(),
   };
@@ -32,6 +33,7 @@ export function failCard(card) {
   return {
     type: 'FAIL_CARD',
     card,
+    // TODO: Weight this towards zero
     nextCardSeed: Math.random(),
   };
 }
@@ -40,6 +42,7 @@ export function passCard(card) {
   return {
     type: 'PASS_CARD',
     card,
+    // TODO: Weight this towards zero
     nextCardSeed: Math.random(),
   };
 }

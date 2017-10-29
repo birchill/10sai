@@ -61,17 +61,46 @@ describe('reducer:review', () => {
       actions.newReview(1, 3, new Date())
     );
 
-    const action = actions.reviewLoaded([]);
-    const updatedState = subject(initialState, action);
+    const updatedState = subject(initialState, actions.reviewLoaded([]));
 
     assert.strictEqual(updatedState.reviewState, ReviewState.COMPLETE);
-    assert.strictEqual(updatedState.currentCard, null);
-    assert.strictEqual(updatedState.nextCard, null);
+    assert.strictEqual(updatedState.currentCard, null, 'Current card');
+    assert.strictEqual(updatedState.nextCard, null, 'Next card');
   });
 
-  it('should update the next and current card on REVIEW_LOADED if both are unset', () => {});
+  it('should update the next and current card on REVIEW_LOADED if both are unset', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 3, reviewTime)
+    );
+    const cards = getCards(1, 3, reviewTime);
+    const action = actions.reviewLoaded(cards);
+    action.currentCardSeed = 0;
+    action.nextCardSeed = 0;
 
-  it('should update the number of new cards in play on REVIEW_LOADED when new cards are selected', () => {});
+    const updatedState = subject(initialState, action);
+
+    assert.strictEqual(updatedState.reviewState, ReviewState.QUESTION);
+    assert.strictEqual(updatedState.currentCard, cards[0], 'Current card');
+    assert.strictEqual(updatedState.nextCard, cards[1], 'Next card');
+  });
+
+  it('should update the number of new cards in play on REVIEW_LOADED when new cards are selected', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(2, 3, reviewTime)
+    );
+    const cards = getCards(2, 3, reviewTime);
+    const action = actions.reviewLoaded(cards);
+    action.currentCardSeed = 0;
+    action.nextCardSeed = 0;
+
+    const updatedState = subject(initialState, action);
+
+    assert.strictEqual(updatedState.newCardsInPlay, 1);
+  });
 
   it('should update only the next card on REVIEW_LOADED if the current card is set', () => {});
 
