@@ -1,4 +1,3 @@
-// @format
 import ReviewState from '../review-states';
 
 const initialState = {
