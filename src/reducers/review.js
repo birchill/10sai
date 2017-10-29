@@ -167,33 +167,53 @@ export default function review(state = initialState, action) {
 function updateNextCard(state, seed) {
   // The fields we might update
   let reviewState = state.reviewState;
-  let currentCard;
+  let currentCard = state.currentCard;
   let nextCard;
   let heap = state.heap;
   let newCardsInPlay = state.newCardsInPlay;
 
-  const cardsAvailable =
+  // Generally when we call this we want to update the current card from the
+  // next card. However, if this is called as part of updating the heap (e.g. on
+  // REVIEW_LOADED), that is, if we haven't already moved the current card to
+  // the history, then we don't want to update it.
+  //
+  // TODO: This might be wrong when we're reviewing the last card and we have
+  // failed it. In that case I don't think we put it in the history but then
+  // maybe in that case we also don't want to update the current card?
+  const updateCurrentCard =
+    !currentCard || state.history.indexOf(currentCard) !== -1;
+
+  let cardsAvailable =
     state.failedCardsLevel2.length +
     state.failedCardsLevel1.length +
     heap.length;
   if (!cardsAvailable) {
-    reviewState = ReviewState.COMPLETE;
-    currentCard = null;
-    nextCard = null;
+    if (updateCurrentCard) {
+      reviewState = ReviewState.COMPLETE;
+      currentCard = null;
+      nextCard = null;
+    } else {
+      nextCard = null;
+    }
   } else {
-    currentCard = state.nextCard;
-    // Drop current card from heap
-    const heapIndex = currentCard ? heap.indexOf(currentCard) : -1;
-    if (heapIndex !== -1) {
-      // TODO: Use an immutable-js List here
-      heap = heap.slice(0);
-      heap.splice(heapIndex, 1);
-      // If we found a level zero card that hasn't been reviewed in the heap
-      // it's fair to say it's a new card.
-      if (currentCard.progress &&
+    if (updateCurrentCard) {
+      currentCard = state.nextCard;
+      // Drop current card from heap
+      const heapIndex = currentCard ? heap.indexOf(currentCard) : -1;
+      if (heapIndex !== -1) {
+        // TODO: Use an immutable-js List here
+        heap = heap.slice(0);
+        heap.splice(heapIndex, 1);
+        cardsAvailable--;
+        // If we found a level zero card that hasn't been reviewed in the heap
+        // it's fair to say it's a new card.
+        if (
+          currentCard.progress &&
           currentCard.progress.level === 0 &&
-          currentCard.progress.reviewed === null) {
-        newCardsInPlay++;
+          currentCard.progress.reviewed === null
+        ) {
+          newCardsInPlay++;
+        }
       }
     }
 

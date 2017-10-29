@@ -102,7 +102,46 @@ describe('reducer:review', () => {
     assert.strictEqual(updatedState.newCardsInPlay, 1);
   });
 
-  it('should update only the next card on REVIEW_LOADED if the current card is set', () => {});
+  it('should update only the next card on REVIEW_LOADED if the current card is set', () => {
+    // Set up a review state where only the current card is set
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(0, 3, reviewTime)
+    );
+    const cards = getCards(0, 3, reviewTime);
+    const originalCard = cards[0];
+    const originalLoad = actions.reviewLoaded([originalCard]);
+    let updatedState = subject(initialState, originalLoad);
+    assert.strictEqual(
+      updatedState.currentCard,
+      originalCard,
+      'Current card after first load'
+    );
+    assert.strictEqual(
+      updatedState.nextCard,
+      null,
+      'Next card after first load'
+    );
+
+    // Then load the review again
+    const newCards = cards.slice(1);
+    const secondLoad = actions.reviewLoaded(newCards);
+    secondLoad.currentCardSeed = 0;
+    secondLoad.nextCardSeed = 0;
+    updatedState = subject(updatedState, secondLoad);
+
+    assert.strictEqual(
+      updatedState.currentCard,
+      originalCard,
+      'Current card after second load'
+    );
+    assert.strictEqual(
+      updatedState.nextCard,
+      newCards[0],
+      'Next card after second load'
+    );
+  });
 
   it('should prefer choosing new cards to existing cards on REVIEW_LOADED', () => {});
 
