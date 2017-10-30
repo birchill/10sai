@@ -185,9 +185,9 @@ describe('reducer:review', () => {
     const reviewTime = new Date();
     const initialState = subject(
       undefined,
-      actions.newReview(1, 0, reviewTime)
+      actions.newReview(0, 1, reviewTime)
     );
-    const cards = getCards(1, 0, reviewTime);
+    const cards = getCards(0, 1, reviewTime);
     cards[0].progress.level = 3; // 3 day span
     cards[0].progress.reviewTime = new Date(reviewTime - 5 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
@@ -203,9 +203,9 @@ describe('reducer:review', () => {
     const reviewTime = new Date();
     const initialState = subject(
       undefined,
-      actions.newReview(1, 0, reviewTime)
+      actions.newReview(0, 1, reviewTime)
     );
-    const cards = getCards(1, 0, reviewTime);
+    const cards = getCards(0, 1, reviewTime);
     cards[0].progress.level = 3; // 3 day span
     cards[0].progress.reviewTime = new Date(reviewTime - 1 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
@@ -219,11 +219,34 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level on for a new card on PASS_CARD', () => {
-    // TODO
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 1, reviewTime)
+    );
+    const cards = getCards(1, 1, reviewTime);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+    assert.strictEqual(updatedState.currentCard.progress.level, 0);
+
+    updatedState = subject(updatedState, actions.passCard());
+
+    assert.strictEqual(updatedState.history[0].progress.level, 1);
   });
 
   it('should update the review time on PASS_CARD', () => {
-    // TODO
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(0, 1, reviewTime)
+    );
+    const cards = getCards(0, 1, reviewTime);
+    cards[0].progress.level = 4;
+    cards[0].progress.reviewTime = new Date(reviewTime - 10 * MS_PER_DAY);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+
+    updatedState = subject(updatedState, actions.passCard());
+
+    assert.strictEqual(updatedState.history[0].progress.reviewTime, reviewTime);
   });
 
   it('should update the complete count on PASS_CARD', () => {
