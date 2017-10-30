@@ -142,7 +142,18 @@ describe('reducer:review', () => {
     );
   });
 
-  it('should prefer choosing new cards to existing cards on REVIEW_LOADED', () => {});
+  it('should go to the QUESTION state on REVIEW_LOADED if it was completed but there are more cards', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 3, reviewTime)
+    );
+    let updatedState = subject(initialState, actions.reviewLoaded([]));
+    assert.strictEqual(updatedState.reviewState, ReviewState.COMPLETE);
+    const cards = getCards(1, 3, reviewTime);
 
-  it('should got to the QUESTION state on REVIEW_LOADED if it was completed but there are more cards', () => {});
+    updatedState = subject(updatedState, actions.reviewLoaded(cards));
+
+    assert.strictEqual(updatedState.reviewState, ReviewState.QUESTION);
+  });
 });

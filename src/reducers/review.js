@@ -87,7 +87,7 @@ export default function review(state = initialState, action) {
       // If we were complete but now have cards we need to go back to the
       // question state.
       if (
-        (updatedState.reviewState === ReviewState.COMPLETED ||
+        (updatedState.reviewState === ReviewState.COMPLETE ||
           updatedState.reviewState === ReviewState.LOADING) &&
         updatedState.currentCard
       ) {
