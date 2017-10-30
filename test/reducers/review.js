@@ -361,8 +361,21 @@ describe('reducer:review', () => {
     // TODO
   });
 
-  it('should update the card level on FAIL_CARD', () => {
-    // TODO
+  it('should update the card level and review time on FAIL_CARD', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(0, 1, reviewTime)
+    );
+    const cards = getCards(0, 1, reviewTime);
+    cards[0].progress.level = 3;
+    cards[0].progress.reviewTime = new Date(reviewTime - 5 * MS_PER_DAY);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+
+    updatedState = subject(updatedState, actions.failCard());
+
+    assert.strictEqual(updatedState.history[0].progress.level, 0);
+    assert.strictEqual(updatedState.history[0].progress.reviewTime, reviewTime);
   });
 
   it('should update the review time on FAIL_CARD', () => {

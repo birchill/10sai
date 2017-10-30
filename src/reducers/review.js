@@ -159,11 +159,11 @@ export default function review(state = initialState, action) {
       const completed = finished ? state.completed + 1 : state.completed;
 
       // Drop from history if it already exists then add to the end
-      let history = state.history;
+      const history = state.history.slice();
       const historyIndex = history.indexOf(passedCard);
-      // XXX This is wrong -- splice mutates the array
-      history =
-        historyIndex === -1 ? history.slice() : history.splice(historyIndex, 1);
+      if (historyIndex !== -1) {
+        history.splice(historyIndex, 1);
+      }
       history.push(updatedCard);
 
       const intermediateState = {
@@ -180,8 +180,35 @@ export default function review(state = initialState, action) {
     }
 
     case 'FAIL_CARD': {
-      // TODO -- should be quite similar to PASS_CARD
-      return state;
+      // We use failedCard to search arrays
+      const failedCard = state.currentCard;
+      // But we push a copy of it that we will (probably) update
+      const updatedCard = { ...failedCard };
+
+      // Update failed queues
+      // TODO
+
+      // Update the failed card
+      updatedCard.progress.level = 0;
+      updatedCard.progress.reviewTime = state.reviewTime;
+
+      // Drop from history if it already exists then add to the end
+      // TODO: Share this code with PASS_CARD
+      const history = state.history.slice();
+      const historyIndex = history.indexOf(failedCard);
+      if (historyIndex !== -1) {
+        history.splice(historyIndex, 1);
+      }
+      history.push(updatedCard);
+
+      const intermediateState = {
+        ...state,
+        reviewState: ReviewState.QUESTION,
+        history,
+        currentCard: updatedCard,
+      };
+
+      return updateNextCard(intermediateState, action.nextCardSeed);
     }
 
     default:
