@@ -181,7 +181,44 @@ describe('reducer:review', () => {
     // TODO
   });
 
-  it('should update the card level on PASS_CARD', () => {
+  it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 0, reviewTime)
+    );
+    const cards = getCards(1, 0, reviewTime);
+    cards[0].progress.level = 3; // 3 day span
+    cards[0].progress.reviewTime = new Date(reviewTime - 5 * MS_PER_DAY);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+
+    updatedState = subject(updatedState, actions.passCard());
+
+    // Card was due 5 days ago and we got it right, so the level should go to
+    // 10.
+    assert.strictEqual(updatedState.history[0].progress.level, 10);
+  });
+
+  it('should update the card level for an existing card on PASS_CARD (before due date)', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 0, reviewTime)
+    );
+    const cards = getCards(1, 0, reviewTime);
+    cards[0].progress.level = 3; // 3 day span
+    cards[0].progress.reviewTime = new Date(reviewTime - 1 * MS_PER_DAY);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+
+    updatedState = subject(updatedState, actions.passCard());
+
+    // Card isn't due for two days but if we just double the interval we'll end
+    // up with a level *less* than the current level. Make sure that doesn't
+    // happen.
+    assert.strictEqual(updatedState.history[0].progress.level, 3);
+  });
+
+  it('should update the card level on for a new card on PASS_CARD', () => {
     // TODO
   });
 
@@ -253,3 +290,6 @@ describe('reducer:review', () => {
     // TODO
   });
 });
+
+// TODO: Tests for SET_REVIEW_LIMIT
+// TODO: Tests for SET_REVIEW_TIME

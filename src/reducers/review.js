@@ -1,7 +1,12 @@
 import ReviewState from '../review-states';
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 const initialState = {
   reviewState: ReviewState.IDLE,
+
+  // The time to use to update cards and calculating their next level etc.
+  reviewTime: new Date(),
 
   // The maximum number of unique cards that will be presented to the user in
   // this review. The actual number presented may be less if there are
@@ -50,6 +55,7 @@ export default function review(state = initialState, action) {
       return {
         ...initialState,
         reviewState: ReviewState.LOADING,
+        reviewTime: action.reviewTime,
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
       };
@@ -61,6 +67,13 @@ export default function review(state = initialState, action) {
         reviewState: ReviewState.LOADING,
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
+      };
+    }
+
+    case 'SET_REVIEW_TIME': {
+      return {
+        ...state,
+        reviewTime: action.reviewTime,
       };
     }
 
@@ -127,9 +140,21 @@ export default function review(state = initialState, action) {
 
       // Update the passed card
       if (finished) {
-        // XXX This should take into account the review time on the card
-        // Which suggests we should update the review time here
-        updatedCard.level = updatedCard.level ? updatedCard.level * 2 : 1;
+        if (updatedCard.progress.level && updatedCard.progress.reviewTime) {
+          const intervalInDays =
+            (state.reviewTime.getTime() -
+              updatedCard.progress.reviewTime.getTime()) /
+            MS_PER_DAY;
+          updatedCard.progress.level = Math.max(
+            intervalInDays * 2,
+            updatedCard.progress.level,
+            1
+          );
+        } else {
+          // New / reset card: Review in a day
+          updatedCard.progress.level = 1;
+        }
+        updatedCard.progress.reviewTime = state.reviewTime;
       }
       const completed = finished ? state.completed + 1 : state.completed;
 

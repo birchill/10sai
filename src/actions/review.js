@@ -15,6 +15,13 @@ export function setReviewLimit(maxNewCards, maxCards) {
   };
 }
 
+export function setReviewTime(reviewTime) {
+  return {
+    type: 'SET_REVIEW_TIME',
+    reviewTime,
+  };
+}
+
 export function reviewLoaded(cards) {
   return {
     type: 'REVIEW_LOADED',
@@ -29,19 +36,17 @@ export function reviewLoaded(cards) {
   };
 }
 
-export function failCard(card) {
+export function failCard() {
   return {
     type: 'FAIL_CARD',
-    card,
     // TODO: Weight this towards zero
     nextCardSeed: Math.random(),
   };
 }
 
-export function passCard(card) {
+export function passCard() {
   return {
     type: 'PASS_CARD',
-    card,
     // TODO: Weight this towards zero
     nextCardSeed: Math.random(),
   };
