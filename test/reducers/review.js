@@ -271,23 +271,82 @@ describe('reducer:review', () => {
   });
 
   it('should add to the history on PASS_CARD', () => {
-    // TODO
-  });
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 1, reviewTime)
+    );
+    const cards = getCards(1, 1, reviewTime);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+    assert.strictEqual(updatedState.history.length, 0, 'Initial history');
 
-  it('should update the current card and next card on PASS_CARD', () => {
-    // TODO
-  });
-
-  it('should update the current card and next card on PASS_CARD when it is the second last card', () => {
-    // TODO
-  });
-
-  it('should update the current card and next card on PASS_CARD when it is the last card', () => {
-    // TODO
+    updatedState = subject(updatedState, actions.passCard());
+    assert.strictEqual(
+      updatedState.history.length,
+      1,
+      'History length after passing'
+    );
+    assert.deepEqual(updatedState.history[0], cards[0], 'Card in history');
   });
 
   it('should update the history on PASS_CARD if the card is already in the history', () => {
     // TODO
+  });
+
+  it('should update the current card and next card on PASS_CARD', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 3, reviewTime)
+    );
+
+    const cards = getCards(1, 3, reviewTime);
+    const loadAction = actions.reviewLoaded(cards);
+    loadAction.nextCardSeed = 0;
+    loadAction.currentCardSeed = 0;
+    let updatedState = subject(initialState, loadAction);
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[0],
+      'Initial current card'
+    );
+    assert.deepEqual(updatedState.nextCard, cards[1], 'Initial next card');
+
+    updatedState = subject(updatedState, actions.passCard());
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[1],
+      'Updated current card after first pass'
+    );
+    assert.deepEqual(
+      updatedState.nextCard,
+      cards[2],
+      'Updated next card after first pass'
+    );
+
+    updatedState = subject(updatedState, actions.passCard());
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[2],
+      'Updated current card after second pass'
+    );
+    assert.strictEqual(
+      updatedState.nextCard,
+      null,
+      'Updated next card after second pass'
+    );
+
+    updatedState = subject(updatedState, actions.passCard());
+    assert.deepEqual(
+      updatedState.currentCard,
+      null,
+      'Updated current card after third pass'
+    );
+    assert.strictEqual(
+      updatedState.nextCard,
+      null,
+      'Updated next card after third pass'
+    );
   });
 
   it('should update the failed cards queue on FAIL_CARD for a yet unseen card', () => {

@@ -173,6 +173,7 @@ export default function review(state = initialState, action) {
         failedCardsLevel2,
         failedCardsLevel1,
         history,
+        currentCard: updatedCard,
       };
 
       return updateNextCard(intermediateState, action.nextCardSeed);
@@ -200,10 +201,6 @@ function updateNextCard(state, seed) {
   // next card. However, if this is called as part of updating the heap (e.g. on
   // REVIEW_LOADED), that is, if we haven't already moved the current card to
   // the history, then we don't want to update it.
-  //
-  // TODO: This might be wrong when we're reviewing the last card and we have
-  // failed it. In that case I don't think we put it in the history but then
-  // maybe in that case we also don't want to update the current card?
   const updateCurrentCard =
     !currentCard || state.history.indexOf(currentCard) !== -1;
 
