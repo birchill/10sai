@@ -378,16 +378,60 @@ describe('reducer:review', () => {
     assert.strictEqual(updatedState.history[0].progress.reviewTime, reviewTime);
   });
 
-  it('should update the review time on FAIL_CARD', () => {
-    // TODO
-  });
-
   it('should NOT update the completed count on FAIL_CARD', () => {
-    // TODO
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(0, 1, reviewTime)
+    );
+    const cards = getCards(0, 1, reviewTime);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+    assert.strictEqual(updatedState.completed, 0, 'Initial completed count');
+
+    updatedState = subject(updatedState, actions.failCard());
+
+    assert.strictEqual(updatedState.completed, 0, 'Updated completed count');
   });
 
   it('should update the history on FAIL_CARD', () => {
-    // TODO
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(0, 3, reviewTime)
+    );
+    const cards = getCards(0, 3, reviewTime);
+    const loadAction = actions.reviewLoaded(cards);
+    loadAction.currentCardSeed = 0;
+    loadAction.nextCardSeed = 0;
+    let updatedState = subject(initialState, loadAction);
+    assert.strictEqual(
+      updatedState.history.length,
+      0,
+      'Initial history length'
+    );
+
+    const failAction = actions.failCard();
+    failAction.nextCardSeed = 0;
+    updatedState = subject(updatedState, actions.failCard());
+
+    assert.deepEqual(
+      updatedState.history,
+      [cards[0]],
+      'History after first fail'
+    );
+
+    updatedState = subject(updatedState, actions.failCard());
+    assert.deepEqual(
+      updatedState.history,
+      [cards[0], cards[1]],
+      'History after first fail'
+    );
+    // TODO Actually this might be wrong---need to actually implement the failed
+    // queues part first
+    /*
+    assert.deepEqual(updatedState.nextCard, cards[0],
+      'Should have loaded the originally failed card as the current card');
+    */
   });
 
   it('should update the current card and next card on FAIL_CARD when it is the second last card', () => {
@@ -401,3 +445,4 @@ describe('reducer:review', () => {
 
 // TODO: Tests for SET_REVIEW_LIMIT
 // TODO: Tests for SET_REVIEW_TIME
+// TODO: There's lots of repeated code in the above tests--factor it out better
