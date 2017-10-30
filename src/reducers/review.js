@@ -140,10 +140,10 @@ export default function review(state = initialState, action) {
 
       // Update the passed card
       if (finished) {
-        if (updatedCard.progress.level && updatedCard.progress.reviewTime) {
+        if (updatedCard.progress.level && updatedCard.progress.reviewed) {
           const intervalInDays =
             (state.reviewTime.getTime() -
-              updatedCard.progress.reviewTime.getTime()) /
+              updatedCard.progress.reviewed.getTime()) /
             MS_PER_DAY;
           updatedCard.progress.level = Math.max(
             intervalInDays * 2,
@@ -154,7 +154,7 @@ export default function review(state = initialState, action) {
           // New / reset card: Review in a day
           updatedCard.progress.level = 1;
         }
-        updatedCard.progress.reviewTime = state.reviewTime;
+        updatedCard.progress.reviewed = state.reviewTime;
       }
       const completed = finished ? state.completed + 1 : state.completed;
 
@@ -186,11 +186,27 @@ export default function review(state = initialState, action) {
       const updatedCard = { ...failedCard };
 
       // Update failed queues
-      // TODO
+      let failedCardsLevel2 = state.failedCardsLevel2;
+      let failedCardsLevel1 = state.failedCardsLevel1;
+      let failedIndex = failedCardsLevel1.indexOf(failedCard);
+      if (failedIndex !== -1) {
+        // Move from queue one to queue two
+        failedCardsLevel1 = failedCardsLevel1.slice();
+        failedCardsLevel1.splice(failedIndex, 1);
+        failedCardsLevel2 = failedCardsLevel2.slice();
+        failedCardsLevel2.push(updatedCard);
+      } else {
+        failedIndex = failedCardsLevel2.indexOf(failedCard);
+        if (failedIndex === -1) {
+          // It's not in level 2, so add it there
+          failedCardsLevel2 = failedCardsLevel2.slice();
+          failedCardsLevel2.push(updatedCard);
+        }
+      }
 
       // Update the failed card
       updatedCard.progress.level = 0;
-      updatedCard.progress.reviewTime = state.reviewTime;
+      updatedCard.progress.reviewed = state.reviewTime;
 
       // Drop from history if it already exists then add to the end
       // TODO: Share this code with PASS_CARD
@@ -204,6 +220,8 @@ export default function review(state = initialState, action) {
       const intermediateState = {
         ...state,
         reviewState: ReviewState.QUESTION,
+        failedCardsLevel1,
+        failedCardsLevel2,
         history,
         currentCard: updatedCard,
       };

@@ -189,7 +189,7 @@ describe('reducer:review', () => {
     );
     const cards = getCards(0, 1, reviewTime);
     cards[0].progress.level = 3; // 3 day span
-    cards[0].progress.reviewTime = new Date(reviewTime - 5 * MS_PER_DAY);
+    cards[0].progress.reviewed = new Date(reviewTime - 5 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, actions.passCard());
@@ -207,7 +207,7 @@ describe('reducer:review', () => {
     );
     const cards = getCards(0, 1, reviewTime);
     cards[0].progress.level = 3; // 3 day span
-    cards[0].progress.reviewTime = new Date(reviewTime - 1 * MS_PER_DAY);
+    cards[0].progress.reviewed = new Date(reviewTime - 1 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, actions.passCard());
@@ -241,12 +241,12 @@ describe('reducer:review', () => {
     );
     const cards = getCards(0, 1, reviewTime);
     cards[0].progress.level = 4;
-    cards[0].progress.reviewTime = new Date(reviewTime - 10 * MS_PER_DAY);
+    cards[0].progress.reviewed = new Date(reviewTime - 10 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, actions.passCard());
 
-    assert.strictEqual(updatedState.history[0].progress.reviewTime, reviewTime);
+    assert.strictEqual(updatedState.history[0].progress.reviewed, reviewTime);
   });
 
   it('should update the complete count on PASS_CARD', () => {
@@ -350,7 +350,18 @@ describe('reducer:review', () => {
   });
 
   it('should update the failed cards queue on FAIL_CARD for a yet unseen card', () => {
-    // TODO
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(0, 1, reviewTime)
+    );
+    const cards = getCards(0, 1, reviewTime);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+
+    updatedState = subject(updatedState, actions.failCard());
+
+    assert.deepEqual(updatedState.failedCardsLevel1, [], 'Level 1 cards');
+    assert.deepEqual(updatedState.failedCardsLevel2, cards, 'Level 2 cards');
   });
 
   it('should update the failed cards queue on FAIL_CARD for a recently failed card', () => {
@@ -369,13 +380,13 @@ describe('reducer:review', () => {
     );
     const cards = getCards(0, 1, reviewTime);
     cards[0].progress.level = 3;
-    cards[0].progress.reviewTime = new Date(reviewTime - 5 * MS_PER_DAY);
+    cards[0].progress.reviewed = new Date(reviewTime - 5 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, actions.failCard());
 
     assert.strictEqual(updatedState.history[0].progress.level, 0);
-    assert.strictEqual(updatedState.history[0].progress.reviewTime, reviewTime);
+    assert.strictEqual(updatedState.history[0].progress.reviewed, reviewTime);
   });
 
   it('should NOT update the completed count on FAIL_CARD', () => {
