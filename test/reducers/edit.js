@@ -1,4 +1,3 @@
-// @format
 /* global describe, it */
 /* eslint arrow-body-style: [ "off" ] */
 

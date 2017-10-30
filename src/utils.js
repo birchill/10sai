@@ -1,5 +1,3 @@
-// @format
-
 export function waitForDocLoad() {
   return new Promise(resolve => {
     if (document.readyState === 'complete') {

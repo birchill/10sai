@@ -1,6 +1,5 @@
 /* global afterEach, beforeEach, describe, it */
 /* eslint arrow-body-style: [ "off" ] */
-// @format
 
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
