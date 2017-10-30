@@ -101,6 +101,22 @@ describe('reducer:review', () => {
     assert.strictEqual(updatedState.newCardsInPlay, 1);
   });
 
+  it('should NOT update the number of new cards in play on REVIEW_LOADED when new cards are not selected', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(2, 3, reviewTime)
+    );
+    const cards = getCards(2, 3, reviewTime);
+    const action = actions.reviewLoaded(cards);
+    action.currentCardSeed = 0;
+    action.nextCardSeed = 0.99;
+
+    const updatedState = subject(initialState, action);
+
+    assert.strictEqual(updatedState.newCardsInPlay, 0);
+  });
+
   it('should update only the next card on REVIEW_LOADED if the current card is set', () => {
     // Set up a review state where only the current card is set
     const reviewTime = new Date();
@@ -155,5 +171,85 @@ describe('reducer:review', () => {
     updatedState = subject(updatedState, actions.reviewLoaded(cards));
 
     assert.strictEqual(updatedState.reviewState, ReviewState.QUESTION);
+  });
+
+  it('should update the failed cards queues on PASS_CARD for a recently failed card', () => {
+    // TODO
+  });
+
+  it('should update the failed cards queues on PASS_CARD for a card passed once', () => {
+    // TODO
+  });
+
+  it('should update the card level on PASS_CARD', () => {
+    // TODO
+  });
+
+  it('should update the review time on PASS_CARD', () => {
+    // TODO
+  });
+
+  it('should update the complete count on PASS_CARD', () => {
+    // TODO
+  });
+
+  it('should NOT update the complete count on PASS_CARD if the card still needs to be reviewed', () => {
+    // TODO
+  });
+
+  it('should add to the history on PASS_CARD', () => {
+    // TODO
+  });
+
+  it('should update the current card and next card on PASS_CARD', () => {
+    // TODO
+  });
+
+  it('should update the current card and next card on PASS_CARD when it is the second last card', () => {
+    // TODO
+  });
+
+  it('should update the current card and next card on PASS_CARD when it is the last card', () => {
+    // TODO
+  });
+
+  it('should update the history on PASS_CARD if the card is already in the history', () => {
+    // TODO
+  });
+
+  it('should update the failed cards queue on FAIL_CARD for a yet unseen card', () => {
+    // TODO
+  });
+
+  it('should update the failed cards queue on FAIL_CARD for a recently failed card', () => {
+    // TODO
+  });
+
+  it('should update the failed cards queue on FAIL_CARD for a card that still needs to be reviewed once more', () => {
+    // TODO
+  });
+
+  it('should update the card level on FAIL_CARD', () => {
+    // TODO
+  });
+
+  it('should update the review time on FAIL_CARD', () => {
+    // TODO
+  });
+
+  it('should NOT update the completed count on FAIL_CARD', () => {
+    // TODO
+  });
+
+  it('should update the history on FAIL_CARD', () => {
+    // TODO
+  });
+
+  it('should update the current card and next card on FAIL_CARD when it is the second last card', () => {
+    // TODO
+  });
+
+  it('should update the current card and next card on FAIL_CARD when it is the last card', () => {
+    // TODO
   });
 });
