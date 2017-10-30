@@ -250,7 +250,20 @@ describe('reducer:review', () => {
   });
 
   it('should update the complete count on PASS_CARD', () => {
-    // TODO
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(2, 2, reviewTime)
+    );
+    const cards = getCards(2, 2, reviewTime);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+    assert.strictEqual(updatedState.completed, 0, 'Initial completed count');
+
+    updatedState = subject(updatedState, actions.passCard());
+    assert.strictEqual(updatedState.completed, 1, 'Count after one card');
+
+    updatedState = subject(updatedState, actions.passCard());
+    assert.strictEqual(updatedState.completed, 2, 'Count after two cards');
   });
 
   it('should NOT update the complete count on PASS_CARD if the card still needs to be reviewed', () => {
