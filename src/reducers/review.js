@@ -49,6 +49,17 @@ const initialState = {
   nextCard: null,
 };
 
+// When we update the current / next cards there are two modes:
+const Update = {
+  // Updates the current card with the next card before updating the next card.
+  // If the current card is not null, it will be added to the history. This is
+  // the normal mode used when reviewing.
+  UpdateCurrentCard: Symbol('UpdateCurrentCard'),
+  // Simply replaces the next card without modifying the current card. This is
+  // the mode used when we re-load cards from the database.
+  ReplaceNextCard: Symbol('ReplaceNextCard'),
+};
+
 export default function review(state = initialState, action) {
   switch (action.type) {
     case 'NEW_REVIEW': {
@@ -88,13 +99,22 @@ export default function review(state = initialState, action) {
       };
 
       // Update the next card
-      updatedState = updateNextCard(updatedState, action.nextCardSeed);
+      updatedState = updateNextCard(
+        updatedState,
+        action.nextCardSeed,
+        Update.ReplaceNextCard
+      );
 
       // When we first load, or after we have completed once, neither the next
       // card nor the current card will be filled-in so we will need to call
-      // updateNextCard twice.
+      // updateNextCard twice but this time we want to update the current card
+      // too.
       if (updatedState.nextCard && !updatedState.currentCard) {
-        updatedState = updateNextCard(updatedState, action.currentCardSeed);
+        updatedState = updateNextCard(
+          updatedState,
+          action.currentCardSeed,
+          Update.UpdateCurrentCard
+        );
       }
 
       // If we were complete but now have cards we need to go back to the
@@ -176,7 +196,11 @@ export default function review(state = initialState, action) {
         currentCard: updatedCard,
       };
 
-      return updateNextCard(intermediateState, action.nextCardSeed);
+      return updateNextCard(
+        intermediateState,
+        action.nextCardSeed,
+        Update.UpdateCurrentCard
+      );
     }
 
     case 'FAIL_CARD': {
@@ -226,7 +250,11 @@ export default function review(state = initialState, action) {
         currentCard: updatedCard,
       };
 
-      return updateNextCard(intermediateState, action.nextCardSeed);
+      return updateNextCard(
+        intermediateState,
+        action.nextCardSeed,
+        Update.UpdateCurrentCard
+      );
     }
 
     default:
@@ -234,27 +262,23 @@ export default function review(state = initialState, action) {
   }
 }
 
-function updateNextCard(state, seed) {
+// TODO: I'm sure I can factor this out better---perhaps into two methods? One
+// for updating the current card and one for updating the next card?
+function updateNextCard(state, seed, updateMode) {
   // The fields we might update
   let reviewState = state.reviewState;
   let currentCard = state.currentCard;
   let nextCard;
   let heap = state.heap;
+  let history = state.history;
   let newCardsInPlay = state.newCardsInPlay;
-
-  // Generally when we call this we want to update the current card from the
-  // next card. However, if this is called as part of updating the heap (e.g. on
-  // REVIEW_LOADED), that is, if we haven't already moved the current card to
-  // the history, then we don't want to update it.
-  const updateCurrentCard =
-    !currentCard || state.history.indexOf(currentCard) !== -1;
 
   let cardsAvailable =
     state.failedCardsLevel2.length +
     state.failedCardsLevel1.length +
     heap.length;
   if (!cardsAvailable) {
-    if (updateCurrentCard) {
+    if (updateMode === Update.UpdateCurrentCard || !currentCard) {
       reviewState = ReviewState.COMPLETE;
       currentCard = null;
       nextCard = null;
@@ -262,7 +286,8 @@ function updateNextCard(state, seed) {
       nextCard = null;
     }
   } else {
-    if (updateCurrentCard) {
+    // Update current card
+    if (updateMode === Update.UpdateCurrentCard) {
       currentCard = state.nextCard;
       // Drop current card from heap
       const heapIndex = currentCard ? heap.indexOf(currentCard) : -1;
@@ -280,21 +305,42 @@ function updateNextCard(state, seed) {
         ) {
           newCardsInPlay++;
         }
+      } else {
+        // Drop current card from history
+        const historyIndex = history.indexOf(currentCard);
+        if (historyIndex !== -1) {
+          // TODO: Use an immutable-js List here
+          history = history.slice(0);
+          history.splice(historyIndex, 1);
+        }
       }
     }
 
     // Find next card
     if (cardsAvailable) {
-      const cardIndex = Math.floor(seed * cardsAvailable);
-      const level1Start = state.failedCardsLevel2.length;
-      const heapStart =
-        state.failedCardsLevel2.length + state.failedCardsLevel1.length;
-      if (cardIndex < level1Start) {
-        nextCard = state.failedCardsLevel2[cardIndex];
-      } else if (cardIndex < heapStart) {
-        nextCard = state.failedCardsLevel1[cardIndex - level1Start];
-      } else {
-        nextCard = heap[cardIndex - heapStart];
+      let cardIndex = Math.floor(seed * cardsAvailable);
+      const getCardAtIndex = cardIndex => {
+        const level1Start = state.failedCardsLevel2.length;
+        const heapStart =
+          state.failedCardsLevel2.length + state.failedCardsLevel1.length;
+        if (cardIndex < level1Start) {
+          return state.failedCardsLevel2[cardIndex];
+        } else if (cardIndex < heapStart) {
+          return state.failedCardsLevel1[cardIndex - level1Start];
+        }
+        return heap[cardIndex - heapStart];
+      };
+      nextCard = getCardAtIndex(cardIndex);
+      // If next card matches the current card then choose the next card, or
+      // previous card if there is no next card.
+      if (nextCard === currentCard) {
+        if (cardsAvailable === 1) {
+          nextCard = null;
+        } else {
+          cardIndex =
+            cardIndex < cardsAvailable - 1 ? cardIndex + 1 : cardIndex - 1;
+          nextCard = getCardAtIndex(cardIndex);
+        }
       }
     } else {
       nextCard = null;
@@ -306,6 +352,7 @@ function updateNextCard(state, seed) {
     reviewState,
     newCardsInPlay,
     heap,
+    history,
     currentCard,
     nextCard,
   };

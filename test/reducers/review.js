@@ -423,26 +423,26 @@ describe('reducer:review', () => {
 
     const failAction = actions.failCard();
     failAction.nextCardSeed = 0;
-    updatedState = subject(updatedState, actions.failCard());
 
+    updatedState = subject(updatedState, failAction);
     assert.deepEqual(
       updatedState.history,
       [cards[0]],
       'History after first fail'
     );
+    assert.deepEqual(updatedState.nextCard, cards[0],
+      'Should have loaded the originally failed card as the next card');
 
-    updatedState = subject(updatedState, actions.failCard());
+    updatedState = subject(updatedState, failAction);
     assert.deepEqual(
       updatedState.history,
-      [cards[0], cards[1]],
-      'History after first fail'
+      [cards[1]],
+      'History after second fail'
     );
-    // TODO Actually this might be wrong---need to actually implement the failed
-    // queues part first
-    /*
-    assert.deepEqual(updatedState.nextCard, cards[0],
-      'Should have loaded the originally failed card as the current card');
-    */
+    assert.deepEqual(updatedState.currentCard, cards[0],
+      'Should have loaded the originally failed card as the next card');
+    assert.deepEqual(updatedState.nextCard, cards[1],
+      'Should have loaded the second failed card as the next card');
   });
 
   it('should update the current card and next card on FAIL_CARD when it is the second last card', () => {
