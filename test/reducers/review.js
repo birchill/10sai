@@ -430,8 +430,11 @@ describe('reducer:review', () => {
       [cards[0]],
       'History after first fail'
     );
-    assert.deepEqual(updatedState.nextCard, cards[0],
-      'Should have loaded the originally failed card as the next card');
+    assert.deepEqual(
+      updatedState.nextCard,
+      cards[0],
+      'Should have loaded the originally failed card as the next card'
+    );
 
     updatedState = subject(updatedState, failAction);
     assert.deepEqual(
@@ -439,21 +442,91 @@ describe('reducer:review', () => {
       [cards[1]],
       'History after second fail'
     );
-    assert.deepEqual(updatedState.currentCard, cards[0],
-      'Should have loaded the originally failed card as the next card');
-    assert.deepEqual(updatedState.nextCard, cards[1],
-      'Should have loaded the second failed card as the next card');
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[0],
+      'Should have loaded the originally failed card as the next card'
+    );
+    assert.deepEqual(
+      updatedState.nextCard,
+      cards[1],
+      'Should have loaded the second failed card as the next card'
+    );
   });
 
   it('should update the current card and next card on FAIL_CARD when it is the second last card', () => {
-    // TODO
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(0, 2, reviewTime)
+    );
+    const cards = getCards(0, 2, reviewTime);
+    const loadAction = actions.reviewLoaded(cards);
+    loadAction.currentCardSeed = 0;
+    loadAction.nextCardSeed = 0;
+    let updatedState = subject(initialState, loadAction);
+
+    const failAction = actions.failCard();
+    failAction.nextCardSeed = 0;
+
+    updatedState = subject(updatedState, failAction);
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[1],
+      'Current card should be second card'
+    );
+    assert.deepEqual(
+      updatedState.nextCard,
+      cards[0],
+      'Next card should be first card'
+    );
   });
 
   it('should update the current card and next card on FAIL_CARD when it is the last card', () => {
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(0, 1, reviewTime)
+    );
+    const card = getCards(0, 1, reviewTime)[0];
+    const loadAction = actions.reviewLoaded([card]);
+    loadAction.currentCardSeed = 0;
+    loadAction.nextCardSeed = 0;
+    let updatedState = subject(initialState, loadAction);
+
+    const failAction = actions.failCard();
+    failAction.nextCardSeed = 0;
+
+    updatedState = subject(updatedState, failAction);
+    assert.strictEqual(updatedState.reviewState, ReviewState.QUESTION);
+    assert.deepEqual(
+      updatedState.currentCard,
+      card,
+      'Current card should be the same card'
+    );
+    assert.deepEqual(updatedState.nextCard, null, 'Next card should be null');
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [card],
+      'Card should be in second failed cards list'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'First failed cards list should empty'
+    );
+  });
+
+  it('should reset a level-1 failed card on FAIL_CARD even when it is the last card', () => {
+    // TODO
+  });
+
+  it('should do nothing for a level-2 failed card on FAIL_CARD when it is the last card', () => {
     // TODO
   });
 });
 
 // TODO: Tests for SET_REVIEW_LIMIT
 // TODO: Tests for SET_REVIEW_TIME
+// TODO: Tests for SHOW_ANSWER
 // TODO: There's lots of repeated code in the above tests--factor it out better

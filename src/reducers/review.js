@@ -345,6 +345,13 @@ function updateNextCard(state, seed, updateMode) {
     } else {
       nextCard = null;
     }
+
+    // If the current card went null, but we have a next card then we must have
+    // just failed the last card and should revisit it.
+    if (!currentCard && state.currentCard && nextCard) {
+      currentCard = nextCard;
+      nextCard = null;
+    }
   }
 
   return {
