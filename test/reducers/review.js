@@ -24,30 +24,57 @@ function getCards(maxNewCards, maxExistingCards, reviewTime) {
   return cards;
 }
 
+// Wrappers that creates a new review, new review time, and the appropriate
+// number of cards.
+
+function newReview(maxNewCards, maxCards) {
+  const reviewTime = new Date();
+  const initialState = subject(
+    undefined,
+    actions.newReview(maxNewCards, maxCards, reviewTime)
+  );
+  const cards = getCards(maxNewCards, maxCards, reviewTime);
+
+  return [initialState, cards, reviewTime];
+}
+
+// Wrappers for action creators that also set the random seed values
+
+function reviewLoaded(cards, currentCardSeed, nextCardSeed) {
+  const action = actions.reviewLoaded(cards);
+  action.currentCardSeed = currentCardSeed;
+  action.nextCardSeed = nextCardSeed;
+  return action;
+}
+
+function passCard(nextCardSeed) {
+  const action = actions.passCard();
+  action.nextCardSeed = nextCardSeed;
+  return action;
+}
+
+function failCard(nextCardSeed) {
+  const action = actions.failCard();
+  action.nextCardSeed = nextCardSeed;
+  return action;
+}
+
 describe('reducer:review', () => {
   it('should go to the loading state on NEW_REVIEW', () => {
     const updatedState = subject(
       undefined,
       actions.newReview(2, 10, new Date())
     );
+
     assert.strictEqual(updatedState.reviewState, ReviewState.LOADING);
     assert.strictEqual(updatedState.maxCards, 10);
     assert.strictEqual(updatedState.maxNewCards, 2);
   });
 
   it('should update the heap on REVIEW_LOADED', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(1, 3, reviewTime)
-    );
-    const cards = getCards(1, 3, reviewTime);
+    const [initialState, cards] = newReview(1, 3);
 
-    // Make the cards we choose deterministic
-    const action = actions.reviewLoaded(cards);
-    action.currentCardSeed = 0;
-    action.nextCardSeed = 0;
-    const updatedState = subject(initialState, action);
+    const updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
     // We should only have the last two cards in the heap since the first card
     // will be the current card.
@@ -68,17 +95,9 @@ describe('reducer:review', () => {
   });
 
   it('should update the next and current card on REVIEW_LOADED if both are unset', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(1, 3, reviewTime)
-    );
-    const cards = getCards(1, 3, reviewTime);
-    const action = actions.reviewLoaded(cards);
-    action.currentCardSeed = 0;
-    action.nextCardSeed = 0;
+    const [initialState, cards] = newReview(1, 3);
 
-    const updatedState = subject(initialState, action);
+    const updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
     assert.strictEqual(updatedState.reviewState, ReviewState.QUESTION);
     assert.strictEqual(updatedState.currentCard, cards[0], 'Current card');
@@ -86,47 +105,28 @@ describe('reducer:review', () => {
   });
 
   it('should update the number of new cards in play on REVIEW_LOADED when new cards are selected', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(2, 3, reviewTime)
-    );
-    const cards = getCards(2, 3, reviewTime);
-    const action = actions.reviewLoaded(cards);
-    action.currentCardSeed = 0;
-    action.nextCardSeed = 0;
+    const [initialState, cards] = newReview(2, 3);
 
-    const updatedState = subject(initialState, action);
+    const updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
     assert.strictEqual(updatedState.newCardsInPlay, 1);
   });
 
   it('should NOT update the number of new cards in play on REVIEW_LOADED when new cards are not selected', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(2, 3, reviewTime)
-    );
-    const cards = getCards(2, 3, reviewTime);
-    const action = actions.reviewLoaded(cards);
-    action.currentCardSeed = 0;
-    action.nextCardSeed = 0.99;
+    const [initialState, cards] = newReview(2, 3);
 
-    const updatedState = subject(initialState, action);
+    const updatedState = subject(initialState, reviewLoaded(cards, 0, 0.99));
 
     assert.strictEqual(updatedState.newCardsInPlay, 0);
   });
 
   it('should update only the next card on REVIEW_LOADED if the current card is set', () => {
     // Set up a review state where only the current card is set
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 3, reviewTime)
-    );
-    const cards = getCards(0, 3, reviewTime);
+    const [initialState, cards] = newReview(0, 3);
+
     const originalCard = cards[0];
     const originalLoad = actions.reviewLoaded([originalCard]);
+
     let updatedState = subject(initialState, originalLoad);
     assert.strictEqual(
       updatedState.currentCard,
@@ -141,10 +141,7 @@ describe('reducer:review', () => {
 
     // Then load the review again
     const newCards = cards.slice(1);
-    const secondLoad = actions.reviewLoaded(newCards);
-    secondLoad.currentCardSeed = 0;
-    secondLoad.nextCardSeed = 0;
-    updatedState = subject(updatedState, secondLoad);
+    updatedState = subject(updatedState, reviewLoaded(newCards, 0, 0));
 
     assert.strictEqual(
       updatedState.currentCard,
@@ -159,14 +156,10 @@ describe('reducer:review', () => {
   });
 
   it('should go to the QUESTION state on REVIEW_LOADED if it was completed but there are more cards', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(1, 3, reviewTime)
-    );
+    const [initialState, cards] = newReview(1, 3);
+
     let updatedState = subject(initialState, actions.reviewLoaded([]));
     assert.strictEqual(updatedState.reviewState, ReviewState.COMPLETE);
-    const cards = getCards(1, 3, reviewTime);
 
     updatedState = subject(updatedState, actions.reviewLoaded(cards));
 
@@ -174,32 +167,21 @@ describe('reducer:review', () => {
   });
 
   it('should update the failed cards queues on PASS_CARD for a recently failed card', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(1, 3, reviewTime)
-    );
-    const cards = getCards(1, 3, reviewTime);
-    const loadedAction = actions.reviewLoaded(cards);
-    loadedAction.nextCardSeed = 0;
-    loadedAction.currentCardSeed = 0;
-    let updatedState = subject(initialState, loadedAction);
+    const [initialState, cards] = newReview(1, 3);
+
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
     assert.deepEqual(updatedState.currentCard, cards[0],
                      'Current card is first card');
 
-    const failAction = actions.failCard();
-    failAction.nextCardSeed = 0;
-    updatedState = subject(updatedState, failAction);
+    updatedState = subject(updatedState, failCard(0));
     assert.deepEqual(updatedState.failedCardsLevel2, [cards[0]],
                      'First card is added to second failed cards queue');
 
-    const passAction = actions.passCard();
-    passAction.nextCardSeed = 0;
-    updatedState = subject(updatedState, passAction);
+    updatedState = subject(updatedState, passCard(0));
     assert.deepEqual(updatedState.currentCard, cards[0],
                      'Current card is first card again');
 
-    updatedState = subject(updatedState, passAction);
+    updatedState = subject(updatedState, passCard(0));
     assert.deepEqual(updatedState.failedCardsLevel1, [cards[0]],
                      'First card is in first failed cards queue');
     assert.deepEqual(updatedState.failedCardsLevel2, [],
@@ -211,12 +193,7 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 1, reviewTime)
-    );
-    const cards = getCards(0, 1, reviewTime);
+    const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 3; // 3 day span
     cards[0].progress.reviewed = new Date(reviewTime - 5 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
@@ -229,12 +206,7 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level for an existing card on PASS_CARD (before due date)', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 1, reviewTime)
-    );
-    const cards = getCards(0, 1, reviewTime);
+    const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 3; // 3 day span
     cards[0].progress.reviewed = new Date(reviewTime - 1 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
@@ -248,12 +220,7 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level on for a new card on PASS_CARD', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(1, 1, reviewTime)
-    );
-    const cards = getCards(1, 1, reviewTime);
+    const [initialState, cards] = newReview(1, 1);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
     assert.strictEqual(updatedState.currentCard.progress.level, 0);
 
@@ -263,12 +230,7 @@ describe('reducer:review', () => {
   });
 
   it('should update the review time on PASS_CARD', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 1, reviewTime)
-    );
-    const cards = getCards(0, 1, reviewTime);
+    const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 4;
     cards[0].progress.reviewed = new Date(reviewTime - 10 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
@@ -279,12 +241,7 @@ describe('reducer:review', () => {
   });
 
   it('should update the complete count on PASS_CARD', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(2, 2, reviewTime)
-    );
-    const cards = getCards(2, 2, reviewTime);
+    const [initialState, cards] = newReview(2, 2);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
     assert.strictEqual(updatedState.completed, 0, 'Initial completed count');
 
@@ -300,12 +257,7 @@ describe('reducer:review', () => {
   });
 
   it('should add to the history on PASS_CARD', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(1, 1, reviewTime)
-    );
-    const cards = getCards(1, 1, reviewTime);
+    const [initialState, cards] = newReview(1, 1);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
     assert.strictEqual(updatedState.history.length, 0, 'Initial history');
 
@@ -323,17 +275,8 @@ describe('reducer:review', () => {
   });
 
   it('should update the current card and next card on PASS_CARD', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(1, 3, reviewTime)
-    );
-
-    const cards = getCards(1, 3, reviewTime);
-    const loadAction = actions.reviewLoaded(cards);
-    loadAction.nextCardSeed = 0;
-    loadAction.currentCardSeed = 0;
-    let updatedState = subject(initialState, loadAction);
+    const [initialState, cards] = newReview(1, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
     assert.deepEqual(
       updatedState.currentCard,
       cards[0],
@@ -379,12 +322,7 @@ describe('reducer:review', () => {
   });
 
   it('should update the failed cards queue on FAIL_CARD for a yet unseen card', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 1, reviewTime)
-    );
-    const cards = getCards(0, 1, reviewTime);
+    const [initialState, cards] = newReview(0, 1);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, actions.failCard());
@@ -402,12 +340,7 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level and review time on FAIL_CARD', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 1, reviewTime)
-    );
-    const cards = getCards(0, 1, reviewTime);
+    const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 3;
     cards[0].progress.reviewed = new Date(reviewTime - 5 * MS_PER_DAY);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
@@ -419,12 +352,7 @@ describe('reducer:review', () => {
   });
 
   it('should NOT update the completed count on FAIL_CARD', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 1, reviewTime)
-    );
-    const cards = getCards(0, 1, reviewTime);
+    const [initialState, cards] = newReview(0, 1);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
     assert.strictEqual(updatedState.completed, 0, 'Initial completed count');
 
@@ -434,26 +362,15 @@ describe('reducer:review', () => {
   });
 
   it('should update the history on FAIL_CARD', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 3, reviewTime)
-    );
-    const cards = getCards(0, 3, reviewTime);
-    const loadAction = actions.reviewLoaded(cards);
-    loadAction.currentCardSeed = 0;
-    loadAction.nextCardSeed = 0;
-    let updatedState = subject(initialState, loadAction);
+    const [initialState, cards] = newReview(0, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
     assert.strictEqual(
       updatedState.history.length,
       0,
       'Initial history length'
     );
 
-    const failAction = actions.failCard();
-    failAction.nextCardSeed = 0;
-
-    updatedState = subject(updatedState, failAction);
+    updatedState = subject(updatedState, failCard(0));
     assert.deepEqual(
       updatedState.history,
       [cards[0]],
@@ -465,7 +382,7 @@ describe('reducer:review', () => {
       'Should have loaded the originally failed card as the next card'
     );
 
-    updatedState = subject(updatedState, failAction);
+    updatedState = subject(updatedState, failCard(0));
     assert.deepEqual(
       updatedState.history,
       [cards[1]],
@@ -484,21 +401,10 @@ describe('reducer:review', () => {
   });
 
   it('should update the current card and next card on FAIL_CARD when it is the second last card', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 2, reviewTime)
-    );
-    const cards = getCards(0, 2, reviewTime);
-    const loadAction = actions.reviewLoaded(cards);
-    loadAction.currentCardSeed = 0;
-    loadAction.nextCardSeed = 0;
-    let updatedState = subject(initialState, loadAction);
+    const [initialState, cards] = newReview(0, 2);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
-    const failAction = actions.failCard();
-    failAction.nextCardSeed = 0;
-
-    updatedState = subject(updatedState, failAction);
+    updatedState = subject(updatedState, failCard(0));
     assert.deepEqual(
       updatedState.currentCard,
       cards[1],
@@ -512,31 +418,20 @@ describe('reducer:review', () => {
   });
 
   it('should update the current card and next card on FAIL_CARD when it is the last card', () => {
-    const reviewTime = new Date();
-    const initialState = subject(
-      undefined,
-      actions.newReview(0, 1, reviewTime)
-    );
-    const card = getCards(0, 1, reviewTime)[0];
-    const loadAction = actions.reviewLoaded([card]);
-    loadAction.currentCardSeed = 0;
-    loadAction.nextCardSeed = 0;
-    let updatedState = subject(initialState, loadAction);
+    const [initialState, cards] = newReview(0, 1);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
-    const failAction = actions.failCard();
-    failAction.nextCardSeed = 0;
-
-    updatedState = subject(updatedState, failAction);
+    updatedState = subject(updatedState, failCard(0));
     assert.strictEqual(updatedState.reviewState, ReviewState.QUESTION);
     assert.deepEqual(
       updatedState.currentCard,
-      card,
+      cards[0],
       'Current card should be the same card'
     );
     assert.deepEqual(updatedState.nextCard, null, 'Next card should be null');
     assert.deepEqual(
       updatedState.failedCardsLevel2,
-      [card],
+      cards,
       'Card should be in second failed cards list'
     );
     assert.deepEqual(
@@ -558,4 +453,3 @@ describe('reducer:review', () => {
 // TODO: Tests for SET_REVIEW_LIMIT
 // TODO: Tests for SET_REVIEW_TIME
 // TODO: Tests for SHOW_ANSWER
-// TODO: There's lots of repeated code in the above tests--factor it out better
