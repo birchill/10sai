@@ -191,6 +191,7 @@ describe('reducer:review', () => {
     );
 
     updatedState = subject(updatedState, passCard(0));
+
     assert.deepEqual(
       updatedState.failedCardsLevel1,
       [cards[0]],
@@ -204,7 +205,71 @@ describe('reducer:review', () => {
   });
 
   it('should update the failed cards queues on PASS_CARD for a card passed once', () => {
-    // TODO
+    const [initialState, cards] = newReview(1, 3);
+
+    // Load the card...
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[0],
+      'Current card is first card'
+    );
+
+    // Fail it once so it is in the second failure queue...
+    updatedState = subject(updatedState, failCard(0));
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[0]],
+      'First card is added to second failed cards queue'
+    );
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[1],
+      'Current card is second card'
+    );
+
+    // Fail another card so that the first card becomes the current card...
+    updatedState = subject(updatedState, failCard(0));
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[0],
+      'Current card is first card again'
+    );
+
+    // Pass the card so that it is in the first failure queue...
+    updatedState = subject(updatedState, passCard(0));
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [cards[0]],
+      'First card is in first failed cards queue'
+    );
+    assert.deepEqual(
+      updatedState.nextCard,
+      cards[0],
+      'Next card is first card again'
+    );
+
+    // Fail the current card so that the first card becomes the current card...
+    updatedState = subject(updatedState, failCard(0));
+    assert.deepEqual(
+      updatedState.currentCard,
+      cards[0],
+      'Current card is first card yet again'
+    );
+
+    // Finally, we can test it
+    updatedState = subject(updatedState, passCard(0));
+
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'First failed cards queue is empty'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[1]],
+      'Second failed cards queue contains the second card'
+    );
   });
 
   it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
