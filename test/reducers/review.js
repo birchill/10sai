@@ -174,7 +174,36 @@ describe('reducer:review', () => {
   });
 
   it('should update the failed cards queues on PASS_CARD for a recently failed card', () => {
-    // TODO
+    const reviewTime = new Date();
+    const initialState = subject(
+      undefined,
+      actions.newReview(1, 3, reviewTime)
+    );
+    const cards = getCards(1, 3, reviewTime);
+    const loadedAction = actions.reviewLoaded(cards);
+    loadedAction.nextCardSeed = 0;
+    loadedAction.currentCardSeed = 0;
+    let updatedState = subject(initialState, loadedAction);
+    assert.deepEqual(updatedState.currentCard, cards[0],
+                     'Current card is first card');
+
+    const failAction = actions.failCard();
+    failAction.nextCardSeed = 0;
+    updatedState = subject(updatedState, failAction);
+    assert.deepEqual(updatedState.failedCardsLevel2, [cards[0]],
+                     'First card is added to second failed cards queue');
+
+    const passAction = actions.passCard();
+    passAction.nextCardSeed = 0;
+    updatedState = subject(updatedState, passAction);
+    assert.deepEqual(updatedState.currentCard, cards[0],
+                     'Current card is first card again');
+
+    updatedState = subject(updatedState, passAction);
+    assert.deepEqual(updatedState.failedCardsLevel1, [cards[0]],
+                     'First card is in first failed cards queue');
+    assert.deepEqual(updatedState.failedCardsLevel2, [],
+                     'Second failed cards queue is empty');
   });
 
   it('should update the failed cards queues on PASS_CARD for a card passed once', () => {

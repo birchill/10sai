@@ -140,20 +140,21 @@ export default function review(state = initialState, action) {
       let finished = true;
       let failedCardsLevel2 = state.failedCardsLevel2;
       let failedCardsLevel1 = state.failedCardsLevel1;
-      if (passedCard.level === 0) {
+      if (passedCard.progress.level === 0) {
         let failedIndex = failedCardsLevel2.indexOf(passedCard);
         if (failedIndex !== -1) {
           // Move from queue two queue one
-          // XXX This is wrong -- splice mutates the array
-          failedCardsLevel2 = failedCardsLevel2.splice(failedIndex, 1);
+          failedCardsLevel2 = failedCardsLevel2.slice();
+          failedCardsLevel2.splice(failedIndex, 1);
+          failedCardsLevel1 = failedCardsLevel1.slice();
           failedCardsLevel1.push(updatedCard);
           finished = false;
         } else {
           failedIndex = failedCardsLevel1.indexOf(passedCard);
           if (failedIndex !== -1) {
             // Drop from queue one
-            // XXX This is wrong -- splice mutates the array
-            failedCardsLevel1 = failedCardsLevel1.splice(failedIndex, 1);
+            failedCardsLevel1 = failedCardsLevel1.slice();
+            failedCardsLevel1.splice(failedIndex, 1);
           }
         }
       }
