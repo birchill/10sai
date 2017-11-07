@@ -212,23 +212,26 @@ export default function review(state = initialState, action) {
       const updatedCard = { ...failedCard };
 
       // Update failed queues
-      let failedCardsLevel2 = state.failedCardsLevel2;
+
+      // Remove from queue one if it's there
       let failedCardsLevel1 = state.failedCardsLevel1;
       let failedIndex = failedCardsLevel1.indexOf(failedCard);
       if (failedIndex !== -1) {
-        // Move from queue one to queue two
         failedCardsLevel1 = failedCardsLevel1.slice();
         failedCardsLevel1.splice(failedIndex, 1);
-        failedCardsLevel2 = failedCardsLevel2.slice();
-        failedCardsLevel2.push(updatedCard);
-      } else {
+      }
+
+      // Append to queue 2 but remove it first if it's already there
+      const failedCardsLevel2 = state.failedCardsLevel2.slice();
+      // (If we already found it in queue one it won't be in queue two)
+      if (failedIndex === -1) {
         failedIndex = failedCardsLevel2.indexOf(failedCard);
-        if (failedIndex === -1) {
+        if (failedIndex !== -1) {
           // It's not in level 2, so add it there
-          failedCardsLevel2 = failedCardsLevel2.slice();
-          failedCardsLevel2.push(updatedCard);
+          failedCardsLevel2.splice(failedIndex, 1);
         }
       }
+      failedCardsLevel2.push(updatedCard);
 
       // Update the failed card
       updatedCard.progress.level = 0;

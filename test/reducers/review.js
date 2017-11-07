@@ -482,7 +482,67 @@ describe('reducer:review', () => {
   });
 
   it('should update the failed cards queue on FAIL_CARD for a recently failed card', () => {
-    // TODO
+    const [initialState, cards] = newReview(3, 3);
+
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Initial level 1 failed cards list'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [],
+      'Initial level 2 failed cards list'
+    );
+
+    updatedState = subject(updatedState, failCard(0.5));
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Level 1 failed cards list after failing one card'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[0]],
+      'Level 2 failed cards list after failing one card'
+    );
+
+    updatedState = subject(updatedState, failCard(1));
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Level 1 failed cards list after failing two cards'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[0], cards[1]],
+      'Level 2 failed cards list after failing two cards'
+    );
+
+    updatedState = subject(updatedState, failCard(0));
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Level 1 failed cards list after failing three cards'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[0], cards[1], cards[2]],
+      'Level 2 failed cards list after failing three cards'
+    );
+
+    updatedState = subject(updatedState, failCard(0));
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Level 1 failed cards list after failing the first card again'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[1], cards[2], cards[0]],
+      'Level 2 failed cards list after failing the first card again'
+    );
   });
 
   it('should update the failed cards queue on FAIL_CARD for a card that still needs to be reviewed once more', () => {
