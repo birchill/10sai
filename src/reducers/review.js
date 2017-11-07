@@ -132,6 +132,11 @@ export default function review(state = initialState, action) {
     }
 
     case 'PASS_CARD': {
+      if (state.reviewState !== ReviewState.ANSWER &&
+          state.reviewState !== ReviewState.QUESTION) {
+        return state;
+      }
+
       // We use passedCard to search arrays
       const passedCard = state.currentCard;
       // But we push a copy of it that we will (probably) update
@@ -206,6 +211,11 @@ export default function review(state = initialState, action) {
     }
 
     case 'FAIL_CARD': {
+      if (state.reviewState !== ReviewState.ANSWER &&
+          state.reviewState !== ReviewState.QUESTION) {
+        return state;
+      }
+
       // We use failedCard to search arrays
       const failedCard = state.currentCard;
       // But we push a copy of it that we will (probably) update
