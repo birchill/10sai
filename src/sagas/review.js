@@ -52,21 +52,26 @@ export function* updateHeap(cardStore, action) {
 }
 
 export function* updateProgress(cardStore, action) {
+  const reviewInfo = yield select(getReviewInfo);
+
+  // Fetch the updated card from the state. Normally this is the last card in
+  // the history, unless we happen to choose the same card twice which should
+  // only happen when it is the last card and we failed it.
+  //
+  // As a result, when we detect that we have the last card if the action was
+  // a failure, then we must assume we failed that last card so we should update
+  // *that* card instead of the last card in the history.
+  const isLastCard = reviewInfo.nextCard === null;
+  let card;
+  if (isLastCard && action.type === 'FAIL_CARD') {
+    card = reviewInfo.currentCard;
+  } else {
+    card = reviewInfo.history[reviewInfo.history.length - 1];
+  }
+
   const update = {
-    // XXX This won't be the updated card --- should we make the reducer also
-    // update it and then copy it? Or should we just look up the last history
-    // item / current card as needed?
-    _id: action.card._id,
-    level: action.card.level,
-    // Using the CardStore's review time (as opposed to, say, `new Date()`
-    // means that say you review just after 7am each morning then the next
-    // morning any failed cards will show up in the 7am window the next
-    // morning).
-    // TODO: This is after we normalize CardStore's review times to hour
-    // intervals.
-    // XXX I'm planning to update this in the reducer instead so we won't need
-    // to do that here.
-    reviewed: cardStore.reviewTime,
+    _id: card._id,
+    progress: card.progress,
   };
 
   try {
