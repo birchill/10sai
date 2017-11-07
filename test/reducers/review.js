@@ -595,6 +595,18 @@ describe('reducer:review', () => {
       [cards[0]],
       'Level 2 failed cards list after failing a once-passed card again'
     );
+
+    updatedState = subject(updatedState, actions.failCard());
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Level 1 failed cards list after failing a once-passed card yet again'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[0]],
+      'Level 2 failed cards list after failing a once-passed card yet again'
+    );
   });
 
   it('should update the card level and review time on FAIL_CARD', () => {
@@ -700,14 +712,6 @@ describe('reducer:review', () => {
       [],
       'First failed cards list should empty'
     );
-  });
-
-  it('should reset a level-1 failed card on FAIL_CARD even when it is the last card', () => {
-    // TODO
-  });
-
-  it('should do nothing for a level-2 failed card on FAIL_CARD when it is the last card', () => {
-    // TODO
   });
 });
 
