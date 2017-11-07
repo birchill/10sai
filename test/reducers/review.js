@@ -333,7 +333,42 @@ describe('reducer:review', () => {
   });
 
   it('should NOT update the complete count on PASS_CARD if the card still needs to be reviewed', () => {
-    // TODO
+    const [initialState, cards] = newReview(1, 1);
+    let updatedState = subject(initialState, actions.reviewLoaded(cards));
+    assert.strictEqual(updatedState.completed, 0, 'Initial completed count');
+
+    updatedState = subject(updatedState, actions.failCard());
+    assert.isNotNull(
+      updatedState.currentCard,
+      'Has current card after failing'
+    );
+    assert.strictEqual(
+      updatedState.completed,
+      0,
+      'Completed count after failing'
+    );
+
+    updatedState = subject(updatedState, actions.passCard());
+    assert.isNotNull(
+      updatedState.currentCard,
+      'Has current card after passing failed card once'
+    );
+    assert.strictEqual(
+      updatedState.completed,
+      0,
+      'Completed count after passing failed card once'
+    );
+
+    updatedState = subject(updatedState, actions.passCard());
+    assert.isNull(
+      updatedState.currentCard,
+      'Has no current card after passing ass cards'
+    );
+    assert.strictEqual(
+      updatedState.completed,
+      1,
+      'Completed count after passing failed card twice'
+    );
   });
 
   it('should add to the history on PASS_CARD', () => {
