@@ -67,8 +67,33 @@ describe('reducer:review', () => {
     );
 
     assert.strictEqual(updatedState.reviewState, ReviewState.LOADING);
-    assert.strictEqual(updatedState.maxCards, 10);
     assert.strictEqual(updatedState.maxNewCards, 2);
+    assert.strictEqual(updatedState.maxCards, 10);
+  });
+
+  it('should go to the loading state on SET_REVIEW_LIMIT', () => {
+    const [initialState, cardsIgnored, reviewTime] = newReview(1, 3);
+
+    const updatedState = subject(initialState, actions.setReviewLimit(2, 10));
+
+    assert.strictEqual(updatedState.reviewState, ReviewState.LOADING);
+    assert.strictEqual(updatedState.maxNewCards, 2);
+    assert.strictEqual(updatedState.maxCards, 10);
+    assert.strictEqual(updatedState.reviewTime, reviewTime);
+  });
+
+  it('should update the review time on SET_REVIEW_TIME', () => {
+    const [initialState, cardsIgnored, initialReviewTime] = newReview(1, 3);
+    const newReviewTime = new Date(initialReviewTime + 1 * MS_PER_DAY);
+
+    const updatedState = subject(
+      initialState,
+      actions.setReviewTime(newReviewTime)
+    );
+
+    assert.strictEqual(updatedState.maxNewCards, 1);
+    assert.strictEqual(updatedState.maxCards, 3);
+    assert.strictEqual(updatedState.reviewTime, newReviewTime);
   });
 
   it('should update the heap on REVIEW_LOADED', () => {
@@ -715,6 +740,4 @@ describe('reducer:review', () => {
   });
 });
 
-// TODO: Tests for SET_REVIEW_LIMIT
-// TODO: Tests for SET_REVIEW_TIME
 // TODO: Tests for SHOW_ANSWER

@@ -38,6 +38,7 @@
     "no-restricted-properties": [ "off" ],
     "no-shadow": [ "off" ],
     "no-underscore-dangle": [ "off" ],
+    "no-unused-vars": ["error", {"vars": "all", "args": "after-used", "varsIgnorePattern": "[iI]gnored"}],
     "no-use-before-define": [ "error", { "functions": false } ],
     "react/prefer-stateless-function": [ "off" ],
     "react/jsx-closing-bracket-location": [
