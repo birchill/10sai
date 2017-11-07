@@ -386,7 +386,42 @@ describe('reducer:review', () => {
   });
 
   it('should update the history on PASS_CARD if the card is already in the history', () => {
-    // TODO
+    const [initialState, cards] = newReview(0, 2);
+    const firstCard = cards[0];
+    const secondCard = cards[1];
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    assert.deepEqual(updatedState.history, [], 'Initial history');
+    assert.deepEqual(
+      updatedState.currentCard,
+      firstCard,
+      'Initially first card is current card'
+    );
+
+    updatedState = subject(updatedState, failCard(0));
+    assert.deepEqual(
+      updatedState.history,
+      [firstCard],
+      'History after failing first card'
+    );
+
+    updatedState = subject(updatedState, failCard(0));
+    assert.deepEqual(
+      updatedState.history,
+      [secondCard],
+      'History after failing second card'
+    );
+    assert.deepEqual(
+      updatedState.currentCard,
+      firstCard,
+      'First card is current card again'
+    );
+
+    updatedState = subject(updatedState, passCard(0));
+    assert.deepEqual(
+      updatedState.history,
+      [firstCard],
+      'History after passing first card once'
+    );
   });
 
   it('should update the current card and next card on PASS_CARD', () => {
@@ -462,8 +497,11 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, actions.failCard());
 
-    assert.strictEqual(updatedState.history[0].progress.level, 0);
-    assert.strictEqual(updatedState.history[0].progress.reviewed, reviewTime);
+    assert.strictEqual(updatedState.failedCardsLevel2[0].progress.level, 0);
+    assert.strictEqual(
+      updatedState.failedCardsLevel2[0].progress.reviewed,
+      reviewTime
+    );
   });
 
   it('should NOT update the completed count on FAIL_CARD', () => {

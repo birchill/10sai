@@ -36,7 +36,8 @@ const initialState = {
 
   // An array of the IDs of cards we've presented to the user in order from most
   // to least recently seen. If a card has been shown more than once only the
-  // most recent occurence is included.
+  // most recent occurence is included. Note that the currentCard is not
+  // included in the history.
   history: [],
 
   // The card currently being presented to the user. May be null if there is no
@@ -179,12 +180,12 @@ export default function review(state = initialState, action) {
       }
       const completed = finished ? state.completed + 1 : state.completed;
 
-      // Drop from history if it already exists then add to the end
+      // Add to end of history
       const history = state.history.slice();
-      const historyIndex = history.indexOf(passedCard);
-      if (historyIndex !== -1) {
-        history.splice(historyIndex, 1);
-      }
+      console.assert(
+        history.indexOf(passedCard) === -1,
+        'The current card should not be in the history'
+      );
       history.push(updatedCard);
 
       const intermediateState = {
@@ -234,12 +235,11 @@ export default function review(state = initialState, action) {
       updatedCard.progress.reviewed = state.reviewTime;
 
       // Drop from history if it already exists then add to the end
-      // TODO: Share this code with PASS_CARD
       const history = state.history.slice();
-      const historyIndex = history.indexOf(failedCard);
-      if (historyIndex !== -1) {
-        history.splice(historyIndex, 1);
-      }
+      console.assert(
+        history.indexOf(failedCard) === -1,
+        'The current card should not be in the history'
+      );
       history.push(updatedCard);
 
       const intermediateState = {
@@ -294,7 +294,7 @@ function updateNextCard(state, seed, updateMode) {
       const heapIndex = currentCard ? heap.indexOf(currentCard) : -1;
       if (heapIndex !== -1) {
         // TODO: Use an immutable-js List here
-        heap = heap.slice(0);
+        heap = heap.slice();
         heap.splice(heapIndex, 1);
         cardsAvailable--;
         // If we found a level zero card that hasn't been reviewed in the heap
@@ -305,14 +305,6 @@ function updateNextCard(state, seed, updateMode) {
           currentCard.progress.reviewed === null
         ) {
           newCardsInPlay++;
-        }
-      } else {
-        // Drop current card from history
-        const historyIndex = history.indexOf(currentCard);
-        if (historyIndex !== -1) {
-          // TODO: Use an immutable-js List here
-          history = history.slice(0);
-          history.splice(historyIndex, 1);
         }
       }
     }
@@ -352,6 +344,17 @@ function updateNextCard(state, seed, updateMode) {
     if (!currentCard && state.currentCard && nextCard) {
       currentCard = nextCard;
       nextCard = null;
+    }
+
+    // Drop current card from history: We need to do this after we've finalized
+    // the current card.
+    if (currentCard) {
+      const historyIndex = history.indexOf(currentCard);
+      if (historyIndex !== -1) {
+        // TODO: Use an immutable-js List here
+        history = history.slice();
+        history.splice(historyIndex, 1);
+      }
     }
   }
 
