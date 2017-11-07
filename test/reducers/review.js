@@ -546,7 +546,55 @@ describe('reducer:review', () => {
   });
 
   it('should update the failed cards queue on FAIL_CARD for a card that still needs to be reviewed once more', () => {
-    // TODO
+    const [initialState, cards] = newReview(1, 1);
+
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Initial level 1 failed cards list'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [],
+      'Initial level 2 failed cards list'
+    );
+
+    updatedState = subject(updatedState, actions.failCard());
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Level 1 failed cards list after failing one card'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[0]],
+      'Level 2 failed cards list after failing one card'
+    );
+
+    updatedState = subject(updatedState, actions.passCard());
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [cards[0]],
+      'Level 1 failed cards list after passing a failed card once'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [],
+      'Level 2 failed cards list after passing a failed card once'
+    );
+
+    updatedState = subject(updatedState, actions.failCard());
+    assert.deepEqual(
+      updatedState.failedCardsLevel1,
+      [],
+      'Level 1 failed cards list after failing a once-passed card again'
+    );
+    assert.deepEqual(
+      updatedState.failedCardsLevel2,
+      [cards[0]],
+      'Level 2 failed cards list after failing a once-passed card again'
+    );
   });
 
   it('should update the card level and review time on FAIL_CARD', () => {
