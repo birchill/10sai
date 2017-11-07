@@ -191,6 +191,15 @@ describe('reducer:review', () => {
     assert.strictEqual(updatedState.reviewState, ReviewState.QUESTION);
   });
 
+  it('should update the review state on SHOW_ANSWER', () => {
+    const [initialState, cards] = newReview(1, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+
+    updatedState = subject(updatedState, actions.showAnswer());
+
+    assert.strictEqual(updatedState.reviewState, ReviewState.ANSWER);
+  });
+
   it('should update the failed cards queues on PASS_CARD for a recently failed card', () => {
     const [initialState, cards] = newReview(1, 3);
 
@@ -739,5 +748,3 @@ describe('reducer:review', () => {
     );
   });
 });
-
-// TODO: Tests for SHOW_ANSWER

@@ -132,8 +132,10 @@ export default function review(state = initialState, action) {
     }
 
     case 'PASS_CARD': {
-      if (state.reviewState !== ReviewState.ANSWER &&
-          state.reviewState !== ReviewState.QUESTION) {
+      if (
+        state.reviewState !== ReviewState.ANSWER &&
+        state.reviewState !== ReviewState.QUESTION
+      ) {
         return state;
       }
 
@@ -210,9 +212,22 @@ export default function review(state = initialState, action) {
       );
     }
 
+    case 'SHOW_ANSWER': {
+      if (state.reviewState !== ReviewState.QUESTION) {
+        return state;
+      }
+
+      return {
+        ...state,
+        reviewState: ReviewState.ANSWER,
+      };
+    }
+
     case 'FAIL_CARD': {
-      if (state.reviewState !== ReviewState.ANSWER &&
-          state.reviewState !== ReviewState.QUESTION) {
+      if (
+        state.reviewState !== ReviewState.ANSWER &&
+        state.reviewState !== ReviewState.QUESTION
+      ) {
         return state;
       }
 
