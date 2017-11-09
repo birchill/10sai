@@ -22,6 +22,9 @@ export function setReviewTime(reviewTime) {
   };
 }
 
+// How much to weight seeds towards zero.
+const WEIGHT_FACTOR = 1.4;
+
 export function reviewLoaded(cards) {
   return {
     type: 'REVIEW_LOADED',
@@ -32,8 +35,8 @@ export function reviewLoaded(cards) {
     // where there is only one card left.
 
     // Weight towards zero
-    currentCardSeed: Math.pow(Math.random(), 2),
-    nextCardSeed: Math.pow(Math.random(), 2),
+    currentCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
+    nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
 }
 
@@ -45,7 +48,7 @@ export function failCard() {
   return {
     type: 'FAIL_CARD',
     // Weight towards zero
-    nextCardSeed: Math.pow(Math.random(), 2),
+    nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
 }
 
@@ -53,7 +56,7 @@ export function passCard() {
   return {
     type: 'PASS_CARD',
     // Weight towards zero
-    nextCardSeed: Math.pow(Math.random(), 2),
+    nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
 }
 

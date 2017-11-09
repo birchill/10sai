@@ -11,10 +11,10 @@ describe('reducer:action', () => {
     for (let i = 0; i < runs; i++) {
       total += actions.failCard().nextCardSeed;
     }
-    // We check for 0.4 since if we check for 0.5 then 50% of the time it might
+    // We check for 0.45 since if we check for 0.5 then 50% of the time it might
     // happen to be just below 0.5 and we expect the weighting to at least give
-    // us an average below 0.4.
-    assert.isBelow(total / runs, 0.4, 'The average seed is less than 0.4');
+    // us an average below 0.45.
+    assert.isBelow(total / runs, 0.45, 'The average seed is less than 0.45');
   });
 
   it('should weight the random seed towards zero for PASS_CARD', () => {
@@ -23,7 +23,7 @@ describe('reducer:action', () => {
     for (let i = 0; i < runs; i++) {
       total += actions.passCard().nextCardSeed;
     }
-    assert.isBelow(total / runs, 0.4, 'The average seed is less than 0.4');
+    assert.isBelow(total / runs, 0.45, 'The average seed is less than 0.45');
   });
 
   it('should weight the random seeds towards zero for REVIEW_LOADED', () => {
@@ -35,9 +35,9 @@ describe('reducer:action', () => {
       nextTotal += action.nextCardSeed;
       currentTotal += action.currentCardSeed;
     }
-    assert.isBelow(nextTotal / runs, 0.4,
-                   'The average seed for the next card is less than 0.4');
-    assert.isBelow(currentTotal / runs, 0.4,
-                   'The average seed for the current card is less than 0.4');
+    assert.isBelow(nextTotal / runs, 0.45,
+                   'The average seed for the next card is less than 0.45');
+    assert.isBelow(currentTotal / runs, 0.45,
+                   'The average seed for the current card is less than 0.45');
   });
 });
