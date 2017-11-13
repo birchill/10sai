@@ -3,10 +3,13 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-  entry: [ 'babel-polyfill', './src/index.js' ],
+  entry: {
+    tensai: ['babel-polyfill', './src/index.js'],
+    'tensai-db': ['babel-polyfill', './src/index-db.js']
+  },
   output: {
     path: path.resolve(__dirname, 'public'),
-    filename: 'tensai.js'
+    filename: '[name].js'
   },
   devtool: 'cheap-source-map',
   module: {

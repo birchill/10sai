@@ -4,6 +4,8 @@ node_modules
 npm-debug.log*
 public/tensai.js
 public/tensai.js.map
+public/tensai-db.js
+public/tensai-db.js.map
 public/tensai.css
 public/tensai.css.map
 tags

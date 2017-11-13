@@ -158,12 +158,12 @@ class CardStore {
         return this.db.query(view, queryOptions);
       })
       .then(result =>
-        result.rows.map(row => ({
+        result.rows.filter(row => row.doc).map(row => ({
           ...parseCard(row.doc),
           progress: {
             level: row.value.level,
             reviewed: row.value.reviewed,
-          }
+          },
         }))
       );
   }
@@ -219,7 +219,7 @@ class CardStore {
     }
 
     // Split progress part out of card and strip any non-content fields
-    const fieldsToSkip = [ '_id', '_rev', 'progress' ];
+    const fieldsToSkip = ['_id', '_rev', 'progress'];
     const justTheMeat = record => {
       const result = {};
       for (const [field, value] of Object.entries(record)) {
@@ -778,6 +778,46 @@ class CardStore {
     // that's not going to happen any time soon, so we need to be careful
     // *not* to wait on this.remoteSync here.
     await this.remoteDb;
+  }
+
+  // Maintenance functions
+
+  async getOrphanedCards() {
+    // I couldn't find any neat way of doing this in a reduce function so
+    // I guess we just need to fetch all card records and iterate them.
+    // Fortunately we never use this in production code.
+    const cards = await this.db.allDocs({
+      include_docs: true,
+      startkey: CARD_PREFIX,
+      endkey: CARD_PREFIX + '\ufff0',
+    });
+
+    const orphans = [];
+
+    for (const card of cards.rows) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await this.db.get(PROGRESS_PREFIX + stripCardPrefix(card.id));
+      } catch (e) {
+        orphans.push(card.doc);
+      }
+    }
+
+    return orphans;
+  }
+
+  async addProgressRecordForCard(cardId) {
+    const progressToPut = {
+      _id: PROGRESS_PREFIX + stripCardPrefix(cardId),
+      reviewed: null,
+      level: 0,
+    };
+    try {
+      await this.db.put(progressToPut);
+    } catch (err) {
+      console.error(`Unexpected error putting progress record: ${err}`);
+      throw err;
+    }
   }
 
   // Intended for unit testing only
