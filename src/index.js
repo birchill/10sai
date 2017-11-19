@@ -115,6 +115,32 @@ window.addEventListener('offline',
                         () => { store.dispatch({ type: 'GO_OFFLINE' }); });
 
 //
+// Review time rotation
+//
+
+// We want to round the review time to the previous hour and then update it
+// every hour. So, for example, if we open the app at 08:49, we'll set the
+// review time to 08:00. Then, at 09:49 (NOT 09:00) we'll set the review time to
+// 09:00.
+//
+// That means that if we review at roughly the same time every day any cards
+// which are marked as due precisely one day later will show up and it will also
+// prevent splitting cards reviewed at roughly the same time across different
+// review times.
+const updateReviewTime = () => {
+  const reviewTime = new Date();
+  reviewTime.setMinutes(0);
+  reviewTime.setSeconds(0);
+  reviewTime.setMilliseconds(0);
+  store.dispatch({ type: 'SET_REVIEW_TIME', reviewTime });
+};
+(() => {
+  const MS_PER_HOUR = 60 * 60 * 1000;
+  setInterval(updateReviewTime, 1 * MS_PER_HOUR);
+})();
+updateReviewTime();
+
+//
 // Render the root component
 //
 

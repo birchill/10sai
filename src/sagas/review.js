@@ -83,10 +83,15 @@ export function* updateProgress(cardStore, action) {
   }
 }
 
+export function* updateReviewTime(cardStore, action) {
+  yield call([cardStore, 'setReviewTime'], action.reviewTime);
+}
+
 function* reviewSagas(cardStore) {
   yield* [
     takeEvery(['NEW_REVIEW', 'SET_REVIEW_LIMITS'], updateHeap, cardStore),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
+    takeEvery(['SET_REVIEW_TIME'], updateReviewTime, cardStore),
   ];
 }
 
