@@ -150,14 +150,14 @@
     <line x1="40.75" y1="28.5" x2="40.75" y2="83"/>
     <line x1="59.45" y1="28.5" x2="59.45" y2="83"/>
   </g>
-  <!-- Plus -->
-  <view id="plus" viewBox="1800 0 100 100"/>
+  <!-- Plus (white) -->
+  <view id="plus-white" viewBox="1800 0 100 100"/>
   <g transform="translate(1800 0)" fill="white">
     <rect x="40" y="10" width="20" height="80" rx="3" ry="3"/>
     <rect x="10" y="40" width="80" height="20" rx="3" ry="3"/>
   </g>
-  <!-- Plus (highlight) -->
-  <view id="plus-highlight" viewBox="1900 0 100 100"/>
+  <!-- Plus -->
+  <view id="plus" viewBox="1900 0 100 100"/>
   <g transform="translate(1900 0)" fill="#2690BA">
     <rect x="40" y="10" width="20" height="80" rx="3" ry="3"/>
     <rect x="10" y="40" width="80" height="20" rx="3" ry="3"/>
