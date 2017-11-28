@@ -119,6 +119,7 @@ main div.popup-overlay.active {
 @import 'ControlOverlay';
 @import 'EditCardScreen';
 @import 'CardFaceInput';
+@import 'components-tab-block';
 
 /*
  * Section pages
@@ -324,7 +325,10 @@ input[type=button], input[type=submit], button, a.button {
     padding-left: 1.4em + 1em + 0.5em;
   }
   &.-icon.-review {
-    background-image: url('img/icons.svg#review');
+    background-image: url('img/icons.svg#review-highlight');
+  }
+  &.-icon.-review.-primary {
+    background-image: url('img/icons.svg#review-white');
   }
   &.-icon.-add-lookup {
     background-image: url('img/icons.svg#add-lookup');
@@ -333,7 +337,7 @@ input[type=button], input[type=submit], button, a.button {
     background-image: url('img/icons.svg#bin');
   }
   &.-icon.-plus {
-    background-image: url('img/icons.svg#plus');
+    background-image: url('img/icons.svg#plus-highlight');
   }
   &.-icon.-plus.-primary {
     background-image: url('img/icons.svg#plus-white');
@@ -420,7 +424,7 @@ input[type=button], input[type=submit], button {
     background-size: 1rem 1rem;
     background-repeat: no-repeat;
     padding-left: 2.5rem;
-    background-image: url('img/icons.svg#search');
+    background-image: url('img/icons.svg#search-grey');
   }
 }
 

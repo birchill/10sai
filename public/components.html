@@ -62,9 +62,49 @@
       <input type=button class="-icon -add-lookup -link"
         value="-icon -add-lookup -link">
     </div>
-    <h2>Components</h2>
-    <h3 class=component-name>CancelableTextbox</h3>
-    <div id=cancelable-textbox-container></div>
+
+    <h3>Text boxes</h3>
+    <input class="text-box" type=text value="Text box">
+    <input class="text-box -search" type=search value="-search">
+    <input class="text-box -search -rounded" type=search
+      value="-search -rounded">
+    <span id=cancelable-textbox-container></span>
+
+    <h2>Layout</h2>
+
+    <h3>Tabs</h3>
+    <div style="width: 800px">
+      <ul class="tab-block">
+        <li class="tab-item active">
+          <a href="#" class="-icon -search">Lookup</a>
+        </li>
+        <li class="tab-item">
+          <a href="#" class="-icon -add">Add</a>
+        </li>
+        <li class="tab-item">
+          <a href="#" class="-icon -review -badge" data-badge="10%">Review</a>
+        </li>
+      </ul>
+    </div>
+    <script>
+      for (
+        const tabBlock of Array.from(document.querySelectorAll('.tab-block'))
+      ) {
+        tabBlock.addEventListener('click', evt => {
+          if (evt.target.tagName !== 'A') {
+            return;
+          }
+          evt.preventDefault();
+
+          const activeItem = tabBlock.querySelector('.tab-item.active');
+          if (activeItem && activeItem !== evt.target) {
+            activeItem.classList.remove('active');
+          }
+          evt.target.parentNode.classList.add('active');
+        });
+      }
+    </script>
+
     <script src="/tensai-components.js"></script>
   </body>
 </html>

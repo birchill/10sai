@@ -7,8 +7,9 @@ import CancelableTextbox from './components/CancelableTextbox.jsx';
 
 ReactDOM.render(
   <CancelableTextbox
-    value="Value"
-    onChange="console.log('onChange')"
-    onFocus="console.log('onFocus')" />,
+    className="text-box"
+    value="CancelableTextbox"
+    onChange={() => { console.log('CancelableTextbox: onChange'); }}
+    onFocus={() => { console.log('CancelableTextbox: onFocus'); }} />,
   document.getElementById('cancelable-textbox-container')
 );

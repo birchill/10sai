@@ -1,0 +1,109 @@
+// TODO:
+// - Create a separate line component that sits on top somehow and can be moved
+// - Make the line component use the same hover color when the currently active
+//   item is hovered (use the previous sibling selector for this?
+//   i.e. ~ .active:hover or whatever)
+// - Create a React component to generate the necessary content
+// - In the react component add an active-index property to ensure only one is
+//   ever active? Maybe this is making it more complicated that necessary?
+//   - The React component should allow child elements, specifically Link
+//     elements in this case (can we restrict it to Link elements?)
+// - Make the React component set the transform property of the line element
+//   appropriately (and have it transition).
+// - Add the appropriate ARIA roles
+//   (perhaps the whole thing should be wrapped in a <nav>?)
+// - Add icons for:
+//   -addcard
+//   -editcard
+.tab-block {
+  display: flex;
+  align-items: start;
+  flex-wrap: wrap;
+
+  // Reset list styles
+  list-style: none;
+  padding: 0;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+
+  & a {
+    position: relative;
+    display: block;
+    // The 1.2rem horizontal padding is so that if the text wraps the icon still
+    // fits inside the bounds.
+    padding: .5rem 1.2rem;
+    border-top: $border-width * 2 solid transparent;
+
+    text-decoration: none;
+    color: $text-color;
+    transition: color 0.1s;
+    &:hover,
+    &:focus {
+      border-color: $dark-grey;
+    }
+
+    &.-icon::before {
+      content: "";
+      display: inline-block;
+      position: absolute;
+
+      width: 1rem;
+      height: 1.1rem;
+      background-size: 1rem 1rem;
+      background-repeat: no-repeat;
+      background-position-y: 0.1rem;
+
+      margin-left: -1.5rem;
+    }
+    &.-search::before {
+      background-image: url('img/icons.svg#search-dark');
+    }
+    &.-add::before {
+      background-image: url('img/icons.svg#plus-dark');
+    }
+    &.-review::before {
+      background-image: url('img/icons.svg#review-dark');
+    }
+  }
+  &.active a {
+    border-color: $highlight;
+    color: $highlight;
+    &:hover,
+    &:focus {
+      filter: brightness(1.2);
+    }
+
+    &.-search::before {
+      background-image: url('img/icons.svg#search-highlight');
+    }
+    &.-add::before {
+      background-image: url('img/icons.svg#plus-highlight');
+    }
+    &.-review::before {
+      background-image: url('img/icons.svg#review-highlight');
+    }
+  }
+  & a.-badge[data-badge]::after {
+    // This is fairly similar to spectre.css but with a few tweaks to
+    // positioning, sizing etc.
+    position: absolute;
+    margin-left: .2rem;
+    margin-top: -.3rem;
+
+    font-size: .7rem;
+    height: .9rem;
+    min-width: .7rem;
+    padding: .1rem .2rem;
+    text-align: center;
+    whitespace: nowrap;
+
+    background: $highlight;
+    border-radius: .5rem;
+    color: white;
+    content: attr(data-badge);
+    display: inline-block;
+  }
+}
