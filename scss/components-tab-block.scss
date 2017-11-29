@@ -6,7 +6,6 @@
 //     elements in this case (can we restrict it to Link elements?)
 // - Make the React component set the transform property of the line element
 //   appropriately (and have it transition).
-// - Add the appropriate ARIA roles
 // - Redo the button icons as a separate grid image where we use
 //   background-position to position instead. For SVG stacks, it seems like the
 //   browser treats it as a separate resource so there's some flicker when it
