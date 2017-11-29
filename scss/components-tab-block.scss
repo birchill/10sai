@@ -32,6 +32,7 @@
     height: $border-width * 2;
     background-color: $highlight;
     transition: transform 0.15s;
+    will-change: transform;
   }
   // Obviously the following also needs to be calculated
   & > .tab-item:nth-child(2).active ~ .highlight-bar {
