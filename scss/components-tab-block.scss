@@ -1,8 +1,4 @@
 // TODO:
-// - Create a separate line component that sits on top somehow and can be moved
-// - Make the line component use the same hover color when the currently active
-//   item is hovered (use the previous sibling selector for this?
-//   i.e. ~ .active:hover or whatever)
 // - Create a React component to generate the necessary content
 // - In the react component add an active-index property to ensure only one is
 //   ever active? Maybe this is making it more complicated that necessary?
@@ -11,11 +7,15 @@
 // - Make the React component set the transform property of the line element
 //   appropriately (and have it transition).
 // - Add the appropriate ARIA roles
-//   (perhaps the whole thing should be wrapped in a <nav>?)
+// - Redo the button icons as a separate grid image where we use
+//   background-position to position instead. For SVG stacks, it seems like the
+//   browser treats it as a separate resource so there's some flicker when it
+//   first loads an icon.
 // - Add icons for:
 //   -addcard
 //   -editcard
 .tab-block {
+  position: relative;
   display: flex;
   align-items: start;
   flex-wrap: wrap;
@@ -23,13 +23,31 @@
   // Reset list styles
   list-style: none;
   padding: 0;
+
+  & > .highlight-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    width: 33.333%; // This needs to be calculated
+    height: $border-width * 2;
+    background-color: $highlight;
+    transition: transform 0.15s;
+  }
+  // Obviously the following also needs to be calculated
+  & > .tab-item:nth-child(2).active ~ .highlight-bar {
+    transform: translate(100%);
+  }
+  & > .tab-item:nth-child(3).active ~ .highlight-bar {
+    transform: translate(200%);
+  }
 }
 
 .tab-item {
   flex: 1;
   text-align: center;
 
-  & a {
+  & > a {
     position: relative;
     display: block;
     // The 1.2rem horizontal padding is so that if the text wraps the icon still
@@ -39,7 +57,7 @@
 
     text-decoration: none;
     color: $text-color;
-    transition: color 0.1s;
+    transition: color 0.15s, border-top-color 0.3s;
     &:hover,
     &:focus {
       border-color: $dark-grey;
@@ -68,8 +86,7 @@
       background-image: url('img/icons.svg#review-dark');
     }
   }
-  &.active a {
-    border-color: $highlight;
+  &.active > a {
     color: $highlight;
     &:hover,
     &:focus {
@@ -86,7 +103,12 @@
       background-image: url('img/icons.svg#review-highlight');
     }
   }
-  & a.-badge[data-badge]::after {
+  // Make the highlight bar also go brighter
+  &.active:hover ~ .highlight-bar,
+  &.active:focus-within ~ .highlight-bar {
+    filter: brightness(1.2);
+  }
+  & > a.-badge[data-badge]::after {
     // This is fairly similar to spectre.css but with a few tweaks to
     // positioning, sizing etc.
     position: absolute;
