@@ -10,20 +10,26 @@ export class TabBlock extends React.Component {
     };
   }
 
+  static renderChild(child, isActive) {
+    let className = 'tab-item';
+    if (isActive) {
+      className += ' active';
+    }
+    return (
+      <li className={className} role="presentation">
+        {React.cloneElement(child, { role: 'tab', 'aria-selected': isActive })}
+      </li>
+    );
+  }
+
   render() {
-    console.log(this.props.active);
     return (
       <ul
         role="tablist"
-        {...this.props}
         className={`${this.props.className || ''} tab-block`}>
-        {
-          React.Children.map(this.props.children, child =>
-            (<li className="tab-item" role="presentation">
-              { React.cloneElement(child, { role: 'tab' }) }
-            </li>)
-          )
-        }
+        {React.Children.map(this.props.children, (child, index) =>
+          TabBlock.renderChild(child, index === this.props.active)
+        )}
         <div
           className="highlight-bar"
           role="presentation"
