@@ -23,6 +23,13 @@ export class TabBlock extends React.Component {
   }
 
   render() {
+    const highlightStyle = {
+      width: `${100 / React.Children.count(this.props.children)}%`,
+    };
+    if (this.props.active) {
+      highlightStyle.transform = `translate(${100 * this.props.active}%)`;
+    }
+
     return (
       <ul
         role="tablist"
@@ -32,6 +39,7 @@ export class TabBlock extends React.Component {
         )}
         <div
           className="highlight-bar"
+          style={highlightStyle}
           role="presentation"
           hidden={this.props.active === undefined} />
       </ul>

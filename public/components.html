@@ -73,52 +73,12 @@
     <h2>Layout</h2>
 
     <h3>Tabs</h3>
-    <div style="width: 800px">
-      <!-- Each of the tab pages needs to have, e.g.:
-           id="lookup-page"
-           role="tabpanel"
-           aria-labelledby="lookup-tab"
-           aria-hidden="true" or just hidden boolean attribute (preferred?)
-       -->
-      <ul class="tab-block" role="tablist">
-        <li class="tab-item active" role="presentation">
-          <a id="lookup-tab" href="#" class="-icon -search"
-            role="tab" aria-selected="true"
-            aria-controls="lookup-page">Lookup</a>
-        </li>
-        <li class="tab-item" role="presentation">
-          <a id="add-tab" href="#" class="-icon -add"
-            role="tab" aria-selected="false"
-            aria-controls="add-page">Add</a>
-        </li>
-        <li class="tab-item" role="presentation">
-          <a id="highlight-tab" href="#" class="-icon -review -badge"
-            data-badge="10%"
-            role="tab" aria-selected="false"
-            aria-controls="review-page">Review</a>
-        </li>
-        <div class="highlight-bar"></div>
-      </ul>
-    </div>
-    <script>
-      for (
-        const tabBlock of Array.from(document.querySelectorAll('.tab-block'))
-      ) {
-        tabBlock.addEventListener('click', evt => {
-          if (evt.target.tagName !== 'A') {
-            return;
-          }
-          evt.preventDefault();
-
-          const activeItem = tabBlock.querySelector('.tab-item.active');
-          if (activeItem && activeItem !== evt.target) {
-            activeItem.classList.remove('active');
-          }
-          evt.target.parentNode.classList.add('active');
-        });
-      }
-    </script>
-
+    <!-- Each of the tab pages needs to have, e.g.:
+        id="lookup-page"
+        role="tabpanel"
+        aria-labelledby="lookup-tab"
+        aria-hidden="true" or just hidden boolean attribute (preferred?)
+      -->
     <div id=tab-block-container style="width: 800px"></div>
 
     <script src="/tensai-components.js"></script>

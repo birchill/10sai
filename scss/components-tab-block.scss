@@ -23,18 +23,10 @@
     left: 0;
     top: 0;
 
-    width: 33.333%; // This needs to be calculated
     height: $border-width * 2;
     background-color: $highlight;
     transition: transform 0.15s;
     will-change: transform;
-  }
-  // Obviously the following also needs to be calculated
-  & > .tab-item:nth-child(2).active ~ .highlight-bar {
-    transform: translate(100%);
-  }
-  & > .tab-item:nth-child(3).active ~ .highlight-bar {
-    transform: translate(200%);
   }
 }
 
