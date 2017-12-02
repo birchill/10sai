@@ -1,11 +1,11 @@
 // TODO:
-// - Redo the button icons as a separate grid image where we use
-//   background-position to position instead. For SVG stacks, it seems like the
-//   browser treats it as a separate resource so there's some flicker when it
-//   first loads an icon.
-// - Add icons for:
-//   -addcard
-//   -editcard
+// - Redo card icons to use a 6px stroke with instead of 4px
+// - Use button-icons.svg in other styles
+//   - Then rename:
+//     icons.svg -> sync-icons.svg
+//     buttons-icons.svg -> icons.svg
+//   - Drop redundant icons from sync-icons.svg
+// - Redo lookup icon?
 .tab-block {
   position: relative;
   display: flex;
@@ -54,21 +54,23 @@
       position: absolute;
 
       width: 1rem;
-      height: 1.1rem;
-      background-size: 1rem 1rem;
+      height: 1rem;
+      background-size: 12rem 5rem;
       background-repeat: no-repeat;
-      background-position-y: 0.1rem;
+      background-position-y: -1rem;
+      background-image: url('img/button-icons.svg');
 
+      margin-top: 0.1rem;
       margin-left: -1.5rem;
     }
     &.-search::before {
-      background-image: url('img/icons.svg#search-dark');
+      background-position-x: -1rem;
     }
-    &.-add::before {
-      background-image: url('img/icons.svg#plus-dark');
+    &.-lookup::before {
+      background-position-x: -7rem;
     }
     &.-review::before {
-      background-image: url('img/icons.svg#review-dark');
+      background-position-x: -8rem;
     }
   }
   &.active > a {
@@ -78,14 +80,8 @@
       filter: brightness(1.2);
     }
 
-    &.-search::before {
-      background-image: url('img/icons.svg#search-highlight');
-    }
-    &.-add::before {
-      background-image: url('img/icons.svg#plus-highlight');
-    }
-    &.-review::before {
-      background-image: url('img/icons.svg#review-highlight');
+    &.-icon::before {
+      background-position-y: -3rem;
     }
   }
   // Make the highlight bar also go brighter

@@ -26,14 +26,14 @@ ReactDOM.render(
         id="lookup-tab"
         href="/lookup"
         aria-controls="lookup-page"
-        className="-icon -search"
+        className="-icon -lookup"
         onClick={evt => { renderTabs(0); evt.preventDefault(); }}>Lookup</a>
       <a
         id="add-tab"
         href="/add"
         aria-controls="add-page"
-        className="-icon -add"
-        onClick={evt => { renderTabs(1); evt.preventDefault(); }}>Add</a>
+        className="-icon -plus"
+        onClick={evt => { renderTabs(1); evt.preventDefault(); }}>Add card</a>
       <a
         id="review-tab"
         href="/review"
