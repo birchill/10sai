@@ -1,0 +1,16 @@
+/*
+ * Forms
+ */
+
+input, button, a.button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-size: 1rem;
+
+  border-radius: .3em;
+  box-sizing: border-box;
+  padding: .4em 1em;
+  outline: none;
+  vertical-align: middle;
+}
