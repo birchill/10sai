@@ -222,6 +222,8 @@ main section h3 {
 @import 'form-textbox';
 @import 'form-buttons';
 
+@import 'components-stacked-group';
+
 .input-group {
   display: inline-block;
 }
@@ -241,27 +243,6 @@ main section h3 {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
   margin-left: -.2rem;
-}
-.stacked-group input:first-child:not(:last-child) {
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-/*
- * Normally the item below will overlap our bottom border, but when we
- * are in focus (and the border color changes) we should be on top so our
- * border shows.
- */
-.stacked-group input:not(:last-child):focus {
-  position: relative;
-}
-.stacked-group input:not(:first-child):not(:last-child) {
-  border-radius: 0;
-  margin-top: -$border-width;
-}
-.stacked-group input:last-child:not(:first-child) {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  margin-top: -$border-width;
 }
 fieldset {
   border: 1px solid #bbb;
