@@ -64,7 +64,7 @@ input[type=button], input[type=submit], button, a.button {
     height: 1em;
 
     background-position-y: -3em;
-    background-size: $num-icons+em 5em;
+    background-size: $icon-columns+em $icon-rows+em;
     background-repeat: no-repeat;
     margin-left: -1.5em;
     margin-top: 0.1em;

@@ -13,7 +13,8 @@ $dark-grey: #c5c5c5;
 $keyword-yellow: lemonchiffon;
 $keyword-yellow-dark: darken($keyword-yellow, 50%);
 
-$num-icons: 14;
+$icon-columns: 14;
+$icon-rows: 5;
 
 /*
  * Font settings
@@ -213,7 +214,8 @@ main section h3 {
   width: 1.2rem;
   height: 1.2rem;
   display: inline-block;
-  background: url('img/icons.svg') -900% -200% / (($num-icons * 1.2)+rem) (1.2 * 5)+rem content-box;
+  background: url('img/icons.svg') -900% -200% / (($icon-columns * 1.2)+rem)
+    ($icon-rows * 1.2)+rem content-box;
 }
 
 //
