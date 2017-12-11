@@ -463,22 +463,6 @@ form[name=sync-server-settings] {
   padding: .4rem;
   overflow: hidden;
 }
-.card-preview button.delete {
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding: .6rem;
-  font-size: 0;
-  height: auto;
-  margin: 0;
-  &::before {
-    content: "";
-    width: .8rem;
-    height: .8rem;
-    display: inline-block;
-    background: url('img/icons.svg') -900% -200% / (($num-icons * 0.8)+rem) (0.8 * 5)+rem content-box;
-  }
-}
 // Hover states
 .card-preview {
   transition: transform 0.2s;
