@@ -1,8 +1,5 @@
 // TODO:
 // - Use button-icons.svg in other styles
-//   - Then rename:
-//     icons.svg -> sync-icons.svg
-//     buttons-icons.svg -> icons.svg
 //   - Drop redundant icons from sync-icons.svg
 //   - Drop text-box style
 .tab-block {
@@ -57,7 +54,7 @@
       background-size: 14rem 5rem;
       background-repeat: no-repeat;
       background-position-y: -1rem;
-      background-image: url('img/button-icons.svg');
+      background-image: url('img/icons.svg');
 
       margin-top: 0.1rem;
       margin-left: -1.5rem;

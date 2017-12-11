@@ -61,7 +61,7 @@
   // Sync icon
   &.-sync::before {
     content: "";
-    background: url('img/icons.svg#sync') 0 / 100% 100% content-box;
+    background: url('img/sync-icons.svg#sync') 0 / 100% 100% content-box;
   }
   &.-sync.-inprogress::before {
     animation: rotate 1s linear infinite;
@@ -76,18 +76,18 @@
     height: 1.1rem;
   }
   &.-sync.-paused .overlay {
-    background: url('img/icons.svg#overlay-pause') 0 / 100% 100% content-box;
+    background: url('img/sync-icons.svg#overlay-pause') 0 / 100% 100% content-box;
   }
   &.-sync.-offline .overlay {
-    background: url('img/icons.svg#overlay-offline') 0 / 100% 100% content-box;
+    background: url('img/sync-icons.svg#overlay-offline') 0 / 100% 100% content-box;
   }
   &.-sync.-error .overlay {
-    background: url('img/icons.svg#overlay-error') 0 / 100% 100% content-box;
+    background: url('img/sync-icons.svg#overlay-error') 0 / 100% 100% content-box;
   }
 
   // Settings menu
   &.-settings::before {
-    background: url('img/icons.svg#settings') 0 / 100% 100% content-box;
+    background: url('img/sync-icons.svg#settings') 0 / 100% 100% content-box;
   }
 }
 
