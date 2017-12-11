@@ -213,7 +213,7 @@ main section h3 {
   width: 1.2rem;
   height: 1.2rem;
   display: inline-block;
-  background: url('img/sync-icons.svg#cross') 0 / 100% 100% content-box;
+  background: url('img/icons.svg') -900% -200% / (($num-icons * 1.2)+rem) (1.2 * 5)+rem content-box;
 }
 
 //
