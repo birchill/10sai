@@ -38,11 +38,20 @@ input[type=search] {
     padding-right: 1rem;
   }
 
-  &.-search {
+  &.-icon {
     background-position: 0.9rem;
     background-size: 1rem 1rem;
     background-repeat: no-repeat;
     padding-left: 2.5rem;
-    background-image: url('img/icons.svg#search-grey');
+  }
+
+  &.-search {
+    background-image: url('img/button-icons.svg#search-grey');
+  }
+  &.-user {
+    background-image: url('img/button-icons.svg#user-grey');
+  }
+  &.-lock {
+    background-image: url('img/button-icons.svg#lock-grey');
   }
 }

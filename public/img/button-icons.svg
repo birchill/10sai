@@ -143,4 +143,9 @@
   <rect y="400" width="100%" height="100" fill="#2690BA"/>
   -->
   <use y="400" href="#icons" color="white"/>
+  <!-- Viewboxes used for textboxes (which can't use pseudo elements for the
+       background -->
+  <view id="search-grey" viewBox="100 200 100 100"/>
+  <view id="user-grey" viewBox="1000 200 100 100"/>
+  <view id="lock-grey" viewBox="1100 200 100 100"/>
 </svg>
