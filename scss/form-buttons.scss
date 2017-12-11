@@ -63,7 +63,7 @@ input[type=button], input[type=submit], button, a.button {
     height: 1em;
 
     background-position-y: -3em;
-    background-size: 12em 5em;
+    background-size: 14em 5em;
     background-repeat: no-repeat;
     margin-left: -1.5em;
     margin-top: 0.1em;
@@ -94,25 +94,15 @@ input[type=button], input[type=submit], button, a.button {
   &.-review::before {
     background-position-x: -8em;
   }
+  &.-play::before {
+    background-position-x: -12em;
+  }
+  &.-pause::before {
+    background-position-x: -13em;
+  }
+
   &.-primary::before {
     background-position-y: -4em;
-  }
-}
-
-// Generated icon buttons
-@function pause-button($fill-color) {
-  @return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 0h20v100h-20v-100M60 0h20v100h-20v-100" fill="' + $fill-color + '"/></svg>';
-}
-@function resume-button($fill-color) {
-  @return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0 10l80 40l-80 40v-60" fill="' + $fill-color + '"/></svg>';
-}
-
-input[type=button], input[type=submit], button {
-  &.-icon.-pause {
-    background-image: url(svg-encode(pause-button($highlight)));
-  }
-  &.-icon.-play {
-    background-image: url(svg-encode(resume-button($highlight)));
   }
 }
 

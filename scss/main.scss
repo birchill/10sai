@@ -13,31 +13,6 @@ $dark-grey: #c5c5c5;
 $keyword-yellow: lemonchiffon;
 $keyword-yellow-dark: darken($keyword-yellow, 50%);
 
-// Courtesy of Hugo Giraudel: http://www.sassmeister.com/gist/1b4f2da5527830088e4d
-@function str-replace($string, $search, $replace: '') {
-  $index: str-index($string, $search);
-  @if $index {
-    @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
-  }
-  @return $string;
-}
-
-// Courtesy of Kevin Weber: https://codepen.io/kevinweber/pen/dXWoRw
-$encoding-reference: (
-  ('<','%3C'),
-  ('>','%3E'),
-  ('"','\''),
-  ('#','%23'),
-  ('&','%26')
-);
-
-@function svg-encode($svg) {
-  @each $char, $encoded in $encoding-reference {
-    $svg: str-replace($svg, $char, $encoded);
-  }
-  @return 'data:image/svg+xml,' + $svg;
-}
-
 /*
  * Font settings
  */
