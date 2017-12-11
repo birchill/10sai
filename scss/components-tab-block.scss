@@ -6,6 +6,7 @@
 //     icons.svg -> sync-icons.svg
 //     buttons-icons.svg -> icons.svg
 //   - Drop redundant icons from sync-icons.svg
+//   - Drop text-box style
 .tab-block {
   position: relative;
   display: flex;
@@ -55,7 +56,7 @@
 
       width: 1rem;
       height: 1rem;
-      background-size: 12rem 5rem;
+      background-size: 14rem 5rem;
       background-repeat: no-repeat;
       background-position-y: -1rem;
       background-image: url('img/button-icons.svg');
