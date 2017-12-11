@@ -53,12 +53,13 @@ input[type=button], input[type=submit], button, a.button {
   }
 
   &.-icon {
+    display: flex;
     padding-left: 1em + 1em + 0.5em;
   }
   &.-icon::before {
     content: "";
     display: inline-block;
-    position: absolute;
+    position: relative;
     width: 1em;
     height: 1em;
 
@@ -67,6 +68,7 @@ input[type=button], input[type=submit], button, a.button {
     background-repeat: no-repeat;
     margin-left: -1.5em;
     margin-top: 0.1em;
+    margin-right: 0.5em;
 
     background-image: url('img/icons.svg');
   }
