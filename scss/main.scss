@@ -476,7 +476,7 @@ form[name=sync-server-settings] {
     width: .8rem;
     height: .8rem;
     display: inline-block;
-    background: url("img/sync-icons.svg#cross") 0 / 0.8rem 0.8rem content-box;
+    background: url('img/icons.svg') -900% -200% / (($num-icons * 0.8)+rem) (0.8 * 5)+rem content-box;
   }
 }
 // Hover states
