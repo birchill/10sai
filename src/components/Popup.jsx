@@ -64,16 +64,16 @@ export class Popup extends React.Component {
   }
 
   render() {
-    const overlayClass = `overlay ${this.props.active ? '-active' : ''}`;
-
     // We should use the new fragment syntax here but something in our toolchain
     // doesn't support it yet.
     return (
-      <div className="pop-up">
-        <div className={overlayClass} onClick={this.props.close} />
+      <div className="pop-up" hidden={!this.props.active}>
+        <div
+          className="overlay"
+          onClick={this.props.close}
+          role="presentation" />
         <section
           className="content"
-          aria-hidden={!this.props.active}
           role="dialog"
           ref={this.assignPopup}>
           <Link

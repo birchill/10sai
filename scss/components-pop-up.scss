@@ -1,8 +1,14 @@
 .pop-up {
   position: absolute;
   height: 100%;
-  pointer-events: none;
   z-index: 2;
+
+  &[hidden] {
+    // Override UA display: none style for hidden elements since we use
+    // translation and opacity to hide the different components.
+    display: block;
+    pointer-events: none;
+  }
 
   & > .overlay {
     height: 100%;
@@ -10,13 +16,11 @@
     position: absolute;
     background: rgb(220, 220, 220);
     transition: opacity 0.15s;
-    opacity: 0;
+    opacity: 0.8;
     will-change: opacity;
-
-    &.-active {
-      opacity: 0.8;
-      pointer-events: auto;
-    }
+  }
+  &[hidden] > .overlay {
+    opacity: 0;
   }
 
   // FIXME: Some of this should likely be a separate component
@@ -30,26 +34,18 @@
     box-sizing: border-box;
     width: calc(100vw - 1rem);
     height: auto;
-    /*
-     * Without this max-height, we won't get scrollbars when the screen is too
-     * small to fit the whole panel (e.g. when the onscreen keyboard is in use)
-     */
+    //
+    // Without this max-height, we won't get scrollbars when the screen is too
+    // small to fit the whole panel (e.g. when the onscreen keyboard is in use)
+    //
     max-height: calc(100% - 1rem);
     padding: 1rem;
     box-shadow: 0 0 6px grey;
     overflow: auto;
 
     transform: translate(0%);
-    transition-timing-function: ease;
-
-    // FIXME: Probably should just use actual 'hidden' here
-    &[aria-hidden=true] {
-      transform: translate(0%, -120%);
-      transform: translate(0%, calc(-100% - 80px));
-      transition: transform 0.15s ease-in;
-      will-change: transform;
-      pointer-events: none;
-    }
+    transition: transform 0.15s ease-out;
+    will-change: transform;
 
     & .close-button {
       position: absolute;
@@ -63,5 +59,11 @@
       margin-top: 0;
       font-size: 1.3rem;
     }
+  }
+
+  &[hidden] > .content {
+    transform: translate(0%, -120%);
+    transform: translate(0%, calc(-100% - 80px));
+    transition-timing-function: ease;
   }
 }
