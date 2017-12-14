@@ -8,8 +8,6 @@ export class Navbar extends React.Component {
   static get propTypes() {
     return {
       syncState: PropTypes.symbol.isRequired,
-      settingsActive: PropTypes.bool,
-      currentScreenLink: PropTypes.string,
     };
   }
 
@@ -36,14 +34,6 @@ export class Navbar extends React.Component {
   }
 
   render() {
-    const settingsLink = this.props.settingsActive
-                         ? this.props.currentScreenLink
-                         : '/settings';
-    let settingsClass = 'nav-icon -selectable -settings';
-    if (this.props.settingsActive) {
-      settingsClass += ' -active';
-    }
-
     return (
       <header className="nav-bar">
         <hgroup className="app-title">
@@ -51,8 +41,8 @@ export class Navbar extends React.Component {
           <h2 className="subject">Subject</h2>
         </hgroup>
         { this.renderSyncIcon() }
-        <Link href={settingsLink}>
-          <div id="settings-menu" className={settingsClass} />
+        <Link href="/settings">
+          <div id="settings-menu" className="nav-icon -selectable -settings" />
         </Link>
       </header>
     );

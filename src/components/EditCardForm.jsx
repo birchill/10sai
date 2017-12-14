@@ -9,6 +9,7 @@ export class EditCardForm extends React.Component {
     return {
       active: PropTypes.bool.isRequired,
       editState: PropTypes.symbol.isRequired,
+      // eslint-disable-next-line react/forbid-prop-types
       card: PropTypes.object.isRequired,
       onChange: PropTypes.func,
     };

@@ -16,6 +16,7 @@ export class EditCardScreen extends React.Component {
         active: PropTypes.shape({
           formId: PropTypes.any,
           editState: PropTypes.symbol.isRequired,
+          // eslint-disable-next-line react/forbid-prop-types
           card: PropTypes.object,
           deleted: PropTypes.bool,
         }).isRequired,

@@ -54,6 +54,7 @@ export class SyncSettingsPanel extends React.Component {
                                 username: PropTypes.string,
                                 password: PropTypes.string }),
       lastSyncTime: PropTypes.instanceOf(Date),
+      // eslint-disable-next-line react/forbid-prop-types
       errorDetail: PropTypes.object,
       progress: PropTypes.number,
       editingServer: PropTypes.bool,

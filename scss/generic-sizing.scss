@@ -1,0 +1,23 @@
+body, html {
+  font-family: Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  box-sizing: border-box;
+  font-size: 18px;
+  line-height: 1.4;
+
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 600px) {
+  body, html {
+    font-size: 16px;
+  }
+}
+@media screen and (max-width: 450px) {
+  body, html {
+    font-size: 14px;
+  }
+}

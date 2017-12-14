@@ -1,0 +1,17 @@
+.home-screen {
+  display: flex;
+  flex-direction: column;
+
+  & > .content-screen {
+    flex: 1;
+    overflow: auto;
+
+    // Push down content a little so that the shadow doesn't overlap
+    margin-top: 10px;
+    height: calc(100% - 10px);
+
+    // XXX Not sure if I need this...
+    box-sizing: border-box;
+    padding: 10px;
+  }
+}

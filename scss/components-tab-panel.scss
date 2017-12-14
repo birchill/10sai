@@ -1,0 +1,15 @@
+.tab-page {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  overflow: auto;
+
+  transition: opacity 0.2s;
+
+  &[hidden] {
+    opacity: 0;
+    pointer-events: none;
+    // Revert browser display:none style
+    display: block;
+  }
+}

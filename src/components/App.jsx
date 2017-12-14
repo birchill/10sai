@@ -4,27 +4,24 @@ import { connect } from 'react-redux';
 import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../router';
-import * as routeActions from '../actions/route';
-import CardOverviewScreen from './CardOverviewScreen.jsx';
 import EditCardScreen from './EditCardScreen.jsx';
+import HomeScreen from './HomeScreen.jsx';
 import Link from './Link.jsx';
-import Navbar from './Navbar.jsx';
 import Popup from './Popup.jsx';
-import PopupOverlay from './PopupOverlay.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
 import TabBlock from './TabBlock.jsx';
-
-const ConnectedNavbar =
-  connect(state => ({ syncState: state.sync.state }))(Navbar);
+import TabPanel from './TabPanel.jsx';
 
 class App extends React.Component {
   static get propTypes() {
     return {
+      // eslint-disable-next-line react/forbid-prop-types
       cards: PropTypes.object.isRequired,
       route: PropTypes.shape({
         screen: PropTypes.string,
         popup: PropTypes.string,
+        // eslint-disable-next-line react/forbid-prop-types
         search: PropTypes.object,
         hash: PropTypes.string,
         card: PropTypes.string,
@@ -62,8 +59,6 @@ class App extends React.Component {
   }
 
   render() {
-    const settingsActive = this.props.route.popup === 'settings';
-
     let title = 'Tensai';
     if (this.props.route.popup) {
       const toTitle = str => str[0].toUpperCase() + str.substring(1);
@@ -77,55 +72,66 @@ class App extends React.Component {
 
     return (
       <DocumentTitle title={title}>
-        <div>
-          <ConnectedNavbar
-            settingsActive={settingsActive}
-            currentScreenLink={this.currentScreenLink} />
-          <main>
-            <PopupOverlay
-              active={!!this.props.route.popup}
-              close={this.closePopup}>
-              <CardOverviewScreen />
-              <TabBlock active={activeTab} className="tabbar">
-                <Link
-                  id="lookup-tab"
-                  href="/lookup"
-                  aria-controls="lookup-page"
-                  className="-icon -lookup">
-                  Lookup
-                </Link>
-                <Link
-                  id="edit-tab"
-                  href="/cards/new"
-                  aria-controls="edit-page"
-                  className="-icon -plus">
-                  Add
-                </Link>
-                <Link
-                  id="review-tab"
-                  href="/review"
-                  aria-controls="review-page"
-                  className="-icon -review">
-                  Review
-                </Link>
-              </TabBlock>
-            </PopupOverlay>
-            <Popup
-              active={settingsActive}
-              close={this.closePopup}>
-              <SettingsPanel
-                heading="Sync">
-                <SyncSettingsPanelContainer />
-              </SettingsPanel>
-            </Popup>
-          </main>
-          <EditCardScreen
-            id="edit-page"
-            role="tabpanel"
-            aria-labelledby="edit-tab"
-            aria-hidden={this.props.route.screen !== 'edit-card'}
-            active={this.props.route.screen === 'edit-card'}
-            card={this.props.route.card} />
+        {/*
+          * This wrapper div is simply because DocumentTitle only expects to
+          * have a single child. See:
+          *
+          *   https://github.com/gaearon/react-document-title/issues/48
+          */}
+        <div className="app">
+          <div className="screens">
+            <HomeScreen />
+            <TabPanel
+              id="lookup-page"
+              role="tabpanel"
+              aria-labelledby="lookup-tab"
+              aria-hidden={this.props.route.screen !== 'lookup'} />
+            <TabPanel
+              id="edit-page"
+              role="tabpanel"
+              aria-labelledby="edit-tab"
+              aria-hidden={this.props.route.screen !== 'edit-card'}>
+              <EditCardScreen
+                active={this.props.route.screen === 'edit-card'}
+                card={this.props.route.card} />
+            </TabPanel>
+            <TabPanel
+              id="review-page"
+              role="tabpanel"
+              aria-labelledby="review-tab"
+              aria-hidden={this.props.route.screen !== 'review'} />
+          </div>
+          <TabBlock active={activeTab} className="tabbar">
+            <Link
+              id="lookup-tab"
+              href="/lookup"
+              aria-controls="lookup-page"
+              className="-icon -lookup">
+              Lookup
+            </Link>
+            <Link
+              id="edit-tab"
+              href="/cards/new"
+              aria-controls="edit-page"
+              className="-icon -plus">
+              Add
+            </Link>
+            <Link
+              id="review-tab"
+              href="/review"
+              aria-controls="review-page"
+              className="-icon -review">
+              Review
+            </Link>
+          </TabBlock>
+          <Popup
+            active={this.props.route.popup === 'settings'}
+            currentScreenLink={this.currentScreenLink}>
+            <SettingsPanel
+              heading="Sync">
+              <SyncSettingsPanelContainer />
+            </SettingsPanel>
+          </Popup>
         </div>
       </DocumentTitle>
     );
@@ -139,11 +145,7 @@ const mapStateToProps = state => ({
          ? state.route.history[state.route.index]
          : {}
 });
-const mapDispatchToProps = (dispatch, props) => ({
-  onClosePopup: () => {
-    dispatch(routeActions.followLink(URLFromRoute(props.route), 'backwards'));
-  }
-});
-const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
+
+const ConnectedApp = connect(mapStateToProps)(App);
 
 export default ConnectedApp;

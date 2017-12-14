@@ -1,161 +1,21 @@
-@import "~normalize-css/normalize";
-@import "~draft-js/dist/Draft";
+@import 'settings-colors';
+@import 'settings-sizing';
+@import 'settings-icons';
 
-$highlight: #2690BA;
-$hover-highlight: lighten(#2690BA, 15%);
-$border-width: 0.1rem;
+@import '~normalize-css/normalize';
+@import '~draft-js/dist/Draft';
 
-$text-color: #333;
-$really-light-grey: #f2f2f2;
-$light-grey: #dbdbdb;
-$dark-grey: #c5c5c5;
-
-$keyword-yellow: lemonchiffon;
-$keyword-yellow-dark: darken($keyword-yellow, 50%);
-
-$icon-columns: 14;
-$icon-rows: 5;
-
-/*
- * Font settings
- */
-
-body, html {
-  font-family: Arial, sans-serif;
-  -webkit-text-size-adjust: 100%;
-  box-sizing: border-box;
-  font-size: 18px;
-  line-height: 1.4;
-  color: $text-color;
-}
-
-@media screen and (max-width: 600px) {
-  body, html {
-    font-size: 16px;
-  }
-}
-@media screen and (max-width: 450px) {
-  body, html {
-    font-size: 14px;
-  }
-}
-
-/*
- * Screen layout
- *
- * Based on prototype here: http://codepen.io/anon/pen/EKGjGG
- */
-
-body, html {
-  padding: 0;
-  margin: 0;
-  height: 100%;
-  overflow: hidden;
-}
-#container {
-  height: 100%;
-}
-#container > div {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-}
-main {
-  position: relative;
-  flex: 1;
-}
-main .content-screen {
-  margin-top: 10px;
-  height: calc(100% - 10px);
-  width: 100%;
-  position: absolute;
-  overflow: auto;
-}
-
-/*
- * Popup background
- */
-
-main section, main div.popup-overlay {
-  height: 100%;
-  width: 100%;
-  position: absolute;
-}
-main div.popup-overlay {
-  background: rgb(220, 220, 220);
-  transition: opacity 0.15s;
-  opacity: 0;
-  will-change: opacity;
-  pointer-events: none;
-}
-main div.popup-overlay.active {
-  opacity: 0.8;
-  pointer-events: all;
-}
+@import 'generic-sizing';
+@import 'generic-color';
 
 @import 'Navbar';
 @import 'EditCardScreen';
 @import 'CardFaceInput';
 @import 'components-app';
+@import 'components-home-screen';
+@import 'components-pop-up';
 @import 'components-tab-block';
-
-/*
- * Section pages
- */
-
-body {
-  background: $really-light-grey;
-}
-main section {
-  box-sizing: border-box;
-  padding: 10px;
-  background: $really-light-grey;
-}
-main section {
-  transition: all 0.2s;
-}
-
-/*
- * Popups
- */
-
-main section.popup {
-  background: white;
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
-  margin-top: 0.5rem;
-  width: calc(100vw - 1rem);
-  height: auto;
-  /*
-   * Without this max-height, we won't get scrollbars when the screen is too
-   * small to fit the whole panel (e.g. when the onscreen keyboard is in use)
-   */
-  max-height: calc(100% - 1rem);
-  padding: 1rem;
-  box-shadow: 0 0 6px grey;
-  overflow: auto;
-}
-main section.popup[aria-hidden=true] {
-  transform: translate(0%, -120%);
-  transform: translate(0%, calc(-100% - 80px));
-  transition: transform 0.15s ease-in;
-  will-change: transform;
-}
-main section.popup {
-  transform: translate(0%);
-  transition-timing-function: ease;
-}
-main section.popup .close-button {
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding: 1rem;
-}
-
-main section h3 {
-  margin-top: 0;
-  font-size: 1.3rem;
-}
+@import 'components-tab-panel';
 
 /*
  * Summary panel
