@@ -3,13 +3,19 @@
 /* eslint-disable react/jsx-max-props-per-line */
 
 import React from 'react';
-import { shallow } from 'enzyme';
+import { configure, shallow } from 'enzyme';
 import { assert } from 'chai';
 import sinon from 'sinon';
+import Adapter from 'enzyme-adapter-react-16';
 import SyncState from '../../src/sync-states';
 import SyncSettingsPanel from '../../src/components/SyncSettingsPanel.jsx';
 
+configure({ adapter: new Adapter() });
 sinon.assert.expose(assert, { prefix: '' });
+
+global.document = {
+  addEventListener: () => {},
+};
 
 describe('<SyncSettingsPanel />', () => {
   const stub = sinon.stub();
