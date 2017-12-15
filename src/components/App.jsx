@@ -85,12 +85,12 @@ class App extends React.Component {
               id="lookup-page"
               role="tabpanel"
               aria-labelledby="lookup-tab"
-              aria-hidden={this.props.route.screen !== 'lookup'} />
+              hidden={this.props.route.screen !== 'lookup'} />
             <TabPanel
               id="edit-page"
               role="tabpanel"
               aria-labelledby="edit-tab"
-              aria-hidden={this.props.route.screen !== 'edit-card'}>
+              hidden={this.props.route.screen !== 'edit-card'}>
               <EditCardScreen
                 active={this.props.route.screen === 'edit-card'}
                 card={this.props.route.card} />
@@ -99,7 +99,7 @@ class App extends React.Component {
               id="review-page"
               role="tabpanel"
               aria-labelledby="review-tab"
-              aria-hidden={this.props.route.screen !== 'review'} />
+              hidden={this.props.route.screen !== 'review'} />
           </div>
           <TabBlock active={activeTab} className="tabbar -white">
             <Link

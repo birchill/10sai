@@ -1,8 +1,9 @@
-.tab-page {
+.tab-panel {
   position: absolute;
   top: 0;
   width: 100%;
   overflow: auto;
+  z-index: 10;
 
   transition: opacity 0.2s;
 
