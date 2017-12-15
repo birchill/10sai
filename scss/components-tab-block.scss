@@ -13,6 +13,11 @@
   padding: 0;
   margin: 0;
 
+  &.-white {
+    background: white;
+    border: $really-light-grey solid $border-width;
+  }
+
   & > .highlight-bar {
     position: absolute;
     left: 0;

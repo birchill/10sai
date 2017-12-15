@@ -101,7 +101,7 @@ class App extends React.Component {
               aria-labelledby="review-tab"
               aria-hidden={this.props.route.screen !== 'review'} />
           </div>
-          <TabBlock active={activeTab} className="tabbar">
+          <TabBlock active={activeTab} className="tabbar -white">
             <Link
               id="lookup-tab"
               href="/lookup"
