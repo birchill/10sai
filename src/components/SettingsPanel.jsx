@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 function SettingsPanel(props) {
   return (
     <div className="settings-panel">
-      <h3>{props.heading}</h3>
+      <h3 className="heading">{props.heading}</h3>
       {props.children}
     </div>
   );

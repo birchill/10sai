@@ -14,6 +14,8 @@
 @import 'components-app';
 @import 'components-home-screen';
 @import 'components-pop-up';
+@import 'components-popup-panel';
+@import 'components-settings-panel';
 @import 'components-tab-block';
 @import 'components-tab-panel';
 
@@ -165,25 +167,6 @@ fieldset {
 .cancelable-textbox-group input[type="text"]::-ms-clear,
 .cancelable-textbox-group input[type="search"]::-ms-clear {
   display: none;
-}
-
-/*
- * Generic settings panel
- */
-.settings-panel {
-  display: flex;
-  flex-direction: column;
-  /*
-   * We do this just to make sure the panel doesn't keep resizing when the
-   * contents change. We could just to 'height: 100%' but there's too much
-   * empty space on desktop computers in that case. 31rem happens to fit most
-   * of the content we currently stick in these panels (and fit in a 320x480
-   * screen).
-   */
-  min-height: 31rem;
-}
-.settings-panel > :not(h3) {
-  flex: 1;
 }
 
 /*

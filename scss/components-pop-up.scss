@@ -27,7 +27,6 @@
   & > .content {
     pointer-events: auto;
 
-    background: white;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
     margin-top: 0.5rem;
@@ -39,26 +38,13 @@
     // small to fit the whole panel (e.g. when the onscreen keyboard is in use)
     //
     max-height: calc(100% - 1rem);
-    padding: 1rem;
-    box-shadow: 0 0 6px grey;
     overflow: auto;
+
+    box-shadow: 0 0 6px grey;
 
     transform: translate(0%);
     transition: transform 0.15s ease-out;
     will-change: transform;
-
-    & .close-button {
-      position: absolute;
-      right: 0;
-      top: 0;
-      padding: 1rem;
-    }
-
-    // FIXME: Probably should use a class here
-    & h3 {
-      margin-top: 0;
-      font-size: 1.3rem;
-    }
   }
 
   &[hidden] > .content {

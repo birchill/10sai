@@ -73,12 +73,12 @@ export class Popup extends React.Component {
           onClick={this.props.close}
           role="presentation" />
         <section
-          className="content"
+          className="content popup-panel"
           role="dialog"
           ref={this.assignPopup}>
           <Link
             href={this.props.currentScreenLink}
-            className="close-button"
+            className="close close-button"
             direction="backwards">Close</Link>
           {this.props.children}
         </section>
