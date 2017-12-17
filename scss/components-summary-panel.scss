@@ -1,0 +1,43 @@
+.summary-panel {
+  background: $really-light-grey;
+  border-radius: .4rem;
+  padding: 2rem .5rem;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+
+  .icon {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 5rem;
+    width: 5rem;
+  }
+  .heading {
+    font-size: 1.2rem;
+    margin: 0.5rem 0 1rem;
+  }
+  .subheading {
+    margin: 0.5rem auto;
+  }
+  .action {
+    display: inline-flex;
+    margin-top: 1.5rem;
+  }
+}
+.summary-panel p + ul {
+  margin-top: -0.5em;
+}
+.summary-panel ul {
+  text-align: left;
+  display: inline-block;
+}
+.summary-panel fieldset {
+  text-align: left;
+}
+/* Vertically align content */
+.summary-panel {
+}

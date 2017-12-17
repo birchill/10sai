@@ -243,7 +243,7 @@ export class SyncSettingsPanel extends React.Component {
           <div className="icon sync-icon" />
         </div>
         <div className="sync-details">
-          <h4 className="summary">{summary}</h4>
+          <h4 className="heading summary">{summary}</h4>
           { body }
         </div>
       </div>

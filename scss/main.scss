@@ -27,54 +27,10 @@
 @import 'components-popup-panel';
 @import 'components-settings-panel';
 @import 'components-stacked-group';
+@import 'components-summary-panel';
 @import 'components-tab-block';
 @import 'components-tab-panel';
 @import 'components-textbox';
-
-/*
- * Summary panel
- */
-
-.summary-panel {
-  background: #f8f8f8;
-  border-radius: .4rem;
-  padding: 2rem .5rem;
-  text-align: center;
-}
-.summary-panel h4 {
-  font-size: 1.2rem;
-  margin: 0.5rem 0 1rem;
-}
-.summary-panel p,
-.summary-panel ul {
-  color: #888;
-}
-.summary-panel .action {
-  margin-top: 1.5rem;
-}
-.summary-panel p + ul {
-  margin-top: -0.5em;
-}
-.summary-panel ul {
-  text-align: left;
-  display: inline-block;
-}
-.summary-panel .icon {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  height: 5rem;
-  width: 5rem;
-}
-.summary-panel fieldset {
-  text-align: left;
-}
-/* Vertically align content */
-.summary-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
 
 //
 // Forms
