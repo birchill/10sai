@@ -1,11 +1,10 @@
 // TODO:
 // - Use button-icons.svg in other styles
-//   - Drop redundant icons from sync-icons.svg
 //   - Drop text-box style
 .tab-block {
   position: relative;
   display: flex;
-  align-items: start;
+  align-items: stretch;
   flex-wrap: wrap;
 
   // Reset list styles
@@ -33,82 +32,37 @@
 .tab-item {
   flex: 1;
   text-align: center;
+  min-height: 45px;
 
-  & > a {
-    position: relative;
-    display: block;
-    // The 1.2rem horizontal padding is so that if the text wraps the icon still
-    // fits inside the bounds.
-    padding: .5rem 1.2rem;
-    border-top: $border-width * 2 solid transparent;
+  border-top: $border-width * 2 solid transparent;
+  color: $text-color;
 
-    text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  & > * {
+    height: 100%;
+  }
+
+  // Unselected links should be colored dark
+  &:not(.-active) > a {
     color: $text-color;
-    transition: color 0.15s, border-top-color 0.3s;
-    &:hover,
-    &:focus {
-      border-color: $dark-grey;
-    }
-
     &.-icon::before {
-      content: "";
-      display: inline-block;
-      position: absolute;
-
-      width: 1rem;
-      height: 1rem;
-      background-size: $icon-columns+rem $icon-rows+rem;
-      background-repeat: no-repeat;
       background-position-y: -1rem;
-      background-image: url('img/icons.svg');
-
-      margin-top: 0.1rem;
-      margin-left: -1.5rem;
-    }
-    &.-search::before {
-      background-position-x: -1rem;
-    }
-    &.-lookup::before {
-      background-position-x: -7rem;
-    }
-    &.-review::before {
-      background-position-x: -8rem;
     }
   }
-  &.active > a {
-    color: $highlight;
-    &:hover,
-    &:focus {
-      filter: brightness(1.2);
-    }
 
-    &.-icon::before {
-      background-position-y: -3rem;
-    }
+  &:hover,
+  &:focus-within {
+    border-color: $dark-grey;
+  }
+  &.-active {
+    color: $highlight;
   }
   // Make the highlight bar also go brighter
-  &.active:hover ~ .highlight-bar,
-  &.active:focus-within ~ .highlight-bar {
+  &.-active:hover ~ .highlight-bar,
+  &.-active:focus-within ~ .highlight-bar {
     filter: brightness(1.2);
-  }
-  & > a.-badge[data-badge]::after {
-    // This is fairly similar to spectre.css but with a few tweaks to
-    // positioning, sizing etc.
-    position: absolute;
-    margin-left: .2rem;
-    margin-top: -.3rem;
-
-    font-size: .7rem;
-    height: .9rem;
-    min-width: .7rem;
-    padding: .1rem .2rem;
-    text-align: center;
-    whitespace: nowrap;
-
-    background: $highlight;
-    border-radius: .5rem;
-    color: white;
-    content: attr(data-badge);
-    display: inline-block;
   }
 }

@@ -13,7 +13,7 @@ export class TabBlock extends React.Component {
   static renderChild(child, isActive) {
     let className = 'tab-item';
     if (isActive) {
-      className += ' active';
+      className += ' -active';
     }
     return (
       <li className={className} role="presentation">

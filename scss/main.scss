@@ -7,11 +7,17 @@
 
 @import 'generic-sizing';
 @import 'generic-color';
+@import 'generic-forms';
+
+@import 'elements-links';
+@import 'elements-textbox';
+@import 'elements-buttons';
 
 @import 'Navbar';
 @import 'EditCardScreen';
 @import 'CardFaceInput';
 @import 'components-app';
+@import 'components-buttons';
 @import 'components-home-screen';
 @import 'components-pop-up';
 @import 'components-popup-panel';
@@ -84,9 +90,7 @@
 // Forms
 //
 
-@import 'form-base';
 @import 'form-textbox';
-@import 'form-buttons';
 
 @import 'components-stacked-group';
 
