@@ -62,7 +62,7 @@ export class EditCardForm extends React.Component {
           <input
             type="search"
             placeholder="Lookup"
-            className="text-box -compact -rounded -icon -search"
+            className="-compact -rounded -icon -search"
             ref={this.assignSearchBox} />
         </div>
         <CardFaceInput

@@ -8,7 +8,6 @@ import TabBlock from './components/TabBlock.jsx';
 
 ReactDOM.render(
   <CancelableTextbox
-    className="text-box"
     value="CancelableTextbox"
     onChange={() => {
       console.log('CancelableTextbox: onChange');
