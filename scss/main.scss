@@ -18,6 +18,7 @@
 @import 'CardFaceInput';
 @import 'components-app';
 @import 'components-buttons';
+@import 'components-close-button';
 @import 'components-home-screen';
 @import 'components-pop-up';
 @import 'components-popup-panel';
@@ -68,22 +69,6 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-//
-// Close button
-//
-
-.close-button {
-  font-size: 0;
-}
-.close-button::before {
-  content: "";
-  width: 1.2rem;
-  height: 1.2rem;
-  display: inline-block;
-  background: url('img/icons.svg') -900% -200% / (($icon-columns * 1.2)+rem)
-    ($icon-rows * 1.2)+rem content-box;
 }
 
 //
