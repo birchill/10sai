@@ -12,6 +12,7 @@
 @import 'elements-links';
 @import 'elements-textbox';
 @import 'elements-buttons';
+@import 'elements-forms';
 
 @import 'components-app';
 @import 'components-buttons';
@@ -31,38 +32,6 @@
 @import 'components-tab-block';
 @import 'components-tab-panel';
 @import 'components-textbox';
-
-//
-// Forms
-//
-
-.input-group {
-  display: inline-block;
-}
-.input-group .form-input:first-child:not(:last-child),
-.input-group .input-group-btn:first-child:not(:last-child) {
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
-  border-right: none;
-}
-.input-group .form-input:not(:first-child):not(:last-child),
-.input-group .input-group-btn:not(:first-child):not(:last-child) {
-  border-radius: 0;
-  margin-left: -.2rem;
-}
-.input-group .form-input:last-child:not(:first-child),
-.input-group .input-group-btn:last-child:not(:first-child) {
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
-  margin-left: -.2rem;
-}
-fieldset {
-  border: 1px solid #bbb;
-  border-radius: 0.5rem;
-  margin: 0 2px;
-  margin-top: 1rem;
-  padding: 1.2rem 1.8rem;
-}
 
 /*
  * Error panel

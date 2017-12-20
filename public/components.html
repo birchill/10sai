@@ -86,26 +86,30 @@
 
     <h3>Summary panel</h3>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
-      <div class="icon -sync -notconfigured"></div>
+    <div class="summary-panel -sync -notconfigured"
+      style="width: 600px; border: 1px dotted black">
+      <div class="icon"></div>
       <h4 class="heading">Sync is not configured</h4>
       <div class="subheading">
         Adding a sync server lets you access your cards from another computer,
         phone, or tablet.
       </div>
-      <div><button class="action -primary">Add a sync server</button></div>
+      <div class="details">
+        <button class="-primary -center">Add a sync server</button>
+      </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
-      <div class="icon -sync -uptodate"></div>
+    <div class="summary-panel -sync -uptodate"
+      style="width: 600px; border: 1px dotted black">
+      <div class="icon"></div>
       <h4 class="heading">Sync is up to date</h4>
-      <div><button class="action -primary -icon -pause">Pause</button></div>
-      <div class="form existing-server">
+      <div class="details">
+        <button class="-primary -icon -pause -center">Pause</button>
         <fieldset name="sync-server">
           <legend>Sync server</legend>
           <div class="server-summary">
             <div class="server-name">http://server.server.server/path</div>
-            <div className="server-sync-time">
+            <div class="server-sync-time">
               Last synced 12/17/2017, 7:55:43 PM
             </div>
           </div>
@@ -114,33 +118,130 @@
       </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
-      <div class="icon -sync -inprogress"></div>
+    <div class="summary-panel -sync -inprogress"
+      style="width: 600px; border: 1px dotted black">
+      <div class="icon"></div>
       <h4 class="heading">Sync in progress</h4>
-      <div>
+      <div class="details">
         <progress></progress>
-        <button class="action -primary">Cancel</button>
+        <button class="-primary -center">Cancel</button>
       </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
-      <div class="icon -sync -paused"></div>
+    <div class="summary-panel -sync -paused"
+      style="width: 600px; border: 1px dotted black">
+      <div class="icon"></div>
       <h4 class="heading">Sync is paused</h4>
+      <div class="details">
+        <button class="-primary -icon -play -center">Resume</button>
+        <fieldset name="sync-server">
+          <legend>Sync server</legend>
+          <div class="server-summary">
+            <div class="server-name">https://server.server/server</div>
+              <div class="server-sync-time">
+                Last synced just now
+              </div>
+          </div>
+          <button name="edit-server">Change</button>
+        </fieldset>
+      </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
-      <div class="icon -sync -offline"></div>
+    <div class="summary-panel -sync -offline"
+      style="width: 600px; border: 1px dotted black">
+      <div class="icon"></div>
       <h4 class="heading">Sync offline</h4>
+      <div class="details">
+        <button class="-primary -icon -pause -center">Pause</button>
+        <fieldset name="sync-server">
+          <legend>Sync server</legend>
+          <div class="server-summary">
+            <div class="server-name">http://server.server.server/path</div>
+            <div class="server-sync-time">
+              Last synced 12/17/2017, 7:55:43 PM
+            </div>
+          </div>
+          <button name="edit-server">Change</button>
+        </fieldset>
+      </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
-      <div class="icon -sync -error"></div>
+    <div class="summary-panel -sync -error"
+      style="width: 800px; border: 1px dotted black">
+      <div class="icon"></div>
       <h4 class="heading">Sync had a problem</h4>
+      <div class="details">
+        <div class="error-panel">
+          <div class="error-details">
+            <p>
+              Network error. Some possible causes might be:
+            </p>
+            <ul>
+              <li>The server name was misspelled</li>
+              <li>The server has not been set up to <a
+                href="https://github.com/pouchdb/add-cors-to-couchdb"
+                target="_blank"
+                rel="noopener noreferrer">support
+                cross-origin access</a></li>
+              <li>The server is temporarily offline</li>
+            </ul>
+          </div>
+          <button class="-primary -center" name="retry">Retry</button>
+        </div>
+        <fieldset name="sync-server">
+          <legend>Sync server</legend>
+          <div class="server-summary">
+            <div class="server-name">https://server.server/server</div>
+              <div class="server-sync-time">
+                Last synced just now
+              </div>
+          </div>
+          <button name="edit-server">Change</button>
+        </fieldset>
+      </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
-      <div class="icon -sync -notconfigured"></div>
+    <div class="summary-panel -sync -notconfigured"
+      style="width: 600px; border: 1px dotted black">
+      <div class="icon"></div>
       <h4 class="heading">Configure sync server</h4>
+      <div class="details">
+        <form name="sync-server-settings">
+          <input
+            name="server"
+            type="text"
+            placeholder="Server name"
+            class="form-input"
+            size="40"
+            value="http://server.server/server">
+          <div class="stacked-group">
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              class="-icon -user"
+              size="40"
+              value="Username">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              class="-icon -lock"
+              size="40"
+              value="Password">
+          </div>
+          <input
+            type="button"
+            name="submit"
+            value="Ok"
+            class="-primary">
+          <input
+            type="button"
+            name="cancel"
+            value="Cancel"
+            class="-link">
+        </form>
+      </div>
     </div>
 
     <script src="/tensai-components.js"></script>

@@ -2,42 +2,65 @@
   background: $really-light-grey;
   border-radius: .4rem;
   padding: 2rem .5rem;
-  text-align: center;
 
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-content: center;
 
-  .icon {
-    display: block;
+  $icon-size: 5rem;
+
+  & > * {
     margin-left: auto;
     margin-right: auto;
-    height: 5rem;
-    width: 5rem;
   }
-  .heading {
+  & > .icon {
+    display: block;
+    height: $icon-size;
+    width: $icon-size;
+  }
+  & > .heading {
+    text-align: center;
     font-size: 1.2rem;
-    margin: 0.5rem 0 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0rem; // Reset UA styles
   }
-  .subheading {
-    margin: 0.5rem auto;
+  & > .subheading {
+    text-align: center;
+    margin-top: 1rem;
   }
-  .action {
-    display: inline-flex;
+  & > .details {
     margin-top: 1.5rem;
   }
-}
-.summary-panel p + ul {
-  margin-top: -0.5em;
-}
-.summary-panel ul {
-  text-align: left;
-  display: inline-block;
-}
-.summary-panel fieldset {
-  text-align: left;
-}
-/* Vertically align content */
-.summary-panel {
+
+  &.-sync > .details > * {
+    margin-top: 0.5rem;
+  }
+  &.-sync > .details > progress {
+    margin-bottom: 1rem;
+  }
+  &.-sync > .icon {
+    background-image: url('img/sync-icons.svg');
+    background-size: ($num-sync-icons * $icon-size) $icon-size;
+    background-repeat: no-repeat;
+  }
+  &.-sync.-notconfigured > .icon {
+    background-position-x: -(7 * $icon-size);
+  }
+  &.-sync.-uptodate > .icon,
+  &.-sync.-inprogress > .icon {
+    background-position-x: -(8 * $icon-size);
+  }
+  &.-sync.-inprogress > .icon {
+    animation: rotate 1s linear infinite;
+  }
+  &.-sync.-paused > .icon {
+    background-position-x: -(9 * $icon-size);
+  }
+  &.-sync.-offline > .icon {
+    background-position-x: -(10 * $icon-size);
+  }
+  &.-sync.-error > .icon {
+    background-position-x: -(11 * $icon-size);
+  }
 }
