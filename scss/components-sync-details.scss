@@ -1,0 +1,12 @@
+.sync-details {
+  & > * {
+    margin-top: 0.5rem;
+  }
+
+  & > .progress {
+    margin: 1rem auto;
+  }
+  & > .server {
+    margin-top: 1.5rem;
+  }
+}

@@ -18,6 +18,32 @@
     display: block;
     height: $icon-size;
     width: $icon-size;
+
+    // Sync-themed icons
+    &.-sync {
+      background-image: url('img/sync-icons.svg');
+      background-size: ($num-sync-icons * $icon-size) $icon-size;
+      background-repeat: no-repeat;
+    }
+    &.-sync.-notconfigured {
+      background-position-x: -(7 * $icon-size);
+    }
+    &.-sync.-uptodate,
+    &.-sync.-inprogress {
+      background-position-x: -(8 * $icon-size);
+    }
+    &.-sync.-inprogress {
+      animation: rotate 1s linear infinite;
+    }
+    &.-sync.-paused {
+      background-position-x: -(9 * $icon-size);
+    }
+    &.-sync.-offline {
+      background-position-x: -(10 * $icon-size);
+    }
+    &.-sync.-error {
+      background-position-x: -(11 * $icon-size);
+    }
   }
   & > .heading {
     text-align: center;
@@ -31,36 +57,5 @@
   }
   & > .details {
     margin-top: 1.5rem;
-  }
-
-  &.-sync > .details > * {
-    margin-top: 0.5rem;
-  }
-  &.-sync > .details > progress {
-    margin-bottom: 1rem;
-  }
-  &.-sync > .icon {
-    background-image: url('img/sync-icons.svg');
-    background-size: ($num-sync-icons * $icon-size) $icon-size;
-    background-repeat: no-repeat;
-  }
-  &.-sync.-notconfigured > .icon {
-    background-position-x: -(7 * $icon-size);
-  }
-  &.-sync.-uptodate > .icon,
-  &.-sync.-inprogress > .icon {
-    background-position-x: -(8 * $icon-size);
-  }
-  &.-sync.-inprogress > .icon {
-    animation: rotate 1s linear infinite;
-  }
-  &.-sync.-paused > .icon {
-    background-position-x: -(9 * $icon-size);
-  }
-  &.-sync.-offline > .icon {
-    background-position-x: -(10 * $icon-size);
-  }
-  &.-sync.-error > .icon {
-    background-position-x: -(11 * $icon-size);
   }
 }

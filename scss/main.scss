@@ -29,6 +29,7 @@
 @import 'components-settings-panel';
 @import 'components-stacked-group';
 @import 'components-summary-panel';
+@import 'components-sync-details';
 @import 'components-tab-block';
 @import 'components-tab-panel';
 @import 'components-textbox';
@@ -52,28 +53,6 @@
 /*
  * Sync settings panel
  */
-.sync-settings .sync-icon {
-  background: url('img/sync-icons.svg#sync-full') 0% / 100% 100% content-box;
-}
-.sync-settings.in-progress .sync-icon {
-  animation: rotate 1s linear infinite;
-}
-.sync-settings.paused .sync-icon {
-  background-image: url('img/sync-icons.svg#sync-pause');
-}
-.sync-settings.offline .sync-icon {
-  background-image: url('img/sync-icons.svg#sync-offline');
-}
-.sync-settings.error .sync-icon {
-  background-image: url('img/sync-icons.svg#sync-error');
-}
-.sync-settings.not-configured .sync-icon {
-  background-image: url('img/sync-icons.svg#sync-hollow');
-}
-.sync-settings.in-progress progress {
-  margin-top: 1rem;
-  margin-bottom: 1.2rem;
-}
 fieldset[name=sync-server] {
   display: inline-flex;
   justify-content: center;
