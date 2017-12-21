@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 
 import SortOfRelativeDate from './SortOfRelativeDate.jsx';
 
-function ExistingServerBox(props) {
+function ServerStatus(props) {
   return (
-    <fieldset name="sync-server">
+    <fieldset className="server-status" name="server-status">
       <legend>Sync server</legend>
       <div className="server-summary">
         <div className="server-name">{props.server}</div>
@@ -21,10 +21,10 @@ function ExistingServerBox(props) {
     </fieldset>);
 }
 
-ExistingServerBox.propTypes = {
+ServerStatus.propTypes = {
   server: PropTypes.string.isRequired,
   lastSyncTime: PropTypes.instanceOf(Date),
   onEdit: PropTypes.func.isRequired,
 };
 
-export default ExistingServerBox;
+export default ServerStatus;

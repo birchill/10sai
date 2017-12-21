@@ -22,6 +22,7 @@
 @import 'components-edit-screen';
 @import 'components-editcard-form';
 @import 'components-editcard-toolbar';
+@import 'components-server-status';
 @import 'components-home-screen';
 @import 'components-nav-bar';
 @import 'components-pop-up';
@@ -53,26 +54,6 @@
 /*
  * Sync settings panel
  */
-fieldset[name=sync-server] {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 0 0.5rem 1rem;
-  & > * {
-    margin: 0.5rem;
-  }
-  & .server-summary {
-    flex: 1;
-  }
-  & .server-name {
-    font-weight: bold;
-    white-space: nowrap;
-  }
-  & button {
-    flex: 0;
-  }
-}
 form[name=sync-server-settings] {
   display: inline-block;
   text-align: center;

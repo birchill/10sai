@@ -103,15 +103,15 @@
       <h4 class="heading">Sync is up to date</h4>
       <div class="details sync-details">
         <button class="-primary -icon -pause -center">Pause</button>
-        <fieldset class="server sync-server" name="sync-server">
+        <fieldset class="server server-status" name="server-status">
           <legend>Sync server</legend>
-          <div class="server-summary">
-            <div class="server-name">http://server.server.server/path</div>
-            <div class="server-sync-time">
+          <div class="summary">
+            <div class="name">http://server.server.server/path</div>
+            <div class="sync-time">
               Last synced 12/17/2017, 7:55:43 PM
             </div>
           </div>
-          <button name="edit-server">Change</button>
+          <button class="button" name="edit-server">Change</button>
         </fieldset>
       </div>
     </div>
@@ -130,15 +130,15 @@
       <h4 class="heading">Sync is paused</h4>
       <div class="details sync-details">
         <button class="-primary -icon -play -center">Resume</button>
-        <fieldset class="server sync-server" name="sync-server">
+        <fieldset class="server server-status" name="server-status">
           <legend>Sync server</legend>
-          <div class="server-summary">
-            <div class="server-name">https://server.server/server</div>
-              <div class="server-sync-time">
-                Last synced just now
-              </div>
+          <div class="summary">
+            <div class="name">http://server.server.server/path</div>
+            <div class="sync-time">
+              Last synced 12/17/2017, 7:55:43 PM
+            </div>
           </div>
-          <button name="edit-server">Change</button>
+          <button class="button" name="edit-server">Change</button>
         </fieldset>
       </div>
     </div>
@@ -148,15 +148,15 @@
       <h4 class="heading">Sync offline</h4>
       <div class="details sync-details">
         <button class="-primary -icon -pause -center">Pause</button>
-        <fieldset class="server sync-server" name="sync-server">
+        <fieldset class="server server-status" name="server-status">
           <legend>Sync server</legend>
-          <div class="server-summary">
-            <div class="server-name">http://server.server.server/path</div>
-            <div class="server-sync-time">
+          <div class="summary">
+            <div class="name">http://server.server.server/path</div>
+            <div class="sync-time">
               Last synced 12/17/2017, 7:55:43 PM
             </div>
           </div>
-          <button name="edit-server">Change</button>
+          <button class="button" name="edit-server">Change</button>
         </fieldset>
       </div>
     </div>
@@ -182,15 +182,15 @@
           </div>
           <button class="-primary -center" name="retry">Retry</button>
         </div>
-        <fieldset class="server sync-server" name="sync-server">
+        <fieldset class="server server-status" name="server-status">
           <legend>Sync server</legend>
-          <div class="server-summary">
-            <div class="server-name">https://server.server/server</div>
-              <div class="server-sync-time">
-                Last synced just now
-              </div>
+          <div class="summary">
+            <div class="name">http://server.server.server/path</div>
+            <div class="sync-time">
+              Last synced 12/17/2017, 7:55:43 PM
+            </div>
           </div>
-          <button name="edit-server">Change</button>
+          <button class="button" name="edit-server">Change</button>
         </fieldset>
       </div>
     </div>
@@ -204,7 +204,7 @@
             name="server"
             type="text"
             placeholder="Server name"
-            class="form-input"
+            class="server"
             size="40"
             value="http://server.server/server">
           <div class="stacked-group">

@@ -5,7 +5,7 @@ import SyncState from '../sync-states';
 import SyncStatusMessages from '../sync-status-messages';
 
 import SyncServerForm from './SyncServerForm.jsx';
-import ExistingServerBox from './ExistingServerBox.jsx';
+import ServerStatus from './ServerStatus.jsx';
 
 function translateError(error) {
   if (typeof error === 'undefined') {
@@ -139,7 +139,7 @@ export class SyncSettingsPanel extends React.Component {
   renderServerInputBox() {
     const server = this.props.server ? this.props.server.name : '';
     return (
-      <ExistingServerBox
+      <ServerStatus
         server={server}
         lastSyncTime={this.props.lastSyncTime}
         onEdit={this.handleEditServer} />);
