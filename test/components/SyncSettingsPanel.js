@@ -52,7 +52,7 @@ describe('<SyncSettingsPanel />', () => {
     for (const state of [ 'OK', 'PAUSED', 'ERROR', 'OFFLINE' ]) {
       subject.setProps({ syncState: SyncState[state] });
       assert.instanceOf(
-        subject.find('ExistingServerBox').prop('lastSyncTime'), Date,
+        subject.find('ServerStatus').prop('lastSyncTime'), Date,
         `Last updated information is filled-in in the ${state} state`);
     }
   });
