@@ -23,6 +23,7 @@
 @import 'components-editcard-form';
 @import 'components-editcard-toolbar';
 @import 'components-server-status';
+@import 'components-server-settings';
 @import 'components-home-screen';
 @import 'components-nav-bar';
 @import 'components-pop-up';
@@ -49,38 +50,6 @@
   margin-bottom: 1.2rem;
   margin-left: 1rem;
   margin-right: 1rem;
-}
-
-/*
- * Sync settings panel
- */
-form[name=sync-server-settings] {
-  display: inline-block;
-  text-align: center;
-  position: relative;
-  max-width: 100%;
-  & > * {
-    display: block;
-    margin-top: 0.4rem;
-  }
-  & > *, & input {
-    margin-left: 0;
-    margin-right: 0;
-    width: 25rem;
-    max-width: 100%;
-  }
-  & input.primary {
-    margin-top: 0.8rem;
-  }
-  input[name=username],
-  input[name=password] {
-    background-position: 0.9rem;
-    /* We want to use 'background-size: auto 45%' here but Chrome seems to
-     * have trouble with 'auto' values. */
-    background-size: 1.3rem 1.3rem;
-    background-repeat: no-repeat;
-    padding-left: 2.8rem;
-  }
 }
 
 /*

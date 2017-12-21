@@ -1,0 +1,15 @@
+.server-settings {
+  & > * {
+    display: block;
+    margin-top: 0.4rem;
+  }
+
+  input {
+    width: 25rem;
+    max-width: 100%;
+  }
+
+  & > .submit {
+    margin-top: 0.8rem;
+  }
+}
