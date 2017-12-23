@@ -65,9 +65,14 @@ class App extends React.Component {
       title += ` - ${toTitle(this.props.route.popup)}`;
     }
 
-    let activeTab;
-    if (this.props.route.screen === 'edit-card') {
-      activeTab = 1;
+    const screens = [
+      'lookup',
+      'edit-card',
+      'review',
+    ];
+    let activeTab = screens.indexOf(this.props.route.screen);
+    if (activeTab === -1) {
+      activeTab = undefined;
     }
 
     return (
