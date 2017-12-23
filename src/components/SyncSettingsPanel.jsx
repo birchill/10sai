@@ -198,21 +198,13 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   renderNotConfigured() {
-    // Really want to use <> here but eslint... I really can't wait to be rid of
-    // eslint.
     return (
-      <div>
-        <p>
-          Adding a sync server lets you access your cards from another computer,
-          phone, or tablet.
-        </p>
-        <button
-          name="edit-server"
-          className="-primary"
-          onClick={this.handleEditServer}>
-          Add a sync server
-        </button>
-      </div>
+      <button
+        name="edit-server"
+        className="-primary"
+        onClick={this.handleEditServer}>
+        Add a sync server
+      </button>
     );
   }
 
@@ -271,11 +263,22 @@ export class SyncSettingsPanel extends React.Component {
       body = renderFns[this.props.syncState].call(this);
     }
 
+    let subheading;
+    if (this.props.syncState === SyncState.NOT_CONFIGURED) {
+      subheading = (
+        <div className="subheading">
+          Adding a sync server lets you access your cards from another computer,
+          phone, or tablet.
+        </div>
+      );
+    }
+
     return (
       <div className="summary-panel">
         <div className={`icon -sync ${iconClass}`} />
         <h4 className="heading">{summary}</h4>
-        <div className="details">{body}</div>
+        {subheading}
+        <div className="details sync-details">{body}</div>
       </div>
     );
   }
