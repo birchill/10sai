@@ -174,27 +174,30 @@ export class SyncSettingsPanel extends React.Component {
 
   renderInProgress() {
     return (
-      <div>
-        <progress value={this.props.progress} />
-        <div>
-          <button name="cancel-sync" onClick={this.handlePause}>
-            Cancel
-          </button>
-        </div>
-      </div>
+      <React.Fragment>
+        <progress
+          className="progress"
+          value={this.props.progress} />
+        <button
+          className="-primary -center"
+          name="cancel-sync"
+          onClick={this.handlePause}>
+          Cancel
+        </button>
+      </React.Fragment>
     );
   }
 
   renderPaused() {
     return (
-      <div>
-        <div>
-          <button className="-icon -play" onClick={this.handleResume}>
-            Resume
-          </button>
-        </div>
+      <React.Fragment>
+        <button
+          className="-primary -center -icon -play"
+          onClick={this.handleResume}>
+          Resume
+        </button>
         {this.renderServerInputBox()}
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -211,17 +214,20 @@ export class SyncSettingsPanel extends React.Component {
 
   renderError() {
     return (
-      <div>
+      <React.Fragment>
         <div className="error-panel">
           <div className="error-details">
             {translateError(this.props.errorDetail)}
           </div>
-          <button name="retry" onClick={this.handleRetry}>
+          <button
+            className="-primary -center"
+            name="retry"
+            onClick={this.handleRetry}>
             Retry
           </button>
         </div>
         {this.renderServerInputBox()}
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -246,6 +252,7 @@ export class SyncSettingsPanel extends React.Component {
     if (this.props.editingServer) {
       body = (
         <SyncServerForm
+          className="form"
           server={this.props.server ? this.props.server.name : ''}
           username={this.props.server ? this.props.server.username : ''}
           password={this.props.server ? this.props.server.password : ''}

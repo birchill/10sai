@@ -126,7 +126,8 @@
       style="width: 600px; border: 1px dotted black">
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
+    <div class="summary-panel"
+      style="width: 600px; border: 1px dotted black; box-sizing: border-box">
       <div class="icon -sync -inprogress"></div>
       <h4 class="heading">Sync in progress</h4>
       <div class="details sync-details">
@@ -135,7 +136,12 @@
       </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
+    <div id=sync-inprogress-container
+      style="width: 600px; border: 1px dotted black">
+    </div>
+
+    <div class="summary-panel"
+      style="width: 600px; border: 1px dotted black; box-sizing: border-box">
       <div class="icon -sync -paused"></div>
       <h4 class="heading">Sync is paused</h4>
       <div class="details sync-details">
@@ -153,7 +159,12 @@
       </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
+    <div id=sync-paused-container
+      style="width: 600px; border: 1px dotted black">
+    </div>
+
+    <div class="summary-panel"
+      style="width: 600px; border: 1px dotted black; box-sizing: border-box">
       <div class="icon -sync -offline"></div>
       <h4 class="heading">Sync offline</h4>
       <div class="details sync-details">
@@ -171,7 +182,12 @@
       </div>
     </div>
 
-    <div class="summary-panel" style="width: 800px; border: 1px dotted black">
+    <div id=sync-offline-container
+      style="width: 600px; border: 1px dotted black">
+    </div>
+
+    <div class="summary-panel"
+      style="width: 600px; border: 1px dotted black; box-sizing: border-box">
       <div class="icon -sync -error"></div>
       <h4 class="heading">Sync had a problem</h4>
       <div class="details sync-details">
@@ -205,7 +221,12 @@
       </div>
     </div>
 
-    <div class="summary-panel" style="width: 600px; border: 1px dotted black">
+    <div id=sync-error-container
+      style="width: 600px; border: 1px dotted black">
+    </div>
+
+    <div class="summary-panel"
+      style="width: 600px; border: 1px dotted black; box-sizing: border-box">
       <div class="icon -sync -notconfigured"></div>
       <h4 class="heading">Configure sync server</h4>
       <div class="details sync-details">
@@ -245,6 +266,10 @@
             class="cancel -link">
         </form>
       </div>
+    </div>
+
+    <div id=sync-configure-container
+      style="width: 600px; border: 1px dotted black">
     </div>
 
     <script src="/tensai-components.js"></script>

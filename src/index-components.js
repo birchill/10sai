@@ -80,7 +80,9 @@ ReactDOM.render(
 );
 
 const server = {
-  name: 'http://server.server.server/path'
+  name: 'http://server.server.server/path',
+  username: 'Username',
+  password: 'Password',
 };
 
 ReactDOM.render(
@@ -96,4 +98,79 @@ ReactDOM.render(
     onResume={stub}
   />,
   document.getElementById('sync-uptodate-container')
+);
+
+ReactDOM.render(
+  <SyncSettingsPanel
+    syncState={SyncState.IN_PROGRESS}
+    onSubmit={stub}
+    onRetry={stub}
+    onEdit={stub}
+    onCancel={stub}
+    onPause={stub}
+    onResume={stub}
+  />,
+  document.getElementById('sync-inprogress-container')
+);
+
+ReactDOM.render(
+  <SyncSettingsPanel
+    syncState={SyncState.PAUSED}
+    server={server}
+    lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
+    onSubmit={stub}
+    onRetry={stub}
+    onEdit={stub}
+    onCancel={stub}
+    onPause={stub}
+    onResume={stub}
+  />,
+  document.getElementById('sync-paused-container')
+);
+
+ReactDOM.render(
+  <SyncSettingsPanel
+    syncState={SyncState.OFFLINE}
+    server={server}
+    lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
+    onSubmit={stub}
+    onRetry={stub}
+    onEdit={stub}
+    onCancel={stub}
+    onPause={stub}
+    onResume={stub}
+  />,
+  document.getElementById('sync-offline-container')
+);
+
+ReactDOM.render(
+  <SyncSettingsPanel
+    syncState={SyncState.ERROR}
+    server={server}
+    lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
+    errorDetail={{ status: 0 }}
+    onSubmit={stub}
+    onRetry={stub}
+    onEdit={stub}
+    onCancel={stub}
+    onPause={stub}
+    onResume={stub}
+  />,
+  document.getElementById('sync-error-container')
+);
+
+ReactDOM.render(
+  <SyncSettingsPanel
+    syncState={SyncState.OK}
+    server={server}
+    lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
+    editingServer
+    onSubmit={stub}
+    onRetry={stub}
+    onEdit={stub}
+    onCancel={stub}
+    onPause={stub}
+    onResume={stub}
+  />,
+  document.getElementById('sync-configure-container')
 );

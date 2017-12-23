@@ -6,6 +6,7 @@ import CancelableTextbox from './CancelableTextbox.jsx';
 export class SyncServerForm extends React.Component {
   static get propTypes() {
     return {
+      className: PropTypes.string,
       server: PropTypes.string,
       username: PropTypes.string,
       password: PropTypes.string,
@@ -124,12 +125,15 @@ export class SyncServerForm extends React.Component {
 
   render() {
     return (
-      <form name="sync-server-settings" onSubmit={this.handleSubmit}>
+      <form
+        className={`${this.props.className || ''} server-settings`}
+        name="sync-server-settings"
+        onSubmit={this.handleSubmit}>
         <CancelableTextbox
           name="server"
           type="text"
           placeholder="Server name"
-          className="form-input"
+          className="server"
           size="40"
           value={this.state.server}
           onChange={this.handleServerChange}
@@ -140,7 +144,7 @@ export class SyncServerForm extends React.Component {
             type="text"
             name="username"
             placeholder="Username"
-            className="-icon -user"
+            className="username -icon -user"
             size="40"
             value={this.state.username}
             onChange={this.handleUsernameChange}
@@ -150,7 +154,7 @@ export class SyncServerForm extends React.Component {
             type="password"
             name="password"
             placeholder="Password"
-            className="-icon -lock"
+            className="password -icon -lock"
             size="40"
             value={this.state.password}
             onChange={this.handlePasswordChange}
@@ -161,14 +165,14 @@ export class SyncServerForm extends React.Component {
           type="button"
           name="submit"
           value="Ok"
-          className="-primary"
+          className="submit -primary"
           onClick={this.handleSubmit}
         />
         <input
           type="button"
           name="cancel"
           value="Cancel"
-          className="-link"
+          className="cancel -link"
           onClick={this.handleCancel}
         />
       </form>
