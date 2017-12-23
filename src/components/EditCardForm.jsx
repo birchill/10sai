@@ -2,13 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import CardFaceInput from './CardFaceInput.jsx';
-import EditState from '../edit-states';
 
 export class EditCardForm extends React.Component {
   static get propTypes() {
     return {
-      active: PropTypes.bool.isRequired,
-      editState: PropTypes.symbol.isRequired,
       // eslint-disable-next-line react/forbid-prop-types
       card: PropTypes.object.isRequired,
       onChange: PropTypes.func,
@@ -18,30 +15,11 @@ export class EditCardForm extends React.Component {
   constructor(props) {
     super(props);
 
-    this.assignSearchBox = elem => { this.searchBox = elem; };
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
   }
 
-  componentDidMount() {
-    if (this.props.active) this.activate();
-  }
-
-  componentDidUpdate(previousProps) {
-    if (previousProps.active === this.props.active) {
-      return;
-    }
-
-    if (this.props.active) {
-      this.activate();
-    }
-  }
-
-  activate() {
-    if (this.props.editState === EditState.EMPTY && this.searchBox) {
-      this.searchBox.focus();
-    }
-  }
+  // TODO: Auto-focus question box when edit state is empty
 
   handlePromptChange(value) {
     if (this.props.onChange) {
@@ -58,13 +36,6 @@ export class EditCardForm extends React.Component {
   render() {
     return (
       <form className="form editcard-form" autoComplete="off">
-        <div className="search-box">
-          <input
-            type="search"
-            placeholder="Lookup"
-            className="-compact -rounded -icon -search"
-            ref={this.assignSearchBox} />
-        </div>
         <CardFaceInput
           name="prompt"
           value={this.props.card.question || ''}

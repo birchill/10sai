@@ -7,7 +7,9 @@ import { URLFromRoute } from '../router';
 import EditCardScreen from './EditCardScreen.jsx';
 import HomeScreen from './HomeScreen.jsx';
 import Link from './Link.jsx';
+import LookupScreen from './LookupScreen.jsx';
 import Popup from './Popup.jsx';
+import ReviewScreen from './ReviewScreen.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
 import TabBlock from './TabBlock.jsx';
@@ -65,11 +67,7 @@ class App extends React.Component {
       title += ` - ${toTitle(this.props.route.popup)}`;
     }
 
-    const screens = [
-      'lookup',
-      'edit-card',
-      'review',
-    ];
+    const screens = ['lookup', 'edit-card', 'review'];
     let activeTab = screens.indexOf(this.props.route.screen);
     if (activeTab === -1) {
       activeTab = undefined;
@@ -90,7 +88,9 @@ class App extends React.Component {
               id="lookup-page"
               role="tabpanel"
               aria-labelledby="lookup-tab"
-              hidden={this.props.route.screen !== 'lookup'} />
+              hidden={this.props.route.screen !== 'lookup'}>
+              <LookupScreen active={this.props.route.screen === 'lookup'} />
+            </TabPanel>
             <TabPanel
               id="edit-page"
               role="tabpanel"
@@ -98,13 +98,16 @@ class App extends React.Component {
               hidden={this.props.route.screen !== 'edit-card'}>
               <EditCardScreen
                 active={this.props.route.screen === 'edit-card'}
-                card={this.props.route.card} />
+                card={this.props.route.card}
+              />
             </TabPanel>
             <TabPanel
               id="review-page"
               role="tabpanel"
               aria-labelledby="review-tab"
-              hidden={this.props.route.screen !== 'review'} />
+              hidden={this.props.route.screen !== 'review'}>
+              <ReviewScreen active={this.props.route.screen === 'review'} />
+            </TabPanel>
           </div>
           <TabBlock active={activeTab} className="tabbar -white">
             <Link
@@ -132,8 +135,7 @@ class App extends React.Component {
           <Popup
             active={this.props.route.popup === 'settings'}
             currentScreenLink={this.currentScreenLink}>
-            <SettingsPanel
-              heading="Sync">
+            <SettingsPanel heading="Sync">
               <SyncSettingsPanelContainer />
             </SettingsPanel>
           </Popup>
@@ -144,11 +146,10 @@ class App extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  route: state.route &&
-         state.route.history &&
-         state.route.history.length
-         ? state.route.history[state.route.index]
-         : {}
+  route:
+    state.route && state.route.history && state.route.history.length
+      ? state.route.history[state.route.index]
+      : {},
 });
 
 const ConnectedApp = connect(mapStateToProps)(App);

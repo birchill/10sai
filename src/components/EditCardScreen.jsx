@@ -81,7 +81,6 @@ export class EditCardScreen extends React.Component {
           onDelete={this.handleDelete} />
         {this.props.forms.active.editState !== EditState.NOT_FOUND
           ? <EditCardForm
-            active={this.props.active}
             onChange={this.handleFormChange}
             {...this.props.forms.active} />
           : <EditCardNotFound deleted={this.props.forms.active.deleted} />}

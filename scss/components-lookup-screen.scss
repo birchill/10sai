@@ -1,0 +1,19 @@
+.lookup-screen {
+  // XXX Share these styles with all the screens
+  position: absolute;
+  overflow: auto;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  background: $really-light-grey;
+
+  transition: opacity 0.1s 0.05s ease-in;
+  will-change: opacity;
+
+  &[aria-hidden=true] {
+    opacity: 0.01;
+    transition-delay: 0s;
+    pointer-events: none;
+  }
+}
