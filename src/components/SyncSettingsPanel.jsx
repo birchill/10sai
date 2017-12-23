@@ -160,17 +160,15 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   renderOkOrOffline() {
-    // XXX We need to get rid of the following <div> in order to get the right
-    // styling.
     return (
-      <div>
+      <React.Fragment>
         <button
           className="-primary -icon -pause -center"
           onClick={this.handlePause}>
           Pause
         </button>
         {this.renderServerInputBox()}
-      </div>
+      </React.Fragment>
     );
   }
 
