@@ -57,7 +57,7 @@ describe('CardStore', () => {
     let prevId = '';
     for (let i = 0; i < 100; i++) {
       const id = CardStore.generateCardId();
-      assert.isAbove(id, prevId);
+      assert.isOk(id > prevId);
       prevId = id;
     }
   });

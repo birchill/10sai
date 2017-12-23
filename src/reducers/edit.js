@@ -32,16 +32,16 @@ export default function edit(state = initialState, action) {
     case 'NEW_CARD': {
       return {
         forms: {
-          active: { formId: action.id, editState: EditState.EMPTY, card: {} }
-        }
+          active: { formId: action.id, editState: EditState.EMPTY, card: {} },
+        },
       };
     }
 
     case 'LOAD_CARD': {
       return {
         forms: {
-          active: { formId: action.id, editState: EditState.LOADING, card: {} }
-        }
+          active: { formId: action.id, editState: EditState.LOADING, card: {} },
+        },
       };
     }
 
@@ -56,8 +56,8 @@ export default function edit(state = initialState, action) {
             formId: action.card._id,
             editState: EditState.OK,
             card: action.card,
-          }
-        }
+          },
+        },
       };
     }
 
@@ -66,9 +66,9 @@ export default function edit(state = initialState, action) {
         return state;
       }
 
-      const deleted = Boolean(action.error &&
-                              action.error.reason &&
-                              action.error.reason === 'deleted');
+      const deleted = Boolean(
+        action.error && action.error.reason && action.error.reason === 'deleted'
+      );
       return {
         forms: {
           active: {
@@ -76,8 +76,8 @@ export default function edit(state = initialState, action) {
             editState: EditState.NOT_FOUND,
             card: {},
             deleted,
-          }
-        }
+          },
+        },
       };
     }
 
@@ -89,19 +89,22 @@ export default function edit(state = initialState, action) {
       if (process.env.NODE_ENV === 'development') {
         console.assert(
           !Object.keys(action.card).includes('progress') &&
-          !Object.keys(action.card).includes('reviewed'),
+            !Object.keys(action.card).includes('reviewed'),
           'Should not be passing review fields as part of editing a card'
         );
       }
 
       const dirtyFields = state.forms.active.dirtyFields || [];
-      dirtyFields.push(...Object.keys(action.card).filter(field =>
-        field !== '_id' &&
-        !deepEqual(action.card[field], state.forms.active.card[field]) &&
-        // This use of indexOf is not awesome but generally dirtyFields will be
-        // 0 ~ 1 items so it's probably ok.
-        dirtyFields.indexOf(field) === -1
-      ));
+      dirtyFields.push(
+        ...Object.keys(action.card).filter(
+          field =>
+            field !== '_id' &&
+            !deepEqual(action.card[field], state.forms.active.card[field]) &&
+            // This use of indexOf is not awesome but generally dirtyFields will be
+            // 0 ~ 1 items so it's probably ok.
+            dirtyFields.indexOf(field) === -1
+        )
+      );
 
       return {
         forms: {
@@ -109,25 +112,26 @@ export default function edit(state = initialState, action) {
             formId: action.formId,
             editState: EditState.DIRTY,
             card: { ...state.forms.active.card, ...action.card },
-            dirtyFields
-          }
-        }
+            dirtyFields,
+          },
+        },
       };
     }
 
     case 'FINISH_SAVE_CARD': {
-      if (action.formId !== state.forms.active.formId ||
-          state.forms.active.deleted) {
+      if (
+        action.formId !== state.forms.active.formId ||
+        state.forms.active.deleted
+      ) {
         return state;
       }
 
-      const dirtyFields = Object.keys(action.card).filter(field =>
-        field !== '_id' &&
-        !deepEqual(action.card[field], state.forms.active.card[field])
+      const dirtyFields = Object.keys(action.card).filter(
+        field =>
+          field !== '_id' &&
+          !deepEqual(action.card[field], state.forms.active.card[field])
       );
-      const editState = dirtyFields.length
-                        ? EditState.DIRTY
-                        : EditState.OK;
+      const editState = dirtyFields.length ? EditState.DIRTY : EditState.OK;
 
       const result = {
         forms: {
@@ -135,8 +139,8 @@ export default function edit(state = initialState, action) {
             formId: action.card._id,
             editState,
             card: { ...action.card, ...state.forms.active.card },
-          }
-        }
+          },
+        },
       };
       if (dirtyFields.length) {
         result.forms.active.dirtyFields = dirtyFields;
@@ -146,8 +150,10 @@ export default function edit(state = initialState, action) {
     }
 
     case 'FAIL_SAVE_CARD': {
-      if (action.formId !== state.forms.active.formId ||
-          state.forms.active.deleted) {
+      if (
+        action.formId !== state.forms.active.formId ||
+        state.forms.active.deleted
+      ) {
         return state;
       }
 
@@ -167,25 +173,26 @@ export default function edit(state = initialState, action) {
               editState: EditState.NOT_FOUND,
               card: {},
               deleted: true,
-            }
-          }
+            },
+          },
         };
       }
 
       const card = {};
       for (const field in action.card) {
         if (action.card.hasOwnProperty(field)) {
-          card[field] = state.forms.active.dirtyFields &&
-                        state.forms.active.dirtyFields.includes(field)
-                        ? state.forms.active.card[field]
-                        : action.card[field];
+          card[field] =
+            state.forms.active.dirtyFields &&
+            state.forms.active.dirtyFields.includes(field)
+              ? state.forms.active.card[field]
+              : action.card[field];
         }
       }
 
       return {
         forms: {
-          active: { ...state.forms.active, card }
-        }
+          active: { ...state.forms.active, card },
+        },
       };
     }
 
@@ -197,10 +204,12 @@ export default function edit(state = initialState, action) {
       if (!state.forms.active.card._id) {
         return {
           forms: {
-            active: { formId: action.formId,
-                      editState: EditState.EMPTY,
-                      card: {} }
-          }
+            active: {
+              formId: action.formId,
+              editState: EditState.EMPTY,
+              card: {},
+            },
+          },
         };
       }
 
@@ -211,8 +220,8 @@ export default function edit(state = initialState, action) {
             editState: EditState.NOT_FOUND,
             card: {},
             deleted: true,
-          }
-        }
+          },
+        },
       };
     }
 

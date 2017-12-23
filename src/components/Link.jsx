@@ -11,7 +11,7 @@ class Link extends React.Component {
   static get propTypes() {
     return {
       href: PropTypes.string.isRequired,
-      direction: PropTypes.oneOf([ 'backwards', 'replace', 'forwards' ]),
+      direction: PropTypes.oneOf(['backwards', 'replace', 'forwards']),
       onClick: PropTypes.func,
       children: PropTypes.node,
     };
@@ -19,7 +19,7 @@ class Link extends React.Component {
 
   static get defaultProps() {
     return {
-      direction: 'forwards'
+      direction: 'forwards',
     };
   }
 
@@ -30,8 +30,11 @@ class Link extends React.Component {
 
   handleClick(e) {
     // Ignore the event if...
-    if (e.button !== 0 ||      // ... it's a right-click
-        isModifiedEvent(e)) {  // ... it's a ctrl-click etc.
+    if (
+      e.button !== 0 || // ... it's a right-click
+      isModifiedEvent(e)
+    ) {
+      // ... it's a ctrl-click etc.
       return;
     }
 
@@ -55,15 +58,17 @@ class Link extends React.Component {
 const mapDispatchToProps = (dispatch, props) => ({
   onClick: href => {
     dispatch(routeActions.followLink(href, props.direction));
-  }
+  },
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => {
   // If the component has its own 'onClick' prop, then use that and pass the
   // default implementation (from |dispatchProps|) as an argument to it.
   const onClickWrapper = ownProps.onClick
-    ? { onClick: href =>
-          ownProps.onClick(href, dispatchProps.onClick.bind(this, href)) }
+    ? {
+        onClick: href =>
+          ownProps.onClick(href, dispatchProps.onClick.bind(this, href)),
+      }
     : undefined;
   return Object.assign({}, ownProps, stateProps, dispatchProps, onClickWrapper);
 };

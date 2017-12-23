@@ -173,9 +173,9 @@ describe('sagas:review updateProgress', () => {
   };
 
   const cardInHistory = (card, state) => {
-    const history = state.review.history;
+    const { history } = state.review;
     return history.some(
-      elem => elem.question === card.question && elem.answer === elem.answer
+      elem => elem.question === card.question && elem.answer === card.answer
     );
   };
 

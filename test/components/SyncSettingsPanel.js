@@ -36,7 +36,7 @@ describe('<SyncSettingsPanel />', () => {
     for (const state of Object.keys(SyncState)) {
       subject.setProps({ syncState: SyncState[state] });
       subject.update();
-      assert.isAbove(subject.find('.summary').text().length, 0,
+      assert.isAbove(subject.find('.heading').text().length, 0,
                      `Summary label is filled-in in ${state} state`);
     }
   });

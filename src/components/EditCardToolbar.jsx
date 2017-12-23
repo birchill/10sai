@@ -12,11 +12,6 @@ export class EditCardToolbar extends React.Component {
     };
   }
 
-  constructor(props) {
-    super(props);
-    this.state = { editState: EditState.LOADING };
-  }
-
   render() {
     const disabled =
       this.props.editState === EditState.EMPTY ||

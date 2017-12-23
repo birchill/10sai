@@ -29,7 +29,7 @@ const sagaMiddleware = createSagaMiddleware();
 let store;
 if (process.env.NODE_ENV === 'development') {
   // eslint-disable-next-line global-require, import/no-extraneous-dependencies
-  const createLogger = require('redux-logger').createLogger;
+  const { createLogger } = require('redux-logger');
   const loggerMiddleware = createLogger();
   store = createStore(
     reducer,
@@ -47,8 +47,7 @@ const cardStore = new CardStore();
 
 cardStore.changes.on('change', change => {
   const cardBeingEdited = store.getState().edit.forms.active.card;
-  if (cardBeingEdited &&
-      cardBeingEdited._id === change.id) {
+  if (cardBeingEdited && cardBeingEdited._id === change.id) {
     store.dispatch({ type: 'SYNC_CARD', card: change.doc });
   }
 });
@@ -83,10 +82,13 @@ sagaMiddleware.run(function* allSagas() {
 // Router
 //
 
-store.dispatch(routeActions.navigate({
-                 path: window.location.pathname,
-                 search: window.location.search,
-                 fragment: window.location.hash }));
+store.dispatch(
+  routeActions.navigate({
+    path: window.location.pathname,
+    search: window.location.search,
+    fragment: window.location.hash,
+  })
+);
 window.addEventListener('popstate', evt => {
   // Dispatch before change and navigate actions in parallel. The URL
   // has already been updated so there's no going back and no need to
@@ -96,23 +98,27 @@ window.addEventListener('popstate', evt => {
   // the current state in a synchronous state (as the navigate action might
   // cause parts of the current state to be clobbered).
   store.dispatch(routeActions.beforeScreenChange());
-  store.dispatch(routeActions.navigate(
-    { path: window.location.pathname,
+  store.dispatch(
+    routeActions.navigate({
+      path: window.location.pathname,
       search: window.location.search,
       fragment: window.location.hash,
       index: evt.state ? evt.state.index : 0,
-      source: 'history' }
-  ));
+      source: 'history',
+    })
+  );
 });
 
 //
 // Offline notification
 //
 
-window.addEventListener('online',
-                        () => { store.dispatch({ type: 'GO_ONLINE' }); });
-window.addEventListener('offline',
-                        () => { store.dispatch({ type: 'GO_OFFLINE' }); });
+window.addEventListener('online', () => {
+  store.dispatch({ type: 'GO_ONLINE' });
+});
+window.addEventListener('offline', () => {
+  store.dispatch({ type: 'GO_OFFLINE' });
+});
 
 //
 // Review time rotation

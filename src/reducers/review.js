@@ -146,8 +146,7 @@ export default function review(state = initialState, action) {
 
       // Update failed queues
       let finished = true;
-      let failedCardsLevel2 = state.failedCardsLevel2;
-      let failedCardsLevel1 = state.failedCardsLevel1;
+      let { failedCardsLevel1, failedCardsLevel2 } = state;
       if (passedCard.progress.level === 0) {
         let failedIndex = failedCardsLevel2.indexOf(passedCard);
         if (failedIndex !== -1) {
@@ -239,7 +238,7 @@ export default function review(state = initialState, action) {
       // Update failed queues
 
       // Remove from queue one if it's there
-      let failedCardsLevel1 = state.failedCardsLevel1;
+      let { failedCardsLevel1 } = state;
       let failedIndex = failedCardsLevel1.indexOf(failedCard);
       if (failedIndex !== -1) {
         failedCardsLevel1 = failedCardsLevel1.slice();
@@ -295,12 +294,8 @@ export default function review(state = initialState, action) {
 // for updating the current card and one for updating the next card?
 function updateNextCard(state, seed, updateMode) {
   // The fields we might update
-  let reviewState = state.reviewState;
-  let currentCard = state.currentCard;
+  let { reviewState, currentCard, heap, history, newCardsInPlay } = state;
   let nextCard;
-  let heap = state.heap;
-  let history = state.history;
-  let newCardsInPlay = state.newCardsInPlay;
 
   let cardsAvailable =
     state.failedCardsLevel2.length +

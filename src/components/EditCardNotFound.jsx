@@ -8,12 +8,13 @@ function EditCardNotFound(props) {
     <div className="summary-panel editcard-notfound -notfound">
       <div className="icon -notfound" />
       <h4 className="summary">
-        { props.deleted ? 'Card deleted' : 'Card not found' }
+        {props.deleted ? 'Card deleted' : 'Card not found'}
       </h4>
-      <Link
-        href="/cards/new"
-        className="action -primary">Add a card</Link>
-    </div>);
+      <Link href="/cards/new" className="action -primary">
+        Add a card
+      </Link>
+    </div>
+  );
 }
 
 EditCardNotFound.propTypes = {

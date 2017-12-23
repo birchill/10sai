@@ -43,7 +43,7 @@ export function* navigate(cardStore, action) {
   yield put(editActions.loadCard(route.card));
 
   const activeRecord = yield select(getActiveRecord);
-  const formId = activeRecord.formId;
+  const { formId } = activeRecord;
 
   try {
     const card = yield call([cardStore, 'getCard'], route.card);

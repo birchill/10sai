@@ -18,7 +18,9 @@ export class Popup extends React.Component {
   constructor(props) {
     super(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.assignPopup = elem => { this.popup = elem; };
+    this.assignPopup = elem => {
+      this.popup = elem;
+    };
   }
 
   componentDidMount() {
@@ -71,7 +73,8 @@ export class Popup extends React.Component {
         <div
           className="overlay"
           onClick={this.props.close}
-          role="presentation" />
+          role="presentation"
+        />
         <section
           className="content popup-panel"
           role="dialog"
@@ -79,7 +82,9 @@ export class Popup extends React.Component {
           <Link
             href={this.props.currentScreenLink}
             className="close close-button"
-            direction="backwards">Close</Link>
+            direction="backwards">
+            Close
+          </Link>
           {this.props.children}
         </section>
       </div>
@@ -90,7 +95,7 @@ export class Popup extends React.Component {
 const mapDispatchToProps = (dispatch, props) => ({
   close: () => {
     dispatch(routeActions.followLink(props.currentScreenLink, 'backwards'));
-  }
+  },
 });
 
 const ConnectedPopup = connect(undefined, mapDispatchToProps)(Popup);

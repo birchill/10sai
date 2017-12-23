@@ -19,19 +19,22 @@ function translateError(error) {
   if (typeof error.status === 'number' && error.status === 0) {
     return (
       <div>
-        <p>
-          Network error. Some possible causes might be:
-        </p>
+        <p>Network error. Some possible causes might be:</p>
         <ul>
           <li>The server name was misspelled</li>
-          <li>The server has not been set up to <a
-            href="https://github.com/pouchdb/add-cors-to-couchdb"
-            target="_blank"
-            rel="noopener noreferrer">support
-            cross-origin access</a></li>
+          <li>
+            The server has not been set up to{' '}
+            <a
+              href="https://github.com/pouchdb/add-cors-to-couchdb"
+              target="_blank"
+              rel="noopener noreferrer">
+              support cross-origin access
+            </a>
+          </li>
           <li>The server is temporarily offline</li>
         </ul>
-      </div>);
+      </div>
+    );
   }
 
   if (typeof error.status === 'number' && error.status === 404) {
@@ -50,9 +53,11 @@ export class SyncSettingsPanel extends React.Component {
   static get propTypes() {
     return {
       syncState: PropTypes.symbol.isRequired,
-      server: PropTypes.shape({ name: PropTypes.string,
-                                username: PropTypes.string,
-                                password: PropTypes.string }),
+      server: PropTypes.shape({
+        name: PropTypes.string,
+        username: PropTypes.string,
+        password: PropTypes.string,
+      }),
       lastSyncTime: PropTypes.instanceOf(Date),
       // eslint-disable-next-line react/forbid-prop-types
       errorDetail: PropTypes.object,
@@ -70,38 +75,44 @@ export class SyncSettingsPanel extends React.Component {
   constructor(props) {
     super(props);
 
-    [ 'handleEditServer',
+    [
+      'handleEditServer',
       'handleServerChange',
       'handleServerChangeCancel',
       'handlePause',
       'handleResume',
       'handleRetry',
-      'handleKeyDown' ].forEach(
-      handler => { this[handler] = this[handler].bind(this); }
-    );
+      'handleKeyDown',
+    ].forEach(handler => {
+      this[handler] = this[handler].bind(this);
+    });
   }
 
   componentDidMount() {
     if (this.props.editingServer) {
-      document.addEventListener('keydown', this.handleKeyDown,
-                                { capture: true });
+      document.addEventListener('keydown', this.handleKeyDown, {
+        capture: true,
+      });
     }
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.editingServer && !prevProps.editingServer) {
-      document.addEventListener('keydown', this.handleKeyDown,
-                                { capture: true });
+      document.addEventListener('keydown', this.handleKeyDown, {
+        capture: true,
+      });
     } else if (!this.props.editingServer && prevProps.editingServer) {
-      document.removeEventListener('keydown', this.handleKeyDown,
-                                { capture: true });
+      document.removeEventListener('keydown', this.handleKeyDown, {
+        capture: true,
+      });
     }
   }
 
   componentWillUnmount() {
     if (this.props.editingServer) {
-      document.removeEventListener('keydown', this.handleKeyDown,
-                                   { capture: true });
+      document.removeEventListener('keydown', this.handleKeyDown, {
+        capture: true,
+      });
     }
   }
 
@@ -142,80 +153,101 @@ export class SyncSettingsPanel extends React.Component {
       <ServerStatus
         server={server}
         lastSyncTime={this.props.lastSyncTime}
-        onEdit={this.handleEditServer} />);
+        onEdit={this.handleEditServer}
+      />
+    );
   }
 
   renderOkOrOffline() {
     return (
       <div>
-        <div><button
-          className="-icon -pause"
-          onClick={this.handlePause}>Pause</button></div>
-        { this.renderServerInputBox() }
-      </div>);
+        <div>
+          <button className="-icon -pause" onClick={this.handlePause}>
+            Pause
+          </button>
+        </div>
+        {this.renderServerInputBox()}
+      </div>
+    );
   }
 
   renderInProgress() {
     return (
       <div>
         <progress value={this.props.progress} />
-        <div><button
-          name="cancel-sync"
-          onClick={this.handlePause}>Cancel</button></div>
-      </div>);
+        <div>
+          <button name="cancel-sync" onClick={this.handlePause}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
   }
 
   renderPaused() {
     return (
       <div>
-        <div><button
-          className="-icon -play"
-          onClick={this.handleResume}>Resume</button></div>
-        { this.renderServerInputBox() }
-      </div>);
+        <div>
+          <button className="-icon -play" onClick={this.handleResume}>
+            Resume
+          </button>
+        </div>
+        {this.renderServerInputBox()}
+      </div>
+    );
   }
 
   renderNotConfigured() {
+    // Really want to use <> here but eslint... I really can't wait to be rid of
+    // eslint.
     return (
       <div>
-        <p className="explanation">Adding a sync server lets you
-          access your cards from another computer, phone, or tablet.
+        <p>
+          Adding a sync server lets you access your cards from another computer,
+          phone, or tablet.
         </p>
         <button
           name="edit-server"
-          className="action -primary"
-          onClick={this.handleEditServer}>Add a sync server</button>
-      </div>);
+          className="-primary"
+          onClick={this.handleEditServer}>
+          Add a sync server
+        </button>
+      </div>
+    );
   }
 
   renderError() {
     return (
       <div>
         <div className="error-panel">
-          <div className="error-details">{
-            translateError(this.props.errorDetail)}</div>
-          <button name="retry" onClick={this.handleRetry}>Retry</button>
+          <div className="error-details">
+            {translateError(this.props.errorDetail)}
+          </div>
+          <button name="retry" onClick={this.handleRetry}>
+            Retry
+          </button>
         </div>
-        { this.renderServerInputBox() }
-      </div>);
+        {this.renderServerInputBox()}
+      </div>
+    );
   }
 
   render() {
-    const syncClasses = [];
-    syncClasses[SyncState.OK] = 'ok';
-    syncClasses[SyncState.IN_PROGRESS] = 'in-progress';
-    syncClasses[SyncState.PAUSED] = 'paused';
-    syncClasses[SyncState.OFFLINE] = 'offline';
-    syncClasses[SyncState.ERROR] = 'error';
-    syncClasses[SyncState.NOT_CONFIGURED] = 'not-configured';
+    const iconClasses = [];
+    iconClasses[SyncState.OK] = '-uptodate';
+    iconClasses[SyncState.IN_PROGRESS] = '-inprogress';
+    iconClasses[SyncState.PAUSED] = '-paused';
+    iconClasses[SyncState.OFFLINE] = '-offline';
+    iconClasses[SyncState.ERROR] = '-error';
+    iconClasses[SyncState.NOT_CONFIGURED] = '-notconfigured';
 
-    const syncClass = this.props.editingServer
-                      ? syncClasses[SyncState.NOT_CONFIGURED]
-                      : syncClasses[this.props.syncState];
+    const iconClass = this.props.editingServer
+      ? iconClasses[SyncState.NOT_CONFIGURED]
+      : iconClasses[this.props.syncState];
 
     const summary = this.props.editingServer
-                  ? 'Configure sync server'
-                  : SyncStatusMessages[this.props.syncState];
+      ? 'Configure sync server'
+      : SyncStatusMessages[this.props.syncState];
 
     let body;
     if (this.props.editingServer) {
@@ -225,27 +257,25 @@ export class SyncSettingsPanel extends React.Component {
           username={this.props.server ? this.props.server.username : ''}
           password={this.props.server ? this.props.server.password : ''}
           onSubmit={this.handleServerChange}
-          onCancel={this.handleServerChangeCancel} />);
+          onCancel={this.handleServerChangeCancel}
+        />
+      );
     } else {
       const renderFns = [];
-      renderFns[SyncState.OK]             = this.renderOkOrOffline;
-      renderFns[SyncState.IN_PROGRESS]    = this.renderInProgress;
-      renderFns[SyncState.PAUSED]         = this.renderPaused;
-      renderFns[SyncState.OFFLINE]        = this.renderOkOrOffline;
-      renderFns[SyncState.ERROR]          = this.renderError;
+      renderFns[SyncState.OK] = this.renderOkOrOffline;
+      renderFns[SyncState.IN_PROGRESS] = this.renderInProgress;
+      renderFns[SyncState.PAUSED] = this.renderPaused;
+      renderFns[SyncState.OFFLINE] = this.renderOkOrOffline;
+      renderFns[SyncState.ERROR] = this.renderError;
       renderFns[SyncState.NOT_CONFIGURED] = this.renderNotConfigured;
       body = renderFns[this.props.syncState].call(this);
     }
 
     return (
-      <div className={`sync-settings summary-panel ${syncClass}`}>
-        <div className="sync-overview">
-          <div className="icon sync-icon" />
-        </div>
-        <div className="sync-details">
-          <h4 className="heading summary">{summary}</h4>
-          { body }
-        </div>
+      <div className="summary-panel">
+        <div className={`icon -sync ${iconClass}`} />
+        <h4 className="heading">{summary}</h4>
+        <div className="details">{body}</div>
       </div>
     );
   }

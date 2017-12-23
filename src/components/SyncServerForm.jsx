@@ -21,9 +21,11 @@ export class SyncServerForm extends React.Component {
 
     // Get nearest scroll container
     let scrollParent;
-    for (let parent = e.target.parentNode;
-         parent instanceof HTMLElement;
-         parent = parent.parentNode) {
+    for (
+      let parent = e.target.parentNode;
+      parent instanceof HTMLElement;
+      parent = parent.parentNode
+    ) {
       if (parent.scrollHeight > parent.clientHeight) {
         scrollParent = parent;
         break;
@@ -58,23 +60,27 @@ export class SyncServerForm extends React.Component {
     super(props);
 
     this.state = { server: '', username: '', password: '' };
-    [ 'handleServerChange',
+    [
+      'handleServerChange',
       'handleUsernameChange',
       'handlePasswordChange',
       'handleSubmit',
-      'handleCancel' ].forEach(
-      handler => { this[handler] = this[handler].bind(this); }
-    );
+      'handleCancel',
+    ].forEach(handler => {
+      this[handler] = this[handler].bind(this);
+    });
   }
 
   componentWillMount() {
-    this.setState({ server: this.props.server,
-                    username: this.props.username || '',
-                    password: this.props.password || '' });
+    this.setState({
+      server: this.props.server,
+      username: this.props.username || '',
+      password: this.props.password || '',
+    });
   }
 
   componentWillReceiveProps(nextProps) {
-    [ 'server', 'username', 'password' ].forEach(field => {
+    ['server', 'username', 'password'].forEach(field => {
       if (this.props[field] !== nextProps[field]) {
         this.setState({ [field]: nextProps[field] || '' });
       }
@@ -98,17 +104,21 @@ export class SyncServerForm extends React.Component {
   handleSubmit(e) {
     e.preventDefault();
     const server = this.state.server.trim()
-                   ? { name: this.state.server,
-                       username: this.state.username,
-                       password: this.state.password }
-                   : undefined;
+      ? {
+          name: this.state.server,
+          username: this.state.username,
+          password: this.state.password,
+        }
+      : undefined;
     this.props.onSubmit(server);
   }
 
   handleCancel() {
-    this.setState({ server: this.props.server,
-                    username: this.props.username || '',
-                    password: this.props.password || '' });
+    this.setState({
+      server: this.props.server,
+      username: this.props.username || '',
+      password: this.props.password || '',
+    });
     this.props.onCancel();
   }
 
@@ -123,7 +133,8 @@ export class SyncServerForm extends React.Component {
           size="40"
           value={this.state.server}
           onChange={this.handleServerChange}
-          onFocus={SyncServerForm.handleTextBoxFocus} />
+          onFocus={SyncServerForm.handleTextBoxFocus}
+        />
         <div className="stacked-group">
           <input
             type="text"
@@ -133,7 +144,8 @@ export class SyncServerForm extends React.Component {
             size="40"
             value={this.state.username}
             onChange={this.handleUsernameChange}
-            onFocus={SyncServerForm.handleTextBoxFocus} />
+            onFocus={SyncServerForm.handleTextBoxFocus}
+          />
           <input
             type="password"
             name="password"
@@ -142,20 +154,23 @@ export class SyncServerForm extends React.Component {
             size="40"
             value={this.state.password}
             onChange={this.handlePasswordChange}
-            onFocus={SyncServerForm.handleTextBoxFocus} />
+            onFocus={SyncServerForm.handleTextBoxFocus}
+          />
         </div>
         <input
           type="button"
           name="submit"
           value="Ok"
           className="-primary"
-          onClick={this.handleSubmit} />
+          onClick={this.handleSubmit}
+        />
         <input
           type="button"
           name="cancel"
           value="Cancel"
           className="-link"
-          onClick={this.handleCancel} />
+          onClick={this.handleCancel}
+        />
       </form>
     );
   }

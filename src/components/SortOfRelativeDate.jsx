@@ -14,7 +14,6 @@ import PropTypes from 'prop-types';
 const JUST_NOW_THRESHOLD = 10 * 1000; // 10s
 
 export class SortOfRelativeDate extends React.Component {
-
   static get propTypes() {
     return {
       value: PropTypes.instanceOf(Date).isRequired,
@@ -69,8 +68,8 @@ export class SortOfRelativeDate extends React.Component {
 
   render() {
     const dateString = this.state.justNow
-                       ? 'just now' // TODO: Localize this
-                       : this.props.value.toLocaleString();
+      ? 'just now' // TODO: Localize this
+      : this.props.value.toLocaleString();
 
     return <time dateTime={this.props.value}>{dateString}</time>;
   }

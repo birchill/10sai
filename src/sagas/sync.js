@@ -35,11 +35,17 @@ function* startReplication(cardStore, server, dispatch) {
 
   const syncServer = server ? server.name : undefined;
   const options = {
-    onChange: changes => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
-                                    progress: changes.progress }),
+    onChange: changes =>
+      dispatch({
+        type: 'UPDATE_SYNC_PROGRESS',
+        progress: changes.progress,
+      }),
     onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
-    onActive: () => dispatch({ type: 'UPDATE_SYNC_PROGRESS',
-                               progress: undefined }),
+    onActive: () =>
+      dispatch({
+        type: 'UPDATE_SYNC_PROGRESS',
+        progress: undefined,
+      }),
     onError: details => dispatch({ type: 'NOTIFY_SYNC_ERROR', details }),
     username: server.username,
     password: server.username ? server.password : undefined,
@@ -84,10 +90,12 @@ function* setSyncServer(cardStore, settingsStore, dispatch, action) {
   }
 
   // Update UI state
-  yield put({ type: 'UPDATE_SYNC_SERVER',
-              server,
-              lastSyncTime: undefined,
-              paused: false });
+  yield put({
+    type: 'UPDATE_SYNC_SERVER',
+    server,
+    lastSyncTime: undefined,
+    paused: false,
+  });
   yield put({ type: 'FINISH_EDIT_SYNC_SERVER' });
 
   // Kick off and/or cancel replication
@@ -146,40 +154,46 @@ function* updateSetting(cardStore, dispatch, action) {
     return;
   }
 
-  const updatedServer       = getServer(action.value);
-  const updatedPaused       = getPaused(action.value);
-  let   updatedLastSyncTime = getLastSyncTime(action.value);
+  const updatedServer = getServer(action.value);
+  const updatedPaused = getPaused(action.value);
+  let updatedLastSyncTime = getLastSyncTime(action.value);
 
-  const server       = yield select(getFromSync(getServer));
-  const paused       = yield select(getFromSync(getPaused));
+  const server = yield select(getFromSync(getServer));
+  const paused = yield select(getFromSync(getPaused));
   const lastSyncTime = yield select(getFromSync(getLastSyncTime));
 
   // Ignore updated sync times that are in the past
-  if (typeof lastSyncTime === typeof updatedLastSyncTime &&
-      updatedLastSyncTime < lastSyncTime) {
+  if (
+    typeof lastSyncTime === typeof updatedLastSyncTime &&
+    updatedLastSyncTime < lastSyncTime
+  ) {
     updatedLastSyncTime = lastSyncTime;
   }
 
   // Skip no-change case
-  const serverUpdated = JSON.stringify(server)
-                        !== JSON.stringify(updatedServer);
-  if (!serverUpdated &&
-      paused === updatedPaused &&
-      lastSyncTime === updatedLastSyncTime) {
+  const serverUpdated =
+    JSON.stringify(server) !== JSON.stringify(updatedServer);
+  if (
+    !serverUpdated &&
+    paused === updatedPaused &&
+    lastSyncTime === updatedLastSyncTime
+  ) {
     return;
   }
 
   // Update UI with changes
-  yield put({ type: 'UPDATE_SYNC_SERVER',
-              server: updatedServer,
-              lastSyncTime: updatedLastSyncTime,
-              paused: updatedPaused });
+  yield put({
+    type: 'UPDATE_SYNC_SERVER',
+    server: updatedServer,
+    lastSyncTime: updatedLastSyncTime,
+    paused: updatedPaused,
+  });
 
   // Check if we need to trigger replication due to a change in server
   // name or being unpaused.
   if (!updatedPaused && (serverUpdated || paused)) {
     yield startReplication(cardStore, updatedServer, dispatch);
-  // And likewise check if we need to stop it
+    // And likewise check if we need to stop it
   } else if (updatedPaused && !paused) {
     yield stopReplication(cardStore);
   }
@@ -200,18 +214,22 @@ function* goOffline(cardStore) {
 }
 
 function* syncSagas(cardStore, settingsStore, dispatch) {
-  /* eslint-disable indent */
-  yield* [ takeLatest('SET_SYNC_SERVER', setSyncServer,
-                      cardStore, settingsStore, dispatch),
-           takeLatest('RETRY_SYNC', retrySync, cardStore, dispatch),
-           takeLatest('FINISH_SYNC', finishSync, settingsStore),
-           takeEvery('PAUSE_SYNC', pauseSync, cardStore, settingsStore),
-           takeEvery('RESUME_SYNC', resumeSync, cardStore, settingsStore,
-                     dispatch),
-           takeEvery('UPDATE_SETTING', updateSetting, cardStore, dispatch),
-           takeEvery('GO_ONLINE', goOnline, cardStore, dispatch),
-           takeEvery('GO_OFFLINE', goOffline, cardStore) ];
-  /* eslint-enable indent */
+  yield* [
+    takeLatest(
+      'SET_SYNC_SERVER',
+      setSyncServer,
+      cardStore,
+      settingsStore,
+      dispatch
+    ),
+    takeLatest('RETRY_SYNC', retrySync, cardStore, dispatch),
+    takeLatest('FINISH_SYNC', finishSync, settingsStore),
+    takeEvery('PAUSE_SYNC', pauseSync, cardStore, settingsStore),
+    takeEvery('RESUME_SYNC', resumeSync, cardStore, settingsStore, dispatch),
+    takeEvery('UPDATE_SETTING', updateSetting, cardStore, dispatch),
+    takeEvery('GO_ONLINE', goOnline, cardStore, dispatch),
+    takeEvery('GO_OFFLINE', goOffline, cardStore),
+  ];
 }
 
 export default syncSagas;

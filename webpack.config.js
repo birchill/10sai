@@ -4,9 +4,9 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    tensai: ['babel-polyfill', './src/index.js'],
-    'tensai-db': ['babel-polyfill', './src/index-db.js'],
-    'tensai-components': ['babel-polyfill', './src/index-components.js']
+    tensai: ['@babel/polyfill', './src/index.js'],
+    'tensai-db': ['@babel/polyfill', './src/index-db.js'],
+    'tensai-components': ['@babel/polyfill', './src/index-components.js']
   },
   output: {
     path: path.resolve(__dirname, 'public'),
@@ -26,14 +26,14 @@ module.exports = {
         loader: 'babel-loader',
         exclude: /node_modules/,
         query: {
-          presets: [ 'es2017', 'react' ],
+          presets: [ '@babel/es2017', '@babel/react' ],
           plugins: [ 'transform-object-rest-spread' ]
         }
       },
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract({
-          loader: [
+        use: ExtractTextPlugin.extract({
+          use: [
             { loader: 'raw-loader' },
             { loader: 'sass-loader',
               options: {

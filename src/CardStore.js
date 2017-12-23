@@ -164,8 +164,7 @@ class CardStore {
             level: row.value.level,
             reviewed: row.value.reviewed,
           },
-        }))
-      );
+        })));
   }
 
   async updateCardsView() {

@@ -9,16 +9,19 @@ function ServerStatus(props) {
       <legend>Sync server</legend>
       <div className="server-summary">
         <div className="server-name">{props.server}</div>
-        { props.lastSyncTime
-          ? <div className="server-sync-time">
-              Last synced <SortOfRelativeDate value={props.lastSyncTime} />
+        {props.lastSyncTime ? (
+          <div className="server-sync-time">
+            Last synced <SortOfRelativeDate value={props.lastSyncTime} />
           </div>
-          : '' }
+        ) : (
+          ''
+        )}
       </div>
-      <button
-        name="edit-server"
-        onClick={props.onEdit}>Change</button>
-    </fieldset>);
+      <button name="edit-server" onClick={props.onEdit}>
+        Change
+      </button>
+    </fieldset>
+  );
 }
 
 ServerStatus.propTypes = {

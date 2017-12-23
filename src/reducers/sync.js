@@ -1,14 +1,15 @@
 import SyncState from '../sync-states';
 
-const initialState = { state: SyncState.NOT_CONFIGURED,
-                       server: undefined,
-                       editingServer: false,
-                       lastSyncTime: undefined,
-                       progress: undefined,
-                       paused: false,
-                       offline: typeof navigator !== 'undefined' &&
-                                !navigator.onLine,
-                       errorDetail: undefined };
+const initialState = {
+  state: SyncState.NOT_CONFIGURED,
+  server: undefined,
+  editingServer: false,
+  lastSyncTime: undefined,
+  progress: undefined,
+  paused: false,
+  offline: typeof navigator !== 'undefined' && !navigator.onLine,
+  errorDetail: undefined,
+};
 
 function updateSyncState(state) {
   if (!state.server) {
@@ -28,46 +29,60 @@ function updateSyncState(state) {
 export default function sync(state = initialState, action) {
   switch (action.type) {
     case 'UPDATE_SYNC_SERVER': {
-      return updateSyncState({ ...state,
-                               server: action.server,
-                               lastSyncTime: action.lastSyncTime,
-                               progress: undefined,
-                               paused: !!action.paused,
-                               errorDetail: undefined });
+      return updateSyncState({
+        ...state,
+        server: action.server,
+        lastSyncTime: action.lastSyncTime,
+        progress: undefined,
+        paused: !!action.paused,
+        errorDetail: undefined,
+      });
     }
 
     case 'UPDATE_SYNC_PROGRESS':
-      return { ...state,
-               state: SyncState.IN_PROGRESS,
-               progress: action.progress };
+      return {
+        ...state,
+        state: SyncState.IN_PROGRESS,
+        progress: action.progress,
+      };
 
     case 'FINISH_SYNC':
-      return updateSyncState({ ...state,
-                               lastSyncTime: action.lastSyncTime,
-                               progress: undefined });
+      return updateSyncState({
+        ...state,
+        lastSyncTime: action.lastSyncTime,
+        progress: undefined,
+      });
 
     case 'NOTIFY_SYNC_ERROR':
       // If we don't put *something* in errorDetail, updateSyncState won't
       // know that we are in the error state. Furthermore, errorDetail is
       // expected to be an object.
-      return updateSyncState({ ...state,
-                               errorDetail: action.details || {} });
+      return updateSyncState({
+        ...state,
+        errorDetail: action.details || {},
+      });
 
     case 'RETRY_SYNC':
-      return updateSyncState({ ...state,
-                               progress: undefined,
-                               errorDetail: undefined });
+      return updateSyncState({
+        ...state,
+        progress: undefined,
+        errorDetail: undefined,
+      });
 
     case 'PAUSE_SYNC':
-      return updateSyncState({ ...state,
-                               paused: true,
-                               errorDetail: undefined });
+      return updateSyncState({
+        ...state,
+        paused: true,
+        errorDetail: undefined,
+      });
 
     case 'RESUME_SYNC':
-      return updateSyncState({ ...state,
-                               paused: false,
-                               progress: undefined,
-                               errorDetail: undefined });
+      return updateSyncState({
+        ...state,
+        paused: false,
+        progress: undefined,
+        errorDetail: undefined,
+      });
 
     case 'GO_ONLINE':
       return updateSyncState({ ...state, offline: false });

@@ -7,8 +7,8 @@ function getScrollContainer(elem) {
   }
 
   return elem.scrollHeight > elem.clientHeight
-         ? elem
-         : getScrollContainer(elem.parentNode);
+    ? elem
+    : getScrollContainer(elem.parentNode);
 }
 
 function getInclusiveAncestorWithClass(elem, className) {
@@ -23,8 +23,14 @@ const FillMode = {
   Fill: Symbol('Fill'),
 };
 
-function fillInMissingSlots(startIndex, endIndex, emptySlots,
-                            existingItems, slots, fillMode) {
+function fillInMissingSlots(
+  startIndex,
+  endIndex,
+  emptySlots,
+  existingItems,
+  slots,
+  fillMode
+) {
   let firstAddition;
 
   for (let i = startIndex; i < endIndex; i++) {
@@ -90,9 +96,11 @@ let layoutRenderDepth = 0;
 export class VirtualGrid extends React.Component {
   static get propTypes() {
     return {
-      items: PropTypes.arrayOf(PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-      })).isRequired,
+      items: PropTypes.arrayOf(
+        PropTypes.shape({
+          _id: PropTypes.string.isRequired,
+        })
+      ).isRequired,
       renderItem: PropTypes.func.isRequired,
       renderTemplateItem: PropTypes.func.isRequired,
       className: PropTypes.string,
@@ -101,37 +109,39 @@ export class VirtualGrid extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { itemWidth: null,
-                   itemHeight: null,
-                   itemsPerRow: 1,
-                   itemScale: 1,
-                   startIndex: 0,
-                   endIndex: 0,
-                   containerHeight: null,
-                   // |slots| is an array mapping the index of rendered items
-                   // to items in props.items so that we consistently render the
-                   // same item using the same DOM elements to avoid unnecessary
-                   // DOM surgery.
-                   //
-                   // String indices indicate items that have been deleted but
-                   // are still animating and are stored in
-                   // this.state.deletingItems.
-                   //
-                   // e.g.
-                   //
-                   // [
-                   //   { index: 30 },
-                   //   { index: 31 },
-                   //   { index: 'abcdef' },
-                   // ]
-                   //
-                   // would mean that we first render props.items[30], then
-                   // props.items[31] and finally state.deletingItems['abcdef'].
-                   slots: [],
-                   // Items that have been deleted from props.items but
-                   // which are still animating. The data needed to render them
-                   // while animating is stored here, indexed by _id.
-                   deletingItems: {} };
+    this.state = {
+      itemWidth: null,
+      itemHeight: null,
+      itemsPerRow: 1,
+      itemScale: 1,
+      startIndex: 0,
+      endIndex: 0,
+      containerHeight: null,
+      // |slots| is an array mapping the index of rendered items
+      // to items in props.items so that we consistently render the
+      // same item using the same DOM elements to avoid unnecessary
+      // DOM surgery.
+      //
+      // String indices indicate items that have been deleted but
+      // are still animating and are stored in
+      // this.state.deletingItems.
+      //
+      // e.g.
+      //
+      // [
+      //   { index: 30 },
+      //   { index: 31 },
+      //   { index: 'abcdef' },
+      // ]
+      //
+      // would mean that we first render props.items[30], then
+      // props.items[31] and finally state.deletingItems['abcdef'].
+      slots: [],
+      // Items that have been deleted from props.items but
+      // which are still animating. The data needed to render them
+      // while animating is stored here, indexed by _id.
+      deletingItems: {},
+    };
 
     // Ref callbacks
     this.assignGrid = elem => {
@@ -256,8 +266,10 @@ export class VirtualGrid extends React.Component {
   handleTransitionEnd(evt) {
     // Ignore transitions on the outer element (since they are the translation
     // transitions).
-    if (!evt.target.classList.contains('scale-wrapper') ||
-        evt.propertyName !== 'transform') {
+    if (
+      !evt.target.classList.contains('scale-wrapper') ||
+      evt.propertyName !== 'transform'
+    ) {
       return;
     }
 
@@ -274,15 +286,16 @@ export class VirtualGrid extends React.Component {
     // Drop from deletingItems
     // (We're basically doing an immutable delete here since immutability-helper
     // doesn't provide this and we don't quite need Immutable.js yet)
-    const deletingItems =
-      Object.entries(this.state.deletingItems).reduce(
-        (result, entry) => {
-          const [ id, item ] = entry;
-          if (id !== deletedId) {
-            result[id] = item;
-          }
-          return result;
-        }, {});
+    const deletingItems = Object.entries(this.state.deletingItems).reduce(
+      (result, entry) => {
+        const [id, item] = entry;
+        if (id !== deletedId) {
+          result[id] = item;
+        }
+        return result;
+      },
+      {}
+    );
 
     this.setState({ deletingItems });
   }
@@ -318,11 +331,13 @@ export class VirtualGrid extends React.Component {
 
       layoutRenderDepth++;
       this.setState({ containerHeight: 0 });
-      return { itemWidth: null,
-               itemHeight: null,
-               itemsPerRow: 1,
-               itemScale: 1,
-               containerHeight: 0 };
+      return {
+        itemWidth: null,
+        itemHeight: null,
+        itemsPerRow: 1,
+        itemScale: 1,
+        containerHeight: 0,
+      };
     }
 
     // We want to be able to define the item size using the stylesheet (e.g.
@@ -331,8 +346,8 @@ export class VirtualGrid extends React.Component {
     // the layout to only produce a limited set of DOM nodes.
     // To do that we use a representative template item to get the initial size.
 
-    const bbox     = this.templateItem.getBoundingClientRect();
-    let itemWidth  = bbox.width;
+    const bbox = this.templateItem.getBoundingClientRect();
+    let itemWidth = bbox.width;
     let itemHeight = bbox.height;
 
     // Adjust item width to make full use of the available screen space.
@@ -348,27 +363,30 @@ export class VirtualGrid extends React.Component {
 
     const itemScale = gridWidth / itemsPerRow / itemWidth;
 
-    itemWidth  = Math.floor(itemWidth * itemScale);
+    itemWidth = Math.floor(itemWidth * itemScale);
     itemHeight = Math.floor(itemHeight * itemScale);
 
-    const containerHeight = Math.ceil(items.length / itemsPerRow) *
-                            itemHeight;
+    const containerHeight = Math.ceil(items.length / itemsPerRow) * itemHeight;
 
-    if (this.state.itemsPerRow     === itemsPerRow &&
-        this.state.itemWidth       === itemWidth &&
-        this.state.itemHeight      === itemHeight &&
-        this.state.itemScale       === itemScale &&
-        this.state.containerHeight === containerHeight) {
+    if (
+      this.state.itemsPerRow === itemsPerRow &&
+      this.state.itemWidth === itemWidth &&
+      this.state.itemHeight === itemHeight &&
+      this.state.itemScale === itemScale &&
+      this.state.containerHeight === containerHeight
+    ) {
       layoutRenderDepth = 0;
       return false;
     }
 
     layoutRenderDepth++;
-    const layout = { itemsPerRow,
-                     itemWidth,
-                     itemHeight,
-                     itemScale,
-                     containerHeight };
+    const layout = {
+      itemsPerRow,
+      itemWidth,
+      itemHeight,
+      itemScale,
+      containerHeight,
+    };
     this.setState(layout);
     return layout;
   }
@@ -392,12 +410,13 @@ export class VirtualGrid extends React.Component {
   //
   // Returns true if the size changed, false otherwise.
   updateVisibleRange(nextLayout, nextItems, slotAssignment) {
-    const layout = nextLayout || { itemWidth: this.state.itemWidth,
-                                   itemHeight: this.state.itemHeight,
-                                   itemsPerRow: this.state.itemsPerRow,
-                                   itemScale: this.state.itemScale,
-                                   containerHeight:
-                                     this.state.containerHeight };
+    const layout = nextLayout || {
+      itemWidth: this.state.itemWidth,
+      itemHeight: this.state.itemHeight,
+      itemsPerRow: this.state.itemsPerRow,
+      itemScale: this.state.itemScale,
+      containerHeight: this.state.containerHeight,
+    };
     // We haven't finished doing the initial layout yet
     if (!layout.itemWidth || !layout.itemHeight) {
       return;
@@ -410,35 +429,46 @@ export class VirtualGrid extends React.Component {
 
     if (this.scrollContainer) {
       // Calculate visible height
-      const upperBound = Math.max(this.scrollContainer.scrollTop -
-                                  this.grid.offsetTop, 0);
-      const lowerBound = this.scrollContainer.offsetHeight -
-                         this.grid.offsetTop +
-                         this.scrollContainer.scrollTop;
+      const upperBound = Math.max(
+        this.scrollContainer.scrollTop - this.grid.offsetTop,
+        0
+      );
+      const lowerBound =
+        this.scrollContainer.offsetHeight -
+        this.grid.offsetTop +
+        this.scrollContainer.scrollTop;
 
       const firstVisibleRow = Math.floor(upperBound / layout.itemHeight);
-      const lastVisibleRow  = Math.ceil(lowerBound / layout.itemHeight);
+      const lastVisibleRow = Math.ceil(lowerBound / layout.itemHeight);
 
       startIndex = firstVisibleRow * layout.itemsPerRow;
-      endIndex   = Math.min((lastVisibleRow + 1) * layout.itemsPerRow,
-                            items.length);
+      endIndex = Math.min(
+        (lastVisibleRow + 1) * layout.itemsPerRow,
+        items.length
+      );
     } else {
       // No scroll container? All the items must be visible, I guess.
       startIndex = 0;
       endIndex = items.length;
     }
 
-    if (!slotAssignment &&
-        this.state.startIndex === startIndex &&
-        this.state.endIndex === endIndex) {
+    if (
+      !slotAssignment &&
+      this.state.startIndex === startIndex &&
+      this.state.endIndex === endIndex
+    ) {
       return;
     }
 
     // Update slots
     if (slotAssignment) {
-      this.updateSlotsWithNewProps(startIndex, endIndex,
-                                   items, slotAssignment,
-                                   layout);
+      this.updateSlotsWithNewProps(
+        startIndex,
+        endIndex,
+        items,
+        slotAssignment,
+        layout
+      );
     } else {
       this.updateSlots(startIndex, endIndex);
     }
@@ -451,12 +481,12 @@ export class VirtualGrid extends React.Component {
     const emptySlots = [];
     const existingItems = [];
     slots.forEach((data, i) => {
-      if (data === null ||
-          data.index < startIndex ||
-          data.index >= endIndex) {
+      if (data === null || data.index < startIndex || data.index >= endIndex) {
         emptySlots.push(i);
-      } else if (typeof data.index === 'string' &&
-                 !this.state.deletingItems[data.index]) {
+      } else if (
+        typeof data.index === 'string' &&
+        !this.state.deletingItems[data.index]
+      ) {
         slots[i] = null;
         emptySlots.push(i);
       } else {
@@ -467,8 +497,14 @@ export class VirtualGrid extends React.Component {
     });
 
     // Fill in items in missing slots
-    fillInMissingSlots(startIndex, endIndex, emptySlots,
-                       existingItems, slots, FillMode.Fill);
+    fillInMissingSlots(
+      startIndex,
+      endIndex,
+      emptySlots,
+      existingItems,
+      slots,
+      FillMode.Fill
+    );
 
     this.setState({ startIndex, endIndex, slots });
   }
@@ -482,9 +518,10 @@ export class VirtualGrid extends React.Component {
     for (let i = startIndex; i < endIndex; i++) {
       const existingSlot = slotAssignment[items[i]._id];
       if (typeof existingSlot === 'number') {
-        const existingRow = Math.floor(slots[existingSlot].index /
-                                       layout.itemsPerRow);
-        const newRow      = Math.floor(i / layout.itemsPerRow);
+        const existingRow = Math.floor(
+          slots[existingSlot].index / layout.itemsPerRow
+        );
+        const newRow = Math.floor(i / layout.itemsPerRow);
         slots[existingSlot] = { index: i };
         if (existingRow !== newRow) {
           slots[existingSlot].changedRow = true;
@@ -498,7 +535,7 @@ export class VirtualGrid extends React.Component {
     // Detect and store any newly-deleted items that would still be in range
     const deletingItems = {};
     let firstDeletion;
-    for (const [ id, slot ] of Object.entries(slotAssignment)) {
+    for (const [id, slot] of Object.entries(slotAssignment)) {
       // Check it is still in range
       const previousIndex = this.state.slots[slot].index;
       if (previousIndex < startIndex || previousIndex >= endIndex) {
@@ -506,8 +543,10 @@ export class VirtualGrid extends React.Component {
       }
 
       // Check if it is a deleting item that has finished deleting
-      if (typeof previousIndex === 'string' &&
-          !this.state.deletingItems[previousIndex]) {
+      if (
+        typeof previousIndex === 'string' &&
+        !this.state.deletingItems[previousIndex]
+      ) {
         slots[slot] = null;
         continue;
       }
@@ -516,7 +555,7 @@ export class VirtualGrid extends React.Component {
       const existingRecord = this.state.deletingItems[id];
       if (existingRecord) {
         deletingItems[id] = existingRecord;
-      // Otherwise store a new record
+        // Otherwise store a new record
       } else {
         deletingItems[id] = {
           item: this.props.items[previousIndex],
@@ -532,8 +571,10 @@ export class VirtualGrid extends React.Component {
     slots.forEach((slot, i) => {
       if (slot === null) {
         emptySlots.push(i);
-      } else if (typeof slot.index === 'number' &&
-                 (slot.index < startIndex || slot.index >= endIndex)) {
+      } else if (
+        typeof slot.index === 'number' &&
+        (slot.index < startIndex || slot.index >= endIndex)
+      ) {
         delete slot.recycled;
         delete slot.added;
         emptySlots.push(i);
@@ -541,19 +582,26 @@ export class VirtualGrid extends React.Component {
     });
 
     // Fill in missing items
-    const firstAddition = fillInMissingSlots(startIndex, endIndex, emptySlots,
-                                             existingItems, slots,
-                                             FillMode.Add);
+    const firstAddition = fillInMissingSlots(
+      startIndex,
+      endIndex,
+      emptySlots,
+      existingItems,
+      slots,
+      FillMode.Add
+    );
 
     // Schedule transitions
     const firstChange = definedMin(firstDeletion, firstAddition);
     if (firstChange !== Infinity) {
       const deleteDur = typeof firstDeletion === 'undefined' ? 0 : 0.2;
-      const moveDur   = hasMovedItems ? 0.2 : 0;
+      const moveDur = hasMovedItems ? 0.2 : 0;
       slots.forEach(slot => {
-        if (!slot ||
-            typeof slot.index !== 'number' ||
-            slot.index < firstChange) {
+        if (
+          !slot ||
+          typeof slot.index !== 'number' ||
+          slot.index < firstChange
+        ) {
           return;
         }
 
@@ -563,8 +611,8 @@ export class VirtualGrid extends React.Component {
         } else {
           // Stagger move transitions by a decreasing amount
           const dist = Math.max(slot.index - firstChange, 0);
-          slot.transitionDelay = deleteDur +
-                                 moveDur * (1 - 1 / Math.pow(1.1, dist));
+          slot.transitionDelay =
+            deleteDur + moveDur * (1 - 1 / Math.pow(1.1, dist));
         }
       });
     }
@@ -573,9 +621,10 @@ export class VirtualGrid extends React.Component {
   }
 
   render() {
-    const containerHeight = this.state.containerHeight === null
-                            ? window.innerHeight + 10
-                            : this.state.containerHeight;
+    const containerHeight =
+      this.state.containerHeight === null
+        ? window.innerHeight + 10
+        : this.state.containerHeight;
     const gridStyle = { height: `${containerHeight}px` };
     const scale = `scale(${this.state.itemScale})`;
 
@@ -589,60 +638,62 @@ export class VirtualGrid extends React.Component {
           ref={this.assignItemTemplate}>
           {this.props.renderTemplateItem()}
         </div>
-        {
-          this.state.slots.map((data, i) => {
-            const classes = [ 'grid-item' ];
+        {this.state.slots.map((data, i) => {
+          const classes = ['grid-item'];
 
-            // Skip empty slots caused by deleting items.
-            if (!data || (typeof data.index === 'string' &&
-                          !this.state.deletingItems[data.index])) {
-              return null;
-            }
+          // Skip empty slots caused by deleting items.
+          if (
+            !data ||
+            (typeof data.index === 'string' &&
+              !this.state.deletingItems[data.index])
+          ) {
+            return null;
+          }
 
-            let item;
-            let itemIndex;
-            if (typeof data.index === 'string') {
-              const deletingRecord = this.state.deletingItems[data.index];
-              item = deletingRecord.item;
-              itemIndex = deletingRecord.index;
-              classes.push('deleting');
-            } else {
-              item = this.props.items[data.index];
-              itemIndex = data.index;
-            }
+          let item;
+          let itemIndex;
+          if (typeof data.index === 'string') {
+            const deletingRecord = this.state.deletingItems[data.index];
+            // eslint-disable-next-line prefer-destructuring
+            item = deletingRecord.item;
+            itemIndex = deletingRecord.index;
+            classes.push('deleting');
+          } else {
+            item = this.props.items[data.index];
+            itemIndex = data.index;
+          }
 
-            if (!data.recycled) {
-              classes.push('moving');
-            }
-            if (data.changedRow) {
-              classes.push('changed-row');
-            }
-            if (data.added) {
-              classes.push('adding');
-            }
+          if (!data.recycled) {
+            classes.push('moving');
+          }
+          if (data.changedRow) {
+            classes.push('changed-row');
+          }
+          if (data.added) {
+            classes.push('adding');
+          }
 
-            const row = Math.floor(itemIndex / this.state.itemsPerRow);
-            const col = itemIndex % this.state.itemsPerRow;
-            const translate = `translate(${col * this.state.itemWidth}px, ` +
-                                        `${row * this.state.itemHeight}px)`;
-            const styles = { transform: `${translate} ${scale}` };
-            if (data.transitionDelay) {
-              styles.transitionDelay = data.transitionDelay + 's';
-            }
+          const row = Math.floor(itemIndex / this.state.itemsPerRow);
+          const col = itemIndex % this.state.itemsPerRow;
+          const translate =
+            `translate(${col * this.state.itemWidth}px, ` +
+            `${row * this.state.itemHeight}px)`;
+          const styles = { transform: `${translate} ${scale}` };
+          if (data.transitionDelay) {
+            styles.transitionDelay = data.transitionDelay + 's';
+          }
 
-            return (
-              <div
-                style={styles}
-                className={classes.join(' ')}
-                // eslint-disable-next-line react/no-array-index-key
-                key={i}
-                data-item-id={item._id}>
-                <div className="scale-wrapper">
-                  {this.props.renderItem(item)}
-                </div>
-              </div>);
-          })
-        }
+          return (
+            <div
+              style={styles}
+              className={classes.join(' ')}
+              // eslint-disable-next-line react/no-array-index-key
+              key={i}
+              data-item-id={item._id}>
+              <div className="scale-wrapper">{this.props.renderItem(item)}</div>
+            </div>
+          );
+        })}
       </div>
     );
   }

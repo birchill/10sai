@@ -1,16 +1,15 @@
 import { routeFromPath, routeFromURL } from '../router';
 
-export default function route(state = { }, action) {
+export default function route(state = {}, action) {
   switch (action.type) {
     case 'UPDATE_URL':
       action.replace = 'replace';
-      // fall through
+    // fall through
 
     case 'NAVIGATE': {
       const route = action.url
-                    ? routeFromURL(action.url)
-                    : routeFromPath(action.path, action.search,
-                                    action.fragment);
+        ? routeFromURL(action.url)
+        : routeFromPath(action.path, action.search, action.fragment);
       const history = state.history ? state.history.slice() : [];
 
       // If we are navigating from history but don't have an index, we should
@@ -21,10 +20,10 @@ export default function route(state = { }, action) {
         return state;
       }
 
-      let index = [ action, state ].reduce((result, obj) => {
+      let index = [action, state].reduce((result, obj) => {
         return result === -1 && typeof obj.index === 'number'
-               ? obj.index
-               : result;
+          ? obj.index
+          : result;
       }, -1);
 
       // For the most part, navigating from history replaces.
