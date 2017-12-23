@@ -174,3 +174,45 @@ ReactDOM.render(
   />,
   document.getElementById('sync-configure-container')
 );
+
+(function renderSummaryPageTabs(selectedTab) {
+  const panels = [
+    { key: 'notconfigured', label: 'Not configured' },
+    { key: 'uptodate', label: 'Up-to-date' },
+    { key: 'inprogress', label: 'In progress' },
+    { key: 'paused', label: 'Paused' },
+    { key: 'offline', label: 'Offline' },
+    { key: 'error', label: 'Error' },
+    { key: 'configure', label: 'Configure' },
+  ];
+
+  const active = panels.findIndex(({ key }) => key === selectedTab.key);
+
+  for (const { key } of panels) {
+    const panel = document.getElementById(`sync-${key}-container`);
+    if (key === selectedTab.key) {
+      panel.hidden = false;
+    } else {
+      panel.hidden = true;
+    }
+  }
+
+  ReactDOM.render(
+    <TabBlock active={active}>
+      {panels.map(({ key, label }) => (
+        <a
+          key={key}
+          id={`${key}-tab`}
+          href="yer"
+          aria-controls={`sync-${key}-container`}
+          onClick={evt => {
+            renderSummaryPageTabs({ key });
+            evt.preventDefault();
+          }}>
+          {label}
+        </a>
+      ))}
+    </TabBlock>,
+    document.getElementById('summary-panel-tab-block-container')
+  );
+})({ key: 'notconfigured' });

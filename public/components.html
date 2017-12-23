@@ -76,42 +76,26 @@
     <h2>Layout</h2>
 
     <h3>Tabs</h3>
-    <!-- Each of the tab pages needs to have, e.g.:
+    <!-- Each of the tab pages should have, e.g.:
         id="lookup-page"
         role="tabpanel"
         aria-labelledby="lookup-tab"
-        aria-hidden="true" or just hidden boolean attribute (preferred?)
+        aria-hidden="true" or just hidden boolean attribute
       -->
     <div id=tab-block-container style="width: 800px"></div>
 
     <h3>Summary panels</h3>
 
-    <div id=sync-notconfigured-container
-      style="width: 600px; border: 1px dotted black">
-    </div>
-
-    <div id=sync-uptodate-container
-      style="width: 600px; border: 1px dotted black">
-    </div>
-
-    <div id=sync-inprogress-container
-      style="width: 600px; border: 1px dotted black">
-    </div>
-
-    <div id=sync-paused-container
-      style="width: 600px; border: 1px dotted black">
-    </div>
-
-    <div id=sync-offline-container
-      style="width: 600px; border: 1px dotted black">
-    </div>
-
-    <div id=sync-error-container
-      style="width: 600px; border: 1px dotted black">
-    </div>
-
-    <div id=sync-configure-container
-      style="width: 600px; border: 1px dotted black">
+    <div style="margin: 1em; border: 1px dotted black; border-radius: 0.5em;
+      padding: 1em">
+      <div id=summary-panel-tab-block-container></div>
+      <div id=sync-notconfigured-container></div>
+      <div id=sync-uptodate-container></div>
+      <div id=sync-inprogress-container></div>
+      <div id=sync-paused-container></div>
+      <div id=sync-offline-container></div>
+      <div id=sync-error-container></div>
+      <div id=sync-configure-container></div>
     </div>
 
     <script src="/tensai-components.js"></script>
