@@ -22,18 +22,55 @@ export class TabBlock extends React.Component {
     );
   }
 
+  componentWillUpdate(nextProps) {
+    // If we are going from inactive to active we need to make sure the
+    // underlying transform has the correct translation so that only the scale
+    // transitions.
+    if (typeof this.props.active === 'undefined' &&
+        typeof nextProps.active !== 'undefined' &&
+        this.highlightBar) {
+      // Don't transition from whatever underlying 'transform' style we set when
+      // we went inactive.
+      this.highlightBar.style.transitionProperty = 'none';
+      this.highlightBar.style.transformOrigin =
+        `${100 * nextProps.active + 50}%`;
+      this.highlightBar.style.transform =
+        `scale(0, 1) translate(${100 * nextProps.active}%)`;
+
+      // Flush the old style
+      // eslint-disable-next-line no-unused-expressions
+      getComputedStyle(this.highlightBar).transform;
+
+      // Re-enable transitions
+      this.highlightBar.style.transitionProperty = 'transform';
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    // If we are going from active to inactive we need to make sure the
+    // transition endpoint has the correct translation so that only the scale
+    // transitions.
+    if (typeof this.props.active === 'undefined' &&
+        typeof prevProps.active !== 'undefined' &&
+        this.highlightBar) {
+      this.highlightBar.style.transformOrigin =
+        `${100 * prevProps.active + 50}%`;
+      this.highlightBar.style.transform =
+        `scale(0, 1) translate(${100 * prevProps.active}%)`;
+    }
+  }
+
   render() {
     const highlightStyle = {
-      width: `${100 / React.Children.count(this.props.children)}%`,
+      width: `${100 / React.Children.count(this.props.children)}%`
     };
-    if (this.props.active) {
-      highlightStyle.transform = `translate(${100 * this.props.active}%)`;
+    if (typeof this.props.active !== 'undefined') {
+      highlightStyle.transform = `scale(1, 1) translate(${100 *
+        this.props.active}%)`;
     }
 
     return (
-      <ul
-        role="tablist"
-        className={`${this.props.className || ''} tab-block`}>
+      <ul role="tablist" className={`${this.props.className || ''} tab-block`}>
         {React.Children.map(this.props.children, (child, index) =>
           TabBlock.renderChild(child, index === this.props.active)
         )}
@@ -41,7 +78,8 @@ export class TabBlock extends React.Component {
           className="highlight-bar"
           style={highlightStyle}
           role="presentation"
-          hidden={this.props.active === undefined} />
+          ref={highlightBar => { this.highlightBar = highlightBar; }}
+        />
       </ul>
     );
   }

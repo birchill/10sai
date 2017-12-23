@@ -31,7 +31,7 @@ ReactDOM.render(
         aria-controls="lookup-page"
         className="-icon -lookup"
         onClick={evt => {
-          renderTabs(0);
+          renderTabs(selectedTab === 0 ? undefined : 0);
           evt.preventDefault();
         }}>
         Lookup
@@ -42,7 +42,7 @@ ReactDOM.render(
         aria-controls="add-page"
         className="-icon -plus"
         onClick={evt => {
-          renderTabs(1);
+          renderTabs(selectedTab === 1 ? undefined : 1);
           evt.preventDefault();
         }}>
         Add card
@@ -54,7 +54,7 @@ ReactDOM.render(
         className="-icon -review -badge"
         data-badge="10%"
         onClick={evt => {
-          renderTabs(2);
+          renderTabs(selectedTab === 2 ? undefined : 2);
           evt.preventDefault();
         }}>
         Review

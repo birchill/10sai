@@ -1,6 +1,3 @@
-// TODO:
-// - Use button-icons.svg in other styles
-//   - Drop text-box style
 .tab-block {
   position: relative;
   display: flex;
@@ -25,6 +22,7 @@
     height: $border-width * 2;
     background-color: $highlight;
     transition: transform 0.15s;
+    transform: scale(0, 0) translate(0%);
     will-change: transform;
   }
 }
