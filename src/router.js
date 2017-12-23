@@ -9,10 +9,10 @@ import deepEqual from 'deep-equal';
 // /settings             - Settings popup (over whatever screen is showing)
 // /cards/asdfasdf       - View card with id 'adsfasdf'
 // /cards/new            - Add card screen
-// /notes/asdfasdf       - Likewise, but for notes
-// /notes/new            - Needed?
 // /review               - Review cards, default settings
 // /review?limit=50&q=search&max-due=40 - Review cards but with query params
+// /lookup               - Lookup screen
+// /lookup?q=abc         - Lookup screen with search time 'abc'
 //
 // When we go to add subjects all of this will be prefixed with a subject and
 // the default root URL will just redirect(?) to the last-opened deck
@@ -58,11 +58,15 @@ export function routeFromPath(path, search, fragment) {
 
   if (path === 'settings') {
     route.popup = 'settings';
+  } else if (path === 'lookup') {
+    route.screen = 'lookup';
   } else if (path === 'cards/new') {
     route.screen = 'edit-card';
   } else if (path && path.startsWith('cards/')) {
     route.screen = 'edit-card';
     route.card = path.substr('cards/'.length);
+  } else if (path === 'review') {
+    route.screen = 'review';
   }
 
   // Parse query string
@@ -97,8 +101,12 @@ export function URLFromRoute(route = {}) {
   // regexp to use and then call pathToRegexp.compile here).
   if (route.popup === 'settings') {
     url += 'settings';
+  } else if (route.screen === 'lookup') {
+    url += 'lookup';
   } else if (route.screen === 'edit-card') {
     url += 'cards/' + (route.card || 'new');
+  } else if (route.screen === 'review') {
+    url += 'review';
   }
 
   // Append query string
