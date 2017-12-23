@@ -5,19 +5,21 @@ import SortOfRelativeDate from './SortOfRelativeDate.jsx';
 
 function ServerStatus(props) {
   return (
-    <fieldset className="server-status" name="server-status">
+    <fieldset
+      className={`${props.className || ''} server-status`}
+      name="server-status">
       <legend>Sync server</legend>
-      <div className="server-summary">
-        <div className="server-name">{props.server}</div>
+      <div className="summary">
+        <div className="name">{props.server}</div>
         {props.lastSyncTime ? (
-          <div className="server-sync-time">
+          <div className="sync-time">
             Last synced <SortOfRelativeDate value={props.lastSyncTime} />
           </div>
         ) : (
           ''
         )}
       </div>
-      <button name="edit-server" onClick={props.onEdit}>
+      <button className="button" name="edit-server" onClick={props.onEdit}>
         Change
       </button>
     </fieldset>
@@ -25,6 +27,7 @@ function ServerStatus(props) {
 }
 
 ServerStatus.propTypes = {
+  className: PropTypes.string,
   server: PropTypes.string.isRequired,
   lastSyncTime: PropTypes.instanceOf(Date),
   onEdit: PropTypes.func.isRequired,

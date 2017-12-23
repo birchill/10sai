@@ -151,6 +151,7 @@ export class SyncSettingsPanel extends React.Component {
     const server = this.props.server ? this.props.server.name : '';
     return (
       <ServerStatus
+        className="server"
         server={server}
         lastSyncTime={this.props.lastSyncTime}
         onEdit={this.handleEditServer}
@@ -159,13 +160,15 @@ export class SyncSettingsPanel extends React.Component {
   }
 
   renderOkOrOffline() {
+    // XXX We need to get rid of the following <div> in order to get the right
+    // styling.
     return (
       <div>
-        <div>
-          <button className="-icon -pause" onClick={this.handlePause}>
-            Pause
-          </button>
-        </div>
+        <button
+          className="-primary -icon -pause -center"
+          onClick={this.handlePause}>
+          Pause
+        </button>
         {this.renderServerInputBox()}
       </div>
     );

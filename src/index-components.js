@@ -78,3 +78,22 @@ ReactDOM.render(
   />,
   document.getElementById('sync-notconfigured-container')
 );
+
+const server = {
+  name: 'http://server.server.server/path'
+};
+
+ReactDOM.render(
+  <SyncSettingsPanel
+    syncState={SyncState.OK}
+    server={server}
+    lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
+    onSubmit={stub}
+    onRetry={stub}
+    onEdit={stub}
+    onCancel={stub}
+    onPause={stub}
+    onResume={stub}
+  />,
+  document.getElementById('sync-uptodate-container')
+);
