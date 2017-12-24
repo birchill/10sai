@@ -5,8 +5,9 @@ const webpack = require('webpack');
 module.exports = {
   entry: {
     tensai: ['@babel/polyfill', './src/index.js'],
-    'tensai-db': ['@babel/polyfill', './src/index-db.js'],
-    'tensai-components': ['@babel/polyfill', './src/index-components.js']
+    '_database': ['@babel/polyfill', './src/_database.js'],
+    '_assets': ['@babel/polyfill', './src/_assets.js'],
+    '_grid': ['@babel/polyfill', './src/_grid.js']
   },
   output: {
     path: path.resolve(__dirname, 'public'),

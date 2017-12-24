@@ -214,17 +214,17 @@ export class VirtualGrid extends React.Component {
   }
 
   componentDidUpdate() {
-    // Drop the 'adding' class from any items added on the last render so that
+    // Drop the '-adding' class from any items added on the last render so that
     // they transition.
     if (this.grid) {
-      const addedItems = this.grid.querySelectorAll('.grid-item.adding');
+      const addedItems = this.grid.querySelectorAll('.item.-adding');
       // If we have items, force a style flush so that transitions run
       if (addedItems.length) {
         // eslint-disable-next-line no-unused-expressions
         getComputedStyle(this.grid).backgroundColor;
       }
       [].forEach.call(addedItems, item => {
-        item.classList.remove('adding');
+        item.classList.remove('-adding');
       });
     }
 
@@ -267,14 +267,14 @@ export class VirtualGrid extends React.Component {
     // Ignore transitions on the outer element (since they are the translation
     // transitions).
     if (
-      !evt.target.classList.contains('scale-wrapper') ||
+      !evt.target.classList.contains('scalewrapper') ||
       evt.propertyName !== 'transform'
     ) {
       return;
     }
 
     // Check if we have already deleted this item
-    const gridItem = getInclusiveAncestorWithClass(evt.target, 'grid-item');
+    const gridItem = getInclusiveAncestorWithClass(evt.target, 'item');
     if (!gridItem) {
       return;
     }
@@ -630,7 +630,7 @@ export class VirtualGrid extends React.Component {
 
     return (
       <div
-        className={this.props.className}
+        className={`${this.props.className || ''} virtual-grid`}
         ref={this.assignGrid}
         style={gridStyle}>
         <div
@@ -639,7 +639,7 @@ export class VirtualGrid extends React.Component {
           {this.props.renderTemplateItem()}
         </div>
         {this.state.slots.map((data, i) => {
-          const classes = ['grid-item'];
+          const classes = ['item'];
 
           // Skip empty slots caused by deleting items.
           if (
@@ -657,20 +657,20 @@ export class VirtualGrid extends React.Component {
             // eslint-disable-next-line prefer-destructuring
             item = deletingRecord.item;
             itemIndex = deletingRecord.index;
-            classes.push('deleting');
+            classes.push('-deleting');
           } else {
             item = this.props.items[data.index];
             itemIndex = data.index;
           }
 
           if (!data.recycled) {
-            classes.push('moving');
+            classes.push('-moving');
           }
           if (data.changedRow) {
-            classes.push('changed-row');
+            classes.push('-changedrow');
           }
           if (data.added) {
-            classes.push('adding');
+            classes.push('-adding');
           }
 
           const row = Math.floor(itemIndex / this.state.itemsPerRow);
@@ -690,7 +690,7 @@ export class VirtualGrid extends React.Component {
               // eslint-disable-next-line react/no-array-index-key
               key={i}
               data-item-id={item._id}>
-              <div className="scale-wrapper">{this.props.renderItem(item)}</div>
+              <div className="scalewrapper">{this.props.renderItem(item)}</div>
             </div>
           );
         })}

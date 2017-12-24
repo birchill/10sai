@@ -18,6 +18,7 @@
 @import 'components-buttons';
 @import 'components-cancelable-textbox';
 @import 'components-cardface-input';
+@import 'components-card-grid';
 @import 'components-card-preview';
 @import 'components-close-button';
 @import 'components-edit-screen';
@@ -38,45 +39,4 @@
 @import 'components-tab-block';
 @import 'components-tab-panel';
 @import 'components-textbox';
-
-/*
- * Card grid
- */
-.card-grid {
-  position: relative;
-}
-.card-grid > * {
-  position: absolute;
-}
-.grid-item {
-  transform-origin: 0% 0%;
-}
-
-/* Item animations */
-.grid-item.moving {
-  transition: transform 0.15s 0.2s ease-in;
-}
-.grid-item.moving.changed-row {
-  transition-duration: 0.25s;
-  transition-timing-function: ease;
-}
-
-.grid-item .scale-wrapper {
-  transition-property: transform;
-  transition-delay: inherit;
-  /* Reveal transition */
-  transition-duration: 0.4s;
-  transition-timing-function: cubic-bezier(.85,0.1,.45,1.7);
-}
-.grid-item.adding .scale-wrapper,
-.grid-item.deleting .scale-wrapper {
-  will-change: transform;
-  transform: scale(0);
-}
-
-.grid-item.deleting {
-  pointer-events: none;
-}
-.grid-item.deleting .scale-wrapper {
-  transition: transform 0.3s cubic-bezier(0,-0.5,1,-0.5);
-}
+@import 'components-virtual-grid';

@@ -1,0 +1,32 @@
+.virtual-grid {
+  & > .item {
+    transform-origin: 0% 0%;
+
+    &.-moving {
+      transition: transform 0.15s 0.2s ease-in;
+    }
+    &.-moving.-changedrow {
+      transition-duration: 0.25s;
+      transition-timing-function: ease;
+    }
+    & > .scalewrapper {
+      transition-property: transform;
+      transition-delay: inherit;
+      /* Reveal transition */
+      transition-duration: 0.4s;
+      transition-timing-function: cubic-bezier(.85,0.1,.45,1.7);
+    }
+    &.-adding > .scalewrapper,
+    &.-deleting > .scalewrapper {
+      will-change: transform;
+      transform: scale(0);
+    }
+
+    &.-deleting {
+      pointer-events: none;
+    }
+    &.-deleting > .scalewrapper {
+      transition: transform 0.3s cubic-bezier(0,-0.5,1,-0.5);
+    }
+  }
+}
