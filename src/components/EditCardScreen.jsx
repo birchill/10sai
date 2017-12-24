@@ -35,33 +35,24 @@ export class EditCardScreen extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.active) this.activate();
+    if (this.props.active) {
+      this.activate();
+    }
   }
 
   componentDidUpdate(previousProps) {
-    if (previousProps.active === this.props.active) {
-      return;
-    }
-
-    if (this.props.active) {
+    if (this.props.active && previousProps.active !== this.props.active) {
       this.activate();
-    } else {
-      this.deactivate();
     }
-  }
-
-  componentWillUnmount() {
-    if (this.props.active) this.deactivate();
   }
 
   activate() {
-    this.previousFocus = document.activeElement;
-  }
-
-  deactivate() {
-    if (this.previousFocus) {
-      this.previousFocus.focus();
-      this.previousFocus = undefined;
+    if (
+      this.props.forms.active.editState === EditState.EMPTY &&
+      this.activeForm &&
+      this.activeForm.questionTextBox
+    ) {
+      this.activeForm.questionTextBox.focus();
     }
   }
 
@@ -78,12 +69,19 @@ export class EditCardScreen extends React.Component {
       <section className="edit-screen" aria-hidden={!this.props.active}>
         <EditCardToolbar
           editState={this.props.forms.active.editState}
-          onDelete={this.handleDelete} />
-        {this.props.forms.active.editState !== EditState.NOT_FOUND
-          ? <EditCardForm
+          onDelete={this.handleDelete}
+        />
+        {this.props.forms.active.editState !== EditState.NOT_FOUND ? (
+          <EditCardForm
             onChange={this.handleFormChange}
-            {...this.props.forms.active} />
-          : <EditCardNotFound deleted={this.props.forms.active.deleted} />}
+            {...this.props.forms.active}
+            ref={activeForm => {
+              this.activeForm = activeForm;
+            }}
+          />
+        ) : (
+          <EditCardNotFound deleted={this.props.forms.active.deleted} />
+        )}
       </section>
     );
   }

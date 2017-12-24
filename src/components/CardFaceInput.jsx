@@ -26,6 +26,7 @@ export class CardFaceInput extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
+    this.handleContainerFocus = this.handleContainerFocus.bind(this);
   }
 
   componentWillMount() {
@@ -80,6 +81,20 @@ export class CardFaceInput extends React.Component {
     }
   }
 
+  handleContainerFocus() {
+    if (this.state.hasFocus) {
+      return;
+    }
+
+    this.focus();
+  }
+
+  focus() {
+    if (this.editor) {
+      this.editor.focus();
+    }
+  }
+
   render() {
     const classes = [ this.props.className, 'cardface-input' ];
     if (this.state.hasFocus) {
@@ -87,7 +102,8 @@ export class CardFaceInput extends React.Component {
     }
 
     return (
-      <div className={classes.join(' ')}>
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+      <div className={classes.join(' ')} onClick={this.handleContainerFocus}>
         <Editor
           editorState={this.state.editorState}
           onChange={this.handleChange}
@@ -95,7 +111,8 @@ export class CardFaceInput extends React.Component {
           onBlur={this.handleBlur}
           placeholder={this.props.placeholder}
           textAlignment="center"
-          stripPastedStyles />
+          stripPastedStyles
+          ref={editor => { this.editor = editor; }} />
       </div>
     );
   }

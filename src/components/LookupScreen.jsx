@@ -39,9 +39,12 @@ export class LookupScreen extends React.Component {
       <section className="lookup-screen" aria-hidden={!this.props.active}>
         <div className="search-box">
           <input
+            name="q"
             type="search"
             placeholder="Lookup"
             className="-compact -rounded -icon -search"
+            spellCheck="false"
+            aria-label="Lookup"
             ref={this.assignSearchBox} />
         </div>
       </section>

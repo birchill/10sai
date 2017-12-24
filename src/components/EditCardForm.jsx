@@ -19,8 +19,6 @@ export class EditCardForm extends React.Component {
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
   }
 
-  // TODO: Auto-focus question box when edit state is empty
-
   handlePromptChange(value) {
     if (this.props.onChange) {
       this.props.onChange('question', value);
@@ -42,23 +40,30 @@ export class EditCardForm extends React.Component {
           className="-textpanel -large"
           placeholder="Prompt"
           required
-          onChange={this.handlePromptChange} />
+          onChange={this.handlePromptChange}
+          ref={questionTextBox => {
+            this.questionTextBox = questionTextBox;
+          }}
+        />
         <CardFaceInput
           name="answer"
           value={this.props.card.answer || ''}
           className="-textpanel -large"
           placeholder="Answer"
-          onChange={this.handleAnswerChange} />
+          onChange={this.handleAnswerChange}
+        />
         <input
           type="text"
           name="keywords"
           className="-textpanel -yellow"
-          placeholder="Keywords" />
+          placeholder="Keywords"
+        />
         <input
           type="text"
           name="tags"
           className="-textpanel"
-          placeholder="Tags" />
+          placeholder="Tags"
+        />
       </form>
     );
   }
