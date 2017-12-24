@@ -96,6 +96,9 @@ button.-icon, a.-icon {
   &.-pause::before {
     background-position-x: -13em;
   }
+  &.-settings::before {
+    background-position-x: -14em;
+  }
 }
 
 button.-badge::after, a.-badge::after {
@@ -114,4 +117,24 @@ button.-badge::after, a.-badge::after {
   color: white;
   content: attr(data-badge);
   display: inline-block;
+}
+
+@mixin grey-button($icon-column) {
+  font-size: 0;
+
+  &::before {
+    content: "";
+    width: 1.2rem;
+    height: 1.2rem;
+    display: inline-block;
+    background: url('img/icons.svg') ($icon-column * -100%) -200% / (($icon-columns * 1.2)+rem) ($icon-rows * 1.2)+rem content-box;
+  }
+}
+
+.close-button {
+  @include grey-button(9);
+}
+
+.settings-button {
+  @include grey-button(14);
 }
