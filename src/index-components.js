@@ -3,6 +3,7 @@ import React from 'react';
 
 import 'main.scss'; // eslint-disable-line
 
+import CardPreview from './components/CardPreview.jsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
@@ -216,3 +217,8 @@ ReactDOM.render(
     document.getElementById('summary-panel-tab-block-container')
   );
 })({ key: 'notconfigured' });
+
+ReactDOM.render(
+  <CardPreview question="かんせい" />,
+  document.getElementById('card-preview-container')
+);

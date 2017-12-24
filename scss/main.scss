@@ -18,6 +18,7 @@
 @import 'components-buttons';
 @import 'components-cancelable-textbox';
 @import 'components-cardface-input';
+@import 'components-card-preview';
 @import 'components-close-button';
 @import 'components-edit-screen';
 @import 'components-editcard-form';
@@ -78,37 +79,4 @@
 }
 .grid-item.deleting .scale-wrapper {
   transition: transform 0.3s cubic-bezier(0,-0.5,1,-0.5);
-}
-
-.card-preview {
-  display: inline-block;
-  position: relative;
-  background: white;
-  border-radius: .2rem;
-  box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.15);
-  margin: .6rem;
-  height: 8rem;
-  width: 8rem;
-  text-align: center;
-  overflow: hidden;
-  color: black;
-}
-.card-preview .flex-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  padding: .4rem;
-  overflow: hidden;
-}
-// Hover states
-.card-preview {
-  transition: transform 0.2s;
-  box-sizing: border-box;
-}
-.card-preview:hover {
-  border: $border-width solid $hover-highlight;
-  transform: scale(1.07);
 }
