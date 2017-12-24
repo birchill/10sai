@@ -1,0 +1,38 @@
+// Yay, z-index.
+// Perhaps the worst-ever conceived CSS property.
+// The CSSWG was really asleep at the wheel when they let this one through.
+
+// Nav bar needs to be above the home screen content so the shadow overlaps
+// correctly.
+.home-screen > .nav-bar {
+  z-index: 5;
+}
+
+// Tab panels need to sit above the homescreen.
+.tab-panel {
+  z-index: 15;
+
+  // But when they're hidden they need to sit behind the active one.
+  //
+  // This relies on the fact that when we fade between two panels we use
+  // a step-end timing function to clear the opacity of panel being faded-out
+  // so even if it has a lower z-index it won't suddenly disappear.
+  &[hidden] {
+    z-index: 10;
+  }
+}
+
+// Tool bars in panels need to be a bit raised since otherwise draft.js content
+// ends up putting some of its content on top of the toolbar when scrolling
+.tab-panel .editcard-toolbar {
+  z-index: 16;
+}
+
+.tab-panel[hidden] .editcard-toolbar {
+  z-index: 11;
+}
+
+// Popups sit above everything
+.pop-up {
+  z-index: 50;
+}
