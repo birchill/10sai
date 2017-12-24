@@ -6,12 +6,20 @@
   height: 100%;
   overflow: auto;
 
-  transition: opacity 0.1s ease-in;
+  transition: opacity 0.1s ease;
   will-change: opacity;
 
   &[hidden] {
     opacity: 0.01;
     pointer-events: none;
+    // This is so that when we are fading from one panel to another we don't
+    // have a moment along the way where both panels are translucent and the
+    // background shows through.
+    //
+    // Technically, we shouldn't do this for the case when we are hiding all
+    // panels (e.g. to return to the homescreen) since it means we don't fade
+    // out. That's easily fixable (by adding a separate class for that case) but
+    // currently it seems fine to just snap closed in that case.
     transition-timing-function: step-end;
     // Revert browser display:none style
     display: block;
