@@ -26,23 +26,23 @@
       background-repeat: no-repeat;
     }
     &.-sync.-notconfigured {
-      background-position-x: -(7 * $icon-size);
+      background-position-x: -(5 * $icon-size);
     }
     &.-sync.-uptodate,
     &.-sync.-inprogress {
-      background-position-x: -(8 * $icon-size);
+      background-position-x: -(6 * $icon-size);
     }
     &.-sync.-inprogress {
       animation: rotate 1s linear infinite;
     }
     &.-sync.-paused {
-      background-position-x: -(9 * $icon-size);
+      background-position-x: -(7 * $icon-size);
     }
     &.-sync.-offline {
-      background-position-x: -(10 * $icon-size);
+      background-position-x: -(8 * $icon-size);
     }
     &.-sync.-error {
-      background-position-x: -(11 * $icon-size);
+      background-position-x: -(9 * $icon-size);
     }
   }
   & > .heading {
