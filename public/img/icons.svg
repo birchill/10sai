@@ -91,7 +91,9 @@
         C14.26,79.63,20.44,78.15,26.62,78.15z"/>
     </g>
     <!-- Review -->
-    <g transform="translate(800 0)">
+    <!-- The tiny scale component is because occasionally this icon was bleeding
+         into the next one. -->
+    <g transform="translate(800 0) scale(0.95)">
       <path fill="none" stroke="currentColor" stroke-width="6"
         d="M88,85.58C88,91.89,83.07,97,76.99,97H14.01
         C7.93,97,3,91.89,3,85.58V23.42C3,17.11,7.93,12,14.01,12
