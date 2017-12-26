@@ -16,12 +16,6 @@ before_install:
 script:
   - ./travis.sh
 
-deploy:
-  provider: surge
-  project: ./public/
-  domain: tensai.surge.sh
-  skip_cleanup: true
-
 notifications:
   email:
   - birtles@gmail.com
