@@ -1,0 +1,3 @@
+https://10sai.study/* https://10sai.io/:splat 301!
+http://10sai.study/* https://10sai.io/:splat 301!
+/*    /index.html   200
