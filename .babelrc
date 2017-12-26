@@ -1,4 +1,0 @@
-{
-  "presets": ["@babel/es2015", "@babel/react"],
-  "plugins": ["@babel/plugin-syntax-object-rest-spread"]
-}
