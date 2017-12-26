@@ -1,11 +1,11 @@
 {
-  "name": "tensai",
+  "name": "10sai",
   "description": "TODO",
   "version": "0.0.1",
   "author": "Brian Birtles",
   "repository": {
     "type": "git",
-    "url": "https://github.com/birtles/tensai.git"
+    "url": "https://github.com/birtles/10sai.git"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=development webpack --colors",
