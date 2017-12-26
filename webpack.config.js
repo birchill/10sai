@@ -4,7 +4,7 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    tensai: ['@babel/polyfill', './src/index.js'],
+    '10sai': ['@babel/polyfill', './src/index.js'],
     '_database': ['@babel/polyfill', './src/_database.js'],
     '_assets': ['@babel/polyfill', './src/_assets.js'],
     '_grid': ['@babel/polyfill', './src/_grid.js']
@@ -54,7 +54,7 @@ module.exports = {
     ]
   },
   plugins: [
-    new ExtractTextPlugin({ filename: 'tensai.css', allChunks: true }),
+    new ExtractTextPlugin({ filename: '10sai.css', allChunks: true }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
     })
