@@ -16,6 +16,3 @@ function ok_exit
 npm run lint || error_exit "Error running lint"
 npm test || error_exit "Error running tests"
 npm run build:prod || error_exit "Error building"
-
-# Rename index to 200.html so it is called for all not found URLs
-mv public/index.html public/200.html
