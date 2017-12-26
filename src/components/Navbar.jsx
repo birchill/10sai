@@ -37,7 +37,7 @@ export class Navbar extends React.Component {
     return (
       <header className="nav-bar">
         <hgroup className="app-title">
-          <h1 className="appname">Tensai</h1>
+          <h1 className="appname">10sai</h1>
           <h2 className="subject">Subject</h2>
         </hgroup>
         { this.renderSyncIcon() }

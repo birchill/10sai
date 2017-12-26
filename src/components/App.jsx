@@ -61,7 +61,7 @@ class App extends React.Component {
   }
 
   render() {
-    let title = 'Tensai';
+    let title = '10sai';
     if (this.props.route.popup) {
       const toTitle = str => str[0].toUpperCase() + str.substring(1);
       title += ` - ${toTitle(this.props.route.popup)}`;
