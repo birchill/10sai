@@ -5,7 +5,7 @@ import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../router';
 import EditCardScreen from './EditCardScreen.jsx';
-import HomeScreen from './HomeScreen.jsx';
+import HomeScreenContainer from './HomeScreenContainer.jsx';
 import Link from './Link.jsx';
 import LookupScreen from './LookupScreen.jsx';
 import Popup from './Popup.jsx';
@@ -83,7 +83,7 @@ class App extends React.Component {
           */}
         <div className="app">
           <div className="screens">
-            <HomeScreen />
+            <HomeScreenContainer />
             <TabPanel
               id="lookup-page"
               role="tabpanel"

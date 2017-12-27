@@ -214,7 +214,7 @@ ReactDOM.render(
         </a>
       ))}
     </TabBlock>,
-    document.getElementById('summary-panel-tab-block-container')
+    document.getElementById('sync-tab-block-container')
   );
 })({ key: 'notconfigured' });
 
