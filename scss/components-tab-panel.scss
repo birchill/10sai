@@ -10,7 +10,7 @@
   will-change: opacity;
 
   &[hidden] {
-    opacity: 0.01;
+    opacity: 0;
     pointer-events: none;
     // This is so that when we are fading from one panel to another we don't
     // have a moment along the way where both panels are translucent and the
