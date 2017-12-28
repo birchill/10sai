@@ -81,6 +81,7 @@ class App extends React.Component {
     if (activeTab === -1) {
       activeTab = undefined;
     }
+    const tabPanelClass = typeof activeTab === 'undefined' ? '-allhidden' : '';
 
     return (
       <DocumentTitle title={title}>
@@ -97,6 +98,7 @@ class App extends React.Component {
               id="lookup-page"
               role="tabpanel"
               aria-labelledby="lookup-tab"
+              className={tabPanelClass}
               hidden={this.props.route.screen !== 'lookup'}>
               <LookupScreen active={this.props.route.screen === 'lookup'} />
             </TabPanel>
@@ -104,6 +106,7 @@ class App extends React.Component {
               id="edit-page"
               role="tabpanel"
               aria-labelledby="edit-tab"
+              className={tabPanelClass}
               hidden={this.props.route.screen !== 'edit-card'}>
               <EditCardScreen
                 active={this.props.route.screen === 'edit-card'}
@@ -114,6 +117,7 @@ class App extends React.Component {
               id="review-page"
               role="tabpanel"
               aria-labelledby="review-tab"
+              className={tabPanelClass}
               hidden={this.props.route.screen !== 'review'}>
               <ReviewScreen active={this.props.route.screen === 'review'} />
             </TabPanel>
