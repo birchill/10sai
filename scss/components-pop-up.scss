@@ -1,6 +1,7 @@
 .pop-up {
   position: absolute;
   height: 100%;
+  top: 0; // Needed for WebKit
 
   &[hidden] {
     // Override UA display: none style for hidden elements since we use
