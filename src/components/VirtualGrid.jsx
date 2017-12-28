@@ -540,7 +540,12 @@ export class VirtualGrid extends React.Component {
     for (const [id, slot] of Object.entries(slotAssignment)) {
       // Check it is still in range
       const previousIndex = this.state.slots[slot].index;
-      if (previousIndex < startIndex || previousIndex >= endIndex) {
+      // Take special care of the case where we deleted an item that is now out
+      // of range because we clamp endIndex to the number of items.
+      const inDeletedRange =
+        previousIndex >= items.length && endIndex === items.length;
+      if (!inDeletedRange &&
+          (previousIndex < startIndex || previousIndex >= endIndex)) {
         continue;
       }
 
@@ -664,7 +669,6 @@ export class VirtualGrid extends React.Component {
             item = this.props.items[data.index];
             itemIndex = data.index;
           }
-          // XXX item can sometimes be null here
 
           if (!data.recycled) {
             classes.push('-moving');
