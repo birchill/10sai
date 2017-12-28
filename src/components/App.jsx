@@ -52,7 +52,14 @@ class App extends React.Component {
   }
 
   get currentScreenLink() {
-    const routeWithoutPopup = { ...this.props.route, popup: undefined };
+    const routeWithoutPopup = {
+      ...this.props.route,
+      popup: undefined,
+      // Generally the fragment is targetting something in the popup so we
+      // should drop that too. Not sure what to do if we ever find that we need
+      // a fragment on a page and then a popup on top of that.
+      fragment: undefined,
+    };
     return URLFromRoute(routeWithoutPopup);
   }
 
