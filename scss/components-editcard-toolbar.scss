@@ -1,7 +1,6 @@
 .editcard-toolbar {
   background: white;
   box-shadow: 0 2px 2px $light-grey;
-  padding: 0.5rem;
   display: flex;
   align-items: stretch;
   justify-content: space-between;
@@ -14,15 +13,17 @@
     align-items: center;
   }
 
+  // This shouldn't affect layout, but just make the hit region for these
+  // elements reach to the full extent of the toolbar.
+  a, button {
+    height: 100%;
+  }
+
   > .-center {
     flex: 0 0 auto;
   }
 
   > *:last-child {
     justify-content: flex-end;
-  }
-
-  .close-button {
-    padding: .5rem;
   }
 }
