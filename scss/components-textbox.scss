@@ -13,6 +13,9 @@ textarea {
     border-radius: 1.5rem;
     padding-left: 1rem;
     padding-right: 1rem;
+    // Outline boxes in Chrome don't following the rounding and look really
+    // stupid.
+    outline-width: 0px;
   }
 
   &.-icon {

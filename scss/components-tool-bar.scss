@@ -1,14 +1,12 @@
-.editcard-toolbar {
+.tool-bar {
   background: white;
   box-shadow: 0 2px 2px $light-grey;
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  flex-wrap: wrap;
 
   > * {
     flex: 1 0 0;
-
     display: flex;
     align-items: center;
   }

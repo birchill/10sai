@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export class LookupScreen extends React.Component {
+import LookupToolbar from './LookupToolbar.jsx';
+
+class LookupScreen extends React.Component {
   static get propTypes() {
     return {
       active: PropTypes.bool.isRequired,
@@ -11,7 +13,9 @@ export class LookupScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    this.assignSearchBox = elem => { this.searchBox = elem; };
+    this.assignToolbar = elem => {
+      this.toolbar = elem;
+    };
   }
 
   componentDidMount() {
@@ -29,24 +33,15 @@ export class LookupScreen extends React.Component {
   }
 
   activate() {
-    if (this.searchBox) {
-      this.searchBox.focus();
+    if (this.toolbar) {
+      this.toolbar.focus();
     }
   }
 
   render() {
     return (
       <section className="lookup-screen" aria-hidden={!this.props.active}>
-        <div className="search-box">
-          <input
-            name="q"
-            type="search"
-            placeholder="Lookup"
-            className="-compact -rounded -icon -search"
-            spellCheck="false"
-            aria-label="Lookup"
-            ref={this.assignSearchBox} />
-        </div>
+        <LookupToolbar ref={this.assignToolbar} />
       </section>
     );
   }

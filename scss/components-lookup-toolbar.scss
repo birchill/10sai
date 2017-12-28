@@ -1,0 +1,16 @@
+.tool-bar.lookup-toolbar {
+  > * {
+    flex: 0 0 auto;
+  }
+  > .search {
+    flex: 1 0 auto;
+    padding-left: 1rem;
+    width: -webkit-min-content;
+    width: -moz-min-content;
+    width: min-content;
+
+    > input {
+      width: 100%;
+    }
+  }
+}
