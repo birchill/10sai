@@ -146,7 +146,9 @@ export class VirtualGrid extends React.Component {
     // Ref callbacks
     this.assignGrid = elem => {
       this.grid = elem;
-      this.grid.addEventListener('transitionend', this.handleTransitionEnd);
+      if (this.grid) {
+        this.grid.addEventListener('transitionend', this.handleTransitionEnd);
+      }
     };
     this.assignItemTemplate = elem => {
       this.templateItem = elem;
@@ -662,6 +664,7 @@ export class VirtualGrid extends React.Component {
             item = this.props.items[data.index];
             itemIndex = data.index;
           }
+          // XXX item can sometimes be null here
 
           if (!data.recycled) {
             classes.push('-moving');

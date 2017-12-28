@@ -152,7 +152,7 @@ updateReviewTime();
 
 ReactDOM.render(
   <Provider store={store}>
-    <App cards={cardStore} />
+    <App cardStore={cardStore} />
   </Provider>,
   document.getElementById('container')
 );

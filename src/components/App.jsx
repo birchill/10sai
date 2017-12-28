@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../router';
+import CardList from '../CardList';
 import EditCardScreen from './EditCardScreen.jsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
 import Link from './Link.jsx';
@@ -19,7 +20,7 @@ class App extends React.Component {
   static get propTypes() {
     return {
       // eslint-disable-next-line react/forbid-prop-types
-      cards: PropTypes.object.isRequired,
+      cardStore: PropTypes.object.isRequired,
       route: PropTypes.shape({
         screen: PropTypes.string,
         popup: PropTypes.string,
@@ -37,16 +38,17 @@ class App extends React.Component {
   }
 
   static get childContextTypes() {
-    return { cardStore: PropTypes.object };
+    return { cardList: PropTypes.object };
   }
 
   constructor(props) {
     super(props);
     this.closePopup = this.closePopup.bind(this);
+    this.cardList = new CardList(props.cardStore);
   }
 
   getChildContext() {
-    return { cardStore: this.props.cards };
+    return { cardList: this.cardList };
   }
 
   get currentScreenLink() {
