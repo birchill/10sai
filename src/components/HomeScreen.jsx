@@ -23,22 +23,24 @@ function HomeScreen(props) {
     content = (
       <div className="summary-panel">
         <div className="icon -nocards" />
-        <h4 className="heading">You don&rsquo;t have any cards yet</h4>
+        <h4 className="heading">Let&rsquo;s get started!</h4>
+        <p className="subheading">
+          It looks like you don&rsquo;t have any cards yet.
+        </p>
         <div className="details">
           <Link
-            className="button -primary -center -icon -addcard"
+            className="button -primary -center -icon -add-card"
             href="/cards/new">
             Add a card
           </Link>
           {props.syncState === SyncState.NOT_CONFIGURED ? (
-            <React.Fragment>
-              <p>Or download cards you created elsewhere</p>
+            <p>
               <Link
                 className="button -center -icon -settings"
                 href="/settings#sync">
-                Configure sync server
+                Configure sync
               </Link>
-            </React.Fragment>
+            </p>
           ) : (
             ''
           )}

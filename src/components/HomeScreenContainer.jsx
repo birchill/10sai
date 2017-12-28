@@ -9,6 +9,6 @@ import HomeScreen from './HomeScreen.jsx';
 
 export default connect(state => ({
   syncState: state.sync.state,
-  loading: true,
+  loading: false,
   hasCards: false,
 }))(HomeScreen);
