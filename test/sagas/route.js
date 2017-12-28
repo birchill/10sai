@@ -211,7 +211,7 @@ describe('sagas:route beforeScreenChange', () => {
   });
 
   it('returns false if there is a navigation while the actions are'
-     + ' happenning', () => {
+     + ' happening', () => {
     const formId = 'abc';
     const state = {
       edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
