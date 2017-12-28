@@ -5,9 +5,17 @@
   & > .content-screen {
     flex: 1;
     overflow: auto;
+    // We only need this for when we present the loading screen / first run type
+    // summary panel screens, but it turns out it doesn't interfere with the
+    // card view either.
+    height: 100%;
 
     // XXX Not sure if I need this...
     box-sizing: border-box;
     padding: 10px;
+
+    & > .summary-panel {
+      height: 100%;
+    }
   }
 }

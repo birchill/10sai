@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import CardGrid from './CardGrid.jsx';
 import Link from './Link.jsx';
+import LoadingIndicator from './LoadingIndicator.jsx';
 import Navbar from './Navbar.jsx';
 import SyncState from '../sync-states';
 
@@ -11,7 +12,9 @@ function HomeScreen(props) {
   if (props.loading) {
     content = (
       <div className="summary-panel">
-        <div className="icon -loading" />
+        <div className="icon">
+          <LoadingIndicator />
+        </div>
       </div>
     );
   } else if (props.hasCards) {

@@ -5,6 +5,7 @@ import 'main.scss'; // eslint-disable-line
 
 import CardPreview from './components/CardPreview.jsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
+import LoadingIndicator from './components/LoadingIndicator.jsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
 
@@ -21,6 +22,11 @@ ReactDOM.render(
     }}
   />,
   document.getElementById('cancelable-textbox-container')
+);
+
+ReactDOM.render(
+  <LoadingIndicator />,
+  document.getElementById('loading-indicator-container')
 );
 
 (function renderTabs(selectedTab) {

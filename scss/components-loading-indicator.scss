@@ -1,0 +1,20 @@
+.loading-indicator {
+  & > .dot {
+    fill: $highlight;
+    animation: loading-indicator-swell 1.7s infinite backwards ease-out;
+    transform-origin: 50% 50%;
+    transform-box: fill-box;
+  }
+  & > .dot:nth-child(2) {
+    animation-delay: 0.25s;
+  }
+  & > .dot:nth-child(3) {
+    animation-delay: 0.5s;
+  }
+}
+
+@keyframes loading-indicator-swell {
+  from { transform: scale(0.2); }
+  22% { transform: scale(1); }
+  35%, to { transform: scale(0.2); }
+}
