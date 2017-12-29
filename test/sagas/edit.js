@@ -73,13 +73,20 @@ describe('sagas:edit navigate', () => {
   it('triggers a new action if the route is for adding a card', () => {
     const cardStore = { getCard: id => ({ _id: id }) };
 
+    // The new action increments a global counter which can be touched by other
+    // tests so we simply get the action here knowing that the next caller will
+    // be the code under test (so we increment the id to match the value the
+    // caller will get).
+    const expectedNewAction = editActions.newCard();
+    expectedNewAction.id++;
+
     return expectSaga(
       navigateSaga,
       cardStore,
       routeActions.navigate({ url: '/cards/new' })
     ).not
       .put(editActions.loadCard('123'))
-      .put(editActions.newCard(1))
+      .put(expectedNewAction)
       .not.call([cardStore, 'getCard'], '123')
       .run();
   });

@@ -5,24 +5,9 @@ import { assert } from 'chai';
 import subject from '../../src/reducers/review';
 import ReviewState from '../../src/review-states';
 import * as actions from '../../src/actions/review';
+import { generateCards } from '../testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-function getCards(maxNewCards, maxExistingCards, reviewTime) {
-  const cards = new Array(Math.max(maxNewCards, maxExistingCards));
-  for (let i = 0; i < cards.length; i++) {
-    const newCard = i < maxNewCards;
-    cards[i] = {
-      question: `Question ${i + 1}`,
-      answer: `Answer ${i + 1}`,
-      progress: {
-        level: newCard ? 0 : 1,
-        reviewed: newCard ? null : new Date(reviewTime - 3 * MS_PER_DAY),
-      },
-    };
-  }
-  return cards;
-}
 
 // Wrappers that creates a new review, new review time, and the appropriate
 // number of cards.
@@ -33,7 +18,7 @@ function newReview(maxNewCards, maxCards) {
     undefined,
     actions.newReview(maxNewCards, maxCards, reviewTime)
   );
-  const cards = getCards(maxNewCards, maxCards, reviewTime);
+  const cards = generateCards(maxNewCards, maxCards, reviewTime);
 
   return [initialState, cards, reviewTime];
 }

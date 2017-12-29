@@ -24,35 +24,40 @@ describe('integration:edit', () => {
     state = reducer(state, editActions.editCard(formId, { answer: 'Answer' }));
     state = reducer(state, { type: 'UPDATE_URL', url: '/cards/abc' });
 
-    return expectSaga(editSagas, cardStore)
-      // Danger -- withReducer must come before withState!
-      .withReducer(reducer)
-      .withState(state)
-      .dispatch(editActions.saveEditCard(formId))
-      .hasFinalState({
-        ...state,
-        route: {
-          index: 0,
-          history: [ {
-            screen: 'edit-card',
-            card: 'abc',
-          } ],
-        },
-        edit: {
-          forms: {
-            active: {
-              formId: 'abc',
-              editState: EditState.OK,
-              card: {
-                _id: 'abc',
-                prompt: 'Prompt',
-                answer: 'Answer',
-              }
-            }
-          }
-        }
-      })
-      .silentRun(100);
+    return (
+      expectSaga(editSagas, cardStore)
+        // Danger -- withReducer must come before withState!
+        .withReducer(reducer)
+        .withState(state)
+        .dispatch(editActions.saveEditCard(formId))
+        .hasFinalState({
+          ...state,
+          route: {
+            index: 0,
+            history: [
+              {
+                screen: 'edit-card',
+                card: 'abc',
+              },
+            ],
+          },
+          edit: {
+            forms: {
+              active: {
+                formId: 'abc',
+                editState: EditState.OK,
+                card: {
+                  _id: 'abc',
+                  prompt: 'Prompt',
+                  answer: 'Answer',
+                },
+              },
+            },
+          },
+          selection: { activeCardId: 'abc' },
+        })
+        .silentRun(100)
+    );
   });
 
   it('should allow loading, editing, and saving a new card', () => {
@@ -94,12 +99,9 @@ describe('integration:edit', () => {
     */
   });
 
-  it('should allow editing while still saving', () => {
-  });
+  it('should allow editing while still saving', () => {});
 
-  it('should save a dirty card before creating a new one', () => {
-  });
+  it('should save a dirty card before creating a new one', () => {});
 
-  it('should save a dirty card before loading a different one', () => {
-  });
+  it('should save a dirty card before loading a different one', () => {});
 });
