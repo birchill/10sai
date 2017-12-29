@@ -1,5 +1,16 @@
 // This is a special reducer that takes the whole updated state object as its
 // input.
+//
+// I'd love to remove this functionality and just make the active card
+// a function of the state, but I think the way users expect it to behave is
+// stative. For example, if you are looking at the "Lookup" tab and the card
+// being reviewed differs from the card being edited, which one is active
+// probably should depend on how you got there -- were you just reviewing or
+// just editing?
+//
+// (That said, I suspect eventually I'll discover that this UX of having the
+// active card being tied to reviewing is confusing and I'll overhaul the whole
+// thing somehow.)
 
 export default function selection(state, action) {
   const reviewCardId = state.review.currentCard
