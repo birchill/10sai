@@ -29,6 +29,7 @@ class App extends React.Component {
         hash: PropTypes.string,
         card: PropTypes.string,
       }),
+      activeCardId: PropTypes.string,
       onClosePopup: PropTypes.func,
     };
   }
@@ -83,6 +84,11 @@ class App extends React.Component {
     }
     const tabPanelClass = typeof activeTab === 'undefined' ? '-allhidden' : '';
 
+    // Edit/Add handling
+    const [addEditLink, addEditLabel, addEditClass] = this.props.activeCardId
+      ? [ `/cards/${this.props.activeCardId}`, 'Edit', '-edit-card']
+      : [ '/cards/new', 'Add', '-add-card'];
+
     return (
       <DocumentTitle title={title}>
         {/*
@@ -132,10 +138,10 @@ class App extends React.Component {
             </Link>
             <Link
               id="edit-tab"
-              href="/cards/new"
+              href={addEditLink}
               aria-controls="edit-page"
-              className="-icon -plus">
-              Add
+              className={`-icon ${addEditClass}`}>
+              {addEditLabel}
             </Link>
             <Link
               id="review-tab"
@@ -163,6 +169,7 @@ const mapStateToProps = state => ({
     state.route && state.route.history && state.route.history.length
       ? state.route.history[state.route.index]
       : {},
+  activeCardId: state.selection.activeCardId,
 });
 
 const ConnectedApp = connect(mapStateToProps)(App);
