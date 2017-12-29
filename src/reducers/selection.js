@@ -35,6 +35,16 @@ export default function selection(state, action) {
       }
       return state;
 
+    // If we just started a new card, clear the active card
+    case 'NEW_CARD':
+      if (state.selection.activeCardId && !editCardId) {
+        return {
+          ...state,
+          selection: { activeCardId: undefined },
+        };
+      }
+      return state;
+
     // If we deleted the active card, clear it
     case 'DELETE_EDIT_CARD':
       if (action.formId === state.selection.activeCardId) {

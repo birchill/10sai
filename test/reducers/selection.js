@@ -49,6 +49,20 @@ describe('reducer:selection', () => {
     assert.strictEqual(state.selection.activeCardId, 'def');
   });
 
+  it('should clear the active card when a new card is started', () => {
+    let state = subject(undefined, editActions.loadCard('tuv'));
+    const card = {
+      _id: 'tuv',
+      prompt: 'Prompt',
+      answer: 'Answer',
+    };
+
+    state = subject(state, editActions.finishLoadCard(card._id, card));
+    state = subject(state, editActions.newCard());
+
+    assert.strictEqual(state.selection.activeCardId, undefined);
+  });
+
   it('should clear the active card when it is deleted', () => {
     let state = subject(undefined, editActions.loadCard('ghi'));
     const card = {
