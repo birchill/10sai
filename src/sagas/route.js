@@ -29,16 +29,24 @@ export function* followLink(action) {
   const routeState = yield select(getRoute);
   let navigateRoute;
 
-  // First, unless the direction is forwards, if the route matches the current
+  // First, unless the link is an active link, if the route matches the current
   // route ignore the navigation altogether.
   //
-  // We need to allow this in the forwards direction since we can be on the new
-  // card screen, and, before saving the card, click the 'Add card' button which
-  // has the same URL as the current screen. If that happens we should run the
-  // beforeScreenChange action which will update the current URL before we
-  // navigate forwards.
+  // The "active link" distinction is used for some links that really behave
+  // like buttons but where making them links is convenient because it should be
+  // possible to right-click / ctrl+click them and perform the action in another
+  // tab.
+  //
+  // In particular, on the new card screen, if click the "Add" link in the
+  // toolbar, then you expect it to create a new card regardless of the fact
+  // that (assuming we haven't saved the in-progress card yet) the old URL
+  // '/cards/new' and the new URL '/cards/new' are the same.
+  //
+  // However, if you click the "Add" link in the tab bar then you *don't* expect
+  // that to generate a new card since it acts in a navigational fashion, rather
+  // than a button-like fashion.
   if (
-    (action.direction === 'backwards' || action.direction === 'replace') &&
+    !action.active &&
     typeof routeState.index === 'number' &&
     Array.isArray(routeState.history) &&
     routeState.index >= 0 &&

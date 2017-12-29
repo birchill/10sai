@@ -28,7 +28,10 @@ export class EditCardToolbar extends React.Component {
           </button>
         </div>
         <div className="-center">
-          <Link href="/cards/new" className="add button -icon -plus -link">
+          <Link
+            href="/cards/new"
+            className="add button -icon -plus -link"
+            active>
             Add
           </Link>
         </div>

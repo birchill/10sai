@@ -14,6 +14,7 @@ class Link extends React.Component {
       direction: PropTypes.oneOf(['backwards', 'replace', 'forwards']),
       onClick: PropTypes.func,
       children: PropTypes.node,
+      active: PropTypes.bool,
     };
   }
 
@@ -47,6 +48,7 @@ class Link extends React.Component {
 
   render() {
     const { href, ...rest } = this.props;
+    delete rest.active;
     return (
       <a href={href} {...rest} onClick={this.handleClick}>
         {this.props.children}
@@ -57,7 +59,7 @@ class Link extends React.Component {
 
 const mapDispatchToProps = (dispatch, props) => ({
   onClick: href => {
-    dispatch(routeActions.followLink(href, props.direction));
+    dispatch(routeActions.followLink(href, props.direction, props.active));
   },
 });
 

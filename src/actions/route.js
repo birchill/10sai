@@ -28,11 +28,12 @@ export function updateUrl(url) {
   };
 }
 
-export function followLink(url, direction) {
+export function followLink(url, direction, active = false) {
   return {
     type: 'FOLLOW_LINK',
     url: url || '/',
     direction,
+    active,
   };
 }
 
