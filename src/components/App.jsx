@@ -10,7 +10,7 @@ import HomeScreenContainer from './HomeScreenContainer.jsx';
 import Link from './Link.jsx';
 import LookupScreen from './LookupScreen.jsx';
 import Popup from './Popup.jsx';
-import ReviewScreen from './ReviewScreen.jsx';
+import ReviewScreenContainer from './ReviewScreenContainer.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
 import TabBlock from './TabBlock.jsx';
@@ -40,6 +40,13 @@ class App extends React.Component {
 
   static get childContextTypes() {
     return { cardList: PropTypes.object };
+  }
+
+  static queryAvailableCards() {
+    // TODO: Make this query this.props.cardStore
+    return new Promise(resolve => {
+      resolve({ newCards: 5, overdueCards: 10 });
+    });
   }
 
   constructor(props) {
@@ -125,7 +132,9 @@ class App extends React.Component {
               aria-labelledby="review-tab"
               className={tabPanelClass}
               hidden={this.props.route.screen !== 'review'}>
-              <ReviewScreen active={this.props.route.screen === 'review'} />
+              <ReviewScreenContainer
+                queryAvailableCards={App.queryAvailableCards}
+                active={this.props.route.screen === 'review'} />
             </TabPanel>
           </div>
           <TabBlock active={activeTab} className="tabbar -white">
