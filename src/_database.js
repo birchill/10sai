@@ -104,12 +104,12 @@ async function listOrphanedProgress() {
     const checkedProgress = document.querySelectorAll(
       'input[type=checkbox][name=orphan-progress]:checked'
     );
-    const putResults = [];
+    const deleteResults = [];
     for (const checkbox of checkedProgress) {
-      putResults.push(cardStore.deleteProgressRecord(checkbox.value));
+      deleteResults.push(cardStore.deleteProgressRecord(checkbox.value));
     }
     try {
-      await Promise.all(putResults);
+      await Promise.all(deleteResults);
     } catch (e) {
       console.error(e);
     }
