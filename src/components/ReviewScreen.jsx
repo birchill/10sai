@@ -126,7 +126,6 @@ function ReviewScreen(props) {
         <div className="icon -finished" />
         <h4 className="heading">All done!</h4>
         <div className="details">
-          <p>Well done!</p>
           {nextReviewPrompt}
         </div>
       </div>
