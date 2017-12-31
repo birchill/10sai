@@ -13,14 +13,17 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 // number of cards.
 
 function newReview(maxNewCards, maxCards) {
-  const reviewTime = new Date();
   const initialState = subject(
     undefined,
-    actions.newReview(maxNewCards, maxCards, reviewTime)
+    actions.newReview(maxNewCards, maxCards)
   );
-  const cards = generateCards(maxNewCards, maxCards, reviewTime);
+  const cards = generateCards(
+    maxNewCards,
+    maxCards,
+    initialState.reviewTime
+  );
 
-  return [initialState, cards, reviewTime];
+  return [initialState, cards, initialState.reviewTime];
 }
 
 // Wrappers for action creators that also set the random seed values
@@ -46,10 +49,7 @@ function failCard(nextCardSeed) {
 
 describe('reducer:review', () => {
   it('should go to the loading state on NEW_REVIEW', () => {
-    const updatedState = subject(
-      undefined,
-      actions.newReview(2, 10, new Date())
-    );
+    const updatedState = subject(undefined, actions.newReview(2, 10));
 
     assert.strictEqual(updatedState.reviewState, ReviewState.LOADING);
     assert.strictEqual(updatedState.maxNewCards, 2);
@@ -92,10 +92,7 @@ describe('reducer:review', () => {
   });
 
   it('should go to the COMPLETE state on REVIEW_LOADED if there are no cards', () => {
-    const initialState = subject(
-      undefined,
-      actions.newReview(1, 3, new Date())
-    );
+    const initialState = subject(undefined, actions.newReview(1, 3));
 
     const updatedState = subject(initialState, actions.reviewLoaded([]));
 

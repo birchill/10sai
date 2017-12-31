@@ -180,10 +180,9 @@ describe('sagas:review updateProgress', () => {
   };
 
   it('stores the updated review time of a passed card', async () => {
-    const reviewTime = new Date();
-    let state = reducer(undefined, reviewActions.newReview(2, 3, reviewTime));
+    let state = reducer(undefined, reviewActions.newReview(2, 3));
 
-    const cards = getCards(0, 3, reviewTime);
+    const cards = getCards(0, 3, state.review.reviewTime);
     state = reducer(state, reviewActions.reviewLoaded(cards));
 
     const cardToUpdate = state.review.currentCard;
@@ -195,16 +194,18 @@ describe('sagas:review updateProgress', () => {
       .withState(state)
       .call([cardStore, 'putCard'], {
         _id: cardToUpdate._id,
-        progress: { level: cardToUpdate.progress.level, reviewed: reviewTime },
+        progress: {
+          level: cardToUpdate.progress.level,
+          reviewed: state.review.reviewTime,
+        },
       })
       .run();
   });
 
   it('stores the updated progress of a failed card', async () => {
-    const reviewTime = new Date();
-    let state = reducer(undefined, reviewActions.newReview(1, 3, reviewTime));
+    let state = reducer(undefined, reviewActions.newReview(1, 3));
 
-    const cards = getCards(0, 3, reviewTime);
+    const cards = getCards(0, 3, state.review.reviewTime);
     state = reducer(state, reviewActions.reviewLoaded(cards));
 
     const cardToUpdate = state.review.currentCard;
@@ -216,16 +217,15 @@ describe('sagas:review updateProgress', () => {
       .withState(state)
       .call([cardStore, 'putCard'], {
         _id: cardToUpdate._id,
-        progress: { level: 0, reviewed: reviewTime },
+        progress: { level: 0, reviewed: state.review.reviewTime },
       })
       .run();
   });
 
   it('stores the updated progress of a passed card when it is the last card', async () => {
-    const reviewTime = new Date();
-    let state = reducer(undefined, reviewActions.newReview(2, 3, reviewTime));
+    let state = reducer(undefined, reviewActions.newReview(2, 3));
 
-    const cards = getCards(0, 1, reviewTime);
+    const cards = getCards(0, 1, state.review.reviewTime);
     state = reducer(state, reviewActions.reviewLoaded(cards));
 
     const cardToUpdate = state.review.currentCard;
@@ -247,16 +247,18 @@ describe('sagas:review updateProgress', () => {
       .withState(state)
       .call([cardStore, 'putCard'], {
         _id: cardToUpdate._id,
-        progress: { level: cardToUpdate.progress.level, reviewed: reviewTime },
+        progress: {
+          level: cardToUpdate.progress.level,
+          reviewed: state.review.reviewTime,
+        },
       })
       .run();
   });
 
   it('stores the updated progress of a failed card when it is the last card', async () => {
-    const reviewTime = new Date();
-    let state = reducer(undefined, reviewActions.newReview(2, 3, reviewTime));
+    let state = reducer(undefined, reviewActions.newReview(2, 3));
 
-    const cards = getCards(0, 2, reviewTime);
+    const cards = getCards(0, 2, state.review.reviewTime);
     state = reducer(state, reviewActions.reviewLoaded(cards));
 
     // Pass the first card so it is in history
@@ -284,7 +286,7 @@ describe('sagas:review updateProgress', () => {
       .withState(state)
       .call([cardStore, 'putCard'], {
         _id: cardToUpdate._id,
-        progress: { level: 0, reviewed: reviewTime },
+        progress: { level: 0, reviewed: state.review.reviewTime },
       })
       .run();
   });
