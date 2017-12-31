@@ -3,14 +3,16 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import ReviewState from '../review-states';
+import * as reviewActions from '../actions/review';
 
 import ReviewScreen from './ReviewScreen.jsx';
 
 class ReviewScreenContainer extends React.Component {
   static get propTypes() {
     return {
-      reviewState: PropTypes.symbol.isRequired,
       active: PropTypes.bool.isRequired,
+      reviewState: PropTypes.symbol.isRequired,
+      onNewReview: PropTypes.func.isRequired,
       queryAvailableCards: PropTypes.func.isRequired,
       maxNewCards: PropTypes.number,
       maxCards: PropTypes.number,
@@ -71,6 +73,7 @@ class ReviewScreenContainer extends React.Component {
         availableCards={this.state.availableCards}
         maxNewCards={this.props.maxNewCards}
         maxCards={this.props.maxCards}
+        onNewReview={this.props.onNewReview}
       />
     );
   }
@@ -82,5 +85,12 @@ const mapStateToProps = state => ({
   maxNewCards: 10,
   maxCards: 20,
 });
+const mapDispatchToProps = dispatch => ({
+  onNewReview: (maxNewCards, maxCards) => {
+    dispatch(reviewActions.newReview(maxNewCards, maxCards));
+  },
+});
 
-export default connect(mapStateToProps)(ReviewScreenContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(
+  ReviewScreenContainer
+);

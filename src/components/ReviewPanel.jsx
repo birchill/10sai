@@ -7,3 +7,5 @@ function ReviewPanel(props) {
 ReviewPanel.propTypes = {
   showAnswer: PropTypes.bool.isRequired,
 };
+
+export default ReviewPanel;

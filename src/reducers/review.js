@@ -67,7 +67,6 @@ export default function review(state = initialState, action) {
       return {
         ...initialState,
         reviewState: ReviewState.LOADING,
-        reviewTime: action.reviewTime,
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
       };

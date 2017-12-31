@@ -1,9 +1,8 @@
-export function newReview(maxNewCards, maxCards, reviewTime) {
+export function newReview(maxNewCards, maxCards) {
   return {
     type: 'NEW_REVIEW',
     maxCards,
     maxNewCards,
-    reviewTime,
   };
 }
 

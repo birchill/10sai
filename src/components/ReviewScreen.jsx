@@ -15,11 +15,24 @@ const nextReviewNumCards = props => {
   );
 };
 
-const renderReviewButton = numCards => (
-  <button className="start -primary -center">
-    {`New review (${numCards})`}
-  </button>
-);
+const renderReviewButton = props => {
+  const numCards = nextReviewNumCards(props);
+  return (
+    <button
+      className="start -primary -center"
+      onClick={() => {
+        props.onNewReview(props.maxNewCards, props.maxCards);
+      }}>
+      {`New review (${numCards})`}
+    </button>
+  );
+};
+
+renderReviewButton.propTypes = {
+  onNewReview: PropTypes.func.isRequired,
+  maxNewCards: PropTypes.number.isRequired,
+  maxCards: PropTypes.number.isRequired,
+};
 
 function ReviewScreen(props) {
   const settingsButton = (
@@ -69,7 +82,7 @@ function ReviewScreen(props) {
               <span className="icon -settings">&nbsp;</span>
               settings above.
             </p>
-            {renderReviewButton(numCards)}
+            {renderReviewButton(props)}
           </div>
         </div>
       );
@@ -116,7 +129,7 @@ function ReviewScreen(props) {
       nextReviewPrompt = (
         <React.Fragment>
           {promptText}
-          {renderReviewButton(numCards)}
+          {renderReviewButton(props)}
         </React.Fragment>
       );
     }
@@ -125,9 +138,7 @@ function ReviewScreen(props) {
       <div className="content summary-panel">
         <div className="icon -finished" />
         <h4 className="heading">All done!</h4>
-        <div className="details">
-          {nextReviewPrompt}
-        </div>
+        <div className="details">{nextReviewPrompt}</div>
       </div>
     );
   } else {
@@ -155,11 +166,13 @@ function ReviewScreen(props) {
 ReviewScreen.propTypes = {
   active: PropTypes.bool.isRequired,
   reviewState: PropTypes.symbol.isRequired,
+  // eslint-disable-next-line react/no-unused-prop-types
+  onNewReview: PropTypes.func.isRequired,
   availableCards: PropTypes.shape({
     newCards: PropTypes.number.isRequired,
     overdueCards: PropTypes.number.isRequired,
   }),
-  // (What can I say, eslint doesn't get it)
+  // Can't wait to switch to TypeScript and check this properly
   // eslint-disable-next-line react/no-unused-prop-types
   maxNewCards: PropTypes.number,
   // eslint-disable-next-line react/no-unused-prop-types
