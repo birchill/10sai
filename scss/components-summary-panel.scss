@@ -20,7 +20,7 @@
     width: $icon-size;
 
     // Generic icons
-    &.-nocards {
+    &.-review {
       background-image: url('img/icons.svg');
       background-size: ($icon-columns * $icon-size) ($icon-rows * $icon-size);
       background-repeat: no-repeat;

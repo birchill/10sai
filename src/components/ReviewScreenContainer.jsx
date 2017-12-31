@@ -57,11 +57,17 @@ class ReviewScreenContainer extends React.Component {
   }
 
   render() {
+    const reviewState =
+      this.state.loadingAvailableCards &&
+      (this.props.reviewState === ReviewState.IDLE ||
+        this.props.reviewState === ReviewState.COMPLETE)
+        ? ReviewState.LOADING
+        : this.props.reviewState;
+
     return (
       <ReviewScreen
         active={this.props.active}
-        reviewState={this.props.reviewState}
-        availabilityLoading={this.state.loadingAvailableCards}
+        reviewState={reviewState}
         availableCards={this.state.availableCards}
         maxNewCards={this.props.maxNewCards}
         maxCards={this.props.maxCards}
