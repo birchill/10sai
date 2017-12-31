@@ -60,4 +60,62 @@ async function listOrphans() {
   }, { once: true });
 }
 
+async function listOrphanedProgress() {
+  const orphans = await cardStore.getOrphanedProgress();
+
+  const container = document.getElementById('orphaned-progress');
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+
+  if (!orphans.length) {
+    container.textContent = 'No orphaned progress records found.';
+    return;
+  }
+
+  for (const progress of orphans) {
+    const id = `orphan-${progress._id}`;
+
+    const div = document.createElement('div');
+    div.classList.add('box-and-label');
+    container.appendChild(div);
+
+    const checkbox = document.createElement('input');
+    checkbox.setAttribute('type', 'checkbox');
+    checkbox.setAttribute('id', id);
+    checkbox.setAttribute('name', 'orphan-progress');
+    checkbox.setAttribute('value', progress._id);
+    div.appendChild(checkbox);
+
+    const label = document.createElement('label');
+    label.setAttribute('for', id);
+    const pre = document.createElement('pre');
+    pre.textContent = JSON.stringify(progress);
+    label.appendChild(pre);
+    div.appendChild(label);
+  }
+
+  const deleteButton = document.createElement('input');
+  deleteButton.setAttribute('type', 'button');
+  deleteButton.setAttribute('value', 'Delete');
+  container.appendChild(deleteButton);
+
+  deleteButton.addEventListener('click', async () => {
+    const checkedProgress = document.querySelectorAll(
+      'input[type=checkbox][name=orphan-progress]:checked'
+    );
+    const putResults = [];
+    for (const checkbox of checkedProgress) {
+      putResults.push(cardStore.deleteProgressRecord(checkbox.value));
+    }
+    try {
+      await Promise.all(putResults);
+    } catch (e) {
+      console.error(e);
+    }
+    listOrphanedProgress();
+  }, { once: true });
+}
+
 listOrphans();
+listOrphanedProgress();

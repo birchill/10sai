@@ -164,7 +164,8 @@ class CardStore {
             level: row.value.level,
             reviewed: row.value.reviewed,
           },
-        })));
+        }))
+      );
   }
 
   async updateCardsView() {
@@ -389,10 +390,6 @@ class CardStore {
     const cardToDelete = { ...card, _id: CARD_PREFIX + card._id };
     delete cardToDelete.progress;
     await stubbornDelete(cardToDelete, this.db);
-
-    if (!card.progress) {
-      return;
-    }
 
     const progressToDelete = {
       ...card.progress,
@@ -816,6 +813,43 @@ class CardStore {
     } catch (err) {
       console.error(`Unexpected error putting progress record: ${err}`);
       throw err;
+    }
+  }
+
+  async getOrphanedProgress() {
+    const records = await this.db.allDocs({
+      include_docs: true,
+      startkey: PROGRESS_PREFIX,
+      endkey: PROGRESS_PREFIX + '\ufff0',
+    });
+
+    const orphans = [];
+
+    for (const progress of records.rows) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await this.db.get(CARD_PREFIX + stripProgressPrefix(progress.id));
+      } catch (e) {
+        orphans.push(progress.doc);
+      }
+    }
+
+    return orphans;
+  }
+
+  async deleteProgressRecord(progressId) {
+    let doc;
+    try {
+      doc = await this.db.get(progressId);
+    } catch (err) {
+      console.error(`Unexpected error getting progress record: ${err}`);
+      return;
+    }
+
+    try {
+      await this.db.remove(doc);
+    } catch (err) {
+      console.error(`Unexpected error deleting progress record: ${err}`);
     }
   }
 
