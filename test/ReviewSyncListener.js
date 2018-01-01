@@ -9,7 +9,7 @@ import { waitForEvents } from './testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-describe('CardStore', () => {
+describe('ReviewSyncListener', () => {
   let cardStore;
   let subject;
   let relativeTime;
