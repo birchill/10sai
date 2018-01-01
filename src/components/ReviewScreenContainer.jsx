@@ -13,7 +13,10 @@ class ReviewScreenContainer extends React.Component {
       active: PropTypes.bool.isRequired,
       reviewState: PropTypes.symbol.isRequired,
       onNewReview: PropTypes.func.isRequired,
-      queryAvailableCards: PropTypes.func.isRequired,
+      syncListener: PropTypes.shape({
+        subscribe: PropTypes.func.isRequired,
+        unsubscribe: PropTypes.func.isRequired,
+      }).isRequired,
       maxNewCards: PropTypes.number,
       maxCards: PropTypes.number,
     };
@@ -22,6 +25,8 @@ class ReviewScreenContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = { loadingAvailableCards: true, availableCards: undefined };
+    this.watchingAvailableCards = false;
+    this.updateAvailableCards = this.updateAvailableCards.bind(this);
   }
 
   componentDidMount() {
@@ -29,32 +34,67 @@ class ReviewScreenContainer extends React.Component {
       this.props.reviewState === ReviewState.COMPLETE ||
       this.props.reviewState === ReviewState.IDLE
     ) {
-      this.loadAvailableCards();
+      this.watchAvailableCards();
     }
   }
 
   componentWillReceiveProps(nextProps) {
+    if (this.props.reviewState === nextProps.reviewState) {
+      return;
+    }
+
+    // We only watch for available cards while we're complete / idle.
+    //
+    // (Bear in mind that ReviewState.LOADING here means "Loading a review"
+    // unlike in ReviewScreen where it means *either* "Loading a review" OR
+    // "Loading available cards for the first time in a while".)
     if (
-      this.props.reviewState !== nextProps.reviewState &&
-      (nextProps.reviewState === ReviewState.COMPLETE ||
-        nextProps.reviewState === ReviewState.IDLE)
+      nextProps.reviewState === ReviewState.COMPLETE ||
+      nextProps.reviewState === ReviewState.IDLE
     ) {
-      this.loadAvailableCards();
+      this.watchAvailableCards();
+    } else {
+      this.unwatchAvailableCards();
     }
   }
 
-  loadAvailableCards() {
+  componentWillUnmount() {
+    this.unwatchAvailableCards();
+  }
+
+  unwatchAvailableCards() {
+    if (!this.watchingAvailableCards) {
+      return;
+    }
+
+    this.props.syncListener.unsubscribe(
+      'availableCards',
+      this.updateAvailableCards
+    );
+    this.watchingAvailableCards = false;
+  }
+
+  watchAvailableCards() {
+    if (this.watchingAvailableCards) {
+      return;
+    }
+
     this.setState({
       loadingAvailableCards: true,
       availableCards: undefined,
     });
 
-    this.props.queryAvailableCards().then(availableCards => {
-      // XXX How to detect if we have been unmounted at this point?
-      this.setState({
-        loadingAvailableCards: false,
-        availableCards,
-      });
+    this.props.syncListener.subscribe(
+      'availableCards',
+      this.updateAvailableCards
+    );
+    this.watchingAvailableCards = true;
+  }
+
+  updateAvailableCards(availableCards) {
+    this.setState({
+      loadingAvailableCards: false,
+      availableCards,
     });
   }
 

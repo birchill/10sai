@@ -5,6 +5,8 @@ import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../router';
 import CardList from '../CardList';
+import ReviewSyncListener from '../ReviewSyncListener';
+
 import EditCardScreen from './EditCardScreen.jsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
 import Link from './Link.jsx';
@@ -45,8 +47,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.closePopup = this.closePopup.bind(this);
-    this.queryAvailableCards = this.queryAvailableCards.bind(this);
     this.cardList = new CardList(props.cardStore);
+    this.reviewSyncListener = new ReviewSyncListener(props.cardStore);
   }
 
   getChildContext() {
@@ -69,10 +71,6 @@ class App extends React.Component {
     if (this.props.onClosePopup) {
       this.props.onClosePopup();
     }
-  }
-
-  queryAvailableCards() {
-    return this.props.cardStore.getAvailableCards();
   }
 
   render() {
@@ -131,7 +129,7 @@ class App extends React.Component {
               className={tabPanelClass}
               hidden={this.props.route.screen !== 'review'}>
               <ReviewScreenContainer
-                queryAvailableCards={this.queryAvailableCards}
+                syncListener={this.reviewSyncListener}
                 active={this.props.route.screen === 'review'} />
             </TabPanel>
           </div>

@@ -78,7 +78,6 @@ class ReviewSyncListener {
     const topicListeners = this.listeners[topic];
     const index = topicListeners.indexOf(listener);
     if (index === -1) {
-      console.warn(`Couldn't find listener to remove for ${topic}`);
       return;
     }
 
