@@ -292,6 +292,12 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[1].question, 'Question 5');
     assert.strictEqual(result[2].question, 'Question 3');
     assert.strictEqual(result[3].question, 'Question 4');
+
+    // Check that the the availability API matches
+    assert.deepEqual(await subject.getAvailableCards(), {
+      newCards: 0,
+      overdueCards: 4,
+    });
   });
 
   it('respects the limit set when returning overdue cards', async () => {
@@ -403,6 +409,12 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[1].question, 'Question 1');
     assert.strictEqual(result[2].question, 'Question 3');
+
+    // Check availability API matches
+    assert.deepEqual(await subject.getAvailableCards(), {
+      newCards: 0,
+      overdueCards: 3,
+    });
   });
 
   it('returns new cards, oldest first', async () => {
@@ -427,6 +439,12 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result[0].question, 'Question 3');
     assert.strictEqual(result[1].question, 'Question 2');
     assert.strictEqual(result[2].question, 'Question 1');
+
+    // Check availability API matches
+    assert.deepEqual(await subject.getAvailableCards(), {
+      newCards: 3,
+      overdueCards: 0,
+    });
   });
 
   it('returns the review level along with overdue cards', async () => {

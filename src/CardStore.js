@@ -168,6 +168,21 @@ class CardStore {
       );
   }
 
+  async getAvailableCards() {
+    await this.initDone;
+
+    const overdueResult = await this.db.query('overdueness', {
+      include_docs: false,
+      startkey: 0,
+    });
+    const newResult = await this.db.query('new_cards', { include_docs: false });
+
+    return {
+      newCards: newResult.rows.length,
+      overdueCards: overdueResult.rows.length,
+    };
+  }
+
   async updateCardsView() {
     return this._updateMapView('cards', cardMapFunction);
   }
