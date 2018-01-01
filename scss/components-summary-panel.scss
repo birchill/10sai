@@ -21,12 +21,17 @@
     width: $icon-size;
 
     // Generic icons
-    &.-review {
+    &.-general {
       background-image: url('img/icons.svg');
       background-size: ($icon-columns * $icon-size) ($icon-rows * $icon-size);
       background-repeat: no-repeat;
       background-position-y: -(3 * $icon-size);
+    }
+    &.-general.-review {
       background-position-x: -(8 * $icon-size);
+    }
+    &.-general.-reviewfinished {
+      background-position-x: -(16 * $icon-size);
     }
 
     // Sync-themed icons

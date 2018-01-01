@@ -57,7 +57,7 @@ function ReviewScreen(props) {
     if (numCards === 0) {
       content = (
         <div className="content summary-panel">
-          <div className="icon -nocards" />
+          <div className="icon -general -reviewfinished" />
           <h4 className="heading">No cards to review!</h4>
           <div className="details">
             <p>
@@ -70,7 +70,7 @@ function ReviewScreen(props) {
     } else {
       content = (
         <div className="content summary-panel">
-          <div className="icon -review" />
+          <div className="icon -general -review" />
           <h4 className="heading">Start a new review</h4>
           <div className="details">
             <p>
@@ -136,7 +136,7 @@ function ReviewScreen(props) {
 
     content = (
       <div className="content summary-panel">
-        <div className="icon -finished" />
+        <div className="icon -general -reviewfinished" />
         <h4 className="heading">All done!</h4>
         <div className="details">{nextReviewPrompt}</div>
       </div>
