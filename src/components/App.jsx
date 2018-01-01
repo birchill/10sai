@@ -42,16 +42,10 @@ class App extends React.Component {
     return { cardList: PropTypes.object };
   }
 
-  static queryAvailableCards() {
-    // TODO: Make this query this.props.cardStore
-    return new Promise(resolve => {
-      resolve({ newCards: 5, overdueCards: 10 });
-    });
-  }
-
   constructor(props) {
     super(props);
     this.closePopup = this.closePopup.bind(this);
+    this.queryAvailableCards = this.queryAvailableCards.bind(this);
     this.cardList = new CardList(props.cardStore);
   }
 
@@ -75,6 +69,10 @@ class App extends React.Component {
     if (this.props.onClosePopup) {
       this.props.onClosePopup();
     }
+  }
+
+  queryAvailableCards() {
+    return this.props.cardStore.getAvailableCards();
   }
 
   render() {
@@ -133,7 +131,7 @@ class App extends React.Component {
               className={tabPanelClass}
               hidden={this.props.route.screen !== 'review'}>
               <ReviewScreenContainer
-                queryAvailableCards={App.queryAvailableCards}
+                queryAvailableCards={this.queryAvailableCards}
                 active={this.props.route.screen === 'review'} />
             </TabPanel>
           </div>
