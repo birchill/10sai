@@ -129,6 +129,18 @@ describe('CardStore progress reporting', () => {
     );
   });
 
+  it('allows setting the card contents and progress simultaneously', async () => {
+    const newCard = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+      progress: { level: 1 },
+    });
+    assert.strictEqual(newCard.progress.level, 1);
+
+    const fetchedCard = await subject.getCard(newCard._id);
+    assert.strictEqual(fetchedCard.progress.level, 1);
+  });
+
   it('reports changes to the progress', async () => {
     const updates = [];
     subject.changes.on('change', info => {

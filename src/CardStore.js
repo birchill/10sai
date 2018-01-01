@@ -87,6 +87,7 @@ const getOverduenessFunction = reviewTime =>
         level: 0,
         reviewed: doc.reviewed,
       });
+      return;
     }
 
     const daysDiff = (${reviewTime.getTime()} - doc.reviewed) / ${MS_PER_DAY};
@@ -261,17 +262,28 @@ class CardStore {
       modified: JSON.parse(JSON.stringify(new Date())),
     };
 
-    return (async function tryPutNewCard(card, db, id) {
+    if ('progress' in cardToPut) {
+      delete cardToPut.progress;
+    }
+
+    const progressToPut =
+      typeof card.progress === 'undefined' ? {} : card.progress;
+    if (progressToPut.reviewed &&
+        progressToPut.reviewed instanceof Date) {
+      progressToPut.reviewed = progressToPut.reviewed.getTime();
+    }
+
+    return (async function tryPutNewCard(card, progress, db, id) {
       let putCardResult;
       try {
-        putCardResult = await db.put({ ...cardToPut, _id: CARD_PREFIX + id });
+        putCardResult = await db.put({ ...card, _id: CARD_PREFIX + id });
       } catch (err) {
         if (err.status !== 409) {
           throw err;
         }
         // If we put the card and there was a conflict, it must mean we
         // chose an overlapping ID. Just keep trying until it succeeds.
-        return tryPutNewCard(card, db, CardStore.generateCardId());
+        return tryPutNewCard(card, progress, db, CardStore.generateCardId());
       }
 
       const newCard = {
@@ -284,9 +296,10 @@ class CardStore {
       // record. We have a unique card ID so there can't be any overlapping
       // progress record unless something is very wrong.
       const progressToPut = {
-        _id: PROGRESS_PREFIX + id,
         reviewed: null,
         level: 0,
+        ...progress,
+        _id: PROGRESS_PREFIX + id,
       };
       try {
         await db.put(progressToPut);
@@ -297,7 +310,7 @@ class CardStore {
       }
 
       return mergeRecords(newCard, progressToPut);
-    })(cardToPut, this.db, CardStore.generateCardId());
+    })(cardToPut, progressToPut, this.db, CardStore.generateCardId());
   }
 
   async _updateCard(id, update) {
