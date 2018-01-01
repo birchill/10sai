@@ -78,8 +78,8 @@ function ReviewScreen(props) {
               <strong>{`${numCards} ${pluralCards(numCards)}`}</strong>.
             </p>
             <p>
-              You can adjust the number of cards to review from the
-              <span className="icon -settings">&nbsp;</span>
+              You can adjust the number of cards to review from the{' '}
+              <span className="icon -settings -grey" />{' '}
               settings above.
             </p>
             {renderReviewButton(props)}
