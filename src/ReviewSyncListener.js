@@ -2,13 +2,19 @@
 // state.
 
 let delayedCallback;
+let cancelDelayedCallback;
+
 if (typeof window === 'object') {
-  delayedCallback =
-    'requestIdleCallback' in window
-      ? requestIdleCallback
-      : requestAnimationFrame;
+  if ('requestIdleCallback' in window) {
+    delayedCallback = requestIdleCallback;
+    cancelDelayedCallback = cancelIdleCallback;
+  } else {
+    delayedCallback = requestAnimationFrame;
+    cancelDelayedCallback = cancelAnimationFrame;
+  }
 } else {
   delayedCallback = setImmediate;
+  cancelDelayedCallback = clearImmediate;
 }
 
 class ReviewSyncListener {
@@ -20,19 +26,18 @@ class ReviewSyncListener {
     };
     this.availableCards = undefined;
 
-    this.queuedAvailableCardsUpdate = false;
+    this.queuedAvailabilityUpdate = undefined;
     this.cardStore.changes.on('change', () => {
       // TODO: If the change is only a change to the card contents we probably
       // don't need to update this.
       if (
         this.listeners.availableCards.length &&
-        !this.queuedAvailableCardsUpdate
+        !this.queuedAvailabilityUpdate
       ) {
-        delayedCallback(async () => {
+        this.queuedAvailabilityUpdate = delayedCallback(async () => {
           await this._updateAvailableCards();
-          this.queuedAvailableCardsUpdate = false;
+          this.queuedAvailabilityUpdate = undefined;
         });
-        this.queuedAvailableCardsUpdate = true;
       }
     });
   }
@@ -57,6 +62,9 @@ class ReviewSyncListener {
       typeof this.availableCards === 'undefined' &&
       topicListeners.length === 1
     ) {
+      if (this.queuedAvailabilityUpdate) {
+        cancelDelayedCallback(this.queuedAvailabilityUpdate);
+      }
       this._updateAvailableCards();
     }
   }

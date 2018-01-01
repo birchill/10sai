@@ -5,6 +5,7 @@ import memdown from 'memdown';
 import { assert } from 'chai';
 import CardStore from '../src/CardStore';
 import ReviewSyncListener from '../src/ReviewSyncListener';
+import { waitForEvents } from './testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -84,7 +85,53 @@ describe('CardStore', () => {
   });
 
   it('allows unsubscribing', async () => {
-    // TODO
+    const results = [];
+    const waitForResults = numResults =>
+      new Promise(function checkForResults(resolve) {
+        if (results.length >= numResults) {
+          resolve(results);
+        } else {
+          setTimeout(() => {
+            checkForResults(resolve);
+          }, 0);
+        }
+      });
+
+    // Add a card and wait for its change to be processed
+    let resolveInitialCard;
+    const initialCardAdded = new Promise(resolve => {
+      resolveInitialCard = resolve;
+    });
+    cardStore.changes.on('change', changes => {
+      if (changes.doc.question === 'Question #1') {
+        resolveInitialCard();
+      }
+    });
+    await cardStore.putCard({ question: 'Question #1', answer: 'Answer #1' });
+    await initialCardAdded;
+
+    // Now we can subscribe
+    const listener = availableCards => {
+      results.push(availableCards);
+    };
+    subject.subscribe('availableCards', listener);
+
+    await waitForResults(1);
+
+    // Unsubscribe
+    subject.unsubscribe('availableCards', listener);
+
+    // Add another card
+    await cardStore.putCard({ question: 'Question #2', answer: 'Answer #2' });
+
+    // Wait a while so that the change has a chance to be processed
+    await waitForEvents(50);
+
+    assert.deepEqual(
+      results,
+      [{ newCards: 1, overdueCards: 0 }],
+      'Returns only the first update'
+    );
   });
 
   it('allows multiple subscribers', async () => {
