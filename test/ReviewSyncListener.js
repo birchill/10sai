@@ -135,6 +135,50 @@ describe('CardStore', () => {
   });
 
   it('allows multiple subscribers', async () => {
-    // TODO
+    const resultsA = [];
+    const resultsB = [];
+
+    const waitForResults = numResults =>
+      new Promise(function checkForResults(resolve) {
+        if (resultsA.length >= numResults && resultsB.length >= numResults) {
+          resolve([resultsA, resultsB]);
+        } else {
+          setTimeout(() => {
+            checkForResults(resolve);
+          }, 0);
+        }
+      });
+
+    subject.subscribe('availableCards', availableCards => {
+      resultsA.push(availableCards);
+    });
+    subject.subscribe('availableCards', availableCards => {
+      resultsB.push(availableCards);
+    });
+
+    // Wait for initial results
+    await waitForResults(1);
+
+    // Add some cards
+    await cardStore.putCard({
+      question: 'Question #1',
+      answer: 'Answer #1',
+      progress: { reviewed: relativeTime(-10), level: 2 },
+    });
+    await cardStore.putCard({
+      question: 'Question #2',
+      answer: 'Answer #2',
+      progress: { reviewed: relativeTime(-5), level: 3 },
+    });
+    await waitForResults(2);
+
+    assert.deepEqual(
+      [resultsA, resultsB],
+      [
+        [{ newCards: 0, overdueCards: 0 }, { newCards: 0, overdueCards: 2 }],
+        [{ newCards: 0, overdueCards: 0 }, { newCards: 0, overdueCards: 2 }],
+      ],
+      'All records should be sent to both subscribers'
+    );
   });
 });
