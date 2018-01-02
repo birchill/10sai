@@ -13,12 +13,28 @@ class ReviewScreenContainer extends React.Component {
       active: PropTypes.bool.isRequired,
       reviewState: PropTypes.symbol.isRequired,
       onNewReview: PropTypes.func.isRequired,
+      onSelectCard: PropTypes.func.isRequired,
       syncListener: PropTypes.shape({
         subscribe: PropTypes.func.isRequired,
         unsubscribe: PropTypes.func.isRequired,
       }).isRequired,
       maxNewCards: PropTypes.number,
       maxCards: PropTypes.number,
+      previousCard: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
+        question: PropTypes.string.isRequired,
+        answer: PropTypes.string,
+      }),
+      currentCard: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
+        question: PropTypes.string.isRequired,
+        answer: PropTypes.string,
+      }),
+      nextCard: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
+        question: PropTypes.string.isRequired,
+        answer: PropTypes.string,
+      }),
     };
   }
 
@@ -114,20 +130,34 @@ class ReviewScreenContainer extends React.Component {
         maxNewCards={this.props.maxNewCards}
         maxCards={this.props.maxCards}
         onNewReview={this.props.onNewReview}
+        onSelectCard={this.props.onSelectCard}
+        previousCard={this.props.previousCard}
+        currentCard={this.props.currentCard}
+        nextCard={this.props.nextCard}
       />
     );
   }
 }
 
-const mapStateToProps = state => ({
-  reviewState: state.review.reviewState,
-  // TODO: Actually get these from somewhere
-  maxNewCards: 10,
-  maxCards: 20,
-});
+const mapStateToProps = state => {
+  const { history } = state.review;
+  const previousCard = history.length ? history[history.length - 1] : undefined;
+  return {
+    reviewState: state.review.reviewState,
+    // TODO: Actually get these from somewhere
+    maxNewCards: 10,
+    maxCards: 20,
+    previousCard,
+    currentCard: state.review.currentCard,
+    nextCard: state.review.nextCard,
+  };
+};
 const mapDispatchToProps = dispatch => ({
   onNewReview: (maxNewCards, maxCards) => {
     dispatch(reviewActions.newReview(maxNewCards, maxCards));
+  },
+  onSelectCard: () => {
+    dispatch(reviewActions.showAnswer());
   },
 });
 

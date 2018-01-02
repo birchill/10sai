@@ -79,8 +79,7 @@ function ReviewScreen(props) {
             </p>
             <p>
               You can adjust the number of cards to review from the{' '}
-              <span className="icon -settings -grey" />{' '}
-              settings above.
+              <span className="icon -settings -grey" /> settings above.
             </p>
             {renderReviewButton(props)}
           </div>
@@ -146,6 +145,10 @@ function ReviewScreen(props) {
       <ReviewPanel
         className="content"
         showAnswer={props.reviewState === ReviewState.ANSWER}
+        onSelectCard={props.onSelectCard}
+        previousCard={props.previousCard}
+        currentCard={props.currentCard}
+        nextCard={props.nextCard}
       />
     );
   }
@@ -168,6 +171,7 @@ ReviewScreen.propTypes = {
   reviewState: PropTypes.symbol.isRequired,
   // eslint-disable-next-line react/no-unused-prop-types
   onNewReview: PropTypes.func.isRequired,
+  onSelectCard: PropTypes.func.isRequired,
   availableCards: PropTypes.shape({
     newCards: PropTypes.number.isRequired,
     overdueCards: PropTypes.number.isRequired,
@@ -177,6 +181,21 @@ ReviewScreen.propTypes = {
   maxNewCards: PropTypes.number,
   // eslint-disable-next-line react/no-unused-prop-types
   maxCards: PropTypes.number,
+  previousCard: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    question: PropTypes.string.isRequired,
+    answer: PropTypes.string,
+  }),
+  currentCard: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    question: PropTypes.string.isRequired,
+    answer: PropTypes.string,
+  }),
+  nextCard: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    question: PropTypes.string.isRequired,
+    answer: PropTypes.string,
+  }),
 };
 
 export default ReviewScreen;
