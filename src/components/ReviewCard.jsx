@@ -7,7 +7,7 @@ import ReviewCardFront from './ReviewCardFront.jsx';
 function ReviewCard(props) {
   let className = 'review-card';
   if (props.showAnswer) {
-    className += ' -show-answer';
+    className += ' -showanswer';
   }
   if (props.className) {
     className += ` ${props.className}`;

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 function ReviewCardBack(props) {
-  const className = `card-back ${props.className || ''}`;
+  const className = `reviewcard-back ${props.className || ''}`;
 
   return (
     <div className={className}>

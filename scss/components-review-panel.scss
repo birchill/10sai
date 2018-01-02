@@ -1,0 +1,33 @@
+.review-panel {
+  overflow-x: hidden;
+
+  > .cards {
+    position: relative;
+    height: 100%;
+    padding: 1em;
+    box-sizing: border-box;
+
+    // This wrapper is needed so that the padding from 'cards' is respected by
+    // the absolutely-positioned descendants.
+    > .cardwrapper {
+      position: relative;
+      height: 100%;
+
+      > .review-card {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        top: 0;
+        transition: transform 0.2s;
+      }
+      > .previous {
+        transform: translate(-100%);
+      }
+      > .next {
+        transform: translate(calc(100% + 2em));
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+.review-card {
+  position: relative;
+
+  > .front, > .back {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    transition: opacity 0.2s;
+  }
+
+  &:not(.-showanswer) > .back,
+  &.-showanswer > .front {
+    opacity: 0;
+    pointer-events: none;
+  }
+}

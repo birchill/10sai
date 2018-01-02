@@ -22,7 +22,7 @@ function HomeScreen(props) {
   } else {
     content = (
       <div className="summary-panel">
-        <div className="icon -nocards" />
+        <div className="icon -general -review" />
         <h4 className="heading">Let&rsquo;s get started!</h4>
         <p className="subheading">
           It looks like you don&rsquo;t have any cards yet.

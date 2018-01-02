@@ -1,0 +1,11 @@
+.reviewcard-front, .reviewcard-back {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+
+  background: white;
+  border: $border-width solid $dark-grey;
+  border-radius: 1rem;
+}
