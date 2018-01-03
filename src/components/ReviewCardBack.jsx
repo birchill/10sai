@@ -6,9 +6,9 @@ function ReviewCardBack(props) {
 
   return (
     <div className={className}>
-      {props.question}
-      <hr />
-      {props.answer}
+      <div className="question">{props.question}</div>
+      <hr className="divider" />
+      <div className="answer">{props.answer}</div>
     </div>
   );
 }

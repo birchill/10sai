@@ -1,11 +1,39 @@
 .reviewcard-front, .reviewcard-back {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
   box-sizing: border-box;
 
   background: white;
   border: $border-width solid $dark-grey;
   border-radius: 1rem;
+}
+
+.reviewcard-front {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.reviewcard-back {
+  > * {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  > .question {
+    height: 33%;
+  }
+  > .divider {
+    height: 1%;
+    width: 80%;
+    border: none;
+    border-top: 2px dotted $dark-grey;
+  }
+  > .answer {
+    height: 66%;
+  }
 }
