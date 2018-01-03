@@ -172,11 +172,14 @@ class ReviewCardFront extends React.PureComponent {
 
   render() {
     const className = `reviewcard-front ${this.props.className || ''}`;
-    const style = { fontSize: this.state.fontSize };
+    const questionStyle = { fontSize: this.state.fontSize };
 
     return (
-      <div className={className} style={style} ref={this.assignContainer}>
-        <div className="question" ref={this.assignQuestion}>
+      <div className={className} ref={this.assignContainer}>
+        <div
+          className="question"
+          ref={this.assignQuestion}
+          style={questionStyle}>
           {this.props.question}
         </div>
       </div>
