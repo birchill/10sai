@@ -13,6 +13,10 @@
   align-items: center;
   text-align: center;
   overflow: hidden;
+
+  > .question {
+    padding: 2rem;
+  }
 }
 
 .reviewcard-back {
