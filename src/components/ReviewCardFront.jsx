@@ -9,71 +9,93 @@ class ReviewCardFront extends React.PureComponent {
     };
   }
 
-  static getIdealFontSize(elem, containerWidth, containerHeight) {
-    let prevFontSize = parseInt(getComputedStyle(elem).fontSize, 10);
+  // We used to do a very thorough job of getting the maximum font size down to
+  // the pixel. The trouble is it would cause several re-layouts and would not
+  // necessary look all that great anyway--since the text filling the box is not
+  // always the best layout.
+  //
+  // Instead, we simplify this to choosing from a number of preset font sizes
+  // that we know are going to be sensible.
+  static getGoodFontSize(elem, containerWidth, containerHeight) {
+    const fixedSizes = [12, 24, 48, 72, 96];
+    let fontSize = parseInt(getComputedStyle(elem).fontSize, 10);
+    console.assert(
+      fixedSizes.includes(fontSize),
+      'Font size not initialized to one of the fixed sizes'
+    );
+
     const dimensionDiff = (actual, ideal) => (actual - ideal) / ideal;
     const xDiff = bbox => dimensionDiff(bbox.width, containerWidth);
     const yDiff = bbox => dimensionDiff(bbox.height, containerHeight);
-    // console.log(`initial font size is ${prevFontSize}`);
 
-    // Get our initial guess
     let bbox = elem.getBoundingClientRect();
-    let fontSize = prevFontSize;
-    // If either dimension is too large we need to go smaller
-    // console.log(`xDiff ${xDiff(bbox)}, yDiff ${yDiff(bbox)}`);
-    if (xDiff(bbox) > 0 || yDiff(bbox) > 0) {
-      do {
-        prevFontSize = fontSize;
-        fontSize = Math.round(prevFontSize / 2);
-        elem.style.fontSize = fontSize + 'px';
-        bbox = elem.getBoundingClientRect();
-      } while (xDiff(bbox) > 0 || yDiff(bbox) > 0);
-    } else {
-      do {
-        prevFontSize = fontSize;
-        fontSize = Math.round(fontSize * 2);
-        elem.style.fontSize = fontSize + 'px';
-        bbox = elem.getBoundingClientRect();
-      } while (xDiff(bbox) <= 0 && yDiff(bbox) <= 0);
-    }
-    // console.log(`initial fontSize guess is ${fontSize}`);
 
-    // The progressively divide subintervals until we're within range
-    for (;;) {
-      // Get the updated bbox
+    // If either dimension is too large, we need to go smaller
+    if (xDiff(bbox) >= 0 || yDiff(bbox) >= 0) {
+      // Just keep trying smaller fixed sizes while we have them.
+      //
+      // Technically it would be faster to do a binary subdivision of intervals
+      // here but assuming we don't have massive changes to content size (we
+      // don't expect to), or sudden changes to container size (uncommon except
+      // when flipping a tablet/phone), and assuming we start somewhere at the
+      // middle of the range (which is true); then the most a binary subdivision
+      // would save would be ~1 relayout, but at the cost of code complexity.
+      // And many times it wouldn't save any relayouts at all because word
+      // wrapping means the ratio of differences to font size is not constant.
+
+      // We could use indexOf here but just in case fontSize is not in
+      // fixedSizes, let's play it safe.
+      let index = fixedSizes.findIndex(size => size >= fontSize);
+      while (--index >= 0) {
+        fontSize = fixedSizes[index];
+        elem.style.fontSize = fontSize + 'px';
+        bbox = elem.getBoundingClientRect();
+        if (xDiff(bbox) < 0 && yDiff(bbox) < 0) {
+          break;
+        }
+      }
+      return fontSize;
+    }
+
+    // Both dimensions are smaller.
+    //
+    // If they're both within 20% of filling the space just keep the font size
+    // as-is.
+    if (xDiff(bbox) > -0.2 && yDiff(bbox) > -0.2) {
+      return fontSize;
+    }
+
+    // Just keep trying larger fixed sizes while we have them.
+    //
+    // As before, we could do this *slightly* more efficiently, but this way is
+    // fine for now.
+    let index = fixedSizes.findIndex(size => size > fontSize);
+    while (index < fixedSizes.length) {
+      fontSize = fixedSizes[index];
       elem.style.fontSize = fontSize + 'px';
       bbox = elem.getBoundingClientRect();
-      const halfInterval = Math.round(Math.abs(fontSize - prevFontSize) / 2);
-      prevFontSize = fontSize;
-      // console.log(`xDiff ${xDiff(bbox)}, yDiff ${yDiff(bbox)}`);
+      // If we're too large, just use the previous size;
       if (xDiff(bbox) > 0 || yDiff(bbox) > 0) {
-        fontSize -= halfInterval;
-      } else {
-        fontSize += halfInterval;
+        fontSize = fixedSizes[--index];
+        elem.style.fontSize = fontSize + 'px';
+        break;
       }
-      // console.log(`Next fontSize guess is ${fontSize}`);
-
-      // If we're 1 pixel or less off, return the result.
-      // This tolerance is just to avoid a situation where we keep fluctuating
-      // between being too big or too small.
-      // console.log(`Current font size ${fontSize} vs previous ${prevFontSize}`);
-      // console.log(`Diff: ${Math.abs(fontSize - prevFontSize)}`);
-      if (Math.abs(fontSize - prevFontSize) < 2) {
-        // console.log(`Within range, returning ${Math.min(fontSize, prevFontSize)}`);
-        return Math.min(fontSize, prevFontSize);
+      // If we're close enough, just the current size
+      if (xDiff(bbox) > -0.2 && yDiff(bbox) > -0.2) {
+        break;
       }
+      index++;
     }
+    return fontSize;
   }
 
   constructor(props) {
     super(props);
 
     this.needsFontResize = false;
-    this.state = {
-      fontSize: 'inherit',
-      containerHeight: undefined,
-      containerWidth: undefined,
-    };
+    this.containerWidth = undefined;
+    this.containerHeight = undefined;
+    this.state = { fontSize: '48px' };
     this.handleResize = this.handleResize.bind(this);
     this.assignContainer = elem => {
       this.container = elem;
@@ -94,6 +116,10 @@ class ReviewCardFront extends React.PureComponent {
     }
   }
 
+  // XXX Implement shouldComponentUpdate and make it return false when we're
+  // only changing the fontSize and we've already updated the computed style
+  // of the element (as part of determining the fontSize).
+
   componentDidUpdate() {
     if (this.needsFontResize) {
       this.resizeFont();
@@ -113,11 +139,15 @@ class ReviewCardFront extends React.PureComponent {
 
     const bbox = this.container.getBoundingClientRect();
     if (
-      bbox.width !== this.state.containerWidth ||
-      bbox.height !== this.state.containerHeight
+      bbox.width === this.containerWidth ||
+      bbox.height === this.containerHeight
     ) {
-      this.resizeFont(bbox);
+      return;
     }
+
+    this.containerWidth = bbox.width;
+    this.containerHeight = bbox.height;
+    this.resizeFont(bbox);
   }
 
   resizeFont(containerBbox) {
@@ -126,16 +156,18 @@ class ReviewCardFront extends React.PureComponent {
     }
 
     const bbox = containerBbox || this.container.getBoundingClientRect();
-    this.setState({
-      containerWidth: bbox.width,
-      containerHeight: bbox.height,
-      fontSize: ReviewCardFront.getIdealFontSize(
-        this.question,
-        bbox.width,
-        bbox.height
-      ),
-    });
+    const fontSize = ReviewCardFront.getGoodFontSize(
+      this.question,
+      bbox.width,
+      bbox.height
+    );
     this.needsFontResize = false;
+
+    if (fontSize === this.state.fontSize) {
+      return;
+    }
+
+    this.setState({ fontSize });
   }
 
   render() {
