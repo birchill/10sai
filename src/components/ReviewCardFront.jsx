@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
-class ReviewCardFront extends React.PureComponent {
+class ReviewCardFront extends React.Component {
   static get propTypes() {
     return {
       question: PropTypes.string.isRequired,
@@ -116,9 +117,18 @@ class ReviewCardFront extends React.PureComponent {
     }
   }
 
-  // XXX Implement shouldComponentUpdate and make it return false when we're
-  // only changing the fontSize and we've already updated the computed style
-  // of the element (as part of determining the fontSize).
+  shouldComponentUpdate(nextProps) {
+    // Currently the only thing in state is the fontSize and we update that by
+    // applying the fontSize to the target element and measuring it.
+    // That means that by the time we update the fontSize, the target element is
+    // already up-to-date so we don't need to perform any further updates.
+    //
+    // Instead, we only need to update if one of the properties has changed.
+    //
+    // XXX: Require shallowEqual. It should be available through redux:
+    // https://github.com/reactjs/react-redux/blob/v5.0.1/src/utils/shallowEqual.js
+    return shallowEqual(this.props, nextProps);
+  }
 
   componentDidUpdate() {
     if (this.needsFontResize) {
