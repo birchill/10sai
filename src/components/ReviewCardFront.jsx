@@ -17,13 +17,11 @@ class ReviewCardFront extends React.Component {
   //
   // Instead, we simplify this to choosing from a number of preset font sizes
   // that we know are going to be sensible.
-  static getGoodFontSize(elem, containerWidth, containerHeight) {
-    const fixedSizes = [12, 24, 48, 72, 96];
-    let fontSize = parseInt(getComputedStyle(elem).fontSize, 10);
-    console.assert(
-      fixedSizes.includes(fontSize),
-      'Font size not initialized to one of the fixed sizes'
-    );
+  static getBestSize(elem, containerWidth, containerHeight) {
+    // Selectors for [data-size=...] MUST be defined for each of these and they
+    // must define increasing font sizes or potentially bad things could happen.
+    const sizeKeywords = ['x-small', 'small', 'medium', 'large', 'x-large'];
+    let { size } = elem.dataset;
 
     const dimensionDiff = (actual, ideal) => (actual - ideal) / ideal;
     const xDiff = bbox => dimensionDiff(bbox.width, containerWidth);
@@ -33,7 +31,7 @@ class ReviewCardFront extends React.Component {
 
     // If either dimension is too large, we need to go smaller
     if (xDiff(bbox) >= 0 || yDiff(bbox) >= 0) {
-      // Just keep trying smaller fixed sizes while we have them.
+      // Just keep trying smaller sizes while we have them.
       //
       // Technically it would be faster to do a binary subdivision of intervals
       // here but assuming we don't have massive changes to content size (we
@@ -42,20 +40,18 @@ class ReviewCardFront extends React.Component {
       // middle of the range (which is true); then the most a binary subdivision
       // would save would be ~1 relayout, but at the cost of code complexity.
       // And many times it wouldn't save any relayouts at all because word
-      // wrapping means the ratio of differences to font size is not constant.
+      // wrapping means the ratio of differences to sizes is not constant.
 
-      // We could use indexOf here but just in case fontSize is not in
-      // fixedSizes, let's play it safe.
-      let index = fixedSizes.findIndex(size => size >= fontSize);
+      let index = sizeKeywords.indexOf(size);
       while (--index >= 0) {
-        fontSize = fixedSizes[index];
-        elem.style.fontSize = fontSize + 'px';
+        size = sizeKeywords[index];
+        elem.dataset.size = size;
         bbox = elem.getBoundingClientRect();
         if (xDiff(bbox) < 0 && yDiff(bbox) < 0) {
           break;
         }
       }
-      return fontSize;
+      return size;
     }
 
     // Both dimensions are smaller.
@@ -63,22 +59,22 @@ class ReviewCardFront extends React.Component {
     // If they're both within 20% of filling the space just keep the font size
     // as-is.
     if (xDiff(bbox) > -0.2 && yDiff(bbox) > -0.2) {
-      return fontSize;
+      return size;
     }
 
     // Just keep trying larger fixed sizes while we have them.
     //
     // As before, we could do this *slightly* more efficiently, but this way is
     // fine for now.
-    let index = fixedSizes.findIndex(size => size > fontSize);
-    while (index < fixedSizes.length) {
-      fontSize = fixedSizes[index];
-      elem.style.fontSize = fontSize + 'px';
+    let index = sizeKeywords.indexOf(size);
+    while (index < sizeKeywords.length) {
+      size = sizeKeywords[index];
+      elem.dataset.size = size;
       bbox = elem.getBoundingClientRect();
       // If we're too large, just use the previous size;
       if (xDiff(bbox) > 0 || yDiff(bbox) > 0) {
-        fontSize = fixedSizes[--index];
-        elem.style.fontSize = fontSize + 'px';
+        size = sizeKeywords[--index];
+        elem.dataset.size = size;
         break;
       }
       // If we're close enough, just the current size
@@ -87,7 +83,7 @@ class ReviewCardFront extends React.Component {
       }
       index++;
     }
-    return fontSize;
+    return size;
   }
 
   constructor(props) {
@@ -96,7 +92,7 @@ class ReviewCardFront extends React.Component {
     this.needsFontResize = false;
     this.containerWidth = undefined;
     this.containerHeight = undefined;
-    this.state = { fontSize: '48px' };
+    this.state = { size: 'medium' };
     this.handleResize = this.handleResize.bind(this);
     this.assignContainer = elem => {
       this.container = elem;
@@ -118,15 +114,12 @@ class ReviewCardFront extends React.Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    // Currently the only thing in state is the fontSize and we update that by
-    // applying the fontSize to the target element and measuring it.
-    // That means that by the time we update the fontSize, the target element is
+    // Currently the only thing in state is the size and we update that by
+    // applying the size to the target element and measuring it.
+    // That means that by the time we update the size, the target element is
     // already up-to-date so we don't need to perform any further updates.
     //
     // Instead, we only need to update if one of the properties has changed.
-    //
-    // XXX: Require shallowEqual. It should be available through redux:
-    // https://github.com/reactjs/react-redux/blob/v5.0.1/src/utils/shallowEqual.js
     return shallowEqual(this.props, nextProps);
   }
 
@@ -166,30 +159,29 @@ class ReviewCardFront extends React.Component {
     }
 
     const bbox = containerBbox || this.container.getBoundingClientRect();
-    const fontSize = ReviewCardFront.getGoodFontSize(
+    const size = ReviewCardFront.getBestSize(
       this.question,
       bbox.width,
       bbox.height
     );
     this.needsFontResize = false;
 
-    if (fontSize === this.state.fontSize) {
+    if (size === this.state.size) {
       return;
     }
 
-    this.setState({ fontSize });
+    this.setState({ size });
   }
 
   render() {
     const className = `reviewcard-front ${this.props.className || ''}`;
-    const questionStyle = { fontSize: this.state.fontSize };
 
     return (
       <div className={className} ref={this.assignContainer}>
         <div
           className="question"
           ref={this.assignQuestion}
-          style={questionStyle}>
+          data-size={this.state.size}>
           {this.props.question}
         </div>
       </div>

@@ -16,6 +16,42 @@
 
   > .question {
     padding: 2rem;
+
+    &[data-size=x-small] {
+      font-size: 12px;
+    }
+    &[data-size=small] {
+      font-size: 24px;
+    }
+    &[data-size=medium] {
+      font-size: 48px;
+    }
+    &[data-size=large] {
+      font-size: 72px;
+    }
+    &[data-size=x-large] {
+      font-size: 96px;
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .reviewcard-front > .question {
+     &[data-size=x-small] {
+       font-size: 10px;
+     }
+     &[data-size=small] {
+       font-size: 16px;
+     }
+     &[data-size=medium] {
+       font-size: 24px;
+     }
+     &[data-size=large] {
+       font-size: 40px;
+     }
+     &[data-size=x-large] {
+       font-size: 60px;
+     }
   }
 }
 
