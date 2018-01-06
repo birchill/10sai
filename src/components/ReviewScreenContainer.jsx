@@ -14,6 +14,8 @@ class ReviewScreenContainer extends React.Component {
       reviewState: PropTypes.symbol.isRequired,
       onNewReview: PropTypes.func.isRequired,
       onSelectCard: PropTypes.func.isRequired,
+      onPassCard: PropTypes.func.isRequired,
+      onFailCard: PropTypes.func.isRequired,
       syncListener: PropTypes.shape({
         subscribe: PropTypes.func.isRequired,
         unsubscribe: PropTypes.func.isRequired,
@@ -131,6 +133,8 @@ class ReviewScreenContainer extends React.Component {
         maxCards={this.props.maxCards}
         onNewReview={this.props.onNewReview}
         onSelectCard={this.props.onSelectCard}
+        onPassCard={this.props.onPassCard}
+        onFailCard={this.props.onFailCard}
         previousCard={this.props.previousCard}
         currentCard={this.props.currentCard}
         nextCard={this.props.nextCard}
@@ -158,6 +162,12 @@ const mapDispatchToProps = dispatch => ({
   },
   onSelectCard: () => {
     dispatch(reviewActions.showAnswer());
+  },
+  onPassCard: () => {
+    dispatch(reviewActions.passCard());
+  },
+  onFailCard: () => {
+    dispatch(reviewActions.failCard());
   },
 });
 

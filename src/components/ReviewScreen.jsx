@@ -146,6 +146,8 @@ function ReviewScreen(props) {
         className="content"
         showAnswer={props.reviewState === ReviewState.ANSWER}
         onSelectCard={props.onSelectCard}
+        onPassCard={props.onPassCard}
+        onFailCard={props.onFailCard}
         previousCard={props.previousCard}
         currentCard={props.currentCard}
         nextCard={props.nextCard}
@@ -172,6 +174,8 @@ ReviewScreen.propTypes = {
   // eslint-disable-next-line react/no-unused-prop-types
   onNewReview: PropTypes.func.isRequired,
   onSelectCard: PropTypes.func.isRequired,
+  onPassCard: PropTypes.func.isRequired,
+  onFailCard: PropTypes.func.isRequired,
   availableCards: PropTypes.shape({
     newCards: PropTypes.number.isRequired,
     overdueCards: PropTypes.number.isRequired,
