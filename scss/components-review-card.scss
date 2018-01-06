@@ -23,7 +23,10 @@
 
   > .front > .question {
     height: 100%;
+  }
 
+  > .front > .question,
+  > .back > .answer {
     &[data-size=x-small] {
       font-size: 12px;
     }
@@ -38,6 +41,13 @@
     }
     &[data-size=x-large] {
       font-size: 96px;
+    }
+
+    // If we want padding *inside* the text region, then we need to apply it to
+    // the text itself since it won't affect the container bbox so the
+    // resizing of the text content will just ignore it.
+    > .text {
+      padding: 2rem;
     }
 
     @media screen and (max-width: 600px) {
@@ -56,13 +66,70 @@
       &[data-size=x-large] {
         font-size: 60px;
       }
+
+      > .text {
+        padding: 1rem;
+      }
     }
   }
 
-  // If we want padding *inside* the text region, then we need to apply it to
-  // the text itself since it won't affect the container bbox so the
-  // resizing of the text content will just ignore it.
-  > .front > .question > .text {
-    padding: 2rem;
+  > .back {
+    > .question {
+      height: 33%;
+
+      &[data-size=x-small] {
+        font-size: 12px;
+      }
+      &[data-size=small] {
+        font-size: 16px;
+      }
+      &[data-size=medium] {
+        font-size: 22px;
+      }
+      &[data-size=large] {
+        font-size: 30px;
+      }
+      &[data-size=x-large] {
+        font-size: 40px;
+      }
+
+      > .text {
+        padding: 2rem;
+      }
+
+      @media screen and (max-width: 600px) {
+        &[data-size=x-small] {
+          font-size: 10px;
+        }
+        &[data-size=small] {
+          font-size: 13px;
+        }
+        &[data-size=medium] {
+          font-size: 16px;
+        }
+        &[data-size=large] {
+          font-size: 24px;
+        }
+        &[data-size=x-large] {
+          font-size: 32px;
+        }
+
+        > .text {
+          padding: 1rem;
+        }
+      }
+    }
+    > .divider {
+      box-sizing: border-box;
+      margin-top: 0;
+      margin-bottom: 0;
+      height: 1%;
+      width: 80%;
+      border: none;
+      border-top: 2px dotted $dark-grey;
+    }
+    > .answer {
+      height: 66%;
+    }
   }
 }

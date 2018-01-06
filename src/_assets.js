@@ -7,7 +7,6 @@ import CardPreview from './components/CardPreview.jsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
 import LoadingIndicator from './components/LoadingIndicator.jsx';
 import TextRegion from './components/TextRegion.jsx';
-import ReviewCardBack from './components/ReviewCardBack.jsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
 
@@ -246,10 +245,13 @@ for (const container of cardFronts) {
 const cardBacks = document.querySelectorAll('.card-back-container');
 for (const container of cardBacks) {
   ReactDOM.render(
-    <ReviewCardBack
-      question={container.dataset.question}
-      answer={container.dataset.answer}
-    />,
+    <div className="review-card current -showanswer">
+      <div className="back">
+        <TextRegion className="question" text={container.dataset.question} />
+        <hr className="divider" />
+        <TextRegion className="answer" text={container.dataset.answer} />
+      </div>
+    </div>,
     container
   );
 }

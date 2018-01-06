@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import TextRegion from './TextRegion.jsx';
-import ReviewCardBack from './ReviewCardBack.jsx';
 
 function ReviewCard(props) {
   let className = 'review-card';
@@ -25,11 +24,11 @@ function ReviewCard(props) {
       <div className="front">
         <TextRegion className="question" text={props.question} />
       </div>
-      <ReviewCardBack
-        className="back"
-        question={props.question}
-        answer={props.answer}
-      />
+      <div className="back">
+        <TextRegion className="question" text={props.question} />
+        <hr className="divider" />
+        <TextRegion className="answer" text={props.answer} />
+      </div>
     </div>
   );
 }
