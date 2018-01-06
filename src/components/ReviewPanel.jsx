@@ -67,12 +67,6 @@ function ReviewPanel(props) {
         </div>
       </div>
       {answerButtons}
-      <div>
-        Extra content just to test scroll behavior.
-      </div>
-      <div>
-        Extra content just to test scroll behavior.
-      </div>
     </div>
   );
 }
