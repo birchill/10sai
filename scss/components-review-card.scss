@@ -23,11 +23,7 @@
 
   > .front > .question {
     height: 100%;
-  }
 
-  // XXX: Move the matching to the question itself?
-  > .front > .question > .text {
-    padding: 2rem;
     &[data-size=x-small] {
       font-size: 12px;
     }
@@ -61,5 +57,12 @@
         font-size: 60px;
       }
     }
+  }
+
+  // If we want padding *inside* the text region, then we need to apply it to
+  // the text itself since it won't affect the container bbox so the
+  // resizing of the text content will just ignore it.
+  > .front > .question > .text {
+    padding: 2rem;
   }
 }

@@ -22,17 +22,17 @@ class TextRegion extends React.Component {
     };
   }
 
-  static getBestSize(elem, containerWidth, containerHeight) {
+  static getBestSize(textElem, containerElem, containerWidth, containerHeight) {
     // Selectors for [data-size=...] MUST be defined for each of these and they
     // must define increasing font sizes or potentially bad things could happen.
     const sizeKeywords = ['x-small', 'small', 'medium', 'large', 'x-large'];
-    let { size } = elem.dataset;
+    let { size } = containerElem.dataset;
 
     const dimensionDiff = (actual, ideal) => (actual - ideal) / ideal;
     const xDiff = bbox => dimensionDiff(bbox.width, containerWidth);
     const yDiff = bbox => dimensionDiff(bbox.height, containerHeight);
 
-    let bbox = elem.getBoundingClientRect();
+    let bbox = textElem.getBoundingClientRect();
 
     // If either dimension is too large, we need to go smaller
     if (xDiff(bbox) > 0 || yDiff(bbox) > 0) {
@@ -50,8 +50,8 @@ class TextRegion extends React.Component {
       let index = sizeKeywords.indexOf(size);
       while (--index >= 0) {
         size = sizeKeywords[index];
-        elem.dataset.size = size;
-        bbox = elem.getBoundingClientRect();
+        containerElem.dataset.size = size;
+        bbox = textElem.getBoundingClientRect();
         if (xDiff(bbox) <= 0 && yDiff(bbox) <= 0) {
           break;
         }
@@ -74,12 +74,12 @@ class TextRegion extends React.Component {
     let index = sizeKeywords.indexOf(size);
     while (++index < sizeKeywords.length) {
       size = sizeKeywords[index];
-      elem.dataset.size = size;
-      bbox = elem.getBoundingClientRect();
+      containerElem.dataset.size = size;
+      bbox = textElem.getBoundingClientRect();
       // If we're too large, just use the previous size.
       if (xDiff(bbox) > 0 || yDiff(bbox) > 0) {
         size = sizeKeywords[--index];
-        elem.dataset.size = size;
+        containerElem.dataset.size = size;
         break;
       }
       // If we're close enough, just use the current size.
@@ -165,6 +165,7 @@ class TextRegion extends React.Component {
     const bbox = containerBbox || this.containerElem.getBoundingClientRect();
     const size = TextRegion.getBestSize(
       this.textElem,
+      this.containerElem,
       bbox.width,
       bbox.height
     );
@@ -181,11 +182,11 @@ class TextRegion extends React.Component {
     const className = `text-region ${this.props.className || ''}`;
 
     return (
-      <div className={className} ref={this.assignContainerElem}>
-        <div
-          className="text"
-          ref={this.assignTextElem}
-          data-size={this.state.size}>
+      <div
+        className={className}
+        ref={this.assignContainerElem}
+        data-size={this.state.size}>
+        <div className="text" ref={this.assignTextElem}>
           {this.props.text}
         </div>
       </div>
