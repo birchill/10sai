@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import TextRegion from './TextRegion.jsx';
 import ReviewCardBack from './ReviewCardBack.jsx';
-import ReviewCardFront from './ReviewCardFront.jsx';
 
 function ReviewCard(props) {
   let className = 'review-card';
@@ -22,7 +22,9 @@ function ReviewCard(props) {
           props.onSelectCard();
         }
       }}>
-      <ReviewCardFront className="front" question={props.question} />
+      <div className="front">
+        <TextRegion className="question" text={props.question} />
+      </div>
       <ReviewCardBack
         className="back"
         question={props.question}

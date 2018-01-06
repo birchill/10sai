@@ -1,0 +1,10 @@
+.text-region {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+
+  box-sizing: border-box;
+}

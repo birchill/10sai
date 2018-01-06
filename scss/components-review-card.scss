@@ -9,11 +9,57 @@
     width: 100%;
     box-sizing: border-box;
     transition: opacity 0.2s;
+
+    background: white;
+    border: $border-width solid $dark-grey;
+    border-radius: 1rem;
   }
 
   &:not(.-showanswer) > .back,
   &.-showanswer > .front {
     opacity: 0;
     pointer-events: none;
+  }
+
+  > .front > .question {
+    height: 100%;
+  }
+
+  // XXX: Move the matching to the question itself?
+  > .front > .question > .text {
+    padding: 2rem;
+    &[data-size=x-small] {
+      font-size: 12px;
+    }
+    &[data-size=small] {
+      font-size: 24px;
+    }
+    &[data-size=medium] {
+      font-size: 48px;
+    }
+    &[data-size=large] {
+      font-size: 72px;
+    }
+    &[data-size=x-large] {
+      font-size: 96px;
+    }
+
+    @media screen and (max-width: 600px) {
+      &[data-size=x-small] {
+        font-size: 10px;
+      }
+      &[data-size=small] {
+        font-size: 16px;
+      }
+      &[data-size=medium] {
+        font-size: 24px;
+      }
+      &[data-size=large] {
+        font-size: 40px;
+      }
+      &[data-size=x-large] {
+        font-size: 60px;
+      }
+    }
   }
 }

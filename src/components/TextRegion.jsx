@@ -2,21 +2,26 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
-class ReviewCardFront extends React.Component {
+// A block of text where the size of the text content is resized to more-or-less
+// fill the region.
+//
+// Relies on there being CSS selectors defined for the region that match on the
+// 'data-size' attribute with keywords 'x-small', 'small', 'medium', 'large',
+// 'x-large'. Typically these will define increasing font sizes.
+//
+// The way this works is not entirely deterministic due to bugs (e.g. the "close
+// enough" case), due to trying to avoid trying all the possibilities (each of
+// which triggers a layout flush), and due to effects like line breaking causing
+// sudden changes in the resulting area. But, it seems to be good enough for our
+// purposes.
+class TextRegion extends React.Component {
   static get propTypes() {
     return {
-      question: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired,
       className: PropTypes.string,
     };
   }
 
-  // We used to do a very thorough job of getting the maximum font size down to
-  // the pixel. The trouble is it would cause several re-layouts and would not
-  // necessary look all that great anyway--since the text filling the box is not
-  // always the best layout.
-  //
-  // Instead, we simplify this to choosing from a number of preset font sizes
-  // that we know are going to be sensible.
   static getBestSize(elem, containerWidth, containerHeight) {
     // Selectors for [data-size=...] MUST be defined for each of these and they
     // must define increasing font sizes or potentially bad things could happen.
@@ -30,7 +35,7 @@ class ReviewCardFront extends React.Component {
     let bbox = elem.getBoundingClientRect();
 
     // If either dimension is too large, we need to go smaller
-    if (xDiff(bbox) >= 0 || yDiff(bbox) >= 0) {
+    if (xDiff(bbox) > 0 || yDiff(bbox) > 0) {
       // Just keep trying smaller sizes while we have them.
       //
       // Technically it would be faster to do a binary subdivision of intervals
@@ -47,7 +52,7 @@ class ReviewCardFront extends React.Component {
         size = sizeKeywords[index];
         elem.dataset.size = size;
         bbox = elem.getBoundingClientRect();
-        if (xDiff(bbox) < 0 && yDiff(bbox) < 0) {
+        if (xDiff(bbox) <= 0 && yDiff(bbox) <= 0) {
           break;
         }
       }
@@ -67,21 +72,20 @@ class ReviewCardFront extends React.Component {
     // As before, we could do this *slightly* more efficiently, but this way is
     // fine for now.
     let index = sizeKeywords.indexOf(size);
-    while (index < sizeKeywords.length) {
+    while (++index < sizeKeywords.length) {
       size = sizeKeywords[index];
       elem.dataset.size = size;
       bbox = elem.getBoundingClientRect();
-      // If we're too large, just use the previous size;
+      // If we're too large, just use the previous size.
       if (xDiff(bbox) > 0 || yDiff(bbox) > 0) {
         size = sizeKeywords[--index];
         elem.dataset.size = size;
         break;
       }
-      // If we're close enough, just the current size
+      // If we're close enough, just use the current size.
       if (xDiff(bbox) > -0.2 && yDiff(bbox) > -0.2) {
         break;
       }
-      index++;
     }
     return size;
   }
@@ -89,27 +93,27 @@ class ReviewCardFront extends React.Component {
   constructor(props) {
     super(props);
 
-    this.needsFontResize = false;
+    this.needsSizeUpdate = false;
     this.containerWidth = undefined;
     this.containerHeight = undefined;
     this.state = { size: 'medium' };
     this.handleResize = this.handleResize.bind(this);
-    this.assignContainer = elem => {
-      this.container = elem;
+    this.assignContainerElem = elem => {
+      this.containerElem = elem;
     };
-    this.assignQuestion = elem => {
-      this.question = elem;
+    this.assignTextElem = elem => {
+      this.textElem = elem;
     };
   }
 
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
-    this.resizeFont();
+    this.resizeText();
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.question !== nextProps.question) {
-      this.needsFontResize = true;
+    if (this.props.text !== nextProps.text) {
+      this.needsSizeUpdate = true;
     }
   }
 
@@ -124,23 +128,23 @@ class ReviewCardFront extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.needsFontResize) {
-      this.resizeFont();
+    if (this.needsSizeUpdate) {
+      this.resizeText();
     }
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
-    this.container = undefined;
-    this.question = undefined;
+    this.containerElem = undefined;
+    this.textElem = undefined;
   }
 
   handleResize() {
-    if (!this.container) {
+    if (!this.containerElem) {
       return;
     }
 
-    const bbox = this.container.getBoundingClientRect();
+    const bbox = this.containerElem.getBoundingClientRect();
     if (
       bbox.width === this.containerWidth ||
       bbox.height === this.containerHeight
@@ -150,21 +154,21 @@ class ReviewCardFront extends React.Component {
 
     this.containerWidth = bbox.width;
     this.containerHeight = bbox.height;
-    this.resizeFont(bbox);
+    this.resizeText(bbox);
   }
 
-  resizeFont(containerBbox) {
-    if (!this.container || !this.question) {
+  resizeText(containerBbox) {
+    if (!this.containerElem || !this.textElem) {
       return;
     }
 
-    const bbox = containerBbox || this.container.getBoundingClientRect();
-    const size = ReviewCardFront.getBestSize(
-      this.question,
+    const bbox = containerBbox || this.containerElem.getBoundingClientRect();
+    const size = TextRegion.getBestSize(
+      this.textElem,
       bbox.width,
       bbox.height
     );
-    this.needsFontResize = false;
+    this.needsSizeUpdate = false;
 
     if (size === this.state.size) {
       return;
@@ -174,19 +178,19 @@ class ReviewCardFront extends React.Component {
   }
 
   render() {
-    const className = `reviewcard-front ${this.props.className || ''}`;
+    const className = `text-region ${this.props.className || ''}`;
 
     return (
-      <div className={className} ref={this.assignContainer}>
+      <div className={className} ref={this.assignContainerElem}>
         <div
-          className="question"
-          ref={this.assignQuestion}
+          className="text"
+          ref={this.assignTextElem}
           data-size={this.state.size}>
-          {this.props.question}
+          {this.props.text}
         </div>
       </div>
     );
   }
 }
 
-export default ReviewCardFront;
+export default TextRegion;

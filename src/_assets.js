@@ -6,7 +6,7 @@ import 'main.scss'; // eslint-disable-line
 import CardPreview from './components/CardPreview.jsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
 import LoadingIndicator from './components/LoadingIndicator.jsx';
-import ReviewCardFront from './components/ReviewCardFront.jsx';
+import TextRegion from './components/TextRegion.jsx';
 import ReviewCardBack from './components/ReviewCardBack.jsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
@@ -234,7 +234,11 @@ ReactDOM.render(
 const cardFronts = document.querySelectorAll('.card-front-container');
 for (const container of cardFronts) {
   ReactDOM.render(
-    <ReviewCardFront question={container.dataset.question} />,
+    <div className="review-card current">
+      <div className="front">
+        <TextRegion className="question" text={container.dataset.question} />
+      </div>
+    </div>,
     container
   );
 }
