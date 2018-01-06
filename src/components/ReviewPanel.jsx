@@ -45,13 +45,37 @@ function ReviewPanel(props) {
           className="fail"
           aria-label="Incorrect"
           onClick={props.onFailCard}>
-          <span className="button">✕</span>
+          <span className="buttonface">
+            <svg width="2em" height="2em" viewBox="0 0 100 100">
+              <circle cx="15" cy="10" r="10" fill="white" />
+              <circle cx="85" cy="10" r="10" fill="white" />
+              <path
+                d="M5 95a45 45 0 0 1 90 0"
+                stroke="white"
+                strokeWidth="10"
+                strokeLinecap="round"
+                fill="none"
+              />
+            </svg>
+          </span>
         </button>
         <button
           className="pass"
           aria-label="Correct"
           onClick={props.onPassCard}>
-          <span className="button">〇</span>
+          <span className="buttonface">
+            <svg width="2em" height="2em" viewBox="0 0 100 100">
+              <circle cx="15" cy="10" r="10" fill="white" />
+              <circle cx="85" cy="10" r="10" fill="white" />
+              <path
+                d="M5 50a45 45 0 0 0 90 0"
+                stroke="white"
+                strokeWidth="10"
+                strokeLinecap="round"
+                fill="none"
+              />
+            </svg>
+          </span>
         </button>
       </div>
     );
