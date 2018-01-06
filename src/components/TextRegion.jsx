@@ -8,12 +8,6 @@ import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 // Relies on there being CSS selectors defined for the region that match on the
 // 'data-size' attribute with keywords 'x-small', 'small', 'medium', 'large',
 // 'x-large'. Typically these will define increasing font sizes.
-//
-// The way this works is not entirely deterministic due to bugs (e.g. the "close
-// enough" case), due to trying to avoid trying all the possibilities (each of
-// which triggers a layout flush), and due to effects like line breaking causing
-// sudden changes in the resulting area. But, it seems to be good enough for our
-// purposes.
 class TextRegion extends React.Component {
   static get propTypes() {
     return {
