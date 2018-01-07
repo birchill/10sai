@@ -268,8 +268,7 @@ class CardStore {
 
     const progressToPut =
       typeof card.progress === 'undefined' ? {} : card.progress;
-    if (progressToPut.reviewed &&
-        progressToPut.reviewed instanceof Date) {
+    if (progressToPut.reviewed && progressToPut.reviewed instanceof Date) {
       progressToPut.reviewed = progressToPut.reviewed.getTime();
     }
 
@@ -371,7 +370,11 @@ class CardStore {
         doc.reviewed = update.reviewed.getTime();
         hasChange = true;
       }
-      if (update && update.level && doc.level !== update.level) {
+      if (
+        update &&
+        typeof update.level === 'number' &&
+        doc.level !== update.level
+      ) {
         doc.level = update.level;
         hasChange = true;
       }

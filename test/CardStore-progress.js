@@ -100,6 +100,25 @@ describe('CardStore progress reporting', () => {
     );
   });
 
+  it('allows resetting the progress', async () => {
+    const newCard = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+      progress: { reviewed: relativeTime(-1), level: 1 },
+    });
+    let fetchedCard = await subject.getCard(newCard._id);
+    assert.strictEqual(
+      fetchedCard.progress.level,
+      1,
+      'Originally the level is 1'
+    );
+
+    await subject.putCard({ _id: newCard._id, progress: { level: 0 } });
+
+    fetchedCard = await subject.getCard(newCard._id);
+    assert.strictEqual(fetchedCard.progress.level, 0, 'The updated level is 0');
+  });
+
   it('allows updating the card contents and progress simultaneously', async () => {
     const newCard = await subject.putCard({
       question: 'Question',
