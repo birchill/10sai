@@ -4,21 +4,30 @@ import PropTypes from 'prop-types';
 import ReviewCard from './ReviewCard.jsx';
 
 function ReviewPanel(props) {
-  let previousCard;
-  if (props.previousCard) {
-    previousCard = (
-      <ReviewCard
-        key={props.previousCard._id}
-        className="previous"
-        showAnswer
-        {...props.previousCard}
-      />
-    );
-  }
+  // There is one case where both the previous card and the next card might be
+  // the same card (if the current card and previous card are the same we remove
+  // the current card from the history). In that case we still need unique keys
+  // for the two instances of the card or else React will complain and fail to
+  // update the DOM correctly.
+  //
+  // Ideally, we still want to transition both so we want to maintain the
+  // deduplicated keys for subsequent renders but that's quite messy. Instead,
+  // We just take care to assign the undeduped ID to the *next* card so that at
+  // least the card appears to transition from the right.
+  const keysInUse = new Set();
+  keysInUse.getUnique = function getUniqueKey(key) {
+    let keyToTry = key;
+    let index = 1;
+    while (this.has(keyToTry)) {
+      keyToTry = `${key}-${++index}`;
+    }
+    this.add(keyToTry);
+    return keyToTry;
+  };
 
   const currentCard = (
     <ReviewCard
-      key={props.currentCard._id}
+      key={keysInUse.getUnique(props.currentCard._id)}
       className="current"
       onSelectCard={props.onSelectCard}
       showAnswer={props.showAnswer}
@@ -30,9 +39,21 @@ function ReviewPanel(props) {
   if (props.nextCard) {
     nextCard = (
       <ReviewCard
-        key={props.nextCard._id}
+        key={keysInUse.getUnique(props.nextCard._id)}
         className="next"
         {...props.nextCard}
+      />
+    );
+  }
+
+  let previousCard;
+  if (props.previousCard) {
+    previousCard = (
+      <ReviewCard
+        key={keysInUse.getUnique(props.previousCard._id)}
+        className="previous"
+        showAnswer
+        {...props.previousCard}
       />
     );
   }
