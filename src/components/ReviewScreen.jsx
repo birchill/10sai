@@ -5,7 +5,7 @@ import ReviewState from '../review-states';
 
 import Link from './Link.jsx';
 import LoadingIndicator from './LoadingIndicator.jsx';
-import ReviewPanel from './ReviewPanel.jsx';
+import ReviewPanelContainer from './ReviewPanelContainer.jsx';
 import TricolorProgress from './TricolorProgress.jsx';
 
 const nextReviewNumCards = props => {
@@ -143,16 +143,7 @@ function ReviewScreen(props) {
     );
   } else {
     content = (
-      <ReviewPanel
-        className="content"
-        showAnswer={props.reviewState === ReviewState.ANSWER}
-        onSelectCard={props.onSelectCard}
-        onPassCard={props.onPassCard}
-        onFailCard={props.onFailCard}
-        previousCard={props.previousCard}
-        currentCard={props.currentCard}
-        nextCard={props.nextCard}
-      />
+      <ReviewPanelContainer className="content" />
     );
   }
 
@@ -208,9 +199,6 @@ ReviewScreen.propTypes = {
   reviewState: PropTypes.symbol.isRequired,
   // eslint-disable-next-line react/no-unused-prop-types
   onNewReview: PropTypes.func.isRequired,
-  onSelectCard: PropTypes.func.isRequired,
-  onPassCard: PropTypes.func.isRequired,
-  onFailCard: PropTypes.func.isRequired,
   availableCards: PropTypes.shape({
     newCards: PropTypes.number.isRequired,
     overdueCards: PropTypes.number.isRequired,
@@ -225,21 +213,6 @@ ReviewScreen.propTypes = {
     failedCardsLevel2: PropTypes.number.isRequired,
     completedCards: PropTypes.number.isRequired,
     unseenCards: PropTypes.number.isRequired,
-  }),
-  previousCard: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    question: PropTypes.string.isRequired,
-    answer: PropTypes.string,
-  }),
-  currentCard: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    question: PropTypes.string.isRequired,
-    answer: PropTypes.string,
-  }),
-  nextCard: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    question: PropTypes.string.isRequired,
-    answer: PropTypes.string,
   }),
 };
 

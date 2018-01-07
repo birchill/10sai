@@ -13,9 +13,6 @@ class ReviewScreenContainer extends React.Component {
       active: PropTypes.bool.isRequired,
       reviewState: PropTypes.symbol.isRequired,
       onNewReview: PropTypes.func.isRequired,
-      onSelectCard: PropTypes.func.isRequired,
-      onPassCard: PropTypes.func.isRequired,
-      onFailCard: PropTypes.func.isRequired,
       syncListener: PropTypes.shape({
         subscribe: PropTypes.func.isRequired,
         unsubscribe: PropTypes.func.isRequired,
@@ -27,21 +24,6 @@ class ReviewScreenContainer extends React.Component {
         failedCardsLevel2: PropTypes.number.isRequired,
         completedCards: PropTypes.number.isRequired,
         unseenCards: PropTypes.number.isRequired,
-      }),
-      previousCard: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        question: PropTypes.string.isRequired,
-        answer: PropTypes.string,
-      }),
-      currentCard: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        question: PropTypes.string.isRequired,
-        answer: PropTypes.string,
-      }),
-      nextCard: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        question: PropTypes.string.isRequired,
-        answer: PropTypes.string,
       }),
     };
   }
@@ -139,20 +121,12 @@ class ReviewScreenContainer extends React.Component {
         maxCards={this.props.maxCards}
         reviewProgress={this.props.reviewProgress}
         onNewReview={this.props.onNewReview}
-        onSelectCard={this.props.onSelectCard}
-        onPassCard={this.props.onPassCard}
-        onFailCard={this.props.onFailCard}
-        previousCard={this.props.previousCard}
-        currentCard={this.props.currentCard}
-        nextCard={this.props.nextCard}
       />
     );
   }
 }
 
 const mapStateToProps = state => {
-  const { history } = state.review;
-  const previousCard = history.length ? history[history.length - 1] : undefined;
   let reviewProgress;
   if (
     state.review.reviewState === ReviewState.QUESTION ||
@@ -175,9 +149,6 @@ const mapStateToProps = state => {
     maxNewCards: 10,
     maxCards: 20,
     reviewProgress,
-    previousCard,
-    currentCard: state.review.currentCard,
-    nextCard: state.review.nextCard,
   };
 };
 const mapDispatchToProps = dispatch => ({
