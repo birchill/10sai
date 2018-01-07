@@ -111,6 +111,8 @@
     }
     </style>
 
+    <h3>Card faces</h3>
+
     <div
       class="card-front-container"
       data-question="短い"
@@ -120,7 +122,8 @@
       data-question="This is the question that never ends. It just goes on and on my friend. Somebody started writing it not know what it was..."
       style="width: 400px; height: 400px"></div>
 
-    <div class="card-back-container"
+    <div
+      class="card-back-container"
       data-question="短い"
       data-answer="みじかい"
       style="width: 600px; height: 600px"></div>
@@ -129,6 +132,48 @@
       data-question="This is the question that never ends. It just goes on and on my friend. Somebody started writing it not know what it was..."
       data-answer="This answer is also long, but not quite as long"
       style="width: 400px; height: 400px"></div>
+
+    <h3>Progress bar</h3>
+
+    <style>
+    .tricolor-progress {
+      width: 100%;
+      height: 100%;
+    }
+    </style>
+
+    <div
+      class="tricolor-progress-container"
+      data-a="10"
+      data-b="10"
+      data-c="10"
+      data-title="Title goes here"
+      style="width: 300px; height: 10px; position: relative; padding: 1em">
+    </div>
+    <div
+      class="tricolor-progress-container"
+      data-a="10"
+      data-b="0"
+      data-c="0"
+      data-title="Title goes here"
+      style="width: 300px; height: 10px; position: relative; padding: 1em">
+    </div>
+    <div
+      class="tricolor-progress-container"
+      data-a="10"
+      data-b="1"
+      data-c="0"
+      data-title="Title goes here"
+      style="width: 300px; height: 10px; position: relative; padding: 1em">
+    </div>
+    <div
+      class="tricolor-progress-container"
+      data-a="0"
+      data-b="0"
+      data-c="0"
+      data-title="Title goes here"
+      style="width: 300px; height: 10px; position: relative; padding: 1em">
+    </div>
 
     <script src="/_assets.js"></script>
   </body>

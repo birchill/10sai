@@ -6,9 +6,10 @@ import 'main.scss'; // eslint-disable-line
 import CardPreview from './components/CardPreview.jsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
 import LoadingIndicator from './components/LoadingIndicator.jsx';
-import TextRegion from './components/TextRegion.jsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
+import TextRegion from './components/TextRegion.jsx';
+import TricolorProgress from './components/TricolorProgress.jsx';
 
 import SyncState from './sync-states';
 
@@ -252,6 +253,19 @@ for (const container of cardBacks) {
         <TextRegion className="answer" text={container.dataset.answer} />
       </div>
     </div>,
+    container
+  );
+}
+
+const progressBars = document.querySelectorAll('.tricolor-progress-container');
+for (const container of progressBars) {
+  ReactDOM.render(
+    <TricolorProgress
+      aItems={parseFloat(container.dataset.a)}
+      bItems={parseFloat(container.dataset.b)}
+      cItems={parseFloat(container.dataset.c)}
+      title={container.dataset.title}
+    />,
     container
   );
 }
