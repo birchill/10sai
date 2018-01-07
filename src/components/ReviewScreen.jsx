@@ -6,6 +6,7 @@ import ReviewState from '../review-states';
 import Link from './Link.jsx';
 import LoadingIndicator from './LoadingIndicator.jsx';
 import ReviewPanel from './ReviewPanel.jsx';
+import TricolorProgress from './TricolorProgress.jsx';
 
 const nextReviewNumCards = props => {
   return Math.min(
@@ -155,6 +156,39 @@ function ReviewScreen(props) {
     );
   }
 
+  let progressBar;
+  if (
+    props.reviewState === ReviewState.QUESTION ||
+    props.reviewState === ReviewState.ANSWER
+  ) {
+    // We want to roughly represent the number of reviews. Bear in mind that
+    // a failed card will need to be reviewed twice before it is considered to
+    // have passed.
+    //
+    // If we pass a card immediately, we treat that as passing two reviews since
+    // effectively we skipped the two reviews we would do if we failed it.
+    // Similarly, for unseen cards.
+    const {
+      failedCardsLevel1,
+      failedCardsLevel2,
+      completedCards,
+      unseenCards,
+    } = props.reviewProgress;
+    const failCount = failedCardsLevel1 + failedCardsLevel2 * 2;
+    const remaining = failCount + unseenCards;
+    const title =
+      remaining === 1 ? '1 review remaining' : `${remaining} reviews remaining`;
+    progressBar = (
+      <TricolorProgress
+        className="progress"
+        aItems={completedCards * 2}
+        bItems={failCount}
+        cItems={unseenCards * 2}
+        title={title}
+      />
+    );
+  }
+
   return (
     <section className="review-screen" aria-hidden={!props.active}>
       <div className="buttons">
@@ -164,6 +198,7 @@ function ReviewScreen(props) {
         </Link>
       </div>
       {content}
+      {progressBar}
     </section>
   );
 }
@@ -185,6 +220,12 @@ ReviewScreen.propTypes = {
   maxNewCards: PropTypes.number,
   // eslint-disable-next-line react/no-unused-prop-types
   maxCards: PropTypes.number,
+  reviewProgress: PropTypes.shape({
+    failedCardsLevel1: PropTypes.number.isRequired,
+    failedCardsLevel2: PropTypes.number.isRequired,
+    completedCards: PropTypes.number.isRequired,
+    unseenCards: PropTypes.number.isRequired,
+  }),
   previousCard: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     question: PropTypes.string.isRequired,

@@ -22,6 +22,12 @@ class ReviewScreenContainer extends React.Component {
       }).isRequired,
       maxNewCards: PropTypes.number,
       maxCards: PropTypes.number,
+      reviewProgress: PropTypes.shape({
+        failedCardsLevel1: PropTypes.number.isRequired,
+        failedCardsLevel2: PropTypes.number.isRequired,
+        completedCards: PropTypes.number.isRequired,
+        unseenCards: PropTypes.number.isRequired,
+      }),
       previousCard: PropTypes.shape({
         _id: PropTypes.string.isRequired,
         question: PropTypes.string.isRequired,
@@ -131,6 +137,7 @@ class ReviewScreenContainer extends React.Component {
         availableCards={this.state.availableCards}
         maxNewCards={this.props.maxNewCards}
         maxCards={this.props.maxCards}
+        reviewProgress={this.props.reviewProgress}
         onNewReview={this.props.onNewReview}
         onSelectCard={this.props.onSelectCard}
         onPassCard={this.props.onPassCard}
@@ -146,11 +153,28 @@ class ReviewScreenContainer extends React.Component {
 const mapStateToProps = state => {
   const { history } = state.review;
   const previousCard = history.length ? history[history.length - 1] : undefined;
+  let reviewProgress;
+  if (
+    state.review.reviewState === ReviewState.QUESTION ||
+    state.review.reviewState === ReviewState.ANSWER
+  ) {
+    const currentCardIsFailedCard =
+      state.review.failedCardsLevel1.indexOf(state.review.currentCard) !== -1 ||
+      state.review.failedCardsLevel2.indexOf(state.review.currentCard) !== -1;
+    reviewProgress = {
+      failedCardsLevel1: state.review.failedCardsLevel1.length,
+      failedCardsLevel2: state.review.failedCardsLevel2.length,
+      completedCards: state.review.completed,
+      unseenCards: state.review.heap.length + (currentCardIsFailedCard ? 0 : 1),
+    };
+  }
+
   return {
     reviewState: state.review.reviewState,
     // TODO: Actually get these from somewhere
     maxNewCards: 10,
     maxCards: 20,
+    reviewProgress,
     previousCard,
     currentCard: state.review.currentCard,
     nextCard: state.review.nextCard,
