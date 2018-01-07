@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import ReviewState from '../review-states';
 import * as reviewActions from '../actions/review';
+import { getReviewProgress } from '../selectors/review';
 
 import ReviewScreen from './ReviewScreen.jsx';
 
@@ -126,31 +127,14 @@ class ReviewScreenContainer extends React.Component {
   }
 }
 
-const mapStateToProps = state => {
-  let reviewProgress;
-  if (
-    state.review.reviewState === ReviewState.QUESTION ||
-    state.review.reviewState === ReviewState.ANSWER
-  ) {
-    const currentCardIsFailedCard =
-      state.review.failedCardsLevel1.indexOf(state.review.currentCard) !== -1 ||
-      state.review.failedCardsLevel2.indexOf(state.review.currentCard) !== -1;
-    reviewProgress = {
-      failedCardsLevel1: state.review.failedCardsLevel1.length,
-      failedCardsLevel2: state.review.failedCardsLevel2.length,
-      completedCards: state.review.completed,
-      unseenCards: state.review.heap.length + (currentCardIsFailedCard ? 0 : 1),
-    };
-  }
+const mapStateToProps = state => ({
+  reviewState: state.review.reviewState,
+  // TODO: Actually get these from somewhere
+  maxNewCards: 10,
+  maxCards: 20,
+  reviewProgress: getReviewProgress(state),
+});
 
-  return {
-    reviewState: state.review.reviewState,
-    // TODO: Actually get these from somewhere
-    maxNewCards: 10,
-    maxCards: 20,
-    reviewProgress,
-  };
-};
 const mapDispatchToProps = dispatch => ({
   onNewReview: (maxNewCards, maxCards) => {
     dispatch(reviewActions.newReview(maxNewCards, maxCards));
