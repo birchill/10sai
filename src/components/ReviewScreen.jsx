@@ -99,7 +99,7 @@ function ReviewScreen(props) {
       if (newCards > 0 && overdueCards > 0) {
         promptText = (
           <p>
-            There are still{' '}
+            {newCards === 1 ? 'There is still ' : 'There are still '}
             <strong>{`${newCards} new ${pluralCards(newCards)}`}</strong> and{' '}
             <strong>
               {`${overdueCards} overdue ${pluralCards(overdueCards)}`}
@@ -110,7 +110,7 @@ function ReviewScreen(props) {
       } else if (newCards > 0) {
         promptText = (
           <p>
-            There are still{' '}
+            {newCards === 1 ? 'There is still ' : 'There are still '}
             <strong>{`${newCards} new ${pluralCards(newCards)}`}</strong>{' '}
             available to review.
           </p>
@@ -118,7 +118,7 @@ function ReviewScreen(props) {
       } else {
         promptText = (
           <p>
-            There are still{' '}
+            {overdueCards === 1 ? 'There is still ' : 'There are still '}
             <strong>
               {`${overdueCards} overdue ${pluralCards(overdueCards)}`}
             </strong>{' '}
