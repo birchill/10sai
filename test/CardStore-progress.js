@@ -131,10 +131,11 @@ describe('CardStore progress reporting', () => {
     const updatedCard = await subject.putCard({
       _id: newCard._id,
       question: 'Updated question',
-      progress: { level: 1 },
+      progress: { level: 1, reviewed: relativeTime(-1) },
     });
     assert.strictEqual(updatedCard.question, 'Updated question');
     assert.strictEqual(updatedCard.progress.level, 1);
+    assert.equalTime(updatedCard.progress.reviewed, relativeTime(-1));
     assert.notEqual(
       updatedCard.modified,
       newCard.modified,
@@ -144,6 +145,7 @@ describe('CardStore progress reporting', () => {
     const fetchedCard = await subject.getCard(newCard._id);
     assert.strictEqual(fetchedCard.question, 'Updated question');
     assert.strictEqual(fetchedCard.progress.level, 1);
+    assert.equalTime(fetchedCard.progress.reviewed, relativeTime(-1));
     assert.notEqual(
       fetchedCard.modified,
       newCard.modified,
@@ -155,12 +157,13 @@ describe('CardStore progress reporting', () => {
     const newCard = await subject.putCard({
       question: 'Question',
       answer: 'Answer',
-      progress: { level: 1 },
+      progress: { level: 1, reviewed: relativeTime(-2) },
     });
     assert.strictEqual(newCard.progress.level, 1);
 
     const fetchedCard = await subject.getCard(newCard._id);
     assert.strictEqual(fetchedCard.progress.level, 1);
+    assert.equalTime(fetchedCard.progress.reviewed, relativeTime(-2));
   });
 
   it('reports changes to the progress', async () => {
@@ -170,7 +173,10 @@ describe('CardStore progress reporting', () => {
     });
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
-    await subject.putCard({ _id: card._id, progress: { level: 1 } });
+    await subject.putCard({
+      _id: card._id,
+      progress: { level: 1, reviewed: relativeTime(-3) },
+    });
 
     // Wait for a few rounds of events so the update records can happen
     await waitForEvents(8);
@@ -181,6 +187,7 @@ describe('CardStore progress reporting', () => {
       'Should get two change records: add, update'
     );
     assert.strictEqual(updates[1].doc.progress.level, 1);
+    assert.equalTime(updates[1].doc.progress.reviewed, relativeTime(-3));
     assert.strictEqual(updates[1].doc.question, 'Q1');
   });
 

@@ -22,10 +22,16 @@ const parseCard = card => ({
   // speculatively parsing them would be a waste.
 });
 
+const parseProgress = progress => ({
+  ...progress,
+  _id: stripProgressPrefix(progress._id),
+  reviewed: progress.reviewed ? new Date(progress.reviewed) : null,
+});
+
 const mergeRecords = (card, progress) => {
   const result = parseCard(card);
   if (progress) {
-    result.progress = progress;
+    result.progress = parseProgress(progress);
     delete result.progress._id;
     delete result.progress._rev;
   }
