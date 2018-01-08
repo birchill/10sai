@@ -163,7 +163,7 @@ class CardStore {
           ...parseCard(row.doc),
           progress: {
             level: row.value.level,
-            reviewed: row.value.reviewed,
+            reviewed: row.value.reviewed ? new Date(row.value.reviewed) : null,
           },
         }))
       );

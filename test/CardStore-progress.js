@@ -3,9 +3,12 @@
 
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
-import { assert, AssertionError } from 'chai';
+import chai, { assert, AssertionError } from 'chai';
+import chaiDateTime from 'chai-datetime';
 import CardStore from '../src/CardStore';
 import { waitForEvents } from './testcommon';
+
+chai.use(chaiDateTime);
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -478,7 +481,7 @@ describe('CardStore progress reporting', () => {
     });
   });
 
-  it('returns the review level along with overdue cards', async () => {
+  it('returns the review progress along with overdue cards', async () => {
     const cards = await addCards(2);
 
     await subject.putCard({
@@ -494,18 +497,38 @@ describe('CardStore progress reporting', () => {
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[0].progress.level, 2, 'Level of first card');
+    assert.equalTime(
+      result[0].progress.reviewed,
+      relativeTime(-4),
+      'Review time of first card'
+    );
     assert.strictEqual(result[1].question, 'Question 1');
     assert.strictEqual(result[1].progress.level, 1, 'Level of second card');
+    assert.equalTime(
+      result[1].progress.reviewed,
+      relativeTime(-1),
+      'Review time of second card'
+    );
   });
 
-  it('returns the review level along with new cards', async () => {
+  it('returns the review progress along with new cards', async () => {
     await addCards(2);
 
     const result = await subject.getCards({ type: 'new' });
     assert.strictEqual(result.length, 2);
     assert.strictEqual(result[0].question, 'Question 2');
     assert.strictEqual(result[0].progress.level, 0, 'Level of first card');
+    assert.strictEqual(
+      result[0].progress.reviewed,
+      null,
+      'Review time of first card'
+    );
     assert.strictEqual(result[1].question, 'Question 1');
     assert.strictEqual(result[1].progress.level, 0, 'Level of second card');
+    assert.strictEqual(
+      result[1].progress.reviewed,
+      null,
+      'Review time of second card'
+    );
   });
 });
