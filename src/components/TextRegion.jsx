@@ -140,14 +140,12 @@ class TextRegion extends React.Component {
 
     const bbox = this.containerElem.getBoundingClientRect();
     if (
-      bbox.width === this.containerWidth ||
+      bbox.width === this.containerWidth &&
       bbox.height === this.containerHeight
     ) {
       return;
     }
 
-    this.containerWidth = bbox.width;
-    this.containerHeight = bbox.height;
     this.resizeText(bbox);
   }
 
@@ -164,6 +162,8 @@ class TextRegion extends React.Component {
       bbox.height
     );
     this.needsSizeUpdate = false;
+    this.containerWidth = bbox.width;
+    this.containerHeight = bbox.height;
 
     if (size === this.state.size) {
       return;
