@@ -5,9 +5,12 @@ const getCurrentCard = state => state.review.currentCard;
 const getFailedCardsLevel1 = state => state.review.failedCardsLevel1;
 const getFailedCardsLevel2 = state => state.review.failedCardsLevel2;
 
-const getUnseenCards = createSelector(
+const getUnreviewedCards = createSelector(
   [getHeapLength, getCurrentCard, getFailedCardsLevel1, getFailedCardsLevel2],
   (heapLength, currentCard, failedCardsLevel1, failedCardsLevel2) => {
+    if (!currentCard) {
+      return 0;
+    }
     const currentCardIsFailedCard =
       failedCardsLevel1.indexOf(currentCard) !== -1 ||
       failedCardsLevel2.indexOf(currentCard) !== -1;
@@ -26,13 +29,13 @@ export const getReviewProgress = createSelector(
     getFailedCardsLevel1Length,
     getFailedCardsLevel2Length,
     getCompleted,
-    getUnseenCards,
+    getUnreviewedCards,
   ],
-  (failedCardsLevel1, failedCardsLevel2, completedCards, unseenCards) => ({
+  (failedCardsLevel1, failedCardsLevel2, completedCards, unreviewedCards) => ({
     failedCardsLevel1,
     failedCardsLevel2,
     completedCards,
-    unseenCards,
+    unreviewedCards,
   })
 );
 

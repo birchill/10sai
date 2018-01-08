@@ -24,7 +24,7 @@ class ReviewScreenContainer extends React.Component {
         failedCardsLevel1: PropTypes.number.isRequired,
         failedCardsLevel2: PropTypes.number.isRequired,
         completedCards: PropTypes.number.isRequired,
-        unseenCards: PropTypes.number.isRequired,
+        unreviewedCards: PropTypes.number.isRequired,
       }),
     };
   }

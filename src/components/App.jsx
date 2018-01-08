@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../router';
+import { getReviewProgress } from '../selectors/review';
 import CardList from '../CardList';
 import ReviewSyncListener from '../ReviewSyncListener';
 
@@ -32,6 +33,12 @@ class App extends React.Component {
         card: PropTypes.string,
       }),
       activeCardId: PropTypes.string,
+      reviewProgress: PropTypes.shape({
+        failedCardsLevel1: PropTypes.number.isRequired,
+        failedCardsLevel2: PropTypes.number.isRequired,
+        completedCards: PropTypes.number.isRequired,
+        unreviewedCards: PropTypes.number.isRequired,
+      }),
       onClosePopup: PropTypes.func,
     };
   }
@@ -89,8 +96,20 @@ class App extends React.Component {
 
     // Edit/Add handling
     const [addEditLink, addEditLabel, addEditClass] = this.props.activeCardId
-      ? [ `/cards/${this.props.activeCardId}`, 'Edit', '-edit-card']
-      : [ '/cards/new', 'Add', '-add-card'];
+      ? [`/cards/${this.props.activeCardId}`, 'Edit', '-edit-card']
+      : ['/cards/new', 'Add', '-add-card'];
+
+    // Review handling
+    let remainingReviews;
+    if (this.props.reviewProgress) {
+      const {
+        failedCardsLevel1,
+        failedCardsLevel2,
+        unreviewedCards,
+      } = this.props.reviewProgress;
+      remainingReviews =
+        failedCardsLevel1 + failedCardsLevel2 * 2 + unreviewedCards;
+    }
 
     return (
       <DocumentTitle title={title}>
@@ -130,7 +149,8 @@ class App extends React.Component {
               hidden={this.props.route.screen !== 'review'}>
               <ReviewScreenContainer
                 syncListener={this.reviewSyncListener}
-                active={this.props.route.screen === 'review'} />
+                active={this.props.route.screen === 'review'}
+              />
             </TabPanel>
           </div>
           <TabBlock active={activeTab} className="tabbar -white">
@@ -152,7 +172,8 @@ class App extends React.Component {
               id="review-tab"
               href="/review"
               aria-controls="review-page"
-              className="-icon -review">
+              className={`-icon -review ${remainingReviews ? '-badge' : ''}`}
+              data-badge={remainingReviews}>
               Review
             </Link>
           </TabBlock>
@@ -175,6 +196,7 @@ const mapStateToProps = state => ({
       ? state.route.history[state.route.index]
       : {},
   activeCardId: state.selection.activeCardId,
+  reviewProgress: getReviewProgress(state),
 });
 
 const ConnectedApp = connect(mapStateToProps)(App);

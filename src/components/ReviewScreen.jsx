@@ -163,10 +163,10 @@ function ReviewScreen(props) {
       failedCardsLevel1,
       failedCardsLevel2,
       completedCards,
-      unseenCards,
+      unreviewedCards,
     } = props.reviewProgress;
     const failCount = failedCardsLevel1 + failedCardsLevel2 * 2;
-    const remaining = failCount + unseenCards;
+    const remaining = failCount + unreviewedCards;
     const title =
       remaining === 1 ? '1 review remaining' : `${remaining} reviews remaining`;
     progressBar = (
@@ -174,7 +174,7 @@ function ReviewScreen(props) {
         className="progress"
         aItems={completedCards * 2}
         bItems={failCount}
-        cItems={unseenCards * 2}
+        cItems={unreviewedCards * 2}
         title={title}
       />
     );
@@ -212,7 +212,7 @@ ReviewScreen.propTypes = {
     failedCardsLevel1: PropTypes.number.isRequired,
     failedCardsLevel2: PropTypes.number.isRequired,
     completedCards: PropTypes.number.isRequired,
-    unseenCards: PropTypes.number.isRequired,
+    unreviewedCards: PropTypes.number.isRequired,
   }),
 };
 
