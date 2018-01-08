@@ -32,6 +32,16 @@
   }
 
   > .answer-buttons {
+    transition: opacity 0.2s;
+
+    &[hidden] {
+      // Override UA style
+      display: block;
+
+      opacity: 0;
+      pointer-events: none;
+    }
+
     > .fail,
     > .pass {
       position: fixed;
@@ -71,7 +81,7 @@
 
         margin-top: calc(var(--hit-region-height) - var(--buttonface-diameter));
 
-        > svg {
+        > .icon {
           width: calc(var(--buttonface-diameter) / 2.5);
           height: calc(var(--buttonface-diameter) / 2.5);
           margin-top: calc(var(--buttonface-diameter) / 3);
@@ -89,7 +99,7 @@
         transform: translateX(calc(-1 * var(--buttonface-diameter)));
         background: $fail-red;
 
-        > svg {
+        > .icon {
           margin-left: calc(var(--buttonface-diameter) * 0.7);
         }
       }

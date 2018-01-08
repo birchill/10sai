@@ -58,49 +58,43 @@ function ReviewPanel(props) {
     );
   }
 
-  let answerButtons;
-  if (props.showAnswer) {
-    answerButtons = (
-      <div className="answer-buttons">
-        <button
-          className="fail"
-          aria-label="Incorrect"
-          onClick={props.onFailCard}>
-          <span className="buttonface">
-            <svg width="2em" height="2em" viewBox="0 0 100 100">
-              <circle cx="15" cy="10" r="10" fill="white" />
-              <circle cx="85" cy="10" r="10" fill="white" />
-              <path
-                d="M5 95a45 45 0 0 1 90 0"
-                stroke="white"
-                strokeWidth="10"
-                strokeLinecap="round"
-                fill="none"
-              />
-            </svg>
-          </span>
-        </button>
-        <button
-          className="pass"
-          aria-label="Correct"
-          onClick={props.onPassCard}>
-          <span className="buttonface">
-            <svg width="2em" height="2em" viewBox="0 0 100 100">
-              <circle cx="15" cy="10" r="10" fill="white" />
-              <circle cx="85" cy="10" r="10" fill="white" />
-              <path
-                d="M5 50a45 45 0 0 0 90 0"
-                stroke="white"
-                strokeWidth="10"
-                strokeLinecap="round"
-                fill="none"
-              />
-            </svg>
-          </span>
-        </button>
-      </div>
-    );
-  }
+  const answerButtons = (
+    <div className="answer-buttons" hidden={!props.showAnswer}>
+      <button
+        className="fail"
+        aria-label="Incorrect"
+        onClick={props.onFailCard}>
+        <span className="buttonface">
+          <svg className="icon" viewBox="0 0 100 100">
+            <circle cx="15" cy="10" r="10" fill="white" />
+            <circle cx="85" cy="10" r="10" fill="white" />
+            <path
+              d="M5 95a45 45 0 0 1 90 0"
+              stroke="white"
+              strokeWidth="10"
+              strokeLinecap="round"
+              fill="none"
+            />
+          </svg>
+        </span>
+      </button>
+      <button className="pass" aria-label="Correct" onClick={props.onPassCard}>
+        <span className="buttonface">
+          <svg className="icon" viewBox="0 0 100 100">
+            <circle cx="15" cy="10" r="10" fill="white" />
+            <circle cx="85" cy="10" r="10" fill="white" />
+            <path
+              d="M5 50a45 45 0 0 0 90 0"
+              stroke="white"
+              strokeWidth="10"
+              strokeLinecap="round"
+              fill="none"
+            />
+          </svg>
+        </span>
+      </button>
+    </div>
+  );
 
   return (
     <div className={`review-panel ${props.className || ''}`}>
