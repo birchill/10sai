@@ -19,7 +19,7 @@ import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
 import TabBlock from './TabBlock.jsx';
 import TabPanel from './TabPanel.jsx';
 
-class App extends React.Component {
+class App extends React.PureComponent {
   static get propTypes() {
     return {
       // eslint-disable-next-line react/forbid-prop-types

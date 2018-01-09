@@ -2,7 +2,7 @@ import React from 'react';
 
 import Link from './Link.jsx';
 
-class LookupToolbar extends React.Component {
+class LookupToolbar extends React.PureComponent {
   constructor(props) {
     super(props);
     this.assignSearchBox = elem => { this.searchBox = elem; };

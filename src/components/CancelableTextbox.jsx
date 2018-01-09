@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export class CancelableTextbox extends React.Component {
+export class CancelableTextbox extends React.PureComponent {
   static get propTypes() {
     return {
       value: PropTypes.string,

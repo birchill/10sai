@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import * as routeActions from '../actions/route';
 import Link from './Link.jsx';
 
-export class Popup extends React.Component {
+export class Popup extends React.PureComponent {
   static get propTypes() {
     return {
       active: PropTypes.bool.isRequired,

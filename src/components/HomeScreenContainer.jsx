@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import HomeScreen from './HomeScreen.jsx';
 
-class HomeScreenContainer extends React.Component {
+class HomeScreenContainer extends React.PureComponent {
   static get contextTypes() {
     return { cardList: PropTypes.object };
   }

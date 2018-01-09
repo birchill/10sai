@@ -9,7 +9,7 @@ import EditState from '../edit-states';
 import * as editActions from '../actions/edit';
 import * as routeActions from '../actions/route';
 
-export class EditCardScreen extends React.Component {
+export class EditCardScreen extends React.PureComponent {
   static get propTypes() {
     return {
       forms: PropTypes.shape({

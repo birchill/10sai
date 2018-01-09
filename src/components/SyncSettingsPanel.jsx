@@ -49,7 +49,7 @@ function translateError(error) {
   return <p>Unknown error</p>;
 }
 
-export class SyncSettingsPanel extends React.Component {
+export class SyncSettingsPanel extends React.PureComponent {
   static get propTypes() {
     return {
       syncState: PropTypes.symbol.isRequired,

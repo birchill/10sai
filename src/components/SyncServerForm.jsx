@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import CancelableTextbox from './CancelableTextbox.jsx';
 
-export class SyncServerForm extends React.Component {
+export class SyncServerForm extends React.PureComponent {
   static get propTypes() {
     return {
       className: PropTypes.string,

@@ -8,7 +8,7 @@ import { getReviewProgress } from '../selectors/review';
 
 import ReviewScreen from './ReviewScreen.jsx';
 
-class ReviewScreenContainer extends React.Component {
+class ReviewScreenContainer extends React.PureComponent {
   static get propTypes() {
     return {
       active: PropTypes.bool.isRequired,

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import LookupToolbar from './LookupToolbar.jsx';
 
-class LookupScreen extends React.Component {
+class LookupScreen extends React.PureComponent {
   static get propTypes() {
     return {
       active: PropTypes.bool.isRequired,

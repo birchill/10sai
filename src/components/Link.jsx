@@ -7,7 +7,7 @@ import * as routeActions from '../actions/route';
 const isModifiedEvent = evt =>
   !!(evt.metaKey || evt.altKey || evt.ctrlKey || evt.shiftKey);
 
-class Link extends React.Component {
+class Link extends React.PureComponent {
   static get propTypes() {
     return {
       href: PropTypes.string.isRequired,

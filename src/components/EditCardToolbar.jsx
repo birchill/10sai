@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Link from './Link.jsx';
 import EditState from '../edit-states';
 
-export class EditCardToolbar extends React.Component {
+export class EditCardToolbar extends React.PureComponent {
   static get propTypes() {
     return {
       editState: PropTypes.symbol.isRequired,

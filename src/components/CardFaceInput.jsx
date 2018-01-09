@@ -6,7 +6,7 @@ function getEditorContent(editorState) {
   return editorState.getCurrentContent().getPlainText();
 }
 
-export class CardFaceInput extends React.Component {
+export class CardFaceInput extends React.PureComponent {
   static get propTypes() {
     return {
       value: PropTypes.string,

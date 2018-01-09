@@ -4,7 +4,7 @@ import CardPreview from './CardPreview.jsx';
 import Link from './Link.jsx';
 import VirtualGrid from './VirtualGrid.jsx';
 
-export class CardGrid extends React.Component {
+export class CardGrid extends React.PureComponent {
   static get contextTypes() {
     return { cardList: PropTypes.object };
   }

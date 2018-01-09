@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import SyncState from '../sync-states';
 import Link from './Link.jsx';
 
-export class Navbar extends React.Component {
+export class Navbar extends React.PureComponent {
   static get propTypes() {
     return {
       syncState: PropTypes.symbol.isRequired,

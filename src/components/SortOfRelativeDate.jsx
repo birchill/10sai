@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 
 const JUST_NOW_THRESHOLD = 10 * 1000; // 10s
 
-export class SortOfRelativeDate extends React.Component {
+export class SortOfRelativeDate extends React.PureComponent {
   static get propTypes() {
     return {
       value: PropTypes.instanceOf(Date).isRequired,
