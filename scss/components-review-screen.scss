@@ -8,6 +8,8 @@
   & > .buttons {
     width: 100%;
     text-align: right;
+    // Let's do this quirks-mode style
+    line-height: 0;
   }
   & > .content {
     flex: 1 0 auto;
