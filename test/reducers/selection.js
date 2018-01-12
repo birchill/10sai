@@ -86,7 +86,7 @@ describe('reducer:selection', () => {
     };
 
     state = subject(state, editActions.finishLoadCard(card._id, card));
-    state = subject(state, editActions.syncCard({ ...card, _deleted: true }));
+    state = subject(state, editActions.syncEditCard({ ...card, _deleted: true }));
 
     assert.strictEqual(state.selection.activeCardId, undefined);
   });

@@ -160,7 +160,7 @@ export default function edit(state = initialState, action) {
       return { forms: state.forms, saveError: action.error };
     }
 
-    case 'SYNC_CARD': {
+    case 'SYNC_EDIT_CARD': {
       if (action.card._id !== state.forms.active.card._id) {
         return state;
       }

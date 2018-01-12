@@ -70,9 +70,9 @@ export function failSaveCard(formId, error) {
   };
 }
 
-export function syncCard(card) {
+export function syncEditCard(card) {
   return {
-    type: 'SYNC_CARD',
+    type: 'SYNC_EDIT_CARD',
     card,
   };
 }

@@ -499,7 +499,7 @@ describe('reducer:edit', () => {
       answer: 'Answer B',
     };
 
-    const updatedState = subject(initialState, actions.syncCard(card));
+    const updatedState = subject(initialState, actions.syncEditCard(card));
 
     assert.deepEqual(
       updatedState,
@@ -523,7 +523,7 @@ describe('reducer:edit', () => {
       answer: 'Answer B',
     };
 
-    const updatedState = subject(initialState, actions.syncCard(card));
+    const updatedState = subject(initialState, actions.syncEditCard(card));
 
     assert.deepEqual(updatedState, initialState);
   });
@@ -542,7 +542,7 @@ describe('reducer:edit', () => {
         _deleted: true,
       };
 
-      const updatedState = subject(initialState, actions.syncCard(card));
+      const updatedState = subject(initialState, actions.syncEditCard(card));
 
       assert.deepEqual(updatedState, notFoundState('abc', true));
     }

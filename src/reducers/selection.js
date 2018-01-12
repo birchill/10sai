@@ -69,7 +69,7 @@ export default function selection(state, action) {
     // --- Sync related changes ---
 
     // If the active card was deleted remotely, clear it
-    case 'SYNC_CARD':
+    case 'SYNC_EDIT_CARD':
       if (
         action.card._id === state.selection.activeCardId &&
         action.card._deleted

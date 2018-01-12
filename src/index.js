@@ -7,7 +7,7 @@ import { all } from 'redux-saga/effects';
 
 import reducer from './reducers/index';
 
-import editSagas from './sagas/edit';
+import { editSagas, syncEditChanges } from './sagas/edit';
 import reviewSagas from './sagas/review';
 import routeSagas from './sagas/route';
 import syncSagas from './sagas/sync';
@@ -45,12 +45,8 @@ if (process.env.NODE_ENV === 'development') {
 
 const cardStore = new CardStore();
 
-cardStore.changes.on('change', change => {
-  const cardBeingEdited = store.getState().edit.forms.active.card;
-  if (cardBeingEdited && cardBeingEdited._id === change.id) {
-    store.dispatch({ type: 'SYNC_CARD', card: change.doc });
-  }
-});
+syncEditChanges(cardStore, store);
+
 
 const settingsStore = new SettingsStore();
 
