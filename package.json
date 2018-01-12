@@ -14,6 +14,7 @@
     "start": "cross-env NODE_ENV=development webpack-dev-server --progress --colors --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server -p --progress --colors --history-api-fallback --content-base public/",
     "lint": "eslint src/** test/**",
+    "precommit": "lint-staged",
     "test": "mocha --recursive --compilers js:@babel/register --require @babel/polyfill"
   },
   "pre-commit": [
@@ -58,6 +59,8 @@
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.5.1",
     "extract-text-webpack-plugin": "^3.0.2",
+    "husky": "^0.14.3",
+    "lint-staged": "^6.0.0",
     "memdown": "^1.4.1",
     "mocha": "^4.0.1",
     "node-sass": "^4.7.2",
@@ -70,5 +73,16 @@
     "sinon": "^4.1.3",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.9.7"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "bracketSpacing": true
   }
 }
