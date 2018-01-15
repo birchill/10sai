@@ -3,7 +3,7 @@
 
 import { assert } from 'chai';
 import subject from '../../src/review/reducer';
-import ReviewState from '../../src/review-states';
+import ReviewState from '../../src/review/states';
 import * as actions from '../../src/review/actions';
 import { generateCards } from '../testcommon';
 

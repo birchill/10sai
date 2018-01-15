@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import ReviewState from '../review-states';
+import ReviewState from '../review/states';
 import * as reviewActions from '../review/actions';
 import { getReviewProgress } from '../review/selectors';
 

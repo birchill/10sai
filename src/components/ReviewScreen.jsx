@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import ReviewState from '../review-states';
+import ReviewState from '../review/states';
 
 import Link from './Link.jsx';
 import LoadingIndicator from './LoadingIndicator.jsx';

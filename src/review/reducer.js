@@ -1,4 +1,4 @@
-import ReviewState from '../review-states';
+import ReviewState from './states';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
