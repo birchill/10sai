@@ -12,6 +12,8 @@ import reviewSagas from './review/sagas';
 import routeSagas from './sagas/route';
 import syncSagas from './sagas/sync';
 
+import reviewSync from './review/sync';
+
 import * as routeActions from './actions/route';
 
 import SettingsStore from './SettingsStore';
@@ -46,6 +48,7 @@ if (process.env.NODE_ENV === 'development') {
 const cardStore = new CardStore();
 
 syncEditChanges(cardStore, store);
+reviewSync(cardStore, store);
 
 
 const settingsStore = new SettingsStore();

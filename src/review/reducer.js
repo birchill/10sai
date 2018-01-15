@@ -48,6 +48,17 @@ const initialState = {
   // May be null if there are no more cards to be reviewed or if there is no
   // review in progress.
   nextCard: null,
+
+  // An object describing the cards available for review in the format:
+  //
+  // {
+  //    newCards: number,
+  //    overdueCards: number
+  // }
+  //
+  // This is only ever set in the IDLE / COMPLETE states and even then it is not
+  // always set.
+  availableCards: undefined,
 };
 
 // When we update the current / next cards there are two modes:
@@ -70,6 +81,7 @@ export default function review(state = initialState, action) {
         reviewTime: state.reviewTime,
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
+        availableCards: undefined,
       };
     }
 
@@ -283,6 +295,13 @@ export default function review(state = initialState, action) {
         action.nextCardSeed,
         Update.UpdateCurrentCard
       );
+    }
+
+    case 'UPDATE_AVAILABLE_CARDS': {
+      return {
+        ...state,
+        availableCards: action.availableCards,
+      };
     }
 
     default:

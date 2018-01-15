@@ -59,5 +59,12 @@ export function passCard() {
   };
 }
 
+export function updateAvailableCards(availableCards) {
+  return {
+    type: 'UPDATE_AVAILABLE_CARDS',
+    availableCards,
+  };
+}
+
 // TODO: failUpdateProgress
 // TODO: failLoadReview (rename reviewLoaded to finishLoadReview?)

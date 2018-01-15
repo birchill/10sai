@@ -39,4 +39,6 @@ export const getReviewProgress = createSelector(
   })
 );
 
+export const getReviewState = state => state.review.reviewState;
+
 export default getReviewProgress;
