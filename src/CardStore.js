@@ -521,9 +521,20 @@ class CardStore {
             try {
               progress = await this.db.get(PROGRESS_PREFIX + id);
             } catch (e) {
-              // If we can't find the progress record because it has been
-              // deleted, don't worry.
-              if (e.status !== 404 || e.reason !== 'deleted') {
+              if (e.status === 404) {
+                // If we can't find the progress record there are two
+                // possibilities we know about:
+                //
+                // (a) It has been deleted. This happens normally as part of the
+                //     deletion process and we just let |progress| be undefined
+                //     in that case.
+                //
+                // (b) We haven't synced it yet. In that case just we will just
+                //     wait until it syncs and report the change then.
+                if (e.reason !== 'deleted') {
+                  return;
+                }
+              } else {
                 throw e;
               }
             }
