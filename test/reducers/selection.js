@@ -4,7 +4,7 @@
 import { assert } from 'chai';
 import subject from '../../src/reducers/index';
 import * as editActions from '../../src/actions/edit';
-import * as reviewActions from '../../src/actions/review';
+import * as reviewActions from '../../src/review/actions';
 import * as routeActions from '../../src/actions/route';
 import { generateCards } from '../testcommon';
 

@@ -8,8 +8,8 @@ import * as matchers from 'redux-saga-test-plan/matchers';
 import {
   updateHeap as updateHeapSaga,
   updateProgress as updateProgressSaga,
-} from '../../src/sagas/review';
-import * as reviewActions from '../../src/actions/review';
+} from '../../src/review/sagas';
+import * as reviewActions from '../../src/review/actions';
 import reducer from '../../src/reducers/index';
 
 describe('sagas:review updateHeap', () => {

@@ -8,7 +8,7 @@ import { all } from 'redux-saga/effects';
 import reducer from './reducers/index';
 
 import { editSagas, syncEditChanges } from './sagas/edit';
-import reviewSagas from './sagas/review';
+import reviewSagas from './review/sagas';
 import routeSagas from './sagas/route';
 import syncSagas from './sagas/sync';
 

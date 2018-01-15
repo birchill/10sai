@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import ReviewState from '../review-states';
-import * as reviewActions from '../actions/review';
-import { getReviewProgress } from '../selectors/review';
+import * as reviewActions from '../review/actions';
+import { getReviewProgress } from '../review/selectors';
 
 import ReviewScreen from './ReviewScreen.jsx';
 

@@ -2,9 +2,9 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import { assert } from 'chai';
-import subject from '../../src/reducers/review';
+import subject from '../../src/review/reducer';
 import ReviewState from '../../src/review-states';
-import * as actions from '../../src/actions/review';
+import * as actions from '../../src/review/actions';
 import { generateCards } from '../testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;

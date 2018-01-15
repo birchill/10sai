@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../router';
-import { getReviewProgress } from '../selectors/review';
+import { getReviewProgress } from '../review/selectors';
 import CardList from '../CardList';
 import ReviewSyncListener from '../ReviewSyncListener';
 

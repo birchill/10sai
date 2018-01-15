@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import ReviewState from '../review-states';
-import * as reviewActions from '../actions/review';
+import * as reviewActions from '../review/actions';
 
 import ReviewPanel from './ReviewPanel.jsx';
 

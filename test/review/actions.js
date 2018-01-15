@@ -2,7 +2,7 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import { assert } from 'chai';
-import * as actions from '../../src/actions/review';
+import * as actions from '../../src/review/actions';
 
 describe('reducer:action', () => {
   it('should weight the random seed towards zero for FAIL_CARD', () => {
