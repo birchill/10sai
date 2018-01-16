@@ -1,4 +1,4 @@
-import SyncState from '../sync-states';
+import SyncState from './states';
 
 const initialState = {
   state: SyncState.NOT_CONFIGURED,

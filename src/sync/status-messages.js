@@ -1,4 +1,4 @@
-import SyncState from './sync-states';
+import SyncState from './states';
 
 // Eventually we'll localize this...
 export const SyncStatusMessages = [];

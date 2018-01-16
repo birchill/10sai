@@ -5,7 +5,7 @@ import CardGrid from './CardGrid.jsx';
 import Link from './Link.jsx';
 import LoadingIndicator from './LoadingIndicator.jsx';
 import Navbar from './Navbar.jsx';
-import SyncState from '../sync-states';
+import SyncState from '../sync/states';
 
 function HomeScreen(props) {
   let content;
@@ -30,14 +30,16 @@ function HomeScreen(props) {
         <div className="details">
           <Link
             className="button -primary -center -icon -add-card"
-            href="/cards/new">
+            href="/cards/new"
+          >
             Add a card
           </Link>
           {props.syncState === SyncState.NOT_CONFIGURED ? (
             <p>
               <Link
                 className="button -center -icon -settings"
-                href="/settings#sync">
+                href="/settings#sync"
+              >
                 Configure sync
               </Link>
             </p>

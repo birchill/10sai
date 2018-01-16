@@ -11,7 +11,7 @@ import TabBlock from './components/TabBlock.jsx';
 import TextRegion from './components/TextRegion.jsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
 
-import SyncState from './sync-states';
+import SyncState from './sync/states';
 
 ReactDOM.render(
   <CancelableTextbox
@@ -42,7 +42,8 @@ ReactDOM.render(
         onClick={evt => {
           renderTabs(selectedTab === 0 ? undefined : 0);
           evt.preventDefault();
-        }}>
+        }}
+      >
         Lookup
       </a>
       <a
@@ -53,7 +54,8 @@ ReactDOM.render(
         onClick={evt => {
           renderTabs(selectedTab === 1 ? undefined : 1);
           evt.preventDefault();
-        }}>
+        }}
+      >
         Add card
       </a>
       <a
@@ -65,7 +67,8 @@ ReactDOM.render(
         onClick={evt => {
           renderTabs(selectedTab === 2 ? undefined : 2);
           evt.preventDefault();
-        }}>
+        }}
+      >
         Review
       </a>
     </TabBlock>,
@@ -217,7 +220,8 @@ ReactDOM.render(
           onClick={evt => {
             renderSummaryPageTabs({ key });
             evt.preventDefault();
-          }}>
+          }}
+        >
           {label}
         </a>
       ))}

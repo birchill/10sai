@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import SyncState from '../sync-states';
+import SyncState from '../sync/states';
 import Link from './Link.jsx';
 
 export class Navbar extends React.PureComponent {
@@ -30,7 +30,8 @@ export class Navbar extends React.PureComponent {
         <div id="sync-status" className={syncClass}>
           <div className="overlay" />
         </div>
-      </Link>);
+      </Link>
+    );
   }
 
   render() {
@@ -40,7 +41,7 @@ export class Navbar extends React.PureComponent {
           <h1 className="appname">10sai</h1>
           <h2 className="subject">Subject</h2>
         </hgroup>
-        { this.renderSyncIcon() }
+        {this.renderSyncIcon()}
         <Link href="/settings">
           <div id="settings-menu" className="nav-icon -selectable -settings" />
         </Link>

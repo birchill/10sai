@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import SyncState from '../sync-states';
-import SyncStatusMessages from '../sync-status-messages';
+import SyncState from '../sync/states';
+import SyncStatusMessages from '../sync/status-messages';
 
 import SyncServerForm from './SyncServerForm.jsx';
 import ServerStatus from './ServerStatus.jsx';
@@ -27,7 +27,8 @@ function translateError(error) {
             <a
               href="https://github.com/pouchdb/add-cors-to-couchdb"
               target="_blank"
-              rel="noopener noreferrer">
+              rel="noopener noreferrer"
+            >
               support cross-origin access
             </a>
           </li>
@@ -164,7 +165,8 @@ export class SyncSettingsPanel extends React.PureComponent {
       <React.Fragment>
         <button
           className="-primary -icon -pause -center"
-          onClick={this.handlePause}>
+          onClick={this.handlePause}
+        >
           Pause
         </button>
         {this.renderServerInputBox()}
@@ -175,13 +177,12 @@ export class SyncSettingsPanel extends React.PureComponent {
   renderInProgress() {
     return (
       <React.Fragment>
-        <progress
-          className="progress"
-          value={this.props.progress} />
+        <progress className="progress" value={this.props.progress} />
         <button
           className="-primary -center"
           name="cancel-sync"
-          onClick={this.handlePause}>
+          onClick={this.handlePause}
+        >
           Cancel
         </button>
       </React.Fragment>
@@ -193,7 +194,8 @@ export class SyncSettingsPanel extends React.PureComponent {
       <React.Fragment>
         <button
           className="-primary -center -icon -play"
-          onClick={this.handleResume}>
+          onClick={this.handleResume}
+        >
           Resume
         </button>
         {this.renderServerInputBox()}
@@ -206,7 +208,8 @@ export class SyncSettingsPanel extends React.PureComponent {
       <button
         name="edit-server"
         className="-primary"
-        onClick={this.handleEditServer}>
+        onClick={this.handleEditServer}
+      >
         Add a sync server
       </button>
     );
@@ -222,7 +225,8 @@ export class SyncSettingsPanel extends React.PureComponent {
           <button
             className="-primary -center"
             name="retry"
-            onClick={this.handleRetry}>
+            onClick={this.handleRetry}
+          >
             Retry
           </button>
         </div>

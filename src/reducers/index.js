@@ -3,7 +3,7 @@ import edit from '../edit/reducer';
 import review from '../review/reducer';
 import route from './route';
 import selection from './selection';
-import sync from './sync';
+import sync from '../sync/reducer';
 
 const combinedReducer = combineReducers({
   edit,
