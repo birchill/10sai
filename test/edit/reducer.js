@@ -2,9 +2,9 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import { assert } from 'chai';
-import subject from '../../src/reducers/edit';
-import EditState from '../../src/edit-states';
-import * as actions from '../../src/actions/edit';
+import subject from '../../src/edit/reducer';
+import EditState from '../../src/edit/states';
+import * as actions from '../../src/edit/actions';
 
 const emptyState = formId => ({
   forms: {

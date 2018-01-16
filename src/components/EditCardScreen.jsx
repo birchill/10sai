@@ -5,8 +5,8 @@ import { connect } from 'react-redux';
 import EditCardToolbar from './EditCardToolbar.jsx';
 import EditCardForm from './EditCardForm.jsx';
 import EditCardNotFound from './EditCardNotFound.jsx';
-import EditState from '../edit-states';
-import * as editActions from '../actions/edit';
+import EditState from '../edit/states';
+import * as editActions from '../edit/actions';
 import * as routeActions from '../actions/route';
 
 export class EditCardScreen extends React.PureComponent {

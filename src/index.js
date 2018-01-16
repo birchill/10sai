@@ -7,7 +7,7 @@ import { all } from 'redux-saga/effects';
 
 import reducer from './reducers/index';
 
-import { editSagas, syncEditChanges } from './sagas/edit';
+import { editSagas, syncEditChanges } from './edit/sagas';
 import reviewSagas from './review/sagas';
 import routeSagas from './sagas/route';
 import syncSagas from './sagas/sync';
@@ -49,7 +49,6 @@ const cardStore = new CardStore();
 
 syncEditChanges(cardStore, store);
 reviewSync(cardStore, store);
-
 
 const settingsStore = new SettingsStore();
 

@@ -3,11 +3,11 @@
 
 import { expectSaga } from 'redux-saga-test-plan';
 import reducer from '../../src/reducers/index';
-import editSagas from '../../src/sagas/edit';
-import * as editActions from '../../src/actions/edit';
+import editSagas from '../../src/edit/sagas';
+import * as editActions from '../../src/edit/actions';
 // XXX Re-enable the following
 // import * as routeActions from '../../src/actions/route';
-import EditState from '../../src/edit-states';
+import EditState from '../../src/edit/states';
 
 describe('integration:edit', () => {
   it('should allow creating and saving a new card', () => {

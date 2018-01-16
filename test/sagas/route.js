@@ -8,9 +8,9 @@ import {
   followLink as followLinkSaga,
   beforeScreenChange as beforeScreenChangeSaga,
 } from '../../src/sagas/route';
-import EditState from '../../src/edit-states';
+import EditState from '../../src/edit/states';
 import * as routeActions from '../../src/actions/route';
-import * as editActions from '../../src/actions/edit';
+import * as editActions from '../../src/edit/actions';
 
 describe('sagas:route followLink', () => {
   beforeEach('setup global', () => {

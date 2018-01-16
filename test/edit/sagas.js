@@ -8,10 +8,10 @@ import {
   watchCardEdits as watchCardEditsSaga,
   save as saveSaga,
   beforeEditScreenChange as beforeEditScreenChangeSaga,
-} from '../../src/sagas/edit';
+} from '../../src/edit/sagas';
 import reducer from '../../src/reducers/index';
-import EditState from '../../src/edit-states';
-import * as editActions from '../../src/actions/edit';
+import EditState from '../../src/edit/states';
+import * as editActions from '../../src/edit/actions';
 import * as routeActions from '../../src/actions/route';
 
 const loadingState = formId => ({
@@ -84,8 +84,8 @@ describe('sagas:edit navigate', () => {
       navigateSaga,
       cardStore,
       routeActions.navigate({ url: '/cards/new' })
-    ).not
-      .put(editActions.loadCard('123'))
+    )
+      .not.put(editActions.loadCard('123'))
       .put(expectedNewAction)
       .not.call([cardStore, 'getCard'], '123')
       .run();
@@ -98,8 +98,8 @@ describe('sagas:edit navigate', () => {
       navigateSaga,
       cardStore,
       routeActions.navigate({ url: '/' })
-    ).not
-      .put(editActions.loadCard('123'))
+    )
+      .not.put(editActions.loadCard('123'))
       .not.call([cardStore, 'getCard'], '123')
       .run();
   });

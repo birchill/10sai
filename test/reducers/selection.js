@@ -3,7 +3,7 @@
 
 import { assert } from 'chai';
 import subject from '../../src/reducers/index';
-import * as editActions from '../../src/actions/edit';
+import * as editActions from '../../src/edit/actions';
 import * as reviewActions from '../../src/review/actions';
 import * as routeActions from '../../src/actions/route';
 import { generateCards } from '../testcommon';
@@ -86,7 +86,10 @@ describe('reducer:selection', () => {
     };
 
     state = subject(state, editActions.finishLoadCard(card._id, card));
-    state = subject(state, editActions.syncEditCard({ ...card, _deleted: true }));
+    state = subject(
+      state,
+      editActions.syncEditCard({ ...card, _deleted: true })
+    );
 
     assert.strictEqual(state.selection.activeCardId, undefined);
   });

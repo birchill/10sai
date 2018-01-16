@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Link from './Link.jsx';
-import EditState from '../edit-states';
+import EditState from '../edit/states';
 
 export class EditCardToolbar extends React.PureComponent {
   static get propTypes() {
@@ -23,7 +23,8 @@ export class EditCardToolbar extends React.PureComponent {
           <button
             className="delete -icon -delete -link"
             disabled={disabled}
-            onClick={this.props.onDelete}>
+            onClick={this.props.onDelete}
+          >
             Discard
           </button>
         </div>
@@ -31,7 +32,8 @@ export class EditCardToolbar extends React.PureComponent {
           <Link
             href="/cards/new"
             className="add button -icon -plus -link"
-            active>
+            active
+          >
             Add
           </Link>
         </div>

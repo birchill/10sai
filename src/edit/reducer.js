@@ -1,5 +1,5 @@
 import deepEqual from 'deep-equal';
-import EditState from '../edit-states';
+import EditState from './states';
 
 // Editing state shape:
 //
