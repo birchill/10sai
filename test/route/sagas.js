@@ -7,9 +7,9 @@ import * as matchers from 'redux-saga-test-plan/matchers';
 import {
   followLink as followLinkSaga,
   beforeScreenChange as beforeScreenChangeSaga,
-} from '../../src/sagas/route';
+} from '../../src/route/sagas';
 import EditState from '../../src/edit/states';
-import * as routeActions from '../../src/actions/route';
+import * as routeActions from '../../src/route/actions';
 import * as editActions from '../../src/edit/actions';
 
 describe('sagas:route followLink', () => {

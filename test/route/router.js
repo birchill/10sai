@@ -8,7 +8,7 @@ import {
   routeFromPath,
   URLFromRoute,
   routesEqual,
-} from '../src/router';
+} from '../../src/route/router';
 
 describe('router:routeFromPath', () => {
   it('converts empty path to route', () => {

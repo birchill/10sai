@@ -30,18 +30,18 @@ export function routeFromURL(url) {
     if (splitStart === -1) {
       splitStart = str.length;
     }
-    return [ str.substring(0, splitStart), str.substring(splitStart + 1) ];
+    return [str.substring(0, splitStart), str.substring(splitStart + 1)];
   };
 
   // Strip fragment
   let fragment;
   // eslint-disable-next-line prefer-const
-  [ path, fragment ] = splitAtFirst(path, '#');
+  [path, fragment] = splitAtFirst(path, '#');
 
   // Strip and parse query string
   let search;
   // eslint-disable-next-line prefer-const
-  [ path, search ] = splitAtFirst(path, '?');
+  [path, search] = splitAtFirst(path, '?');
 
   return routeFromPath(path, search, fragment);
 }

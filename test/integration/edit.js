@@ -6,7 +6,7 @@ import reducer from '../../src/reducers/index';
 import editSagas from '../../src/edit/sagas';
 import * as editActions from '../../src/edit/actions';
 // XXX Re-enable the following
-// import * as routeActions from '../../src/actions/route';
+// import * as routeActions from '../../src/route/actions';
 import EditState from '../../src/edit/states';
 
 describe('integration:edit', () => {

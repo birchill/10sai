@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import * as routeActions from '../actions/route';
+import * as routeActions from '../route/actions';
 import Link from './Link.jsx';
 
 export class Popup extends React.PureComponent {
@@ -78,11 +78,13 @@ export class Popup extends React.PureComponent {
         <section
           className="content popup-panel"
           role="dialog"
-          ref={this.assignPopup}>
+          ref={this.assignPopup}
+        >
           <Link
             href={this.props.currentScreenLink}
             className="close close-button"
-            direction="backwards">
+            direction="backwards"
+          >
             Close
           </Link>
           {this.props.children}

@@ -9,12 +9,12 @@ import reducer from './reducers/index';
 
 import { editSagas, syncEditChanges } from './edit/sagas';
 import reviewSagas from './review/sagas';
-import routeSagas from './sagas/route';
+import routeSagas from './route/sagas';
 import syncSagas from './sync/sagas';
 
 import reviewSync from './review/sync';
 
-import * as routeActions from './actions/route';
+import * as routeActions from './route/actions';
 
 import SettingsStore from './SettingsStore';
 import CardStore from './CardStore';

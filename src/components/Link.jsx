@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import * as routeActions from '../actions/route';
+import * as routeActions from '../route/actions';
 
 // This function is copied from react-router.
 const isModifiedEvent = evt =>

@@ -12,7 +12,7 @@ import {
 import reducer from '../../src/reducers/index';
 import EditState from '../../src/edit/states';
 import * as editActions from '../../src/edit/actions';
-import * as routeActions from '../../src/actions/route';
+import * as routeActions from '../../src/route/actions';
 
 const loadingState = formId => ({
   edit: {

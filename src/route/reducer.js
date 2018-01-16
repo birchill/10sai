@@ -1,4 +1,4 @@
-import { routeFromPath, routeFromURL } from '../router';
+import { routeFromPath, routeFromURL } from './router';
 
 export default function route(state = {}, action) {
   switch (action.type) {

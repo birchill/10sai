@@ -13,9 +13,9 @@ import {
   routeFromPath,
   URLFromRoute,
   routesEqual,
-} from '../router';
+} from '../route/router';
 import * as editActions from './actions';
-import * as routeActions from '../actions/route';
+import * as routeActions from '../route/actions';
 import EditState from './states';
 
 const SAVE_DELAY = 2000;

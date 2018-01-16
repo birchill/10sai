@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import DocumentTitle from 'react-document-title';
 
-import { URLFromRoute } from '../router';
+import { URLFromRoute } from '../route/router';
 import { getReviewProgress } from '../review/selectors';
 import CardList from '../CardList';
 import ReviewSyncListener from '../ReviewSyncListener';
@@ -127,7 +127,8 @@ class App extends React.PureComponent {
               role="tabpanel"
               aria-labelledby="lookup-tab"
               className={tabPanelClass}
-              hidden={this.props.route.screen !== 'lookup'}>
+              hidden={this.props.route.screen !== 'lookup'}
+            >
               <LookupScreen active={this.props.route.screen === 'lookup'} />
             </TabPanel>
             <TabPanel
@@ -135,7 +136,8 @@ class App extends React.PureComponent {
               role="tabpanel"
               aria-labelledby="edit-tab"
               className={tabPanelClass}
-              hidden={this.props.route.screen !== 'edit-card'}>
+              hidden={this.props.route.screen !== 'edit-card'}
+            >
               <EditCardScreen
                 active={this.props.route.screen === 'edit-card'}
                 card={this.props.route.card}
@@ -146,7 +148,8 @@ class App extends React.PureComponent {
               role="tabpanel"
               aria-labelledby="review-tab"
               className={tabPanelClass}
-              hidden={this.props.route.screen !== 'review'}>
+              hidden={this.props.route.screen !== 'review'}
+            >
               <ReviewScreenContainer
                 syncListener={this.reviewSyncListener}
                 active={this.props.route.screen === 'review'}
@@ -158,14 +161,16 @@ class App extends React.PureComponent {
               id="lookup-tab"
               href="/lookup"
               aria-controls="lookup-page"
-              className="-icon -lookup">
+              className="-icon -lookup"
+            >
               Lookup
             </Link>
             <Link
               id="edit-tab"
               href={addEditLink}
               aria-controls="edit-page"
-              className={`-icon ${addEditClass}`}>
+              className={`-icon ${addEditClass}`}
+            >
               {addEditLabel}
             </Link>
             <Link
@@ -173,13 +178,15 @@ class App extends React.PureComponent {
               href="/review"
               aria-controls="review-page"
               className={`-icon -review ${remainingReviews ? '-badge' : ''}`}
-              data-badge={remainingReviews}>
+              data-badge={remainingReviews}
+            >
               Review
             </Link>
           </TabBlock>
           <Popup
             active={this.props.route.popup === 'settings'}
-            currentScreenLink={this.currentScreenLink}>
+            currentScreenLink={this.currentScreenLink}
+          >
             <SettingsPanel heading="Sync">
               <SyncSettingsPanelContainer />
             </SettingsPanel>

@@ -7,7 +7,7 @@ import EditCardForm from './EditCardForm.jsx';
 import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit/states';
 import * as editActions from '../edit/actions';
-import * as routeActions from '../actions/route';
+import * as routeActions from '../route/actions';
 
 export class EditCardScreen extends React.PureComponent {
   static get propTypes() {
