@@ -14,7 +14,7 @@
     "start": "cross-env NODE_ENV=development webpack-dev-server --progress --colors --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server -p --progress --colors --history-api-fallback --content-base public/",
     "lint": "eslint src/** test/**",
-    "precommit": "lint-staged && lint",
+    "precommit": "lint-staged && eslint src/** test/**",
     "test": "mocha --recursive --compilers js:@babel/register --require @babel/polyfill"
   },
   "dependencies": {
