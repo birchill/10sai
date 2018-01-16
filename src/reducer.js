@@ -1,9 +1,9 @@
 import { combineReducers } from 'redux';
-import edit from '../edit/reducer';
-import review from '../review/reducer';
-import route from '../route/reducer';
-import selection from './selection';
-import sync from '../sync/reducer';
+import edit from './edit/reducer';
+import review from './review/reducer';
+import route from './route/reducer';
+import selection from './selection/reducer';
+import sync from './sync/reducer';
 
 const combinedReducer = combineReducers({
   edit,

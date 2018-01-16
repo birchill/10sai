@@ -10,7 +10,7 @@ import {
   updateProgress as updateProgressSaga,
 } from '../../src/review/sagas';
 import * as reviewActions from '../../src/review/actions';
-import reducer from '../../src/reducers/index';
+import reducer from '../../src/reducer';
 
 describe('sagas:review updateHeap', () => {
   const cardStore = {

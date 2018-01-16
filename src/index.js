@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
 
-import reducer from './reducers/index';
+import reducer from './reducer';
 
 import { editSagas, syncEditChanges } from './edit/sagas';
 import reviewSagas from './review/sagas';

@@ -2,7 +2,7 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import { assert } from 'chai';
-import subject from '../../src/reducers/index';
+import subject from '../../src/reducer';
 import * as editActions from '../../src/edit/actions';
 import * as reviewActions from '../../src/review/actions';
 import * as routeActions from '../../src/route/actions';

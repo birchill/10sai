@@ -9,7 +9,7 @@ import {
   save as saveSaga,
   beforeEditScreenChange as beforeEditScreenChangeSaga,
 } from '../../src/edit/sagas';
-import reducer from '../../src/reducers/index';
+import reducer from '../../src/reducer';
 import EditState from '../../src/edit/states';
 import * as editActions from '../../src/edit/actions';
 import * as routeActions from '../../src/route/actions';

@@ -2,7 +2,7 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
-import reducer from '../../src/reducers/index';
+import reducer from '../../src/reducer';
 import editSagas from '../../src/edit/sagas';
 import * as editActions from '../../src/edit/actions';
 // XXX Re-enable the following
