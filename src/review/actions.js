@@ -59,6 +59,12 @@ export function passCard() {
   };
 }
 
+export function queryAvailableCards() {
+  return {
+    type: 'QUERY_AVAILABLE_CARDS',
+  };
+}
+
 export function updateAvailableCards(availableCards) {
   return {
     type: 'UPDATE_AVAILABLE_CARDS',

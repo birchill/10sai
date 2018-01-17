@@ -59,6 +59,9 @@ const initialState = {
   // This is only ever set in the IDLE / COMPLETE states and even then it is not
   // always set.
   availableCards: undefined,
+
+  // True if we are currently refreshing the set of available cards
+  loadingAvailableCards: false,
 };
 
 // When we update the current / next cards there are two modes:
@@ -297,10 +300,18 @@ export default function review(state = initialState, action) {
       );
     }
 
+    case 'QUERY_AVAILABLE_CARDS': {
+      return {
+        ...state,
+        loadingAvailableCards: true,
+      };
+    }
+
     case 'UPDATE_AVAILABLE_CARDS': {
       return {
         ...state,
         availableCards: action.availableCards,
+        loadingAvailableCards: false,
       };
     }
 
