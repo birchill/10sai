@@ -1,4 +1,6 @@
 import { createSelector } from 'reselect';
+import { getScreen } from '../route/selectors';
+import ReviewState from './states';
 
 const getHeapLength = state => state.review.heap.length;
 const getCurrentCard = state => state.review.currentCard;
@@ -39,6 +41,12 @@ export const getReviewProgress = createSelector(
   })
 );
 
-export const getReviewState = state => state.review.reviewState;
+const getReviewState = state => state.review.reviewState;
+
+// We only care about available cards if we are looking at the review screen
+// and we are in the idle or complete state.
+export const getNeedAvailableCards = state =>
+  getScreen(state) === 'review' &&
+  [ReviewState.IDLE, ReviewState.COMPLETE].includes(getReviewState(state));
 
 export default getReviewProgress;

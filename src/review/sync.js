@@ -1,6 +1,4 @@
-import ReviewState from './states';
-import { getReviewState } from './selectors';
-import { getScreen } from '../route/selectors';
+import { getNeedAvailableCards } from './selectors';
 import * as reviewActions from './actions';
 
 let delayedCallback;
@@ -15,21 +13,12 @@ if (typeof window === 'object') {
   delayedCallback = setImmediate;
 }
 
-function needAvailableCards(state) {
-  // We only care about available cards if we are looking at the review screen
-  // and we are in the idle or complete state.
-  return (
-    getScreen(state) === 'review' &&
-    [ReviewState.IDLE, ReviewState.COMPLETE].includes(getReviewState(state))
-  );
-}
-
 function sync(cardStore, store) {
   let prevNeedAvailableCards;
   let queuedAvailabilityUpdate;
 
   store.subscribe(() => {
-    const currentNeedAvailableCards = needAvailableCards(store.getState());
+    const currentNeedAvailableCards = getNeedAvailableCards(store.getState());
     if (
       currentNeedAvailableCards &&
       !prevNeedAvailableCards &&
