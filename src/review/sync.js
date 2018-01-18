@@ -1,8 +1,16 @@
-import { getNeedAvailableCards } from './selectors';
+import { getAvailableCards, getNeedAvailableCards } from './selectors';
 import * as reviewActions from './actions';
+
+// In some circumstances we delay querying available cards. We do this so that
+// changes that occur in rapid succession are batched, but also because when
+// cards are, for example, deleted, it takes some time before PouchDB updates
+// views that reference them. I'm not sure what exactly is the process here but
+// 3s seems to be enough, normally, for the view to be updated.
+const QUERY_AVAILABLE_CARDS_DELAY = 3000;
 
 function sync(cardStore, store) {
   let needAvailableCards;
+  let delayedCallback;
 
   store.subscribe(() => {
     // XXX If we are newly in a state where we need available cards AND we are
@@ -17,15 +25,28 @@ function sync(cardStore, store) {
     // If we are newly *not* in a state where we need available cards
     //
     // --> Cancel any delayed update
-    const newNeedAvailableCards = getNeedAvailableCards(store.getState());
+    const state = store.getState();
+    const newNeedAvailableCards = getNeedAvailableCards(state);
     if (newNeedAvailableCards === needAvailableCards) {
       return;
     }
 
-    // XXX Check availableCards is empty
-    // XXX Check we are not already loading cards
+    if (delayedCallback) {
+      clearTimeout(delayedCallback);
+      delayedCallback = undefined;
+    }
 
-    store.dispatch(reviewActions.queryAvailableCards());
+    const hasAvailableCards = !!getAvailableCards(state);
+    if (!hasAvailableCards) {
+      store.dispatch(reviewActions.queryAvailableCards());
+    } else {
+      delayedCallback = setTimeout(() => {
+        store.dispatch(reviewActions.queryAvailableCards());
+        delayedCallback = undefined;
+      }, QUERY_AVAILABLE_CARDS_DELAY);
+    }
+
+    // XXX Check we are not already loading cards
 
     needAvailableCards = newNeedAvailableCards;
   });

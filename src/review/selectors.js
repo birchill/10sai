@@ -49,4 +49,6 @@ export const getNeedAvailableCards = state =>
   getScreen(state) === 'review' &&
   [ReviewState.IDLE, ReviewState.COMPLETE].includes(getReviewState(state));
 
+export const getAvailableCards = state => state.review.availableCards;
+
 export default getReviewProgress;

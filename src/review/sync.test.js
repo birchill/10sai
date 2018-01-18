@@ -81,7 +81,22 @@ describe('review:sync', () => {
     expect(setTimeout).toHaveBeenCalledTimes(0);
   });
 
-  it('triggers a delayed update when cards are needed but there are some', () => {});
+  it('triggers a delayed update when cards are needed but there are some', () => {
+    subject(cardStore, store);
+    store.__update({
+      screen: 'review',
+      review: {
+        availableCards: { newCards: 2, overdueCards: 3 },
+        loadingAvailableCards: false,
+      },
+    });
+
+    expect(store.actions).toEqual([]);
+    expect(setTimeout).toHaveBeenCalledTimes(1);
+
+    jest.runAllTimers();
+    expect(store.actions).toEqual([queryAvailableCards()]);
+  });
 
   it('cancels a delayed update when cards are needed immediately', () => {});
 
