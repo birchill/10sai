@@ -1,60 +1,45 @@
 import { getNeedAvailableCards } from './selectors';
 import * as reviewActions from './actions';
 
-let delayedCallback;
-
-if (typeof window === 'object') {
-  if ('requestIdleCallback' in window) {
-    delayedCallback = requestIdleCallback;
-  } else {
-    delayedCallback = requestAnimationFrame;
-  }
-} else {
-  delayedCallback = setImmediate;
-}
-
 function sync(cardStore, store) {
-  let prevNeedAvailableCards;
-  let queuedAvailabilityUpdate;
+  let needAvailableCards;
 
   store.subscribe(() => {
-    const currentNeedAvailableCards = getNeedAvailableCards(store.getState());
-    if (
-      currentNeedAvailableCards &&
-      !prevNeedAvailableCards &&
-      !queuedAvailabilityUpdate
-    ) {
-      queueAvailabilityUpdate();
+    // XXX If we are newly in a state where we need available cards AND we are
+    // not already loading cards
+    //
+    // --> If availableCards is empty
+    //     - cancel any delayed update
+    //     - trigger QUERY_AVAILABLE_CARDS immediately.
+    // --> Otherwise if there is no delayed update,
+    //     - queue a delayed update
+    //
+    // If we are newly *not* in a state where we need available cards
+    //
+    // --> Cancel any delayed update
+    const newNeedAvailableCards = getNeedAvailableCards(store.getState());
+    if (newNeedAvailableCards === needAvailableCards) {
+      return;
     }
 
-    prevNeedAvailableCards = currentNeedAvailableCards;
+    // XXX Check availableCards is empty
+    // XXX Check we are not already loading cards
+
+    store.dispatch(reviewActions.queryAvailableCards());
+
+    needAvailableCards = newNeedAvailableCards;
   });
 
   cardStore.changes.on('change', () => {
-    if (!prevNeedAvailableCards) {
+    if (!needAvailableCards) {
+      // XXX Drop the following once I finish filling this out
+      // eslint-disable-next-line no-useless-return
       return;
     }
 
     // TODO: Ignore changes that are not to cards, or changes that are only to
     // the content of cards (not additions/removals or changes to progress).
-    queueAvailabilityUpdate();
   });
-
-  function queueAvailabilityUpdate() {
-    if (queuedAvailabilityUpdate) {
-      return;
-    }
-
-    queuedAvailabilityUpdate = delayedCallback(async () => {
-      await updateAvailableCards();
-      queuedAvailabilityUpdate = undefined;
-    });
-  }
-
-  async function updateAvailableCards() {
-    const availableCards = await cardStore.getAvailableCards();
-    store.dispatch(reviewActions.updateAvailableCards(availableCards));
-  }
 }
 
 export default sync;
