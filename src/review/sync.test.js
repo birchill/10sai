@@ -57,7 +57,6 @@ class MockStore {
   }
 }
 
-// eslint-disable-next-line import/no-named-as-default-member
 jest.mock('./selectors', () => ({
   getNeedAvailableCards: state => state.screen === 'review',
   getAvailableCards: state => state.review.availableCards,
@@ -152,7 +151,16 @@ describe('review:sync', () => {
     expect(store.actions).toEqual([]);
   });
 
-  it('does not trigger an update when cards are already being loaded', () => {});
+  it('does not trigger an update when cards are already being loaded', () => {
+    subject(cardStore, store);
+    store.__update({
+      screen: 'review',
+      review: { availableCards: undefined, loadingAvailableCards: true },
+    });
+
+    expect(store.actions).toEqual([]);
+    expect(setTimeout).toHaveBeenCalledTimes(0);
+  });
 
   it('triggers a delayed update when a card is added', () => {});
 
