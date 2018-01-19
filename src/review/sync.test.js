@@ -2,7 +2,6 @@
 
 import subject from './sync';
 import { queryAvailableCards } from './actions';
-import selectors from './selectors';
 
 jest.useFakeTimers();
 
@@ -59,7 +58,11 @@ class MockStore {
 }
 
 // eslint-disable-next-line import/no-named-as-default-member
-selectors.getNeedAvailableCards = jest.fn().mockReturnValue(true);
+jest.mock('./selectors', () => ({
+  getNeedAvailableCards: state => state.screen === 'review',
+  getAvailableCards: state => state.review.availableCards,
+  getLoadingAvailableCards: state => state.review.loadingAvailableCards,
+}));
 
 describe('review:sync', () => {
   let cardStore;
@@ -68,7 +71,9 @@ describe('review:sync', () => {
   beforeEach(() => {
     cardStore = new MockCardStore();
     store = new MockStore();
+
     setTimeout.mockClear();
+    clearTimeout.mockClear();
   });
 
   it('triggers an update immediately when cards are needed and there are none', () => {
@@ -123,7 +128,31 @@ describe('review:sync', () => {
     expect(store.actions).toEqual([queryAvailableCards()]);
   });
 
-  it('cancels a delayed update when cards are no longer needed', () => {});
+  it('cancels a delayed update when cards are no longer needed', () => {
+    subject(cardStore, store);
+    // Trigger a delayed update
+    store.__update({
+      screen: 'review',
+      review: {
+        availableCards: { newCards: 2, overdueCards: 3 },
+        loadingAvailableCards: false,
+      },
+    });
+    expect(setTimeout).toHaveBeenCalledTimes(1);
+
+    // Then change screen
+    store.__update({
+      screen: 'home',
+      review: {
+        availableCards: undefined,
+        loadingAvailableCards: false,
+      },
+    });
+    expect(clearTimeout).toHaveBeenCalledTimes(1);
+    expect(store.actions).toEqual([]);
+  });
+
+  it('does not trigger an update when cards are already being loaded', () => {});
 
   it('triggers a delayed update when a card is added', () => {});
 

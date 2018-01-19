@@ -17,18 +17,6 @@ function sync(cardStore, store) {
   let delayedCallback;
 
   store.subscribe(() => {
-    // XXX If we are newly in a state where we need available cards AND we are
-    // not already loading cards
-    //
-    // --> If availableCards is empty
-    //     - cancel any delayed update
-    //     - trigger QUERY_AVAILABLE_CARDS immediately.
-    // --> Otherwise if there is no delayed update,
-    //     - queue a delayed update
-    //
-    // If we are newly *not* in a state where we need available cards
-    //
-    // --> Cancel any delayed update
     const state = store.getState();
 
     if (getLoadingAvailableCards(state)) {
@@ -47,6 +35,12 @@ function sync(cardStore, store) {
       delayedCallback = undefined;
     }
 
+    needAvailableCards = newNeedAvailableCards;
+
+    if (!needAvailableCards) {
+      return;
+    }
+
     if (!hasAvailableCards) {
       store.dispatch(reviewActions.queryAvailableCards());
     } else {
@@ -55,8 +49,6 @@ function sync(cardStore, store) {
         delayedCallback = undefined;
       }, QUERY_AVAILABLE_CARDS_DELAY);
     }
-
-    needAvailableCards = newNeedAvailableCards;
   });
 
   cardStore.changes.on('change', () => {

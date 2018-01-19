@@ -308,6 +308,19 @@ export default function review(state = initialState, action) {
     }
 
     case 'UPDATE_AVAILABLE_CARDS': {
+      // If we're mid-review and we get a stray update to the available cards
+      // we should be careful to clear availableCards so that when we actually
+      // need them, we immediately fetch them.
+      if (
+        ![ReviewState.IDLE, ReviewState.COMPLETE].includes(state.reviewState)
+      ) {
+        return {
+          ...state,
+          availableCards: undefined,
+          loadingAvailableCards: false,
+        };
+      }
+
       return {
         ...state,
         availableCards: action.availableCards,
