@@ -6,7 +6,6 @@ import DocumentTitle from 'react-document-title';
 import { URLFromRoute } from '../route/router';
 import { getReviewProgress } from '../review/selectors';
 import CardList from '../CardList';
-import ReviewSyncListener from '../ReviewSyncListener';
 
 import EditCardScreen from './EditCardScreen.jsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
@@ -55,7 +54,6 @@ class App extends React.PureComponent {
     super(props);
     this.closePopup = this.closePopup.bind(this);
     this.cardList = new CardList(props.cardStore);
-    this.reviewSyncListener = new ReviewSyncListener(props.cardStore);
   }
 
   getChildContext() {
@@ -151,7 +149,6 @@ class App extends React.PureComponent {
               hidden={this.props.route.screen !== 'review'}
             >
               <ReviewScreenContainer
-                syncListener={this.reviewSyncListener}
                 active={this.props.route.screen === 'review'}
               />
             </TabPanel>

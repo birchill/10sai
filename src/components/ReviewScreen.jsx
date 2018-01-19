@@ -23,7 +23,8 @@ const renderReviewButton = props => {
       className="start -primary -center"
       onClick={() => {
         props.onNewReview(props.maxNewCards, props.maxCards);
-      }}>
+      }}
+    >
       {`New review (${numCards})`}
     </button>
   );
@@ -44,8 +45,13 @@ function ReviewScreen(props) {
 
   const pluralCards = num => (num === 1 ? 'card' : 'cards');
 
+  const loading =
+    props.reviewState === ReviewState.LOADING ||
+    ([ReviewState.IDLE, ReviewState.COMPLETE].includes(props.reviewState) &&
+      !props.availableCards);
+
   let content;
-  if (props.reviewState === ReviewState.LOADING) {
+  if (loading) {
     content = (
       <div className="content summary-panel">
         <div className="icon">
@@ -100,7 +106,9 @@ function ReviewScreen(props) {
         promptText = (
           <p>
             {newCards === 1 ? 'There is still ' : 'There are still '}
-            <strong>{`${newCards} new ${pluralCards(newCards)}`}</strong> and{' '}
+            <strong>
+              {`${newCards} new ${pluralCards(newCards)}`}
+            </strong> and{' '}
             <strong>
               {`${overdueCards} overdue ${pluralCards(overdueCards)}`}
             </strong>{' '}
@@ -142,9 +150,7 @@ function ReviewScreen(props) {
       </div>
     );
   } else {
-    content = (
-      <ReviewPanelContainer className="content" />
-    );
+    content = <ReviewPanelContainer className="content" />;
   }
 
   let progressBar;
