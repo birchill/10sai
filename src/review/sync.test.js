@@ -185,14 +185,45 @@ describe('review:sync', () => {
     ]);
   });
 
-  it('does NOT trigger an update when a card is added when not in an appropriate state', () => {});
+  it('does NOT trigger an update when a card is added when not in an appropriate state', () => {
+    subject(cardStore, store);
+    store.__update({
+      screen: 'home',
+      review: {
+        availableCards: undefined,
+        loadingAvailableCards: false,
+      },
+    });
+    expect(store.actions).toEqual([]);
+    expect(setTimeout).toHaveBeenCalledTimes(0);
 
-  it('triggers a delayed update when a card is deleted', () => {});
+    cardStore.__triggerChange('change', {});
 
-  it("triggers a delayed update when a card's progress is updated", () => {});
+    expect(store.actions).toEqual([]);
+    expect(setTimeout).toHaveBeenCalledTimes(0);
+  });
 
-  // TODO
-  it("does not trigger an update when a card's content is updated", () => {});
+  // TODO: Test that we don't trigger an update when a card's content is updated
 
-  it('batches updates from multiple card changes', () => {});
+  it('batches updates from multiple card changes', () => {
+    subject(cardStore, store);
+    store.__update({
+      screen: 'review',
+      review: {
+        availableCards: undefined,
+        loadingAvailableCards: false,
+      },
+    });
+    expect(store.actions).toEqual([queryAvailableCards()]);
+
+    cardStore.__triggerChange('change', {});
+    cardStore.__triggerChange('change', {});
+    cardStore.__triggerChange('change', {});
+
+    jest.runAllTimers();
+    expect(store.actions).toEqual([
+      queryAvailableCards(),
+      queryAvailableCards(),
+    ]);
+  });
 });
