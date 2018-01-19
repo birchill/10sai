@@ -1,4 +1,8 @@
-import { getAvailableCards, getNeedAvailableCards } from './selectors';
+import {
+  getAvailableCards,
+  getNeedAvailableCards,
+  getLoadingAvailableCards,
+} from './selectors';
 import * as reviewActions from './actions';
 
 // In some circumstances we delay querying available cards. We do this so that
@@ -26,8 +30,15 @@ function sync(cardStore, store) {
     //
     // --> Cancel any delayed update
     const state = store.getState();
+
+    if (getLoadingAvailableCards(state)) {
+      return;
+    }
+
     const newNeedAvailableCards = getNeedAvailableCards(state);
-    if (newNeedAvailableCards === needAvailableCards) {
+    const hasAvailableCards = !!getAvailableCards(state);
+
+    if (newNeedAvailableCards === needAvailableCards && hasAvailableCards) {
       return;
     }
 
@@ -36,7 +47,6 @@ function sync(cardStore, store) {
       delayedCallback = undefined;
     }
 
-    const hasAvailableCards = !!getAvailableCards(state);
     if (!hasAvailableCards) {
       store.dispatch(reviewActions.queryAvailableCards());
     } else {
@@ -45,8 +55,6 @@ function sync(cardStore, store) {
         delayedCallback = undefined;
       }, QUERY_AVAILABLE_CARDS_DELAY);
     }
-
-    // XXX Check we are not already loading cards
 
     needAvailableCards = newNeedAvailableCards;
   });

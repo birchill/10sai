@@ -68,6 +68,7 @@ describe('review:sync', () => {
   beforeEach(() => {
     cardStore = new MockCardStore();
     store = new MockStore();
+    setTimeout.mockClear();
   });
 
   it('triggers an update immediately when cards are needed and there are none', () => {
@@ -98,7 +99,29 @@ describe('review:sync', () => {
     expect(store.actions).toEqual([queryAvailableCards()]);
   });
 
-  it('cancels a delayed update when cards are needed immediately', () => {});
+  it('cancels a delayed update when cards are needed immediately', () => {
+    subject(cardStore, store);
+    // Trigger a delayed update
+    store.__update({
+      screen: 'review',
+      review: {
+        availableCards: { newCards: 2, overdueCards: 3 },
+        loadingAvailableCards: false,
+      },
+    });
+    expect(setTimeout).toHaveBeenCalledTimes(1);
+
+    // Then trigger an immediate update
+    store.__update({
+      screen: 'review',
+      review: {
+        availableCards: undefined,
+        loadingAvailableCards: false,
+      },
+    });
+    expect(clearTimeout).toHaveBeenCalledTimes(1);
+    expect(store.actions).toEqual([queryAvailableCards()]);
+  });
 
   it('cancels a delayed update when cards are no longer needed', () => {});
 
