@@ -1,4 +1,4 @@
-import { call, put, select, takeEvery } from 'redux-saga/effects';
+import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import * as reviewActions from './actions';
 
 // Selectors
@@ -87,11 +87,18 @@ export function* updateReviewTime(cardStore, action) {
   yield call([cardStore, 'setReviewTime'], action.reviewTime);
 }
 
+export function* queryAvailableCards(cardStore) {
+  // TODO: Error handling
+  const availableCards = yield call([cardStore, 'getAvailableCards']);
+  yield put(reviewActions.updateAvailableCards(availableCards));
+}
+
 function* reviewSagas(cardStore) {
   yield* [
     takeEvery(['NEW_REVIEW', 'SET_REVIEW_LIMITS'], updateHeap, cardStore),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, cardStore),
+    takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, cardStore),
   ];
 }
 
