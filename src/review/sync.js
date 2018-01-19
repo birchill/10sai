@@ -53,13 +53,19 @@ function sync(cardStore, store) {
 
   cardStore.changes.on('change', () => {
     if (!needAvailableCards) {
-      // XXX Drop the following once I finish filling this out
-      // eslint-disable-next-line no-useless-return
       return;
+    }
+
+    if (delayedCallback) {
+      clearTimeout(delayedCallback);
     }
 
     // TODO: Ignore changes that are not to cards, or changes that are only to
     // the content of cards (not additions/removals or changes to progress).
+    delayedCallback = setTimeout(() => {
+      store.dispatch(reviewActions.queryAvailableCards());
+      delayedCallback = undefined;
+    }, QUERY_AVAILABLE_CARDS_DELAY);
   });
 }
 

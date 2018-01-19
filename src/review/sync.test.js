@@ -162,7 +162,28 @@ describe('review:sync', () => {
     expect(setTimeout).toHaveBeenCalledTimes(0);
   });
 
-  it('triggers a delayed update when a card is added', () => {});
+  it('triggers a delayed update when a card is added', () => {
+    subject(cardStore, store);
+    store.__update({
+      screen: 'review',
+      review: {
+        availableCards: undefined,
+        loadingAvailableCards: false,
+      },
+    });
+    expect(store.actions).toEqual([queryAvailableCards()]);
+    expect(setTimeout).toHaveBeenCalledTimes(0);
+
+    cardStore.__triggerChange('change', {});
+
+    expect(setTimeout).toHaveBeenCalledTimes(1);
+
+    jest.runAllTimers();
+    expect(store.actions).toEqual([
+      queryAvailableCards(),
+      queryAvailableCards(),
+    ]);
+  });
 
   it('does NOT trigger an update when a card is added when not in an appropriate state', () => {});
 
