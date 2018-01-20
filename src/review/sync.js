@@ -76,6 +76,11 @@ function sync(cardStore, store) {
       return;
     }
 
+    if (change.deleted) {
+      store.dispatch(reviewActions.deleteReviewCard(change.id));
+      return;
+    }
+
     store.dispatch(reviewActions.updateReviewCard(change.doc));
   });
 }

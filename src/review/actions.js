@@ -79,5 +79,12 @@ export function updateReviewCard(card) {
   };
 }
 
+export function deleteReviewCard(id) {
+  return {
+    type: 'DELETE_REVIEW_CARD',
+    id,
+  };
+}
+
 // TODO: failUpdateProgress
 // TODO: failLoadReview (rename reviewLoaded to finishLoadReview?)

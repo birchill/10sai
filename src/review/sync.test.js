@@ -1,7 +1,11 @@
 /* global beforeEach, describe, expect, it, jest */
 
 import subject from './sync';
-import { queryAvailableCards, updateReviewCard } from './actions';
+import {
+  queryAvailableCards,
+  updateReviewCard,
+  deleteReviewCard,
+} from './actions';
 import reducer from './reducer';
 
 jest.useFakeTimers();
@@ -249,14 +253,96 @@ describe('review:sync', () => {
       expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
-    /*
     it('triggers an update when an unreviewed card is updated', () => {
+      subject(cardStore, store);
+
+      const card = {
+        _id: 'abc',
+        question: 'Question',
+        answer: 'Answer',
+      };
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          heap: [card],
+        },
+      });
+
+      const updatedCard = {
+        ...card,
+        question: 'Updated question',
+      };
+      cardStore.__triggerChange('change', {
+        id: 'abc',
+        doc: updatedCard,
+      });
+
+      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
     it('triggers an update when a failed card is updated', () => {
+      subject(cardStore, store);
+
+      const card = {
+        _id: 'abc',
+        question: 'Question',
+        answer: 'Answer',
+      };
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          failedCardsLevel2: [card],
+        },
+      });
+
+      const updatedCard = {
+        ...card,
+        question: 'Updated question',
+      };
+      cardStore.__triggerChange('change', {
+        id: 'abc',
+        doc: updatedCard,
+      });
+
+      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
     it('triggers an update when the current card is deleted', () => {
+      subject(cardStore, store);
+
+      const card = {
+        _id: 'abc',
+        question: 'Question',
+        answer: 'Answer',
+      };
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          currentCard: card,
+        },
+      });
+
+      const updatedCard = {
+        ...card,
+        question: 'Updated question',
+      };
+      cardStore.__triggerChange('change', {
+        id: 'abc',
+        deleted: true,
+        doc: {
+          ...updatedCard,
+          deleted: true,
+        },
+      });
+
+      expect(store.actions).toContainEqual(deleteReviewCard('abc'));
+    });
+
+    /*
+    it('does NOT trigger an update when there is no change to the card', () => {
     });
 
     it('does NOT trigger an update when an unrelated card is updated', () => {
