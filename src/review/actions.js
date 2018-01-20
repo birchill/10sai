@@ -72,5 +72,12 @@ export function updateAvailableCards(availableCards) {
   };
 }
 
+export function updateReviewCard(card) {
+  return {
+    type: 'UPDATE_REVIEW_CARD',
+    card,
+  };
+}
+
 // TODO: failUpdateProgress
 // TODO: failLoadReview (rename reviewLoaded to finishLoadReview?)

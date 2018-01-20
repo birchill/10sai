@@ -1,7 +1,8 @@
 /* global beforeEach, describe, expect, it, jest */
 
 import subject from './sync';
-import { queryAvailableCards } from './actions';
+import { queryAvailableCards, updateReviewCard } from './actions';
+import reducer from './reducer';
 
 jest.useFakeTimers();
 
@@ -57,11 +58,12 @@ class MockStore {
   }
 }
 
-jest.mock('./selectors', () => ({
-  getNeedAvailableCards: state => state.screen === 'review',
-  getAvailableCards: state => state.review.availableCards,
-  getLoadingAvailableCards: state => state.review.loadingAvailableCards,
+// Mock selectors from other modules we depend on
+jest.mock('../route/selectors', () => ({
+  getScreen: state => state.screen,
 }));
+
+const initialState = reducer(undefined, { type: 'NONE' });
 
 describe('review:sync', () => {
   let cardStore;
@@ -75,155 +77,196 @@ describe('review:sync', () => {
     clearTimeout.mockClear();
   });
 
-  it('triggers an update immediately when cards are needed and there are none', () => {
-    subject(cardStore, store);
-    store.__update({
-      screen: 'review',
-      review: { availableCards: undefined, loadingAvailableCards: false },
+  describe('available cards', () => {
+    it('triggers an update immediately when cards are needed and there are none', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: initialState,
+      });
+
+      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
-    expect(store.actions).toEqual([queryAvailableCards()]);
-    expect(setTimeout).toHaveBeenCalledTimes(0);
+    it('triggers a delayed update when cards are needed but there are some', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          availableCards: { newCards: 2, overdueCards: 3 },
+        },
+      });
+
+      expect(store.actions).toEqual([]);
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+
+      jest.runAllTimers();
+      expect(store.actions).toEqual([queryAvailableCards()]);
+    });
+
+    it('cancels a delayed update when cards are needed immediately', () => {
+      subject(cardStore, store);
+      // Trigger a delayed update
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          availableCards: { newCards: 2, overdueCards: 3 },
+        },
+      });
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+
+      // Then trigger an immediate update
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          availableCards: undefined,
+        },
+      });
+      expect(clearTimeout).toHaveBeenCalledTimes(1);
+      expect(store.actions).toEqual([queryAvailableCards()]);
+    });
+
+    it('cancels a delayed update when cards are no longer needed', () => {
+      subject(cardStore, store);
+      // Trigger a delayed update
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          availableCards: { newCards: 2, overdueCards: 3 },
+        },
+      });
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+
+      // Then change screen
+      store.__update({
+        screen: 'home',
+        review: initialState,
+      });
+      expect(clearTimeout).toHaveBeenCalledTimes(1);
+      expect(store.actions).toEqual([]);
+    });
+
+    it('does not trigger an update when cards are already being loaded', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          loadingAvailableCards: true,
+        },
+      });
+
+      expect(store.actions).toEqual([]);
+      expect(setTimeout).toHaveBeenCalledTimes(0);
+    });
+
+    it('triggers a delayed update when a card is added', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: initialState,
+      });
+      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(setTimeout).toHaveBeenCalledTimes(0);
+
+      cardStore.__triggerChange('change', {});
+
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+
+      jest.runAllTimers();
+      expect(store.actions).toEqual([
+        queryAvailableCards(),
+        queryAvailableCards(),
+      ]);
+    });
+
+    it('does NOT trigger an update when a card is added when not in an appropriate state', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'home',
+        review: initialState,
+      });
+      expect(store.actions).toEqual([]);
+      expect(setTimeout).toHaveBeenCalledTimes(0);
+
+      cardStore.__triggerChange('change', {});
+
+      expect(store.actions).toEqual([]);
+      expect(setTimeout).toHaveBeenCalledTimes(0);
+    });
+
+    it('batches updates from multiple card changes', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: initialState,
+      });
+      expect(store.actions).toEqual([queryAvailableCards()]);
+
+      cardStore.__triggerChange('change', {});
+      cardStore.__triggerChange('change', {});
+      cardStore.__triggerChange('change', {});
+
+      jest.runAllTimers();
+      expect(store.actions).toEqual([
+        queryAvailableCards(),
+        queryAvailableCards(),
+      ]);
+    });
   });
 
-  it('triggers a delayed update when cards are needed but there are some', () => {
-    subject(cardStore, store);
-    store.__update({
-      screen: 'review',
-      review: {
-        availableCards: { newCards: 2, overdueCards: 3 },
-        loadingAvailableCards: false,
-      },
+  describe('review cards', () => {
+    it('triggers an update when the current card is updated', () => {
+      subject(cardStore, store);
+
+      const card = {
+        _id: 'abc',
+        question: 'Question',
+        answer: 'Answer',
+      };
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          currentCard: card,
+        },
+      });
+
+      const updatedCard = {
+        ...card,
+        question: 'Updated question',
+      };
+      cardStore.__triggerChange('change', {
+        id: 'abc',
+        doc: updatedCard,
+      });
+
+      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
-    expect(store.actions).toEqual([]);
-    expect(setTimeout).toHaveBeenCalledTimes(1);
-
-    jest.runAllTimers();
-    expect(store.actions).toEqual([queryAvailableCards()]);
-  });
-
-  it('cancels a delayed update when cards are needed immediately', () => {
-    subject(cardStore, store);
-    // Trigger a delayed update
-    store.__update({
-      screen: 'review',
-      review: {
-        availableCards: { newCards: 2, overdueCards: 3 },
-        loadingAvailableCards: false,
-      },
-    });
-    expect(setTimeout).toHaveBeenCalledTimes(1);
-
-    // Then trigger an immediate update
-    store.__update({
-      screen: 'review',
-      review: {
-        availableCards: undefined,
-        loadingAvailableCards: false,
-      },
-    });
-    expect(clearTimeout).toHaveBeenCalledTimes(1);
-    expect(store.actions).toEqual([queryAvailableCards()]);
-  });
-
-  it('cancels a delayed update when cards are no longer needed', () => {
-    subject(cardStore, store);
-    // Trigger a delayed update
-    store.__update({
-      screen: 'review',
-      review: {
-        availableCards: { newCards: 2, overdueCards: 3 },
-        loadingAvailableCards: false,
-      },
-    });
-    expect(setTimeout).toHaveBeenCalledTimes(1);
-
-    // Then change screen
-    store.__update({
-      screen: 'home',
-      review: {
-        availableCards: undefined,
-        loadingAvailableCards: false,
-      },
-    });
-    expect(clearTimeout).toHaveBeenCalledTimes(1);
-    expect(store.actions).toEqual([]);
-  });
-
-  it('does not trigger an update when cards are already being loaded', () => {
-    subject(cardStore, store);
-    store.__update({
-      screen: 'review',
-      review: { availableCards: undefined, loadingAvailableCards: true },
+    /*
+    it('triggers an update when an unreviewed card is updated', () => {
     });
 
-    expect(store.actions).toEqual([]);
-    expect(setTimeout).toHaveBeenCalledTimes(0);
-  });
-
-  it('triggers a delayed update when a card is added', () => {
-    subject(cardStore, store);
-    store.__update({
-      screen: 'review',
-      review: {
-        availableCards: undefined,
-        loadingAvailableCards: false,
-      },
+    it('triggers an update when a failed card is updated', () => {
     });
-    expect(store.actions).toEqual([queryAvailableCards()]);
-    expect(setTimeout).toHaveBeenCalledTimes(0);
 
-    cardStore.__triggerChange('change', {});
-
-    expect(setTimeout).toHaveBeenCalledTimes(1);
-
-    jest.runAllTimers();
-    expect(store.actions).toEqual([
-      queryAvailableCards(),
-      queryAvailableCards(),
-    ]);
-  });
-
-  it('does NOT trigger an update when a card is added when not in an appropriate state', () => {
-    subject(cardStore, store);
-    store.__update({
-      screen: 'home',
-      review: {
-        availableCards: undefined,
-        loadingAvailableCards: false,
-      },
+    it('triggers an update when the current card is deleted', () => {
     });
-    expect(store.actions).toEqual([]);
-    expect(setTimeout).toHaveBeenCalledTimes(0);
 
-    cardStore.__triggerChange('change', {});
-
-    expect(store.actions).toEqual([]);
-    expect(setTimeout).toHaveBeenCalledTimes(0);
-  });
-
-  // TODO: Test that we don't trigger an update when a card's content is updated
-
-  it('batches updates from multiple card changes', () => {
-    subject(cardStore, store);
-    store.__update({
-      screen: 'review',
-      review: {
-        availableCards: undefined,
-        loadingAvailableCards: false,
-      },
+    it('does NOT trigger an update when an unrelated card is updated', () => {
     });
-    expect(store.actions).toEqual([queryAvailableCards()]);
 
-    cardStore.__triggerChange('change', {});
-    cardStore.__triggerChange('change', {});
-    cardStore.__triggerChange('change', {});
+    it('does NOT trigger an update when there is no review in progress', () => {
+    });
 
-    jest.runAllTimers();
-    expect(store.actions).toEqual([
-      queryAvailableCards(),
-      queryAvailableCards(),
-    ]);
+    it('does NOT trigger an update when an unrelated card is deleted', () => {
+    });
+    */
   });
 });

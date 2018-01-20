@@ -2,6 +2,7 @@ import {
   getAvailableCards,
   getNeedAvailableCards,
   getLoadingAvailableCards,
+  getReviewCardIds,
 } from './selectors';
 import * as reviewActions from './actions';
 
@@ -51,21 +52,31 @@ function sync(cardStore, store) {
     }
   });
 
-  cardStore.changes.on('change', () => {
-    if (!needAvailableCards) {
+  cardStore.changes.on('change', change => {
+    // Update available cards if needed
+    if (needAvailableCards) {
+      if (delayedCallback) {
+        clearTimeout(delayedCallback);
+      }
+
+      // We could try to be more clever and ignore changes that are to the
+      // content of cards (i.e. not additions/removals or changes to progress)
+      // but in future we anticipate having review criteria that depend on the
+      // content of cards so for now its simplest just to re-query cards when
+      // anything changes. Since we debounce and delay these updates, and only
+      // do them when we're looking at the review screen it should be fine.
+      delayedCallback = setTimeout(() => {
+        store.dispatch(reviewActions.queryAvailableCards());
+        delayedCallback = undefined;
+      }, QUERY_AVAILABLE_CARDS_DELAY);
+    }
+
+    // Ignore changes for cards that are not being reviewed
+    if (!getReviewCardIds(store.getState()).includes(change.id)) {
       return;
     }
 
-    if (delayedCallback) {
-      clearTimeout(delayedCallback);
-    }
-
-    // TODO: Ignore changes that are not to cards, or changes that are only to
-    // the content of cards (not additions/removals or changes to progress).
-    delayedCallback = setTimeout(() => {
-      store.dispatch(reviewActions.queryAvailableCards());
-      delayedCallback = undefined;
-    }, QUERY_AVAILABLE_CARDS_DELAY);
+    store.dispatch(reviewActions.updateReviewCard(change.doc));
   });
 }
 

@@ -53,4 +53,18 @@ export const getAvailableCards = state => state.review.availableCards;
 export const getLoadingAvailableCards = state =>
   state.review.loadingAvailableCards;
 
+export const getReviewCardIds = state => [
+  ...new Set(
+    [
+      ...state.review.heap,
+      ...state.review.failedCardsLevel1,
+      ...state.review.failedCardsLevel2,
+      ...state.review.history,
+      state.review.currentCard,
+    ]
+      .filter(card => card)
+      .map(card => card._id)
+  ),
+];
+
 export default getReviewProgress;
