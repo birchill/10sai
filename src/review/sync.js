@@ -1,8 +1,9 @@
+import deepEqual from 'deep-equal';
 import {
   getAvailableCards,
   getNeedAvailableCards,
   getLoadingAvailableCards,
-  getReviewCardIds,
+  getReviewCards,
 } from './selectors';
 import * as reviewActions from './actions';
 
@@ -71,13 +72,22 @@ function sync(cardStore, store) {
       }, QUERY_AVAILABLE_CARDS_DELAY);
     }
 
+    const reviewCard = getReviewCards(store.getState()).find(
+      card => card._id === change.id
+    );
+
     // Ignore changes for cards that are not being reviewed
-    if (!getReviewCardIds(store.getState()).includes(change.id)) {
+    if (!reviewCard) {
       return;
     }
 
     if (change.deleted) {
       store.dispatch(reviewActions.deleteReviewCard(change.id));
+      return;
+    }
+
+    // Ignore changes that are already reflected in the review state.
+    if (deepEqual(reviewCard, change.doc)) {
       return;
     }
 

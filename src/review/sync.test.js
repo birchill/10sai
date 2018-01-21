@@ -341,10 +341,31 @@ describe('review:sync', () => {
       expect(store.actions).toContainEqual(deleteReviewCard('abc'));
     });
 
-    /*
     it('does NOT trigger an update when there is no change to the card', () => {
+      subject(cardStore, store);
+
+      const card = {
+        _id: 'abc',
+        question: 'Question',
+        answer: 'Answer',
+      };
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          currentCard: card,
+        },
+      });
+
+      cardStore.__triggerChange('change', {
+        id: 'abc',
+        doc: { ...card },
+      });
+
+      expect(store.actions).not.toContainEqual(updateReviewCard(card));
     });
 
+    /*
     it('does NOT trigger an update when an unrelated card is updated', () => {
     });
 
