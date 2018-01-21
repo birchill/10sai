@@ -365,15 +365,60 @@ describe('review:sync', () => {
       expect(store.actions).not.toContainEqual(updateReviewCard(card));
     });
 
-    /*
     it('does NOT trigger an update when an unrelated card is updated', () => {
-    });
+      subject(cardStore, store);
 
-    it('does NOT trigger an update when there is no review in progress', () => {
+      const card = {
+        _id: 'abc',
+        question: 'Question',
+        answer: 'Answer',
+      };
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          currentCard: card,
+        },
+      });
+
+      cardStore.__triggerChange('change', {
+        id: 'xyz',
+        doc: {
+          ...card,
+          _id: 'xyz',
+        },
+      });
+
+      expect(store.actions).not.toContainEqual(updateReviewCard(card));
     });
 
     it('does NOT trigger an update when an unrelated card is deleted', () => {
+      subject(cardStore, store);
+
+      const card = {
+        _id: 'abc',
+        question: 'Question',
+        answer: 'Answer',
+      };
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          currentCard: card,
+        },
+      });
+
+      cardStore.__triggerChange('change', {
+        id: 'xyz',
+        deleted: true,
+        doc: {
+          ...card,
+          _id: 'xyz',
+          deleted: true,
+        },
+      });
+
+      expect(store.actions).not.toContainEqual(deleteReviewCard('xyz'));
     });
-    */
   });
 });
