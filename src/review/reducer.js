@@ -191,11 +191,11 @@ export default function review(state = initialState, action) {
           updatedCard.progress.level = Math.max(
             intervalInDays * 2,
             updatedCard.progress.level,
-            1
+            0.5
           );
         } else {
           // New / reset card: Review in a day
-          updatedCard.progress.level = 1;
+          updatedCard.progress.level = 0.5;
         }
         updatedCard.progress.reviewed = state.reviewTime;
       }

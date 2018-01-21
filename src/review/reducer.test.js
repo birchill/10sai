@@ -251,7 +251,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, actions.passCard());
 
-    expect(updatedState.history[0].progress.level).toBe(1);
+    expect(updatedState.history[0].progress.level).toBe(0.5);
   });
 
   it('should update the review time on PASS_CARD', () => {
