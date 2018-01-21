@@ -118,7 +118,7 @@ class TextRegion extends React.Component {
     // already up-to-date so we don't need to perform any further updates.
     //
     // Instead, we only need to update if one of the properties has changed.
-    return shallowEqual(this.props, nextProps);
+    return !shallowEqual(this.props, nextProps);
   }
 
   componentDidUpdate() {
@@ -179,7 +179,8 @@ class TextRegion extends React.Component {
       <div
         className={className}
         ref={this.assignContainerElem}
-        data-size={this.state.size}>
+        data-size={this.state.size}
+      >
         <div className="text" ref={this.assignTextElem}>
           {this.props.text}
         </div>
