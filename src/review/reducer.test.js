@@ -462,4 +462,60 @@ describe('reducer:review', () => {
     expect(updatedState.failedCardsLevel2).toEqual(cards);
     expect(updatedState.failedCardsLevel1).toEqual([]);
   });
+
+  it('should update the current card on UPDATE_REVIEW_CARD', () => {
+    const [initialState, cards] = newReview(0, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    const updatedCurrentCard = {
+      ...updatedState.currentCard,
+      question: 'Updated question',
+    };
+    updatedState = subject(
+      updatedState,
+      actions.updateReviewCard(updatedCurrentCard)
+    );
+    expect(updatedState.currentCard).toEqual(updatedCurrentCard);
+  });
+
+  it('should update the next card on UPDATE_REVIEW_CARD', () => {
+    const [initialState, cards] = newReview(0, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    const updatedNextCard = {
+      ...updatedState.nextCard,
+      question: 'Updated question',
+    };
+    updatedState = subject(
+      updatedState,
+      actions.updateReviewCard(updatedNextCard)
+    );
+    expect(updatedState.nextCard).toEqual(updatedNextCard);
+  });
+
+  it('should update the heap card on UPDATE_REVIEW_CARD', () => {
+    const [initialState, cards] = newReview(0, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    const updatedHeapCard = {
+      ...updatedState.heap[0],
+      question: 'Updated question',
+    };
+    updatedState = subject(
+      updatedState,
+      actions.updateReviewCard(updatedHeapCard)
+    );
+    expect(updatedState.heap[0]).toEqual(updatedHeapCard);
+  });
+
+  it('should NOT update anything if no cards match on UPDATE_REVIEW_CARD', () => {
+    const [initialState, cards] = newReview(0, 3);
+    const stateBeforeUpdate = subject(initialState, reviewLoaded(cards, 0, 0));
+    const updatedCard = {
+      ...stateBeforeUpdate.heap[0],
+      _id: 'something-random',
+    };
+    const stateAfterUpdate = subject(
+      stateBeforeUpdate,
+      actions.updateReviewCard(updatedCard)
+    );
+    expect(stateAfterUpdate).toBe(stateBeforeUpdate);
+  });
 });

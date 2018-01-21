@@ -328,6 +328,49 @@ export default function review(state = initialState, action) {
       };
     }
 
+    case 'UPDATE_REVIEW_CARD': {
+      const update = {};
+      const fieldsWithCards = [
+        'currentCard',
+        'nextCard',
+        'heap',
+        'failedCardsLevel1',
+        'failedCardsLevel2',
+        'history',
+      ];
+      for (const field of fieldsWithCards) {
+        if (!state[field]) {
+          continue;
+        }
+
+        if (Array.isArray(state[field])) {
+          let found = false;
+          const updatedArray = state[field].map(card => {
+            if (card._id === action.card._id) {
+              found = true;
+              return action.card;
+            }
+            return card;
+          });
+
+          if (found) {
+            update[field] = updatedArray;
+          }
+        } else if (state[field]._id === action.card._id) {
+          update[field] = action.card;
+        }
+      }
+
+      if (Object.keys(update).length === 0) {
+        return state;
+      }
+
+      return {
+        ...state,
+        ...update,
+      };
+    }
+
     default:
       return state;
   }
