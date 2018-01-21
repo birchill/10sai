@@ -371,6 +371,56 @@ export default function review(state = initialState, action) {
       };
     }
 
+    case 'DELETE_REVIEW_CARD': {
+      const arrayFieldsWithCards = [
+        'heap',
+        'failedCardsLevel1',
+        'failedCardsLevel2',
+        'history',
+      ];
+      const update = {};
+      for (const field of arrayFieldsWithCards) {
+        if (!state[field]) {
+          continue;
+        }
+
+        const index = state[field].findIndex(card => card._id === action.id);
+        if (index === -1) {
+          continue;
+        }
+
+        // We're currently assuming we only add cards once to any of these
+        // arrays which I *think* is true.
+        update[field] = state[field].slice();
+        update[field].splice(index, 1);
+      }
+
+      if (state.nextCard && state.nextCard._id === action.id) {
+        return updateNextCard(
+          { ...state, ...update },
+          action.nextCardSeed,
+          Update.ReplaceNextCard
+        );
+      }
+
+      if (state.currentCard && state.currentCard._id === action.id) {
+        return updateNextCard(
+          { ...state, ...update, currentCard: null },
+          action.nextCardSeed,
+          Update.UpdateCurrentCard
+        );
+      }
+
+      if (Object.keys(update).length === 0) {
+        return state;
+      }
+
+      return {
+        ...state,
+        ...update,
+      };
+    }
+
     default:
       return state;
   }

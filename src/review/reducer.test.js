@@ -42,6 +42,12 @@ function failCard(nextCardSeed) {
   return action;
 }
 
+function deleteReviewCard(id, nextCardSeed) {
+  const action = actions.deleteReviewCard(id);
+  action.nextCardSeed = nextCardSeed;
+  return action;
+}
+
 describe('reducer:review', () => {
   it('should go to the loading state on NEW_REVIEW', () => {
     const updatedState = subject(undefined, actions.newReview(2, 10));
@@ -515,6 +521,69 @@ describe('reducer:review', () => {
     const stateAfterUpdate = subject(
       stateBeforeUpdate,
       actions.updateReviewCard(updatedCard)
+    );
+    expect(stateAfterUpdate).toBe(stateBeforeUpdate);
+  });
+
+  it('should update the current card on DELETE_REVIEW_CARD', () => {
+    const [initialState, cards] = newReview(0, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    const originalCurrentCard = updatedState.currentCard;
+    const originalNextCard = updatedState.nextCard;
+    updatedState = subject(
+      updatedState,
+      deleteReviewCard(updatedState.currentCard._id, 0)
+    );
+    expect(updatedState.currentCard).toBe(originalNextCard);
+    expect(updatedState.nextCard).not.toBe(originalNextCard);
+    expect(updatedState.nextCard).toBe(updatedState.heap[0]);
+    expect(updatedState.history).not.toContainEqual(originalCurrentCard);
+  });
+
+  it('should got to COMPLETED state if the last card is deleted', () => {
+    const [initialState, cards] = newReview(0, 1);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    expect(updatedState.nextCard).toBe(null);
+    expect(updatedState.heap).toHaveLength(0);
+
+    updatedState = subject(
+      updatedState,
+      deleteReviewCard(updatedState.currentCard._id, 0)
+    );
+    expect(updatedState.currentCard).toBe(null);
+    expect(updatedState.nextCard).toBe(null);
+    expect(updatedState.history).toHaveLength(0);
+    expect(updatedState.reviewState).toBe(ReviewState.COMPLETE);
+  });
+
+  it('should update the next card on DELETE_REVIEW_CARD', () => {
+    const [initialState, cards] = newReview(0, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    updatedState = subject(
+      updatedState,
+      deleteReviewCard(updatedState.nextCard._id, 0)
+    );
+    expect(updatedState.nextCard).toBe(updatedState.heap[0]);
+  });
+
+  it('should update the heap on DELETE_REVIEW_CARD', () => {
+    const [initialState, cards] = newReview(0, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    const originalHeap = updatedState.heap;
+    updatedState = subject(
+      updatedState,
+      actions.deleteReviewCard(updatedState.heap[1]._id)
+    );
+    expect(updatedState.heap.length).toEqual(originalHeap.length - 1);
+    expect(updatedState.heap).not.toBe(originalHeap);
+  });
+
+  it('should NOT update anything if no cards match on DELETE_REVIEW_CARD', () => {
+    const [initialState, cards] = newReview(0, 3);
+    const stateBeforeUpdate = subject(initialState, reviewLoaded(cards, 0, 0));
+    const stateAfterUpdate = subject(
+      stateBeforeUpdate,
+      actions.deleteReviewCard('random-id')
     );
     expect(stateAfterUpdate).toBe(stateBeforeUpdate);
   });

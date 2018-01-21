@@ -83,6 +83,7 @@ export function deleteReviewCard(id) {
   return {
     type: 'DELETE_REVIEW_CARD',
     id,
+    nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
 }
 
