@@ -1,11 +1,7 @@
 /* global beforeEach, describe, expect, it, jest */
 
 import subject from './sync';
-import {
-  queryAvailableCards,
-  updateReviewCard,
-  deleteReviewCard,
-} from './actions';
+import { queryAvailableCards, updateReviewCard } from './actions';
 import reducer from './reducer';
 
 jest.useFakeTimers();
@@ -338,7 +334,9 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toContainEqual(deleteReviewCard('abc'));
+      expect(store.actions).toContainEqual(
+        expect.objectContaining({ type: 'DELETE_REVIEW_CARD', id: 'abc' })
+      );
     });
 
     it('does NOT trigger an update when there is no change to the card', () => {
@@ -418,7 +416,9 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).not.toContainEqual(deleteReviewCard('xyz'));
+      expect(store.actions).not.toContainEqual(
+        expect.objectContaining({ type: 'DELETE_REVIEW_CARD', id: 'xyz' })
+      );
     });
   });
 });
