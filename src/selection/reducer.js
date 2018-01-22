@@ -136,6 +136,16 @@ export default function selection(state, action) {
       }
       return state;
 
+    // If we deleted the active card (due to sync), clear it
+    case 'DELETE_REVIEW_CARD':
+      if (action.id === state.selection.activeCardId) {
+        return {
+          ...state,
+          selection: { activeCardId: undefined },
+        };
+      }
+      return state;
+
     default:
       return state;
   }

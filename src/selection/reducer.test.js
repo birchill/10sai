@@ -130,4 +130,17 @@ describe('reducer:selection', () => {
 
     expect(state.selection.activeCardId).toBe(state.review.currentCard._id);
   });
+
+  it('should clear the active card when the current review card is deleted', () => {
+    let state = subject(undefined, routeActions.navigate({ url: '/review' }));
+    state = subject(state, reviewActions.newReview(2, 3, new Date()));
+    const cards = generateCards(2, 3);
+    state = subject(state, reviewActions.reviewLoaded(cards));
+    state = subject(
+      state,
+      reviewActions.deleteReviewCard(state.review.currentCard._id)
+    );
+
+    expect(state.selection.activeCardId).toBe(undefined);
+  });
 });
