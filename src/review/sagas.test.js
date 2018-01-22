@@ -1,16 +1,15 @@
-/* global describe, it */
+/* global describe, it, expect */
 /* eslint arrow-body-style: [ 'off' ] */
 
-import { assert } from 'chai';
 import { expectSaga } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
 
 import {
   updateHeap as updateHeapSaga,
   updateProgress as updateProgressSaga,
-} from '../../src/review/sagas';
-import * as reviewActions from '../../src/review/actions';
-import reducer from '../../src/reducer';
+} from './sagas';
+import * as reviewActions from './actions';
+import reducer from '../reducer';
 
 describe('sagas:review updateHeap', () => {
   const cardStore = {
@@ -231,16 +230,9 @@ describe('sagas:review updateProgress', () => {
     const cardToUpdate = state.review.currentCard;
     const action = reviewActions.passCard();
     state = reducer(state, action);
-    assert.strictEqual(state.review.nextCard, null, 'Should have no next card');
-    assert.strictEqual(
-      state.review.currentCard,
-      null,
-      'Should have no current card'
-    );
-    assert.isTrue(
-      cardInHistory(cardToUpdate, state),
-      'Card to update is in history'
-    );
+    expect(state.review.nextCard).toBe(null);
+    expect(state.review.currentCard).toBe(null);
+    expect(cardInHistory(cardToUpdate, state)).toBe(true);
 
     const cardStore = { putCard: card => card };
     return expectSaga(updateProgressSaga, cardStore, action)
@@ -270,16 +262,9 @@ describe('sagas:review updateProgress', () => {
     const cardToUpdate = state.review.currentCard;
     const action = reviewActions.failCard();
     state = reducer(state, action);
-    assert.strictEqual(state.review.nextCard, null, 'Should have no next card');
-    assert.deepEqual(
-      state.review.currentCard,
-      cardToUpdate,
-      'Card to update is the current card'
-    );
-    assert.isFalse(
-      cardInHistory(cardToUpdate, state),
-      'Card to update is not in history'
-    );
+    expect(state.review.nextCard).toBe(null);
+    expect(state.review.currentCard).toEqual(cardToUpdate);
+    expect(cardInHistory(cardToUpdate, state)).toBe(false);
 
     const cardStore = { putCard: card => card };
     return expectSaga(updateProgressSaga, cardStore, action)
