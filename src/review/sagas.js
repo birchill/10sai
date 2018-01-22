@@ -42,8 +42,10 @@ export function* updateHeap(cardStore, action) {
     const options = { type: 'overdue', limit: freeSlots };
     // If we are updating the heap mid-review then avoid getting cards that
     // are already in our failed heaps.
-    // XXX Do this for SET_REVIEW_TIME too
-    if (action.type === 'SET_REVIEW_LIMIT') {
+    if (
+      action.type === 'SET_REVIEW_LIMIT' ||
+      action.type === 'SET_REVIEW_TIME'
+    ) {
       options.skipFailedCards = true;
     }
     cards.push(...(yield call([cardStore, 'getCards'], options)));
@@ -96,8 +98,11 @@ export function* queryAvailableCards(cardStore) {
 
 function* reviewSagas(cardStore) {
   yield* [
-    // XXX Call updateHeap for SET_REVIEW_TIME
-    takeEvery(['NEW_REVIEW', 'SET_REVIEW_LIMITS'], updateHeap, cardStore),
+    takeEvery(
+      ['NEW_REVIEW', 'SET_REVIEW_LIMITS', 'SET_REVIEW_TIME'],
+      updateHeap,
+      cardStore
+    ),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, cardStore),
     takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, cardStore),
