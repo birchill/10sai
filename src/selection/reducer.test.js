@@ -1,18 +1,17 @@
-/* global describe, it */
+/* global describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
-import { assert } from 'chai';
-import subject from '../../src/reducer';
-import * as editActions from '../../src/edit/actions';
-import * as reviewActions from '../../src/review/actions';
-import * as routeActions from '../../src/route/actions';
-import { generateCards } from '../testcommon';
+import subject from '../reducer';
+import * as editActions from '../edit/actions';
+import * as reviewActions from '../review/actions';
+import * as routeActions from '../route/actions';
+import { generateCards } from '../../test/testcommon';
 
 describe('reducer:selection', () => {
   it('should initially populate the active card field with undefined', () => {
     const initialState = subject(undefined, { type: 'yer' });
 
-    assert.strictEqual(initialState.selection.activeCardId, undefined);
+    expect(initialState.selection.activeCardId).toBe(undefined);
   });
 
   it('should update the active card when a card finishes loading', () => {
@@ -25,7 +24,7 @@ describe('reducer:selection', () => {
 
     state = subject(state, editActions.finishLoadCard(card._id, card));
 
-    assert.strictEqual(state.selection.activeCardId, 'abc');
+    expect(state.selection.activeCardId).toBe('abc');
   });
 
   it('should update the active card when a card finishes saving', () => {
@@ -46,7 +45,7 @@ describe('reducer:selection', () => {
       })
     );
 
-    assert.strictEqual(state.selection.activeCardId, 'def');
+    expect(state.selection.activeCardId).toBe('def');
   });
 
   it('should clear the active card when a new card is started', () => {
@@ -60,7 +59,7 @@ describe('reducer:selection', () => {
     state = subject(state, editActions.finishLoadCard(card._id, card));
     state = subject(state, editActions.newCard());
 
-    assert.strictEqual(state.selection.activeCardId, undefined);
+    expect(state.selection.activeCardId).toBe(undefined);
   });
 
   it('should clear the active card when it is deleted', () => {
@@ -74,7 +73,7 @@ describe('reducer:selection', () => {
     state = subject(state, editActions.finishLoadCard(card._id, card));
     state = subject(state, editActions.deleteEditCard('ghi'));
 
-    assert.strictEqual(state.selection.activeCardId, undefined);
+    expect(state.selection.activeCardId).toBe(undefined);
   });
 
   it('should clear the active card when it is deleted through sync', () => {
@@ -91,7 +90,7 @@ describe('reducer:selection', () => {
       editActions.syncEditCard({ ...card, _deleted: true })
     );
 
-    assert.strictEqual(state.selection.activeCardId, undefined);
+    expect(state.selection.activeCardId).toBe(undefined);
   });
 
   it('should update the active card when navigating to the review screen', () => {
@@ -100,10 +99,7 @@ describe('reducer:selection', () => {
     state = subject(state, reviewActions.reviewLoaded(cards));
     state = subject(state, routeActions.navigate({ url: '/review' }));
 
-    assert.strictEqual(
-      state.selection.activeCardId,
-      state.review.currentCard._id
-    );
+    expect(state.selection.activeCardId).toBe(state.review.currentCard._id);
   });
 
   it('should clear the active card when navigating to the home screen', () => {
@@ -113,7 +109,7 @@ describe('reducer:selection', () => {
     state = subject(state, routeActions.navigate({ url: '/review' }));
     state = subject(state, routeActions.navigate({ url: '/' }));
 
-    assert.strictEqual(state.selection.activeCardId, undefined);
+    expect(state.selection.activeCardId).toBe(undefined);
   });
 
   it('should update the active card when a review is loaded', () => {
@@ -122,10 +118,7 @@ describe('reducer:selection', () => {
     const cards = generateCards(2, 3);
     state = subject(state, reviewActions.reviewLoaded(cards));
 
-    assert.strictEqual(
-      state.selection.activeCardId,
-      state.review.currentCard._id
-    );
+    expect(state.selection.activeCardId).toBe(state.review.currentCard._id);
   });
 
   it('should update the active card when the current review card changes', () => {
@@ -135,9 +128,6 @@ describe('reducer:selection', () => {
     state = subject(state, reviewActions.reviewLoaded(cards));
     state = subject(state, reviewActions.passCard());
 
-    assert.strictEqual(
-      state.selection.activeCardId,
-      state.review.currentCard._id
-    );
+    expect(state.selection.activeCardId).toBe(state.review.currentCard._id);
   });
 });
