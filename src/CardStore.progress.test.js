@@ -466,6 +466,23 @@ describe('CardStore progress reporting', () => {
     });
   });
 
+  it('drops deleted cards from the new card count', async () => {
+    const card = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    expect(await subject.getAvailableCards()).toMatchObject({
+      newCards: 1,
+      overdueCards: 0,
+    });
+
+    await subject.deleteCard({ _id: card._id });
+    expect(await subject.getAvailableCards()).toMatchObject({
+      newCards: 0,
+      overdueCards: 0,
+    });
+  });
+
   it('returns the review progress along with overdue cards', async () => {
     const cards = await addCards(2);
 
