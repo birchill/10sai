@@ -1,14 +1,10 @@
-/* global afterEach, beforeEach, describe, it */
+/* global afterEach, beforeEach, describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
-import chai, { assert, AssertionError } from 'chai';
-import chaiDateTime from 'chai-datetime';
-import CardStore from '../src/CardStore';
-import { waitForEvents } from './testcommon';
-
-chai.use(chaiDateTime);
+import CardStore from './CardStore';
+import { waitForEvents } from '../test/testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -16,21 +12,21 @@ describe('CardStore progress reporting', () => {
   let subject;
   let relativeTime;
 
-  beforeEach('setup new store', () => {
+  beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
     subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
     relativeTime = diffInDays =>
       new Date(subject.reviewTime.getTime() + diffInDays * MS_PER_DAY);
   });
 
-  afterEach('clean up store', () => subject.destroy());
+  afterEach(() => subject.destroy());
 
   it('returns the progress when getting cards', async () => {
     await subject.putCard({ question: 'Question', answer: 'Answer' });
     const cards = await subject.getCards();
-    assert.strictEqual(cards.length, 1, 'Length of getCards() result');
-    assert.strictEqual(cards[0].progress.level, 0);
-    assert.strictEqual(cards[0].progress.reviewed, null);
+    expect(cards).toHaveLength(1);
+    expect(cards[0].progress.level).toBe(0);
+    expect(cards[0].progress.reviewed).toBeNull();
   });
 
   it('returns the progress when getting a single card', async () => {
@@ -39,8 +35,10 @@ describe('CardStore progress reporting', () => {
       answer: 'Answer',
     });
     const card = await subject.getCard(newCard._id);
-    assert.strictEqual(card.progress.level, 0);
-    assert.strictEqual(card.progress.reviewed, null);
+    expect(card.progress).toMatchObject({
+      level: 0,
+      reviewed: null,
+    });
   });
 
   it('returns the progress when reporting added cards', async () => {
@@ -53,9 +51,14 @@ describe('CardStore progress reporting', () => {
     // Wait for a few rounds of events so the update can take place
     await waitForEvents(5);
 
-    assert.isOk(updateInfo, 'Change was recorded');
-    assert.strictEqual(updateInfo.doc.progress.level, 0);
-    assert.strictEqual(updateInfo.doc.progress.reviewed, null);
+    expect(updateInfo).toMatchObject({
+      doc: {
+        progress: {
+          level: 0,
+          reviewed: null,
+        },
+      },
+    });
   });
 
   it('returns the progress when adding cards', async () => {
@@ -63,8 +66,12 @@ describe('CardStore progress reporting', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    assert.strictEqual(newCard.progress.level, 0);
-    assert.strictEqual(newCard.progress.reviewed, null);
+    expect(newCard).toMatchObject({
+      progress: {
+        level: 0,
+        reviewed: null,
+      },
+    });
   });
 
   it('returns the progress when updating cards', async () => {
@@ -76,8 +83,10 @@ describe('CardStore progress reporting', () => {
       _id: newCard._id,
       question: 'Updated question',
     });
-    assert.strictEqual(updatedCard.progress.level, 0);
-    assert.strictEqual(updatedCard.progress.reviewed, null);
+    expect(updatedCard.progress).toMatchObject({
+      level: 0,
+      reviewed: null,
+    });
   });
 
   it('does not update the card modified time when only updating the progress', async () => {
@@ -89,18 +98,10 @@ describe('CardStore progress reporting', () => {
       _id: newCard._id,
       progress: { level: 1 },
     });
-    assert.strictEqual(
-      updatedCard.modified,
-      newCard.modified,
-      'Modified time on card returned from putCard'
-    );
+    expect(updatedCard.modified).toBe(newCard.modified);
 
     const fetchedCard = await subject.getCard(newCard._id);
-    assert.strictEqual(
-      fetchedCard.modified,
-      newCard.modified,
-      'Modified time on card returned from getCard'
-    );
+    expect(fetchedCard.modified).toBe(newCard.modified);
   });
 
   it('allows resetting the progress', async () => {
@@ -110,16 +111,12 @@ describe('CardStore progress reporting', () => {
       progress: { reviewed: relativeTime(-1), level: 1 },
     });
     let fetchedCard = await subject.getCard(newCard._id);
-    assert.strictEqual(
-      fetchedCard.progress.level,
-      1,
-      'Originally the level is 1'
-    );
+    expect(fetchedCard.progress.level).toBe(1);
 
     await subject.putCard({ _id: newCard._id, progress: { level: 0 } });
 
     fetchedCard = await subject.getCard(newCard._id);
-    assert.strictEqual(fetchedCard.progress.level, 0, 'The updated level is 0');
+    expect(fetchedCard.progress.level).toBe(0);
   });
 
   it('allows updating the card contents and progress simultaneously', async () => {
@@ -133,24 +130,16 @@ describe('CardStore progress reporting', () => {
       question: 'Updated question',
       progress: { level: 1, reviewed: relativeTime(-1) },
     });
-    assert.strictEqual(updatedCard.question, 'Updated question');
-    assert.strictEqual(updatedCard.progress.level, 1);
-    assert.equalTime(updatedCard.progress.reviewed, relativeTime(-1));
-    assert.notEqual(
-      updatedCard.modified,
-      newCard.modified,
-      'Modified time is updated'
-    );
+    expect(updatedCard.question).toBe('Updated question');
+    expect(updatedCard.progress.level).toBe(1);
+    expect(updatedCard.progress.reviewed).toEqual(relativeTime(-1));
+    expect(updatedCard.modified).not.toEqual(newCard.modified);
 
     const fetchedCard = await subject.getCard(newCard._id);
-    assert.strictEqual(fetchedCard.question, 'Updated question');
-    assert.strictEqual(fetchedCard.progress.level, 1);
-    assert.equalTime(fetchedCard.progress.reviewed, relativeTime(-1));
-    assert.notEqual(
-      fetchedCard.modified,
-      newCard.modified,
-      'Modified time is updated'
-    );
+    expect(fetchedCard.question).toBe('Updated question');
+    expect(fetchedCard.progress.level).toBe(1);
+    expect(fetchedCard.progress.reviewed).toEqual(relativeTime(-1));
+    expect(fetchedCard.modified).not.toEqual(newCard.modified);
   });
 
   it('allows setting the card contents and progress simultaneously', async () => {
@@ -159,11 +148,11 @@ describe('CardStore progress reporting', () => {
       answer: 'Answer',
       progress: { level: 1, reviewed: relativeTime(-2) },
     });
-    assert.strictEqual(newCard.progress.level, 1);
+    expect(newCard.progress.level).toBe(1);
 
     const fetchedCard = await subject.getCard(newCard._id);
-    assert.strictEqual(fetchedCard.progress.level, 1);
-    assert.equalTime(fetchedCard.progress.reviewed, relativeTime(-2));
+    expect(fetchedCard.progress.level).toBe(1);
+    expect(fetchedCard.progress.reviewed).toEqual(relativeTime(-2));
   });
 
   it('reports changes to the progress', async () => {
@@ -181,14 +170,10 @@ describe('CardStore progress reporting', () => {
     // Wait for a few rounds of events so the update records can happen
     await waitForEvents(8);
 
-    assert.strictEqual(
-      updates.length,
-      2,
-      'Should get two change records: add, update'
-    );
-    assert.strictEqual(updates[1].doc.progress.level, 1);
-    assert.equalTime(updates[1].doc.progress.reviewed, relativeTime(-3));
-    assert.strictEqual(updates[1].doc.question, 'Q1');
+    expect(updates).toHaveLength(2);
+    expect(updates[1].doc.progress.level).toBe(1);
+    expect(updates[1].doc.progress.reviewed).toEqual(relativeTime(-3));
+    expect(updates[1].doc.question).toBe('Q1');
   });
 
   it('only reports once when a card and its progress are deleted', async () => {
@@ -203,16 +188,12 @@ describe('CardStore progress reporting', () => {
     // Wait for a few rounds of events so the update records can happen
     await waitForEvents(8);
 
-    assert.strictEqual(
-      updates.length,
-      2,
-      'Should get two change records: add, delete'
-    );
-    assert.strictEqual(updates[1].deleted, true);
+    expect(updates).toHaveLength(2);
+    expect(updates[1].deleted).toBe(true);
 
     // Progress information won't be included because it's too difficult to look
     // up the latest revision and return it.
-    assert.strictEqual(updates[1].doc.progress, undefined);
+    expect(updates[1].doc.progress).toBe(undefined);
   });
 
   it('deletes the card when the corresponding progress record cannot be created', async () => {
@@ -234,22 +215,19 @@ describe('CardStore progress reporting', () => {
       });
       await subject.setSyncServer(testRemote, { onIdle: () => resolveIdle() });
       await idlePromise;
-      assert.isTrue(await subject.hasProgressRecord('abc'));
+      expect(await subject.hasProgressRecord('abc')).toBe(true);
 
       // Then try to create a card with an ID that will conflict
       await subject.putCard({ question: 'Question', answer: 'Answer' });
-      assert.fail('Should have failed to create the card');
+      expect(false).toBe(true);
     } catch (err) {
       // Should be a conflict error
-      assert.strictEqual(err.status, 409);
+      expect(err.status).toBe(409);
       try {
         await subject.getCard('abc');
-        assert.fail('Should have failed to fetch card');
+        expect(false).toBe(true);
       } catch (err) {
-        if (err instanceof AssertionError) {
-          throw err;
-        }
-        assert.strictEqual(err.status, 404);
+        expect(err.status).toBe(404);
       }
     } finally {
       if (testRemote) {
@@ -266,7 +244,7 @@ describe('CardStore progress reporting', () => {
     });
     await subject.deleteCard(card);
 
-    assert.isFalse(await subject.hasProgressRecord(card._id));
+    expect(await subject.hasProgressRecord(card._id)).toBe(false);
   });
 
   it('deletes the corresponding progress record when deleting a card by ID', async () => {
@@ -276,7 +254,7 @@ describe('CardStore progress reporting', () => {
     });
     await subject.deleteCard({ _id: card._id });
 
-    assert.isFalse(await subject.hasProgressRecord(card._id));
+    expect(await subject.hasProgressRecord(card._id)).toBe(false);
   });
 
   async function addCards(num) {
@@ -328,14 +306,14 @@ describe('CardStore progress reporting', () => {
     //
     //     [ Card 2, Card 5, Card 3, Card 4 ]
     const result = await subject.getCards({ type: 'overdue' });
-    assert.strictEqual(result.length, 4);
-    assert.strictEqual(result[0].question, 'Question 2');
-    assert.strictEqual(result[1].question, 'Question 5');
-    assert.strictEqual(result[2].question, 'Question 3');
-    assert.strictEqual(result[3].question, 'Question 4');
+    expect(result).toHaveLength(4);
+    expect(result[0].question).toBe('Question 2');
+    expect(result[1].question).toBe('Question 5');
+    expect(result[2].question).toBe('Question 3');
+    expect(result[3].question).toBe('Question 4');
 
     // Check that the the availability API matches
-    assert.deepEqual(await subject.getAvailableCards(), {
+    expect(await subject.getAvailableCards()).toMatchObject({
       newCards: 0,
       overdueCards: 4,
     });
@@ -357,9 +335,9 @@ describe('CardStore progress reporting', () => {
     }
 
     const result = await subject.getCards({ type: 'overdue', limit: 2 });
-    assert.strictEqual(result.length, 2);
-    assert.strictEqual(result[0].question, 'Question 4');
-    assert.strictEqual(result[1].question, 'Question 3');
+    expect(result).toHaveLength(2);
+    expect(result[0].question).toBe('Question 4');
+    expect(result[1].question).toBe('Question 3');
   });
 
   it('sorts failed cards first', async () => {
@@ -382,10 +360,10 @@ describe('CardStore progress reporting', () => {
     });
 
     const result = await subject.getCards({ type: 'overdue' });
-    assert.strictEqual(result.length, 3);
-    assert.strictEqual(result[0].question, 'Question 2');
-    assert.strictEqual(result[1].question, 'Question 3');
-    assert.strictEqual(result[2].question, 'Question 1');
+    expect(result).toHaveLength(3);
+    expect(result[0].question).toBe('Question 2');
+    expect(result[1].question).toBe('Question 3');
+    expect(result[2].question).toBe('Question 1');
   });
 
   it('allows skipping failed cards', async () => {
@@ -411,9 +389,9 @@ describe('CardStore progress reporting', () => {
       type: 'overdue',
       skipFailedCards: true,
     });
-    assert.strictEqual(result.length, 2);
-    assert.strictEqual(result[0].question, 'Question 3');
-    assert.strictEqual(result[1].question, 'Question 1');
+    expect(result).toHaveLength(2);
+    expect(result[0].question).toBe('Question 3');
+    expect(result[1].question).toBe('Question 1');
   });
 
   it('allows the review time to be updated', async () => {
@@ -437,22 +415,22 @@ describe('CardStore progress reporting', () => {
 
     // Initially only cards 3 and 2 are due, and in that order ...
     let result = await subject.getCards({ type: 'overdue' });
-    assert.strictEqual(result.length, 2);
-    assert.strictEqual(result[0].question, 'Question 3');
-    assert.strictEqual(result[1].question, 'Question 2');
+    expect(result).toHaveLength(2);
+    expect(result[0].question).toBe('Question 3');
+    expect(result[1].question).toBe('Question 2');
 
     // ... but in 10 days' time ...
     await subject.setReviewTime(relativeTime(10));
 
     // ... we should get card 2, card 1, card 3
     result = await subject.getCards({ type: 'overdue' });
-    assert.strictEqual(result.length, 3);
-    assert.strictEqual(result[0].question, 'Question 2');
-    assert.strictEqual(result[1].question, 'Question 1');
-    assert.strictEqual(result[2].question, 'Question 3');
+    expect(result).toHaveLength(3);
+    expect(result[0].question).toBe('Question 2');
+    expect(result[1].question).toBe('Question 1');
+    expect(result[2].question).toBe('Question 3');
 
     // Check availability API matches
-    assert.deepEqual(await subject.getAvailableCards(), {
+    expect(await subject.getAvailableCards()).toMatchObject({
       newCards: 0,
       overdueCards: 3,
     });
@@ -476,13 +454,13 @@ describe('CardStore progress reporting', () => {
     }
 
     const result = await subject.getCards({ type: 'new' });
-    assert.strictEqual(result.length, 3);
-    assert.strictEqual(result[0].question, 'Question 3');
-    assert.strictEqual(result[1].question, 'Question 2');
-    assert.strictEqual(result[2].question, 'Question 1');
+    expect(result).toHaveLength(3);
+    expect(result[0].question).toBe('Question 3');
+    expect(result[1].question).toBe('Question 2');
+    expect(result[2].question).toBe('Question 1');
 
     // Check availability API matches
-    assert.deepEqual(await subject.getAvailableCards(), {
+    expect(await subject.getAvailableCards()).toMatchObject({
       newCards: 3,
       overdueCards: 0,
     });
@@ -501,41 +479,33 @@ describe('CardStore progress reporting', () => {
     });
 
     const result = await subject.getCards({ type: 'overdue' });
-    assert.strictEqual(result.length, 2);
-    assert.strictEqual(result[0].question, 'Question 2');
-    assert.strictEqual(result[0].progress.level, 2, 'Level of first card');
-    assert.equalTime(
-      result[0].progress.reviewed,
-      relativeTime(-4),
-      'Review time of first card'
-    );
-    assert.strictEqual(result[1].question, 'Question 1');
-    assert.strictEqual(result[1].progress.level, 1, 'Level of second card');
-    assert.equalTime(
-      result[1].progress.reviewed,
-      relativeTime(-1),
-      'Review time of second card'
-    );
+    expect(result).toHaveLength(2);
+    expect(result[0].question).toBe('Question 2');
+    expect(result[0].progress.level).toBe(2);
+    expect(result[0].progress.reviewed).toEqual(relativeTime(-4));
+    expect(result[1].question).toBe('Question 1');
+    expect(result[1].progress.level).toBe(1);
+    expect(result[1].progress.reviewed).toEqual(relativeTime(-1));
   });
 
   it('returns the review progress along with new cards', async () => {
     await addCards(2);
 
     const result = await subject.getCards({ type: 'new' });
-    assert.strictEqual(result.length, 2);
-    assert.strictEqual(result[0].question, 'Question 2');
-    assert.strictEqual(result[0].progress.level, 0, 'Level of first card');
-    assert.strictEqual(
-      result[0].progress.reviewed,
-      null,
-      'Review time of first card'
-    );
-    assert.strictEqual(result[1].question, 'Question 1');
-    assert.strictEqual(result[1].progress.level, 0, 'Level of second card');
-    assert.strictEqual(
-      result[1].progress.reviewed,
-      null,
-      'Review time of second card'
-    );
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({
+      question: 'Question 2',
+      progress: {
+        level: 0,
+        reviewed: null,
+      },
+    });
+    expect(result[1]).toMatchObject({
+      question: 'Question 1',
+      progress: {
+        level: 0,
+        reviewed: null,
+      },
+    });
   });
 });

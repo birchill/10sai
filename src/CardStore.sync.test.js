@@ -1,12 +1,11 @@
-/* global afterEach, beforeEach, describe, it */
+/* global afterEach, beforeEach, describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
-import { assert, AssertionError } from 'chai';
 
-import CardStore from '../src/CardStore';
-import { waitForEvents } from './testcommon';
+import CardStore from './CardStore';
+import { waitForEvents } from '../test/testcommon';
 
 const cardForDirectPut = card => ({
   ...card,
@@ -33,7 +32,7 @@ function idleSync() {
     timeout = setTimeout(resolver, idleTimeout);
   };
 
-  return [ idleCallback, idlePromise ];
+  return [idleCallback, idlePromise];
 }
 
 describe('CardStore remote sync', () => {
@@ -53,16 +52,12 @@ describe('CardStore remote sync', () => {
       try {
         fn.apply(this, args);
       } catch (e) {
-        if (e instanceof AssertionError) {
-          failedAssertion = e;
-        } else {
-          throw e;
-        }
+        failedAssertion = e;
       }
     };
   }
 
-  beforeEach('setup new store', () => {
+  beforeEach(() => {
     subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
 
     failedAssertion = undefined;
@@ -70,7 +65,7 @@ describe('CardStore remote sync', () => {
     testRemote = new PouchDB('cards_remote', { db: memdown });
   });
 
-  afterEach('clean up stores', () => {
+  afterEach(() => {
     if (failedAssertion) {
       throw failedAssertion;
     }
@@ -80,19 +75,15 @@ describe('CardStore remote sync', () => {
 
   it('allows setting a remote sync server', async () => {
     await subject.setSyncServer(testRemote);
-    assert.isOk(subject.getSyncServer());
+    expect(subject.getSyncServer()).toBeTruthy();
   });
 
   it('rejects for an invalid sync server', async () => {
     try {
       await subject.setSyncServer('http://not.found/');
-      assert.fail('Failed to reject invalid server');
+      expect(false).toBe(true);
     } catch (err) {
-      assert.oneOf(
-        err.code,
-        ['ENOTFOUND', 'ENOENT', 'ECONNREFUSED'],
-        'Expected error for inaccessible server'
-      );
+      expect(['ENOTFOUND', 'ENOENT', 'ECONNREFUSED']).toContain(err.code);
     }
   });
 
@@ -100,11 +91,7 @@ describe('CardStore remote sync', () => {
     subject
       .setSyncServer('http://not.found/', {
         onError: err => {
-          assert.oneOf(
-            err.code,
-            ['ENOTFOUND', 'ENOENT', 'ECONNREFUSED'],
-            'Expected error for inaccessible server'
-          );
+          expect(['ENOTFOUND', 'ENOENT', 'ECONNREFUSED']).toContain(err.code);
           done();
         },
       })
@@ -116,43 +103,43 @@ describe('CardStore remote sync', () => {
   it('rejects a non-http/https database', async () => {
     try {
       await subject.setSyncServer('irc://irc.mozilla.org');
-      assert.fail('Failed to reject invalid server');
+      expect(false).toBe(true);
     } catch (err) {
-      assert.strictEqual(err.code, 'INVALID_SERVER');
+      expect(err.code).toBe('INVALID_SERVER');
     }
   });
 
   it('rejects a non-PouchDB object', async () => {
     try {
       await subject.setSyncServer(new Date());
-      assert.fail('Failed to reject invalid server');
+      expect(false).toBe(true);
     } catch (err) {
-      assert.strictEqual(err.code, 'INVALID_SERVER');
+      expect(err.code).toBe('INVALID_SERVER');
     }
   });
 
   it('allows clearing the sync server using null', async () => {
     await subject.setSyncServer(testRemote);
     await subject.setSyncServer(null);
-    assert.strictEqual(subject.getSyncServer(), undefined);
+    expect(subject.getSyncServer()).toBe(undefined);
   });
 
   it('allows clearing the sync server using undefined', async () => {
     await subject.setSyncServer(testRemote);
     await subject.setSyncServer();
-    assert.strictEqual(subject.getSyncServer(), undefined);
+    expect(subject.getSyncServer()).toBe(undefined);
   });
 
   it('allows clearing the sync server using an empty name', async () => {
     await subject.setSyncServer(testRemote);
     await subject.setSyncServer('');
-    assert.strictEqual(subject.getSyncServer(), undefined);
+    expect(subject.getSyncServer()).toBe(undefined);
   });
 
   it('allows clearing the sync server using an entirely whitespace name', async () => {
     await subject.setSyncServer(testRemote);
     await subject.setSyncServer('  \n ');
-    assert.strictEqual(subject.getSyncServer(), undefined);
+    expect(subject.getSyncServer()).toBe(undefined);
   });
 
   it('downloads existing cards on the remote server', done => {
@@ -181,7 +168,7 @@ describe('CardStore remote sync', () => {
     subject.changes.on(
       'change',
       wrapAssertingFunction(info => {
-        assert.deepEqual(info.doc, expectedCards.shift());
+        expect(info.doc).toEqual(expectedCards.shift());
       })
     );
 
@@ -190,9 +177,9 @@ describe('CardStore remote sync', () => {
       .then(result => {
         firstCard._rev = result.rev;
       })
-      .then(() => testRemote.put(
-        { _id: 'progress-' + firstCard._id, ...initialProgress }
-      ))
+      .then(() =>
+        testRemote.put({ _id: 'progress-' + firstCard._id, ...initialProgress })
+      )
       .then(() => {
         expectedCards[0].progress = initialProgress;
       })
@@ -200,9 +187,12 @@ describe('CardStore remote sync', () => {
       .then(result => {
         secondCard._rev = result.rev;
       })
-      .then(() => testRemote.put(
-        { _id: 'progress-' + secondCard._id, ...initialProgress }
-      ))
+      .then(() =>
+        testRemote.put({
+          _id: 'progress-' + secondCard._id,
+          ...initialProgress,
+        })
+      )
       .then(() => {
         expectedCards[1].progress = initialProgress;
       })
@@ -231,9 +221,7 @@ describe('CardStore remote sync', () => {
     subject.changes.on(
       'change',
       wrapAssertingFunction(() => {
-        assert.fail(
-          'Did not expect update to be called on the previous remote'
-        );
+        expect(false).toBe(true);
       })
     );
 
@@ -249,7 +237,7 @@ describe('CardStore remote sync', () => {
     const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
     const callbacks = {
       onIdle: wrapAssertingFunction(() => {
-        assert.fail('Did not expect pause to be called on the previous remote');
+        expect(false).toBe(true);
       }),
     };
 
@@ -261,7 +249,7 @@ describe('CardStore remote sync', () => {
   });
 
   it('uploads existing local cards', async () => {
-    const [ idleCallback, idlePromise ] = idleSync();
+    const [idleCallback, idlePromise] = idleSync();
 
     await subject.putCard({ question: 'Question 1', answer: 'Answer 1' });
     await subject.putCard({ question: 'Question 2', answer: 'Answer 2' });
@@ -274,13 +262,13 @@ describe('CardStore remote sync', () => {
       startkey: 'card-\ufff0',
       endkey: 'card-',
     });
-    assert.strictEqual(remoteCards.rows.length, 2);
+    expect(remoteCards.rows.length).toBe(2);
   });
 
   it('reports when download starts and stops', done => {
     subject.setSyncServer(testRemote, {
       onActive: wrapAssertingFunction(info => {
-        assert.strictEqual(info.direction, 'pull');
+        expect(info.direction).toBe('pull');
         done();
       }),
     });
@@ -295,7 +283,7 @@ describe('CardStore remote sync', () => {
   it('reports when uploads starts and stops', done => {
     subject.setSyncServer(testRemote, {
       onActive: wrapAssertingFunction(info => {
-        assert.strictEqual(info.direction, 'push');
+        expect(info.direction).toBe('push');
         done();
       }),
     });
@@ -328,11 +316,7 @@ describe('CardStore remote sync', () => {
     });
     await allDone;
 
-    assert.strictEqual(
-      allChanges.length,
-      5,
-      'Should be five batches of changes'
-    );
+    expect(allChanges.length).toBe(5);
     // (Some of these numbers are bit different to what we'd normally expect but
     // that's because the design docs which we *don't* sync are included in the
     // total.)
@@ -341,11 +325,7 @@ describe('CardStore remote sync', () => {
     // reports the pending flag:
     // https://github.com/pouchdb/pouchdb/issues/5710
     /*
-    assert.deepEqual(
-      allChanges.map(change => change.progress),
-      [0, 2 / 3, 1.0],
-      'Each batch has expected progress'
-    );
+    expect(allChanges.map(change => change.progress)).toEqual([0, 2 / 3, 1.0]);
     */
   });
 
@@ -378,16 +358,12 @@ describe('CardStore remote sync', () => {
     // Note that although there are 5 cards, there are 10 documents since there
     // is a corresponding 'progress' document for each card. So we should have
     // batch sizes: 3, 3, 3, 1.
-    assert.strictEqual(
-      allChanges.length,
-      4,
-      'Should be four batches of changes'
-    );
+    expect(allChanges.length).toBe(4);
     const progressValues = allChanges.map(change => change.progress);
-    assert.isBelow(progressValues[0], 1);
-    assert.isBelow(progressValues[0], progressValues[1]);
-    assert.isBelow(progressValues[1], progressValues[2]);
-    assert.isBelow(progressValues[2], progressValues[3]);
+    expect(progressValues[0]).toBeLessThan(1);
+    expect(progressValues[0]).toBeLessThan(progressValues[1]);
+    expect(progressValues[1]).toBeLessThan(progressValues[2]);
+    expect(progressValues[2]).toBeLessThan(progressValues[3]);
     // We should check that progressValues[3] is 1, but it can actually go to
     // 1.1 due to the design doc. Not sure why actually. Oh well.
   });
@@ -434,15 +410,9 @@ describe('CardStore remote sync', () => {
     // That said, I don't really understand why 4 cards in 2 directions (i.e. 16
     // documents total), with a batch size of 3 should happen in five batches.
     // It's some PouchDB magic, but it seems to be deterministic at least.
-    assert.strictEqual(
-      allChanges.length,
-      5,
-      'Should be eight batches of changes'
-    );
-    assert.deepEqual(
-      allChanges.map(change => change.progress),
-      Array(allChanges.length).fill(null),
-      'Each batch should have an indeterminate progress'
+    expect(allChanges.length).toBe(5);
+    expect(allChanges.map(change => change.progress)).toEqual(
+      Array(allChanges.length).fill(null)
     );
   });
 
@@ -474,10 +444,8 @@ describe('CardStore remote sync', () => {
       resolveIdle = resolve;
     });
 
-    assert.deepEqual(
-      allChanges.map(change => change.progress),
-      Array(allChanges.length).fill(null),
-      'Each batch should have an indeterminate progress'
+    expect(allChanges.map(change => change.progress)).toEqual(
+      Array(allChanges.length).fill(null)
     );
   });
 

@@ -74,6 +74,9 @@
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.9.7"
   },
+  "jest": {
+    "setupTestFrameworkScriptFile": "./test/customMatchers.js"
+  },
   "lint-staged": {
     "*.{js,jsx,css}": [
       "prettier --write",

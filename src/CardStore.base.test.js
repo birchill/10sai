@@ -1,34 +1,30 @@
-/* global afterEach, beforeEach, describe, it */
+/* global afterEach, beforeEach, describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
 import memdown from 'memdown';
-import chai, { assert } from 'chai';
-import chaiDateTime from 'chai-datetime';
-import CardStore from '../src/CardStore';
-import { waitForEvents } from './testcommon';
-
-chai.use(chaiDateTime);
+import CardStore from './CardStore';
+import { waitForEvents } from '../test/testcommon';
 
 describe('CardStore', () => {
   let subject;
 
-  beforeEach('setup new store', () => {
+  beforeEach(() => {
     subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
   });
 
-  afterEach('clean up store', () => subject.destroy());
+  afterEach(() => subject.destroy());
 
   it('is initially empty', async () => {
     const cards = await subject.getCards();
-    assert.strictEqual(cards.length, 0, 'Length of getCards() result');
+    expect(cards).toHaveLength(0);
   });
 
   it('returns added cards', async () => {
     await subject.putCard({ question: 'Question', answer: 'Answer' });
     const cards = await subject.getCards();
-    assert.strictEqual(cards.length, 1, 'Length of getCards() result');
-    assert.strictEqual(cards[0].question, 'Question');
-    assert.strictEqual(cards[0].answer, 'Answer');
+    expect(cards).toHaveLength(1);
+    expect(cards[0].question).toBe('Question');
+    expect(cards[0].answer).toBe('Answer');
   });
 
   it('returns individual cards', async () => {
@@ -37,19 +33,29 @@ describe('CardStore', () => {
       answer: 'Answer',
     });
     card = await subject.getCard(card._id);
-    assert.strictEqual(card.question, 'Question');
-    assert.strictEqual(card.answer, 'Answer');
+    expect(card.question).toBe('Question');
+    expect(card.answer).toBe('Answer');
   });
 
   it('does not return non-existent cards', async () => {
+    // TODO: We should be able to write this as:
+    //
+    // await expect(subject.getCard('abc')).rejects.toMatchObject({
+    //   status: 404,
+    //   name: 'not_found',
+    //   message: 'missing',
+    //   reason: 'missing',
+    // });
+    //
+    // But https://github.com/facebook/jest/issues/5359 :(
     try {
       await subject.getCard('abc');
-      assert.fail('Should have reported an error for non-existent card');
+      expect(false).toBe(true);
     } catch (err) {
-      assert.strictEqual(err.status, 404);
-      assert.strictEqual(err.name, 'not_found');
-      assert.strictEqual(err.message, 'missing');
-      assert.strictEqual(err.reason, 'missing');
+      expect(err.status).toBe(404);
+      expect(err.name).toBe('not_found');
+      expect(err.message).toBe('missing');
+      expect(err.reason).toBe('missing');
     }
   });
 
@@ -57,7 +63,7 @@ describe('CardStore', () => {
     let prevId = '';
     for (let i = 0; i < 100; i++) {
       const id = CardStore.generateCardId();
-      assert.isOk(id > prevId);
+      expect(id > prevId).toBeTruthy();
       prevId = id;
     }
   });
@@ -67,7 +73,7 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    assert.notEqual(card._id.substr(0, 5), 'card-');
+    expect(card._id.substr(0, 5)).not.toBe('card-');
   });
 
   it('does not return the prefix when getting a single card', async () => {
@@ -76,7 +82,7 @@ describe('CardStore', () => {
       answer: 'Answer',
     });
     card = await subject.getCard(card._id);
-    assert.notEqual(card._id.substr(0, 5), 'card-');
+    expect(card._id.substr(0, 5)).not.toBe('card-');
   });
 
   it('does not return the prefix when getting multiple cards', async () => {
@@ -85,7 +91,7 @@ describe('CardStore', () => {
 
     const cards = await subject.getCards();
     for (const card of cards) {
-      assert.notEqual(card._id.substr(0, 5), 'card-');
+      expect(card._id.substr(0, 5)).not.toBe('card-');
     }
   });
 
@@ -94,20 +100,12 @@ describe('CardStore', () => {
     const card2 = await subject.putCard({ question: 'Q2', answer: 'A2' });
 
     const cards = await subject.getCards();
-    // Sanity check
-    assert.notStrictEqual(card1._id, card2._id, 'Card IDs are unique');
+    // Sanity check: card IDs are unique
+    expect(card1._id).not.toBe(card2._id);
 
-    assert.strictEqual(cards.length, 2, 'Expected no. of cards');
-    assert.strictEqual(
-      cards[0]._id,
-      card2._id,
-      'Card added last is returned first'
-    );
-    assert.strictEqual(
-      cards[1]._id,
-      card1._id,
-      'Card added first is returned last'
-    );
+    expect(cards).toHaveLength(2);
+    expect(cards[0]._id).toBe(card2._id);
+    expect(cards[1]._id).toBe(card1._id);
   });
 
   it('reports added cards', async () => {
@@ -120,12 +118,7 @@ describe('CardStore', () => {
     // Wait for a few rounds of events so the update can take place
     await waitForEvents(3);
 
-    assert.isOk(updateInfo, 'Change was recorded');
-    assert.strictEqual(
-      updateInfo.id,
-      addedCard._id,
-      'Reported change has correct ID'
-    );
+    expect(updateInfo).toMatchObject({ id: addedCard._id });
   });
 
   it('does not return deleted cards', async () => {
@@ -137,7 +130,7 @@ describe('CardStore', () => {
 
     const cards = await subject.getCards();
 
-    assert.strictEqual(cards.length, 0, 'Length of getCards() result');
+    expect(cards).toHaveLength(0);
   });
 
   it('does not return individual deleted cards', async () => {
@@ -148,14 +141,22 @@ describe('CardStore', () => {
     const id = card._id;
     await subject.deleteCard(card);
 
+    // TODO: As before we should be able to write this as
+    //
+    // await expect(subject.getCard(id)).rejects.toMatchObject({
+    //   status: 404,
+    //   name: 'not_found',
+    //   message: 'missing',
+    //   reason: 'deleted',
+    // });
     try {
       await subject.getCard(id);
-      assert.fail('Should have reported an error for non-existent card');
+      expect(false).toBe(true);
     } catch (err) {
-      assert.strictEqual(err.status, 404);
-      assert.strictEqual(err.name, 'not_found');
-      assert.strictEqual(err.message, 'missing');
-      assert.strictEqual(err.reason, 'deleted');
+      expect(err.status).toBe(404);
+      expect(err.name).toBe('not_found');
+      expect(err.message).toBe('missing');
+      expect(err.reason).toBe('deleted');
     }
   });
 
@@ -169,20 +170,28 @@ describe('CardStore', () => {
     await subject.deleteCard(firstCard);
 
     const cards = await subject.getCards();
-    assert.strictEqual(cards.length, 1, 'Length of getCards() result');
-    assert.strictEqual(cards[0].question, 'Question 2');
-    assert.strictEqual(cards[0].answer, 'Answer 2');
+    expect(cards).toHaveLength(1);
+    expect(cards[0].question).toBe('Question 2');
+    expect(cards[0].answer).toBe('Answer 2');
   });
 
   it('reports an error when the card to be deleted cannot be found', async () => {
+    // TODO: As before we should be able to write this as
+    //
+    // await expect(subject.deleteCard({ _id: 'abc' })).rejects.toMatchObject({
+    //   status: 404,
+    //   name: 'not_found',
+    //   message: 'missing',
+    //   reason: 'deleted',
+    // });
     try {
       await subject.deleteCard({ _id: 'abc' });
-      assert.fail('Should have reported an error for missing card');
+      expect(false).toBe(true);
     } catch (err) {
-      assert.strictEqual(err.status, 404);
-      assert.strictEqual(err.name, 'not_found');
-      assert.strictEqual(err.message, 'missing');
-      assert.strictEqual(err.reason, 'deleted');
+      expect(err.status).toBe(404);
+      expect(err.name).toBe('not_found');
+      expect(err.message).toBe('missing');
+      expect(err.reason).toBe('deleted');
     }
   });
 
@@ -196,7 +205,7 @@ describe('CardStore', () => {
     await subject.deleteCard(card);
 
     const cards = await subject.getCards();
-    assert.strictEqual(cards.length, 0, 'Length of getCards() result');
+    expect(cards).toHaveLength(0);
   });
 
   it('reports deleted cards', async () => {
@@ -212,12 +221,8 @@ describe('CardStore', () => {
     await subject.deleteCard(addedCard);
 
     await waitForEvents(5);
-    assert.strictEqual(
-      updateInfo.id,
-      addedCard._id,
-      'Reported change has correct ID'
-    );
-    assert.isOk(updateInfo.deleted, 'Reported change is a delete record');
+    expect(updateInfo.id).toBe(addedCard._id);
+    expect(updateInfo.deleted).toBeTruthy();
   });
 
   it('updates the specified field of cards', async () => {
@@ -232,13 +237,13 @@ describe('CardStore', () => {
       question: 'Updated question',
     });
 
-    assert.strictEqual(card.question, 'Updated question');
-    assert.strictEqual(card.answer, 'Answer');
+    expect(card.question).toBe('Updated question');
+    expect(card.answer).toBe('Answer');
 
     const cards = await subject.getCards();
-    assert.strictEqual(cards.length, 1, 'Length of getCards() result');
-    assert.strictEqual(cards[0].question, 'Updated question');
-    assert.strictEqual(cards[0].answer, 'Answer');
+    expect(cards).toHaveLength(1);
+    expect(cards[0].question).toBe('Updated question');
+    expect(cards[0].answer).toBe('Answer');
   });
 
   it('updates cards even without a revision', async () => {
@@ -252,13 +257,13 @@ describe('CardStore', () => {
       question: 'Updated question',
     });
 
-    assert.strictEqual(card.question, 'Updated question');
-    assert.strictEqual(card.answer, 'Answer');
+    expect(card.question).toBe('Updated question');
+    expect(card.answer).toBe('Answer');
 
     const cards = await subject.getCards();
-    assert.strictEqual(cards.length, 1, 'Length of getCards() result');
-    assert.strictEqual(cards[0].question, 'Updated question');
-    assert.strictEqual(cards[0].answer, 'Answer');
+    expect(cards).toHaveLength(1);
+    expect(cards[0].question).toBe('Updated question');
+    expect(cards[0].answer).toBe('Answer');
   });
 
   it('updates cards even when the revision is old', async () => {
@@ -279,19 +284,26 @@ describe('CardStore', () => {
     });
 
     const cards = await subject.getCards();
-    assert.strictEqual(cards.length, 1, 'Length of getCards() result');
-    assert.strictEqual(cards[0].question, 'Updated question');
-    assert.strictEqual(cards[0].answer, 'Updated answer');
+    expect(cards).toHaveLength(1);
+    expect(cards[0].question).toBe('Updated question');
+    expect(cards[0].answer).toBe('Updated answer');
   });
 
   it('returns an error when trying to update a missing card', async () => {
+    // TODO: As before we should be able to write this as
+    //
+    // await expect(subject.putCard(...)).rejects.toMatchObject({
+    //   status: 404,
+    //   name: 'not_found',
+    //   message: 'missing',
+    // });
     try {
       await subject.putCard({ _id: 'abc', question: 'Question' });
-      assert.fail('Should have reported an error for missing card');
+      expect(false).toBe(true);
     } catch (err) {
-      assert.strictEqual(err.status, 404);
-      assert.strictEqual(err.name, 'not_found');
-      assert.strictEqual(err.message, 'missing');
+      expect(err.status).toBe(404);
+      expect(err.name).toBe('not_found');
+      expect(err.message).toBe('missing');
     }
   });
 
@@ -302,14 +314,20 @@ describe('CardStore', () => {
     });
     await subject.deleteCard(card);
 
+    // TODO: As before we should be able to write this as
+    //
+    // await expect(subject.putCard(...)).rejects.toMatchObject({
+    //   status: 404,
+    //   name: 'not_found',
+    //   message: 'missing',
+    // });
     try {
       await subject.putCard({ _id: card._id, question: 'Updated question' });
-
-      assert.fail('Should have reported an error for deleted card');
+      expect(false).toBe(true);
     } catch (err) {
-      assert.strictEqual(err.status, 404);
-      assert.strictEqual(err.name, 'not_found');
-      assert.strictEqual(err.message, 'missing');
+      expect(err.status).toBe(404);
+      expect(err.name).toBe('not_found');
+      expect(err.message).toBe('missing');
     }
   });
 
@@ -319,7 +337,7 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    assert.withinTime(new Date(card.created), beginDate, new Date());
+    expect(new Date(card.created)).toBeInDateRange(beginDate, new Date());
   });
 
   it('stores the last modified date when adding a new card', async () => {
@@ -328,7 +346,7 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    assert.withinTime(new Date(card.modified), beginDate, new Date());
+    expect(new Date(card.modified)).toBeInDateRange(beginDate, new Date());
   });
 
   it('updates the last modified date when updating a card', async () => {
@@ -341,7 +359,7 @@ describe('CardStore', () => {
       _id: card._id,
       question: 'Updated question',
     });
-    assert.withinTime(new Date(card.modified), beginDate, new Date());
+    expect(new Date(card.modified)).toBeInDateRange(beginDate, new Date());
   });
 
   it('reports changes to cards', async () => {
@@ -359,11 +377,8 @@ describe('CardStore', () => {
     // Wait for a few rounds of events so the update records can happen
     await waitForEvents(5);
 
-    assert.strictEqual(
-      updates.length,
-      2,
-      'Should get two change records: add, update'
-    );
-    assert.strictEqual(updates[1].doc.question, 'Updated question');
+    // Should get two change records: add, update
+    expect(updates).toHaveLength(2);
+    expect(updates[1].doc.question).toBe('Updated question');
   });
 });
