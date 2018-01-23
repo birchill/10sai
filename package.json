@@ -75,7 +75,7 @@
     "webpack-dev-server": "^2.9.7"
   },
   "jest": {
-    "setupTestFrameworkScriptFile": "./test/customMatchers.js"
+    "setupTestFrameworkScriptFile": "./jest/customMatchers.js"
   },
   "lint-staged": {
     "*.{js,jsx,css}": [

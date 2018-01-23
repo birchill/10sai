@@ -116,7 +116,7 @@ describe('CardStore', () => {
 
     const addedCard = await subject.putCard({ question: 'Q1', answer: 'A1' });
     // Wait for a few rounds of events so the update can take place
-    await waitForEvents(3);
+    await waitForEvents(5);
 
     expect(updateInfo).toMatchObject({ id: addedCard._id });
   });
