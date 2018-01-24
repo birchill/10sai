@@ -1,9 +1,8 @@
-/* global describe, it */
+/* global describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
-import { assert } from 'chai';
-import subject from '../../src/route/reducer';
-import * as actions from '../../src/route/actions';
+import subject from './reducer';
+import * as actions from './actions';
 
 // We'd like to make this test independent of the router in use but rather than
 // introduce complexity to make the router used by the reducer pluggable, we
@@ -31,7 +30,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(undefined, action);
 
-    assert.deepEqual(updatedState, { history: [routeA], index: 0 });
+    expect(updatedState).toEqual({ history: [routeA], index: 0 });
   });
 
   it('updates the current route on an initial NAVIGATE given a URL', () => {
@@ -39,7 +38,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(undefined, action);
 
-    assert.deepEqual(updatedState, { history: [routeA], index: 0 });
+    expect(updatedState).toEqual({ history: [routeA], index: 0 });
   });
 
   it('updates the current route on an initial NAVIGATE given a (non-empty) URL', () => {
@@ -47,7 +46,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(undefined, action);
 
-    assert.deepEqual(updatedState, { history: [routeB], index: 0 });
+    expect(updatedState).toEqual({ history: [routeB], index: 0 });
   });
 
   it('updates the current route on a initial NAVIGATE even if replace is true', () => {
@@ -55,7 +54,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(undefined, action);
 
-    assert.deepEqual(updatedState, { history: [routeA], index: 0 });
+    expect(updatedState).toEqual({ history: [routeA], index: 0 });
   });
 
   it('appends the route on a subsequent NAVIGATE when replace is missing', () => {
@@ -64,7 +63,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(initialState, action);
 
-    assert.deepEqual(updatedState, { history: [routeA, routeB], index: 1 });
+    expect(updatedState).toEqual({ history: [routeA, routeB], index: 1 });
   });
 
   it('appends the route on a subsequent NAVIGATE when replace is false', () => {
@@ -73,7 +72,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(initialState, action);
 
-    assert.deepEqual(updatedState, { history: [routeA, routeB], index: 1 });
+    expect(updatedState).toEqual({ history: [routeA, routeB], index: 1 });
   });
 
   it('updates the route on a subsequent NAVIGATE when replace is true', () => {
@@ -82,7 +81,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(initialState, action);
 
-    assert.deepEqual(updatedState, { history: [routeB], index: 0 });
+    expect(updatedState).toEqual({ history: [routeB], index: 0 });
   });
 
   it('truncates the history when NAVIGATE-ing mid-history', () => {
@@ -91,7 +90,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(initialState, action);
 
-    assert.deepEqual(updatedState, {
+    expect(updatedState).toEqual({
       history: [routeA, routeB, routeD],
       index: 2,
     });
@@ -106,7 +105,7 @@ describe('reducer:route', () => {
 
       const updatedState = subject(initialState, action);
 
-      assert.deepEqual(updatedState, {
+      expect(updatedState).toEqual({
         history: [routeA, routeD, routeC],
         index: 1,
       });
@@ -126,7 +125,7 @@ describe('reducer:route', () => {
 
       const updatedState = subject(initialState, action);
 
-      assert.deepEqual(updatedState, {
+      expect(updatedState).toEqual({
         history: [routeA, routeB, routeC],
         index: 1,
       });
@@ -149,7 +148,7 @@ describe('reducer:route', () => {
 
       const updatedState = subject(initialState, action);
 
-      assert.deepEqual(updatedState, {
+      expect(updatedState).toEqual({
         history: [routeA, routeB, routeC, routeD],
         index: 1,
       });
@@ -166,7 +165,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(initialState, action);
 
-    assert.deepEqual(updatedState, {
+    expect(updatedState).toEqual({
       history: [routeA, routeB, routeC],
       index: 1,
     });
@@ -182,7 +181,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(initialState, action);
 
-    assert.deepEqual(updatedState, {
+    expect(updatedState).toEqual({
       history: [routeA, routeB, routeC],
       index: 0,
     });
@@ -198,7 +197,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(initialState, action);
 
-    assert.deepEqual(updatedState, {
+    expect(updatedState).toEqual({
       history: [routeA, routeB, routeC],
       index: 2,
     });
@@ -210,7 +209,7 @@ describe('reducer:route', () => {
 
     const updatedState = subject(initialState, action);
 
-    assert.deepEqual(updatedState, {
+    expect(updatedState).toEqual({
       history: [routeA, routeB, routeC],
       index: 2,
     });
@@ -229,7 +228,7 @@ describe('reducer:route', () => {
 
       const updatedState = subject(initialState, action);
 
-      assert.deepEqual(updatedState, {
+      expect(updatedState).toEqual({
         history: [routeA, routeB, routeC],
         index: 2,
       });
@@ -249,7 +248,7 @@ describe('reducer:route', () => {
 
       const updatedState = subject(initialState, action);
 
-      assert.deepEqual(updatedState, {
+      expect(updatedState).toEqual({
         history: [routeA, routeB, routeC, routeD],
         index: 3,
       });
@@ -269,7 +268,7 @@ describe('reducer:route', () => {
 
       const updatedState = subject(initialState, action);
 
-      assert.deepEqual(updatedState, {
+      expect(updatedState).toEqual({
         history: [routeA, routeA, routeC],
         index: 1,
       });

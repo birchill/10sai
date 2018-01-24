@@ -1,3 +1,12 @@
+/**
+ * @jest-environment node
+ *
+ * Jest randomly injects jsdom which makes it impossible to mock history.
+ * It also doesn't make it possible to select a "none" environment.
+ * It also requires that this directive be the very first comment in the file.
+ * It also has absolutely woeful documentation.
+ * That is all.
+ */
 /* global beforeEach, describe, it */
 /* eslint arrow-body-style: [ 'off' ] */
 
@@ -7,13 +16,13 @@ import * as matchers from 'redux-saga-test-plan/matchers';
 import {
   followLink as followLinkSaga,
   beforeScreenChange as beforeScreenChangeSaga,
-} from '../../src/route/sagas';
-import EditState from '../../src/edit/states';
-import * as routeActions from '../../src/route/actions';
-import * as editActions from '../../src/edit/actions';
+} from './sagas';
+import EditState from '../edit/states';
+import * as routeActions from './actions';
+import * as editActions from '../edit/actions';
 
 describe('sagas:route followLink', () => {
-  beforeEach('setup global', () => {
+  beforeEach(() => {
     global.history = {
       pushState: () => {},
       replaceState: () => {},

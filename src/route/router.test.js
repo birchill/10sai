@@ -1,136 +1,133 @@
-/* global describe, it */
+/* global describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
-
-import { assert } from 'chai';
 
 import {
   routeFromURL,
   routeFromPath,
   URLFromRoute,
   routesEqual,
-} from '../../src/route/router';
+} from './router';
 
 describe('router:routeFromPath', () => {
   it('converts empty path to route', () => {
-    assert.deepEqual(routeFromPath(), { screen: '' });
+    expect(routeFromPath()).toEqual({ screen: '' });
   });
 
   it('converts root path to route', () => {
-    assert.deepEqual(routeFromPath('/'), { screen: '' });
+    expect(routeFromPath('/')).toEqual({ screen: '' });
   });
 
   it('converts popup path to route', () => {
-    assert.deepEqual(routeFromPath('/settings'), {
+    expect(routeFromPath('/settings')).toEqual({
       screen: '',
       popup: 'settings',
     });
   });
 
   it('converts new card path to route', () => {
-    assert.deepEqual(routeFromPath('/cards/new'), { screen: 'edit-card' });
+    expect(routeFromPath('/cards/new')).toEqual({ screen: 'edit-card' });
   });
 
   it('converts edit card path to route', () => {
-    assert.deepEqual(routeFromPath('/cards/abc'), {
+    expect(routeFromPath('/cards/abc')).toEqual({
       screen: 'edit-card',
       card: 'abc',
     });
   });
 
   it('converts review path to route', () => {
-    assert.deepEqual(routeFromPath('/review'), { screen: 'review' });
+    expect(routeFromPath('/review')).toEqual({ screen: 'review' });
   });
 
   it('converts blank lookup path to route', () => {
-    assert.deepEqual(routeFromPath('/lookup'), { screen: 'lookup' });
+    expect(routeFromPath('/lookup')).toEqual({ screen: 'lookup' });
   });
 
   it('converts lookup with keyword path to route', () => {
-    assert.deepEqual(routeFromPath('/lookup', 'q=テスト'), {
+    expect(routeFromPath('/lookup', 'q=テスト')).toEqual({
       screen: 'lookup',
       search: { q: 'テスト' },
     });
   });
 
   it('parses query string', () => {
-    assert.deepEqual(routeFromPath('/', 'abc=123'), {
+    expect(routeFromPath('/', 'abc=123')).toEqual({
       screen: '',
       search: { abc: '123' },
     });
   });
 
   it('parses query string with leading ?', () => {
-    assert.deepEqual(routeFromPath('/', '?abc=123'), {
+    expect(routeFromPath('/', '?abc=123')).toEqual({
       screen: '',
       search: { abc: '123' },
     });
   });
 
   it('parses query string with empty value', () => {
-    assert.deepEqual(routeFromPath('/', 'abc'), {
+    expect(routeFromPath('/', 'abc')).toEqual({
       screen: '',
       search: { abc: null },
     });
   });
 
   it('decodes % encoded query string parameters', () => {
-    assert.deepEqual(routeFromPath('/', 'abc=foo%20hoge'), {
+    expect(routeFromPath('/', 'abc=foo%20hoge')).toEqual({
       screen: '',
       search: { abc: 'foo hoge' },
     });
   });
 
   it('decodes % encoded query string parameters in keys and values', () => {
-    assert.deepEqual(
-      routeFromPath('/', '%E5%87%BA%E8%BA%AB=%E4%BB%99%E5%8F%B0'),
+    expect(routeFromPath('/', '%E5%87%BA%E8%BA%AB=%E4%BB%99%E5%8F%B0')).toEqual(
       { screen: '', search: { 出身: '仙台' } }
     );
   });
 
   it('decodes % encoded emoji', () => {
-    assert.deepEqual(routeFromPath('/', 'feeling=%F0%9F%98%8A'), {
+    expect(routeFromPath('/', 'feeling=%F0%9F%98%8A')).toEqual({
       screen: '',
       search: { feeling: '😊' },
     });
   });
 
   it('decodes + encoded query string parameters', () => {
-    assert.deepEqual(routeFromPath('/', 'abc=foo+hoge'), {
+    expect(routeFromPath('/', 'abc=foo+hoge')).toEqual({
       screen: '',
       search: { abc: 'foo hoge' },
     });
   });
 
   it('parses multiple query string parameters', () => {
-    assert.deepEqual(routeFromPath('/', 'abc=123&def=456'), {
+    expect(routeFromPath('/', 'abc=123&def=456')).toEqual({
       screen: '',
       search: { abc: '123', def: '456' },
     });
   });
 
   it('parses repeated query string parameters', () => {
-    assert.deepEqual(routeFromPath('/', 'abc=123&abc=456'), {
+    expect(routeFromPath('/', 'abc=123&abc=456')).toEqual({
       screen: '',
       search: { abc: ['123', '456'] },
     });
   });
 
   it('parses fragments', () => {
-    assert.deepEqual(routeFromPath('/', null, 'abc'), {
+    expect(routeFromPath('/', null, 'abc')).toEqual({
       screen: '',
       fragment: 'abc',
     });
   });
 
   it('parses fragments with leading #', () => {
-    assert.deepEqual(routeFromPath('/', null, '#abc'), {
+    expect(routeFromPath('/', null, '#abc')).toEqual({
       screen: '',
       fragment: 'abc',
     });
   });
 
   it('decodes % encoded fragments', () => {
-    assert.deepEqual(routeFromPath('/', null, '#one%20two'), {
+    expect(routeFromPath('/', null, '#one%20two')).toEqual({
       screen: '',
       fragment: 'one two',
     });
@@ -139,48 +136,48 @@ describe('router:routeFromPath', () => {
 
 describe('router:routeFromURL', () => {
   it('converts empty url to route', () => {
-    assert.deepEqual(routeFromURL(''), { screen: '' });
+    expect(routeFromURL('')).toEqual({ screen: '' });
   });
 
   it('converts root url to route', () => {
-    assert.deepEqual(routeFromURL('/'), { screen: '' });
+    expect(routeFromURL('/')).toEqual({ screen: '' });
   });
 
   it('converts popup url to route', () => {
-    assert.deepEqual(routeFromURL('/settings'), {
+    expect(routeFromURL('/settings')).toEqual({
       screen: '',
       popup: 'settings',
     });
   });
 
   it('converts new card path to route', () => {
-    assert.deepEqual(routeFromURL('/cards/new'), { screen: 'edit-card' });
+    expect(routeFromURL('/cards/new')).toEqual({ screen: 'edit-card' });
   });
 
   it('converts edit card path to route', () => {
-    assert.deepEqual(routeFromURL('/cards/abc'), {
+    expect(routeFromURL('/cards/abc')).toEqual({
       screen: 'edit-card',
       card: 'abc',
     });
   });
 
   it('converts review path to route', () => {
-    assert.deepEqual(routeFromURL('/review'), { screen: 'review' });
+    expect(routeFromURL('/review')).toEqual({ screen: 'review' });
   });
 
   it('converts blank lookup path to route', () => {
-    assert.deepEqual(routeFromURL('/lookup'), { screen: 'lookup' });
+    expect(routeFromURL('/lookup')).toEqual({ screen: 'lookup' });
   });
 
   it('converts lookup with keyword path to route', () => {
-    assert.deepEqual(routeFromURL('/lookup?q=テスト'), {
+    expect(routeFromURL('/lookup?q=テスト')).toEqual({
       screen: 'lookup',
       search: { q: 'テスト' },
     });
   });
 
   it('parses popup url with fragment', () => {
-    assert.deepEqual(routeFromURL('/settings#sync'), {
+    expect(routeFromURL('/settings#sync')).toEqual({
       screen: '',
       popup: 'settings',
       fragment: 'sync',
@@ -188,7 +185,7 @@ describe('router:routeFromURL', () => {
   });
 
   it('parses url with fragment and query string', () => {
-    assert.deepEqual(routeFromURL('/settings?abc=def#sync'), {
+    expect(routeFromURL('/settings?abc=def#sync')).toEqual({
       screen: '',
       popup: 'settings',
       search: { abc: 'def' },
@@ -199,106 +196,100 @@ describe('router:routeFromURL', () => {
 
 describe('router:URLFromRoute', () => {
   it('serializes empty route to root url', () => {
-    assert.equal(URLFromRoute(), '/');
+    expect(URLFromRoute()).toEqual('/');
   });
 
   it('serializes root route to root url', () => {
-    assert.equal(URLFromRoute({ screen: '' }), '/');
+    expect(URLFromRoute({ screen: '' })).toEqual('/');
   });
 
   it('serializes popup route to url', () => {
-    assert.equal(URLFromRoute({ screen: '', popup: 'settings' }), '/settings');
+    expect(URLFromRoute({ screen: '', popup: 'settings' })).toEqual(
+      '/settings'
+    );
   });
 
   it('serializes new card route to path', () => {
-    assert.equal(URLFromRoute({ screen: 'edit-card' }), '/cards/new');
+    expect(URLFromRoute({ screen: 'edit-card' })).toEqual('/cards/new');
   });
 
   it('serializes edit card route to path', () => {
-    assert.equal(
-      URLFromRoute({ screen: 'edit-card', card: 'abc' }),
+    expect(URLFromRoute({ screen: 'edit-card', card: 'abc' })).toEqual(
       '/cards/abc'
     );
   });
 
   it('serializes review route to path', () => {
-    assert.equal(URLFromRoute({ screen: 'review' }), '/review');
+    expect(URLFromRoute({ screen: 'review' })).toEqual('/review');
   });
 
   it('serializes blank lookup route to path', () => {
-    assert.equal(URLFromRoute({ screen: 'lookup' }), '/lookup');
+    expect(URLFromRoute({ screen: 'lookup' })).toEqual('/lookup');
   });
 
   it('serializes lookup route with keyword to path', () => {
-    assert.equal(
-      URLFromRoute({ screen: 'lookup', search: { q: 'テスト' } }),
+    expect(URLFromRoute({ screen: 'lookup', search: { q: 'テスト' } })).toEqual(
       '/lookup?q=%E3%83%86%E3%82%B9%E3%83%88'
     );
   });
 
   it('serializes query string', () => {
-    assert.equal(
-      URLFromRoute({ screen: '', search: { abc: '123' } }),
+    expect(URLFromRoute({ screen: '', search: { abc: '123' } })).toEqual(
       '/?abc=123'
     );
   });
 
   it('serializes query string with empty value', () => {
-    assert.equal(URLFromRoute({ screen: '', search: { abc: null } }), '/?abc');
+    expect(URLFromRoute({ screen: '', search: { abc: null } })).toEqual(
+      '/?abc'
+    );
   });
 
   it('serializes multiple query string parameters', () => {
-    assert.equal(
-      URLFromRoute({ screen: '', search: { abc: '123', def: '456' } }),
-      '/?abc=123&def=456'
-    );
+    expect(
+      URLFromRoute({ screen: '', search: { abc: '123', def: '456' } })
+    ).toEqual('/?abc=123&def=456');
   });
 
   it('serializes repeated query string parameters', () => {
-    assert.equal(
-      URLFromRoute({ screen: '', search: { abc: ['123', '456'] } }),
-      '/?abc=123&abc=456'
-    );
+    expect(
+      URLFromRoute({ screen: '', search: { abc: ['123', '456'] } })
+    ).toEqual('/?abc=123&abc=456');
   });
 
   it('serializes % encoded query string parameters in keys and values', () => {
-    assert.equal(
-      URLFromRoute({ screen: '', search: { 出身: '仙台' } }),
+    expect(URLFromRoute({ screen: '', search: { 出身: '仙台' } })).toEqual(
       '/?%E5%87%BA%E8%BA%AB=%E4%BB%99%E5%8F%B0'
     );
   });
 
   it('serializes % encoded emoji', () => {
-    assert.equal(
-      URLFromRoute({ screen: '', search: { feeling: '😊' } }),
+    expect(URLFromRoute({ screen: '', search: { feeling: '😊' } })).toEqual(
       '/?feeling=%F0%9F%98%8A'
     );
   });
   it('serializes + encoded query string parameters', () => {
-    assert.equal(
-      URLFromRoute({ screen: '', search: { abc: 'foo hoge' } }),
+    expect(URLFromRoute({ screen: '', search: { abc: 'foo hoge' } })).toEqual(
       '/?abc=foo+hoge'
     );
   });
   it('serializes fragments', () => {
-    assert.equal(URLFromRoute({ screen: '', fragment: 'abc' }), '/#abc');
+    expect(URLFromRoute({ screen: '', fragment: 'abc' })).toEqual('/#abc');
   });
   it('serializes % encoded fragments', () => {
-    assert.equal(
-      URLFromRoute({ screen: '', fragment: 'one two' }),
+    expect(URLFromRoute({ screen: '', fragment: 'one two' })).toEqual(
       '/#one%20two'
     );
   });
   it('serializes popups, fragments, query strings in the right order', () => {
-    assert.equal(
+    expect(
       URLFromRoute({
         screen: '',
         popup: 'settings',
         search: { abc: '123', def: '456' },
         fragment: 'hash',
-      }),
-      '/settings?abc=123&def=456#hash'
-    );
+      })
+    ).toEqual('/settings?abc=123&def=456#hash');
   });
 });
 describe('router:routesEqual', () => {
@@ -313,17 +304,13 @@ describe('router:routesEqual', () => {
       '/abc=123&def=456#yer',
     ];
     for (const route of testRoutes) {
-      assert.isTrue(
-        routesEqual(routeFromURL(route), routeFromURL(route)),
-        `Routes from URL '${route}' should compare equal`
-      );
+      expect(routesEqual(routeFromURL(route), routeFromURL(route))).toBe(true);
     }
     for (let i = 0; i < testRoutes.length; i++) {
       const routeA = testRoutes[i];
       const routeB = testRoutes[i < testRoutes.length - 1 ? i + 1 : 0];
-      assert.isFalse(
-        routesEqual(routeFromURL(routeA), routeFromURL(routeB)),
-        `Routes from '${routeA}' and '${routeB}' should NOT compare equal`
+      expect(routesEqual(routeFromURL(routeA), routeFromURL(routeB))).toBe(
+        false
       );
     }
   });
