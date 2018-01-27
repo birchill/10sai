@@ -89,7 +89,7 @@ describe('review:sync', () => {
       expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
-    it('triggers a delayed update when cards are needed but there are some', () => {
+    it('triggers an update immediately when cards are newly-needed due to a state change, even if there are some', () => {
       subject(cardStore, store);
       store.__update({
         screen: 'review',
@@ -99,69 +99,7 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toEqual([]);
-      expect(setTimeout).toHaveBeenCalledTimes(1);
-
-      jest.runAllTimers();
       expect(store.actions).toEqual([queryAvailableCards()]);
-    });
-
-    it('cancels a delayed update when cards are needed immediately', () => {
-      subject(cardStore, store);
-      // Trigger a delayed update
-      store.__update({
-        screen: 'review',
-        review: {
-          ...initialState,
-          availableCards: { newCards: 2, overdueCards: 3 },
-        },
-      });
-      expect(setTimeout).toHaveBeenCalledTimes(1);
-
-      // Then trigger an immediate update
-      store.__update({
-        screen: 'review',
-        review: {
-          ...initialState,
-          availableCards: undefined,
-        },
-      });
-      expect(clearTimeout).toHaveBeenCalledTimes(1);
-      expect(store.actions).toEqual([queryAvailableCards()]);
-    });
-
-    it('cancels a delayed update when cards are no longer needed', () => {
-      subject(cardStore, store);
-      // Trigger a delayed update
-      store.__update({
-        screen: 'review',
-        review: {
-          ...initialState,
-          availableCards: { newCards: 2, overdueCards: 3 },
-        },
-      });
-      expect(setTimeout).toHaveBeenCalledTimes(1);
-
-      // Then change screen
-      store.__update({
-        screen: 'home',
-        review: initialState,
-      });
-      expect(clearTimeout).toHaveBeenCalledTimes(1);
-      expect(store.actions).toEqual([]);
-    });
-
-    it('does not trigger an update when cards are already being loaded', () => {
-      subject(cardStore, store);
-      store.__update({
-        screen: 'review',
-        review: {
-          ...initialState,
-          loadingAvailableCards: true,
-        },
-      });
-
-      expect(store.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
@@ -183,6 +121,88 @@ describe('review:sync', () => {
         queryAvailableCards(),
         queryAvailableCards(),
       ]);
+    });
+
+    it('cancels a delayed update when cards are needed immediately', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          availableCards: { newCards: 2, overdueCards: 3 },
+        },
+      });
+      expect(store.actions).toEqual([queryAvailableCards()]);
+
+      // Trigger a delayed update
+      cardStore.__triggerChange('change', {});
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+
+      // Then trigger an immediate update
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          availableCards: undefined,
+        },
+      });
+      expect(clearTimeout).toHaveBeenCalledTimes(1);
+      expect(store.actions).toEqual([
+        queryAvailableCards(),
+        queryAvailableCards(),
+      ]);
+    });
+
+    it('cancels a delayed update when cards are no longer needed', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          availableCards: { newCards: 2, overdueCards: 3 },
+        },
+      });
+      expect(store.actions).toEqual([queryAvailableCards()]);
+
+      // Trigger a delayed update
+      cardStore.__triggerChange('change', {});
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+
+      // Then change screen
+      store.__update({
+        screen: 'home',
+        review: initialState,
+      });
+      expect(clearTimeout).toHaveBeenCalledTimes(1);
+      expect(store.actions).toEqual([queryAvailableCards()]);
+    });
+
+    it('does NOT trigger an update when cards are already being loaded', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          loadingAvailableCards: true,
+        },
+      });
+
+      expect(store.actions).toEqual([]);
+      expect(setTimeout).toHaveBeenCalledTimes(0);
+    });
+
+    it('does NOT trigger an update when the progress is being saved', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          savingProgress: true,
+        },
+      });
+
+      expect(store.actions).toEqual([]);
+      expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
     it('does NOT trigger an update when a card is added when not in an appropriate state', () => {

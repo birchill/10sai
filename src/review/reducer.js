@@ -60,7 +60,12 @@ const initialState = {
   // always set.
   availableCards: undefined,
 
-  // True if we are currently refreshing the set of available cards
+  // True if we are still saving the progress.
+  // We use this to determine if it is ok to query the available cards or if we
+  // should wait.
+  savingProgress: false,
+
+  // True if we are currently refreshing the set of available cards.
   loadingAvailableCards: false,
 };
 
@@ -217,6 +222,7 @@ export default function review(state = initialState, action) {
         failedCardsLevel1,
         history,
         currentCard: updatedCard,
+        savingProgress: true,
       };
 
       return updateNextCard(
@@ -291,6 +297,7 @@ export default function review(state = initialState, action) {
         failedCardsLevel2,
         history,
         currentCard: updatedCard,
+        savingProgress: true,
       };
 
       return updateNextCard(
@@ -298,6 +305,17 @@ export default function review(state = initialState, action) {
         action.nextCardSeed,
         Update.UpdateCurrentCard
       );
+    }
+
+    case 'FINISH_UPDATE_PROGRESS': {
+      if (!state.savingProgress) {
+        return state;
+      }
+
+      return {
+        ...state,
+        savingProgress: false,
+      };
     }
 
     case 'QUERY_AVAILABLE_CARDS': {

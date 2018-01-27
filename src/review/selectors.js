@@ -52,6 +52,7 @@ export const getNeedAvailableCards = state =>
 export const getAvailableCards = state => state.review.availableCards;
 export const getLoadingAvailableCards = state =>
   state.review.loadingAvailableCards;
+export const getSavingProgress = state => state.review.savingProgress;
 
 export const getReviewCards = state => [
   ...new Set(

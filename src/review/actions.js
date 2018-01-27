@@ -59,6 +59,12 @@ export function passCard() {
   };
 }
 
+export function finishUpdateProgress() {
+  return {
+    type: 'FINISH_UPDATE_PROGRESS',
+  };
+}
+
 export function queryAvailableCards() {
   return {
     type: 'QUERY_AVAILABLE_CARDS',

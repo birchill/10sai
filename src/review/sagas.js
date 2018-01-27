@@ -87,10 +87,13 @@ export function* updateProgress(cardStore, action) {
 
   try {
     yield call([cardStore, 'putCard'], update);
+    yield put(reviewActions.finishUpdateProgress());
   } catch (error) {
     console.error(`Failed to update progress of card: ${error}`);
     // TODO: Define the following action
     // yield put(reviewActions.failUpdateProgress(error));
+    // For now just pretend it worked:
+    yield put(reviewActions.finishUpdateProgress());
   }
 }
 
