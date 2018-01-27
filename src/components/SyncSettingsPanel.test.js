@@ -1,24 +1,21 @@
-/* global describe, it */
+/* global describe, expect, it, jest */
 /* eslint-disable react/jsx-first-prop-new-line */
 /* eslint-disable react/jsx-max-props-per-line */
 
 import React from 'react';
 import { configure, shallow } from 'enzyme';
-import { assert } from 'chai';
-import sinon from 'sinon';
 import Adapter from 'enzyme-adapter-react-16';
-import SyncState from '../../src/sync/states';
-import SyncSettingsPanel from '../../src/components/SyncSettingsPanel.jsx';
+import SyncState from '../sync/states';
+import SyncSettingsPanel from './SyncSettingsPanel.jsx';
 
 configure({ adapter: new Adapter() });
-sinon.assert.expose(assert, { prefix: '' });
 
 global.document = {
   addEventListener: () => {},
 };
 
 describe('<SyncSettingsPanel />', () => {
-  const stub = sinon.stub();
+  const stub = jest.fn();
 
   // -------------------------------------------------------------
   //
@@ -41,11 +38,7 @@ describe('<SyncSettingsPanel />', () => {
     for (const state of Object.keys(SyncState)) {
       subject.setProps({ syncState: SyncState[state] });
       subject.update();
-      assert.isAbove(
-        subject.find('.heading').text().length,
-        0,
-        `Summary label is filled-in in ${state} state`
-      );
+      expect(subject.find('.heading').text().length).toBeGreaterThan(0);
     }
   });
 
@@ -65,10 +58,8 @@ describe('<SyncSettingsPanel />', () => {
 
     for (const state of ['OK', 'PAUSED', 'ERROR', 'OFFLINE']) {
       subject.setProps({ syncState: SyncState[state] });
-      assert.instanceOf(
-        subject.find('ServerStatus').prop('lastSyncTime'),
-        Date,
-        `Last updated information is filled-in in the ${state} state`
+      expect(subject.find('ServerStatus').prop('lastSyncTime')).toBeInstanceOf(
+        Date
       );
     }
   });
@@ -80,7 +71,7 @@ describe('<SyncSettingsPanel />', () => {
   // -------------------------------------------------------------
 
   it('calls the edit callback when the Add/Change button is clicked', () => {
-    const onEdit = sinon.spy();
+    const onEdit = jest.fn();
     const subject = shallow(
       <SyncSettingsPanel
         syncState={SyncState.NOT_CONFIGURED}
@@ -95,11 +86,11 @@ describe('<SyncSettingsPanel />', () => {
 
     subject.find('button[name="edit-server"]').simulate('click');
 
-    assert.calledOnce(onEdit);
+    expect(onEdit).toHaveBeenCalled();
   });
 
   it('calls the cancel callback when the Cancel button is clicked', () => {
-    const onCancel = sinon.spy();
+    const onCancel = jest.fn();
     const subject = shallow(
       <SyncSettingsPanel
         syncState={SyncState.NOT_CONFIGURED}
@@ -116,11 +107,11 @@ describe('<SyncSettingsPanel />', () => {
     subject.find('SyncServerForm').prop('onCancel')();
     subject.update();
 
-    assert.calledOnce(onCancel);
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it('calls the callback when the server is edited', () => {
-    const onSubmit = sinon.spy();
+    const onSubmit = jest.fn();
     const subject = shallow(
       <SyncSettingsPanel
         syncState={SyncState.NOT_CONFIGURED}
@@ -136,7 +127,7 @@ describe('<SyncSettingsPanel />', () => {
 
     subject.find('SyncServerForm').prop('onSubmit')({ name: 'abc' });
 
-    assert.calledWith(onSubmit, { name: 'abc' });
+    expect(onSubmit).toHaveBeenCalledWith({ name: 'abc' });
   });
 
   // -------------------------------------------------------------
@@ -158,7 +149,7 @@ describe('<SyncSettingsPanel />', () => {
       />
     );
 
-    assert.strictEqual(subject.find('progress').length, 1);
+    expect(subject.find('progress')).toHaveLength(1);
   });
 
   it('does NOT show progress bar in other states', () => {
@@ -179,16 +170,12 @@ describe('<SyncSettingsPanel />', () => {
       }
 
       subject.setProps({ syncState: SyncState[state] });
-      assert.strictEqual(
-        subject.find('progress').length,
-        0,
-        `There should be no progress bar in the ${state} state`
-      );
+      expect(subject.find('progress')).toHaveLength(0);
     }
   });
 
   it('pauses syncing when the Cancel button is clicked', () => {
-    const onPause = sinon.spy();
+    const onPause = jest.fn();
     const subject = shallow(
       <SyncSettingsPanel
         syncState={SyncState.IN_PROGRESS}
@@ -203,7 +190,7 @@ describe('<SyncSettingsPanel />', () => {
 
     subject.find('button[name="cancel-sync"]').simulate('click');
 
-    assert.calledOnce(onPause);
+    expect(onPause).toHaveBeenCalledTimes(1);
   });
 
   // -------------------------------------------------------------
@@ -227,11 +214,7 @@ describe('<SyncSettingsPanel />', () => {
       />
     );
 
-    assert.equal(
-      subject.find('.error-details').text(),
-      'Oh dear',
-      'Error message is filled-in'
-    );
+    expect(subject.find('.error-details').text()).toBe('Oh dear');
   });
 
   // XXX Add tests for the play/pause button and icon state
