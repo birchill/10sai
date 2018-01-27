@@ -138,7 +138,7 @@ describe('sagas:review updateHeap', () => {
     const overdueCards = ['Overdue card 3', 'Overdue card 4'];
 
     return expectSaga(updateHeapSaga, cardStore, action)
-      .provide(getCardStoreProvider({}, overdueCards))
+      .provide(getCardStoreProvider([], overdueCards))
       .withState(state)
       .call([cardStore, 'getCards'], {
         limit: 1,
@@ -149,7 +149,16 @@ describe('sagas:review updateHeap', () => {
       .run();
   });
 
-  it('does not update due to a change in review time if we are not reviewing', async () => {});
+  it('does not put review loaded due to a change in review time if we are not reviewing', async () => {
+    const state = reducer(undefined, { type: 'NOTHING' });
+    const action = reviewActions.setReviewTime(new Date());
+
+    return expectSaga(updateHeapSaga, cardStore, action)
+      .provide(getCardStoreProvider({}, []))
+      .withState(state)
+      .not.put.like({ action: { type: 'REVIEW_LOADED' } })
+      .run();
+  });
 
   it('counts the current card as an occupied slot', async () => {
     let state = reducer(undefined, reviewActions.newReview(2, 3));

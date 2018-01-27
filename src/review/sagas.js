@@ -1,5 +1,6 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import * as reviewActions from './actions';
+import ReviewState from './states';
 
 // Selectors
 
@@ -9,6 +10,13 @@ const getReviewInfo = state => (state ? state.review : {});
 
 export function* updateHeap(cardStore, action) {
   const reviewInfo = yield select(getReviewInfo);
+
+  // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
+  // action.
+  if (reviewInfo.reviewState === ReviewState.IDLE) {
+    return;
+  }
+
   let freeSlots = Math.max(
     0,
     reviewInfo.maxCards -
