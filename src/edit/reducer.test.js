@@ -1,10 +1,9 @@
-/* global describe, it */
+/* global describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
-import { assert } from 'chai';
-import subject from '../../src/edit/reducer';
-import EditState from '../../src/edit/states';
-import * as actions from '../../src/edit/actions';
+import subject from './reducer';
+import EditState from './states';
+import * as actions from './actions';
 
 const emptyState = formId => ({
   forms: {
@@ -72,13 +71,13 @@ describe('reducer:edit', () => {
   it('should return the initial state', () => {
     const updatedState = subject(undefined, {});
 
-    assert.deepEqual(updatedState, emptyState(0));
+    expect(updatedState).toEqual(emptyState(0));
   });
 
   it('should update formId on NEW_CARD', () => {
     const updatedState = subject(undefined, actions.newCard(1));
 
-    assert.deepEqual(updatedState, emptyState(1));
+    expect(updatedState).toEqual(emptyState(1));
   });
 
   it('should clear fields on NEW_CARD', () => {
@@ -89,13 +88,13 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.newCard(2));
 
-    assert.deepEqual(updatedState, emptyState(2));
+    expect(updatedState).toEqual(emptyState(2));
   });
 
   it('should update formId and state on LOAD_CARD', () => {
     const updatedState = subject(undefined, actions.loadCard('abc'));
 
-    assert.deepEqual(updatedState, loadingState('abc'));
+    expect(updatedState).toEqual(loadingState('abc'));
   });
 
   it('should clear other state on LOAD_CARD', () => {
@@ -106,7 +105,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.loadCard('def'));
 
-    assert.deepEqual(updatedState, loadingState('def'));
+    expect(updatedState).toEqual(loadingState('def'));
   });
 
   it('should update card info and state on FINISH_LOAD_CARD', () => {
@@ -122,7 +121,7 @@ describe('reducer:edit', () => {
       actions.finishLoadCard('abc', card)
     );
 
-    assert.deepEqual(updatedState, okState(card));
+    expect(updatedState).toEqual(okState(card));
   });
 
   it(
@@ -141,7 +140,7 @@ describe('reducer:edit', () => {
         actions.finishLoadCard('def', card)
       );
 
-      assert.deepEqual(updatedState, initialState);
+      expect(updatedState).toEqual(initialState);
     }
   );
 
@@ -150,7 +149,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.failLoadCard('abc'));
 
-    assert.deepEqual(updatedState, notFoundState('abc', false));
+    expect(updatedState).toEqual(notFoundState('abc', false));
   });
 
   it('should NOT update state on FAIL_LOAD_CARD if formIds differ', () => {
@@ -158,7 +157,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.failLoadCard('def'));
 
-    assert.deepEqual(updatedState, initialState);
+    expect(updatedState).toEqual(initialState);
   });
 
   it('should update to NOT_FOUND (deleted) state on FAIL_LOAD_CARD (deleted)', () => {
@@ -170,7 +169,7 @@ describe('reducer:edit', () => {
       actions.failLoadCard('abc', error)
     );
 
-    assert.deepEqual(updatedState, notFoundState('abc', true));
+    expect(updatedState).toEqual(notFoundState('abc', true));
   });
 
   it('should update card and dirty fields and state on EDIT_CARD', () => {
@@ -187,8 +186,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.editCard('abc', change));
 
-    assert.deepEqual(
-      updatedState,
+    expect(updatedState).toEqual(
       dirtyState(
         'abc',
         { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
@@ -209,8 +207,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(initialState, actions.editCard(7, change));
 
-      assert.deepEqual(
-        updatedState,
+      expect(updatedState).toEqual(
         dirtyState(7, { prompt: 'Updated prompt', answer: 'Updated answer' }, [
           'prompt',
           'answer',
@@ -239,7 +236,7 @@ describe('reducer:edit', () => {
         actions.editCard('def', change)
       );
 
-      assert.deepEqual(updatedState, initialState);
+      expect(updatedState).toEqual(initialState);
     }
   );
 
@@ -253,8 +250,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.editCard('abc', change));
 
-    assert.deepEqual(
-      updatedState,
+    expect(updatedState).toEqual(
       dirtyState(
         'abc',
         { _id: 'abc', prompt: 'Updated prompt', answer: 'Updated answer' },
@@ -280,8 +276,7 @@ describe('reducer:edit', () => {
       actions.finishSaveCard('abc', card)
     );
 
-    assert.deepEqual(
-      updatedState,
+    expect(updatedState).toEqual(
       okState({ _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' })
     );
   });
@@ -306,8 +301,7 @@ describe('reducer:edit', () => {
         actions.finishSaveCard('abc', card)
       );
 
-      assert.deepEqual(
-        updatedState,
+      expect(updatedState).toEqual(
         dirtyState(
           'abc',
           { _id: 'abc', prompt: 'Updated #2', answer: 'Updated answer' },
@@ -334,7 +328,7 @@ describe('reducer:edit', () => {
       actions.finishSaveCard('def', card)
     );
 
-    assert.deepEqual(updatedState, initialState);
+    expect(updatedState).toEqual(initialState);
   });
 
   it('should update state on FINISH_SAVE_CARD with new card', () => {
@@ -354,8 +348,7 @@ describe('reducer:edit', () => {
       actions.finishSaveCard(12, card)
     );
 
-    assert.deepEqual(
-      updatedState,
+    expect(updatedState).toEqual(
       okState({ _id: 'abc', prompt: 'Prompt', answer: 'Answer' })
     );
   });
@@ -380,8 +373,7 @@ describe('reducer:edit', () => {
         actions.finishSaveCard(17, card)
       );
 
-      assert.deepEqual(
-        updatedState,
+      expect(updatedState).toEqual(
         dirtyState(
           'abc',
           { _id: 'abc', prompt: 'Updated #1', answer: 'Updated #2' },
@@ -411,7 +403,7 @@ describe('reducer:edit', () => {
         actions.finishSaveCard('def', card)
       );
 
-      assert.deepEqual(updatedState, initialState);
+      expect(updatedState).toEqual(initialState);
     }
   );
 
@@ -431,7 +423,7 @@ describe('reducer:edit', () => {
       actions.finishSaveCard('abc', card)
     );
 
-    assert.deepEqual(updatedState, initialState);
+    expect(updatedState).toEqual(initialState);
   });
 
   it('should update save error message on FAIL_SAVE_CARD', () => {
@@ -446,8 +438,7 @@ describe('reducer:edit', () => {
       actions.failSaveCard('abc', 'Bad bad bad')
     );
 
-    assert.deepEqual(
-      updatedState,
+    expect(updatedState).toEqual(
       withSaveError(
         dirtyState('abc', { _id: 'abc', prompt: 'Prompt', answer: 'Answer' }, [
           'prompt',
@@ -472,7 +463,7 @@ describe('reducer:edit', () => {
         actions.failSaveCard('def', 'Bad bad bad')
       );
 
-      assert.deepEqual(updatedState, initialState);
+      expect(updatedState).toEqual(initialState);
     }
   );
 
@@ -484,7 +475,7 @@ describe('reducer:edit', () => {
       actions.failSaveCard('abc', 'Uh oh')
     );
 
-    assert.deepEqual(updatedState, initialState);
+    expect(updatedState).toEqual(initialState);
   });
 
   it('should update non-dirty fields on SYNC_CARD', () => {
@@ -501,8 +492,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.syncEditCard(card));
 
-    assert.deepEqual(
-      updatedState,
+    expect(updatedState).toEqual(
       dirtyState(
         'abc',
         { _id: 'abc', prompt: 'Prompt A', answer: 'Answer B' },
@@ -525,7 +515,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.syncEditCard(card));
 
-    assert.deepEqual(updatedState, initialState);
+    expect(updatedState).toEqual(initialState);
   });
 
   it(
@@ -544,7 +534,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(initialState, actions.syncEditCard(card));
 
-      assert.deepEqual(updatedState, notFoundState('abc', true));
+      expect(updatedState).toEqual(notFoundState('abc', true));
     }
   );
 
@@ -557,7 +547,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.deleteEditCard('abc'));
 
-    assert.deepEqual(updatedState, notFoundState('abc', true));
+    expect(updatedState).toEqual(notFoundState('abc', true));
   });
 
   it('should update to EMPTY state on DELETE_EDIT_CARD for unsaved card', () => {
@@ -569,7 +559,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.deleteEditCard(89));
 
-    assert.deepEqual(updatedState, emptyState(89));
+    expect(updatedState).toEqual(emptyState(89));
   });
 
   it('should do nothing on DELETE_EDIT_CARD if formId does nothing', () => {
@@ -581,6 +571,6 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.deleteEditCard('def'));
 
-    assert.deepEqual(updatedState, initialState);
+    expect(updatedState).toEqual(initialState);
   });
 });

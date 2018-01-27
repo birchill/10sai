@@ -1,3 +1,8 @@
+/**
+ * @jest-environment node
+ *
+ * Why this? See my complaint about jest in ../route/sagas.test.js
+ */
 /* global beforeEach, describe, it */
 /* eslint arrow-body-style: [ 'off' ] */
 
@@ -8,11 +13,11 @@ import {
   watchCardEdits as watchCardEditsSaga,
   save as saveSaga,
   beforeEditScreenChange as beforeEditScreenChangeSaga,
-} from '../../src/edit/sagas';
-import reducer from '../../src/reducer';
-import EditState from '../../src/edit/states';
-import * as editActions from '../../src/edit/actions';
-import * as routeActions from '../../src/route/actions';
+} from './sagas';
+import reducer from '../reducer';
+import EditState from './states';
+import * as editActions from './actions';
+import * as routeActions from '../route/actions';
 
 const loadingState = formId => ({
   edit: {
@@ -182,7 +187,7 @@ const notFoundState = (formId, deleted) => ({
 });
 
 describe('sagas:edit watchCardEdits', () => {
-  beforeEach('setup global', () => {
+  beforeEach(() => {
     global.location = {
       pathname: '',
       search: '',
