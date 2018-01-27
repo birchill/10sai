@@ -129,6 +129,28 @@ describe('sagas:review updateHeap', () => {
       .run();
   });
 
+  it('skips failed cards when updating due to a change in review time', async () => {
+    let state = reducer(undefined, reviewActions.newReview(0, 3));
+    const action = reviewActions.setReviewTime(new Date());
+    state = reducer(state, action);
+    state.review.completed = 2;
+
+    const overdueCards = ['Overdue card 3', 'Overdue card 4'];
+
+    return expectSaga(updateHeapSaga, cardStore, action)
+      .provide(getCardStoreProvider({}, overdueCards))
+      .withState(state)
+      .call([cardStore, 'getCards'], {
+        limit: 1,
+        type: 'overdue',
+        skipFailedCards: true,
+      })
+      .put.like({ action: { type: 'REVIEW_LOADED', cards: overdueCards } })
+      .run();
+  });
+
+  it('does not update due to a change in review time if we are not reviewing', async () => {});
+
   it('counts the current card as an occupied slot', async () => {
     let state = reducer(undefined, reviewActions.newReview(2, 3));
     const action = reviewActions.setReviewLimit(3, 4);
