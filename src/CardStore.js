@@ -8,6 +8,7 @@ let prevTimeStamp = 0;
 
 const CARD_PREFIX = 'card-';
 const PROGRESS_PREFIX = 'progress-';
+const REVIEW_PREFIX = 'review-';
 
 const stripCardPrefix = id => id.substr(CARD_PREFIX.length);
 const stripProgressPrefix = id => id.substr(PROGRESS_PREFIX.length);
@@ -466,6 +467,51 @@ class CardStore {
       // millisecond.
       `00${Math.floor(Math.random() * 46656).toString(36)}`.slice(-3);
     return id;
+  }
+
+  async getReview() {
+    const review = await this._getReview();
+    if (review) {
+      delete review._id;
+      delete review._rev;
+    }
+
+    return review;
+  }
+
+  async _getReview() {
+    const reviews = await this.db.allDocs({
+      include_docs: true,
+      descending: true,
+      limit: 1,
+      startkey: REVIEW_PREFIX + '\ufff0',
+      endkey: REVIEW_PREFIX,
+    });
+
+    if (!reviews.rows.length) {
+      return null;
+    }
+
+    return reviews.rows[0].doc;
+  }
+
+  async putReview(review) {
+    const existingReview = await this._getReview();
+
+    // If we don't have an existing review doc to update generate an ID for the
+    // review based on the current time.
+    // We don't care do much about collisions here. If we overlap, it's ok to
+    // just clobber the existing data.
+    let reviewId;
+    if (!existingReview) {
+      const timestamp = Date.now() - Date.UTC(2016, 0, 1);
+      reviewId = REVIEW_PREFIX + `0${timestamp.toString(36)}`.slice(-8);
+    } else {
+      reviewId = existingReview._id;
+    }
+
+    // Copy passed-in review object so upsert doesn't mutate it
+    await this.db.upsert(reviewId, () => ({ ...review }));
   }
 
   get changes() {
