@@ -87,23 +87,66 @@ describe('CardStore progress reporting', () => {
     expect(reviews.rows[0].doc.completed).toBe(2);
   });
 
-  /*
   it('returns the latest review', async () => {
+    let pauseAction;
+    await subject.setSyncServer(testRemote, {
+      onIdle: () => {
+        if (pauseAction) {
+          pauseAction();
+        }
+      },
+    });
+
+    // Push two new docs to the remote
+    await testRemote.put({
+      ...typicalReview,
+      completed: 1,
+      _id: 'review-1',
+    });
+    await testRemote.put({
+      ...typicalReview,
+      completed: 2,
+      _id: 'review-2',
+    });
+
+    // Wait for sync to finish
+    const pausePromise = new Promise(resolve => {
+      pauseAction = resolve;
+    });
+    await pausePromise;
+
+    // Check the result of getReview
+    const review = await subject.getReview();
+    expect(review.completed).toBe(2);
   });
 
-  it('deletes older reviews when fetching the latest', async () => {
-  });
-
+  /*
   it('allows deleting reviews', async () => {
+    // -- just put a review
+    // -- get it
+    // -- delete it
+    // -- get it again
+  });
+
+  it('deletes older reviews when synchronizing', async () => {
+    // -- push two new docs to the remote
+    // -- wait for everything to sync back to the remote
+    //    and check that the older doc got deleted
+    //    (Again, wait for paused callback)
   });
 
   it('resolves conflicts by choosing the furthest review progress', async () => {
+    // -- put a doc -- somehow work out what ID it got (use a separate remote?)
+    // -- put a doc with an identical ID in a remote
+    // -- connect the remote
+    // -- wait for them to sync
+    // -- check that the conflict is gone from the remote
   });
 
   it('reports changes to review doc', async() => {
   });
 
-  it('deletes older reviews when syncing', async () => {
+  it('doesn't report new review docs older than current', async() => {
   });
   */
 });

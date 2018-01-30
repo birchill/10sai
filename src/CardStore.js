@@ -679,7 +679,7 @@ class CardStore {
   // |options| is an optional object argument which may provide the following
   // callback functions:
   // - onChange
-  // - onPause
+  // - onIdle
   // - onActive
   // - onError
   // as well as the |batchSize| member for specifying the number of records
