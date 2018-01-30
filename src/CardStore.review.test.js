@@ -120,14 +120,14 @@ describe('CardStore progress reporting', () => {
     expect(review.completed).toBe(2);
   });
 
-  /*
   it('allows deleting reviews', async () => {
-    // -- just put a review
-    // -- get it
-    // -- delete it
-    // -- get it again
+    await subject.putReview(typicalReview);
+    await subject.deleteReview();
+    const gotReview = await subject.getReview();
+    expect(gotReview).toBe(null);
   });
 
+  /*
   it('deletes older reviews when synchronizing', async () => {
     // -- push two new docs to the remote
     // -- wait for everything to sync back to the remote

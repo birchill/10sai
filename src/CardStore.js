@@ -109,6 +109,19 @@ const getOverduenessFunction = reviewTime =>
     });
   }`;
 
+const stubbornDelete = async (doc, db) => {
+  try {
+    return await db.remove(doc);
+  } catch (err) {
+    if (err.status !== 409) {
+      throw err;
+    }
+    // If there is a conflict, just keep trying
+    doc = await db.get(doc._id);
+    return stubbornDelete(doc, db);
+  }
+};
+
 class CardStore {
   constructor(options) {
     const pouchOptions = options && options.pouch ? options.pouch : {};
@@ -412,19 +425,6 @@ class CardStore {
   }
 
   async deleteCard(card) {
-    const stubbornDelete = async (doc, db) => {
-      try {
-        return await db.remove(doc);
-      } catch (err) {
-        if (err.status !== 409) {
-          throw err;
-        }
-        // If there is a conflict, just keep trying
-        doc = await db.get(doc._id);
-        return stubbornDelete(doc, db);
-      }
-    };
-
     const cardToDelete = { ...card, _id: CARD_PREFIX + card._id };
     delete cardToDelete.progress;
     await stubbornDelete(cardToDelete, this.db);
@@ -512,6 +512,14 @@ class CardStore {
 
     // Copy passed-in review object so upsert doesn't mutate it
     await this.db.upsert(reviewId, () => ({ ...review }));
+  }
+
+  async deleteReview() {
+    const review = await this._getReview();
+    if (!review) {
+      return;
+    }
+    await stubbornDelete(review, this.db);
   }
 
   get changes() {
