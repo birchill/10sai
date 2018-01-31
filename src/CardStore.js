@@ -515,11 +515,26 @@ class CardStore {
   }
 
   async deleteReview() {
-    const review = await this._getReview();
-    if (!review) {
-      return;
-    }
-    await stubbornDelete(review, this.db);
+    const deleteReviews = async () => {
+      const reviews = await this.db.allDocs({
+        startkey: REVIEW_PREFIX,
+        endkey: REVIEW_PREFIX + '\ufff0',
+      });
+      if (!reviews.rows.length) {
+        return;
+      }
+      const results = await this.db.bulkDocs(
+        reviews.rows.map(row => ({
+          _id: row.id,
+          _rev: row.value.rev,
+          _deleted: true,
+        }))
+      );
+      if (results.some(result => result.error && result.status === 409)) {
+        await deleteReviews();
+      }
+    };
+    await deleteReviews();
   }
 
   get changes() {

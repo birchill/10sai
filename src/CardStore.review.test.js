@@ -29,6 +29,25 @@ const waitForNumReviewChanges = (db, num) => {
   return promise;
 };
 
+const syncWithWaitableRemote = async (cardStore, remote) => {
+  let pauseAction;
+  await cardStore.setSyncServer(remote, {
+    onIdle: () => {
+      if (pauseAction) {
+        pauseAction();
+      }
+    },
+  });
+
+  const waitForIdle = () => {
+    return new Promise(resolve => {
+      pauseAction = resolve;
+    });
+  };
+
+  return waitForIdle;
+};
+
 describe('CardStore progress reporting', () => {
   let subject;
   let testRemote;
@@ -88,14 +107,7 @@ describe('CardStore progress reporting', () => {
   });
 
   it('returns the latest review', async () => {
-    let pauseAction;
-    await subject.setSyncServer(testRemote, {
-      onIdle: () => {
-        if (pauseAction) {
-          pauseAction();
-        }
-      },
-    });
+    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
 
     // Push two new docs to the remote
     await testRemote.put({
@@ -110,10 +122,7 @@ describe('CardStore progress reporting', () => {
     });
 
     // Wait for sync to finish
-    const pausePromise = new Promise(resolve => {
-      pauseAction = resolve;
-    });
-    await pausePromise;
+    await waitForIdle();
 
     // Check the result of getReview
     const review = await subject.getReview();
@@ -125,6 +134,36 @@ describe('CardStore progress reporting', () => {
     await subject.deleteReview();
     const gotReview = await subject.getReview();
     expect(gotReview).toBe(null);
+  });
+
+  it('deletes all reviews', async () => {
+    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+
+    // Push two new docs to the remote
+    await testRemote.put({
+      ...typicalReview,
+      completed: 1,
+      _id: 'review-1',
+    });
+    await testRemote.put({
+      ...typicalReview,
+      completed: 2,
+      _id: 'review-2',
+    });
+
+    // Wait for sync to finish then delete
+    await waitForIdle();
+    await subject.deleteReview();
+
+    // Wait for sync to finish
+    await waitForIdle();
+
+    // Check there are no review docs in the remote
+    const result = await testRemote.allDocs({
+      startkey: 'review',
+      endkey: 'review-\ufff0',
+    });
+    expect(result.rows).toHaveLength(0);
   });
 
   /*
