@@ -1,5 +1,9 @@
 .review-screen {
-  min-height: 100%;
+  /*
+   * This should be min-height: 100% (not 'height: 100%') but Chrome refuse to
+   * fix their flexbox implementation.
+   */
+  height: 100%;
   background: $really-light-grey;
 
   display: flex;
@@ -12,7 +16,8 @@
     line-height: 0;
   }
   & > .content {
-    flex: 1 0 auto;
+    /* This should be 'flex: 1 0 auto' but Chrome... :( */
+    flex: 1;
 
     &.summary-panel > .details {
       text-align: center;
