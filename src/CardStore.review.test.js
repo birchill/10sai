@@ -166,14 +166,35 @@ describe('CardStore progress reporting', () => {
     expect(result.rows).toHaveLength(0);
   });
 
-  /*
   it('deletes older reviews when synchronizing', async () => {
-    // -- push two new docs to the remote
-    // -- wait for everything to sync back to the remote
-    //    and check that the older doc got deleted
-    //    (Again, wait for paused callback)
+    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+
+    // Push two new docs to the remote
+    await testRemote.put({
+      ...typicalReview,
+      completed: 1,
+      _id: 'review-1',
+    });
+    await testRemote.put({
+      ...typicalReview,
+      completed: 2,
+      _id: 'review-2',
+    });
+
+    // Wait for everything to sync back to the remote
+    await waitForIdle();
+
+    // Check that the older doc got deleted
+    const result = await testRemote.allDocs({
+      startkey: 'review',
+      endkey: 'review-\ufff0',
+      include_docs: true,
+    });
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0].doc.completed).toBe(2);
   });
 
+  /*
   it('resolves conflicts by choosing the furthest review progress', async () => {
     // -- put a doc -- somehow work out what ID it got (use a separate remote?)
     // -- put a doc with an identical ID in a remote

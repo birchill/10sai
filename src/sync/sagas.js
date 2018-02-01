@@ -35,10 +35,10 @@ function* startReplication(cardStore, server, dispatch) {
 
   const syncServer = server ? server.name : undefined;
   const options = {
-    onChange: changes =>
+    onProgress: progress =>
       dispatch({
         type: 'UPDATE_SYNC_PROGRESS',
-        progress: changes.progress,
+        progress,
       }),
     onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
     onActive: () =>

@@ -307,16 +307,16 @@ describe('CardStore remote sync', () => {
       resolveAllDone = resolve;
     });
 
-    const allChanges = [];
+    const progressValues = [];
     await testRemote.bulkDocs(docs);
     await subject.setSyncServer(testRemote, {
-      onChange: changes => allChanges.push(changes),
+      onProgress: progress => progressValues.push(progress),
       onIdle: () => resolveAllDone(),
       batchSize: 2,
     });
     await allDone;
 
-    expect(allChanges.length).toBe(5);
+    expect(progressValues).toHaveLength(5);
     // (Some of these numbers are bit different to what we'd normally expect but
     // that's because the design docs which we *don't* sync are included in the
     // total.)
@@ -325,7 +325,7 @@ describe('CardStore remote sync', () => {
     // reports the pending flag:
     // https://github.com/pouchdb/pouchdb/issues/5710
     /*
-    expect(allChanges.map(change => change.progress)).toEqual([0, 2 / 3, 1.0]);
+    expect(progressValues.toEqual([0, 2 / 3, 1.0]);
     */
   });
 
@@ -346,10 +346,10 @@ describe('CardStore remote sync', () => {
       resolveAllDone = resolve;
     });
 
-    const allChanges = [];
+    const progressValues = [];
     await Promise.all(putPromises);
     await subject.setSyncServer(testRemote, {
-      onChange: changes => allChanges.push(changes),
+      onProgress: progress => progressValues.push(progress),
       onIdle: () => resolveAllDone(),
       batchSize: 3,
     });
@@ -358,8 +358,7 @@ describe('CardStore remote sync', () => {
     // Note that although there are 5 cards, there are 10 documents since there
     // is a corresponding 'progress' document for each card. So we should have
     // batch sizes: 3, 3, 3, 1.
-    expect(allChanges.length).toBe(4);
-    const progressValues = allChanges.map(change => change.progress);
+    expect(progressValues).toHaveLength(4);
     expect(progressValues[0]).toBeLessThan(1);
     expect(progressValues[0]).toBeLessThan(progressValues[1]);
     expect(progressValues[1]).toBeLessThan(progressValues[2]);
@@ -395,11 +394,11 @@ describe('CardStore remote sync', () => {
       resolveAllDone = resolve;
     });
 
-    const allChanges = [];
+    const progressValues = [];
     await Promise.all(putPromises);
     await testRemote.bulkDocs(remoteDocs);
     await subject.setSyncServer(testRemote, {
-      onChange: changes => allChanges.push(changes),
+      onProgress: progress => progressValues.push(progress),
       onIdle: () => resolveAllDone(),
       batchSize: 3,
     });
@@ -410,10 +409,8 @@ describe('CardStore remote sync', () => {
     // That said, I don't really understand why 4 cards in 2 directions (i.e. 16
     // documents total), with a batch size of 3 should happen in five batches.
     // It's some PouchDB magic, but it seems to be deterministic at least.
-    expect(allChanges.length).toBe(5);
-    expect(allChanges.map(change => change.progress)).toEqual(
-      Array(allChanges.length).fill(null)
-    );
+    expect(progressValues).toHaveLength(5);
+    expect(progressValues).toEqual(Array(progressValues.length).fill(null));
   });
 
   it('reports indeterminate sync progress on subsequent download', async () => {
@@ -432,9 +429,9 @@ describe('CardStore remote sync', () => {
       resolveIdle = resolve;
     });
 
-    const allChanges = [];
+    const progressValues = [];
     await subject.setSyncServer(testRemote, {
-      onChange: changes => allChanges.push(changes),
+      onProgress: progress => progressValues.push(progress),
       onIdle: () => resolveIdle(),
       batchSize: 2,
     });
@@ -444,9 +441,7 @@ describe('CardStore remote sync', () => {
       resolveIdle = resolve;
     });
 
-    expect(allChanges.map(change => change.progress)).toEqual(
-      Array(allChanges.length).fill(null)
-    );
+    expect(progressValues).toEqual(Array(progressValues.length).fill(null));
   });
 
   it('reports an error when the remote server goes offline', () => {

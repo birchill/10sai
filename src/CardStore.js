@@ -701,7 +701,7 @@ class CardStore {
   //
   // |options| is an optional object argument which may provide the following
   // callback functions:
-  // - onChange
+  // - onProgress
   // - onIdle
   // - onActive
   // - onError
@@ -826,38 +826,6 @@ class CardStore {
           return;
         }
 
-        // Calculate progress. Null means 'indeterminate' which is
-        // what we report for all but the initial sync.
-        if (evt === 'change') {
-          let progress = null;
-          if (
-            typeof localUpdateSeq === 'number' &&
-            typeof remoteUpdateSeq === 'number' &&
-            args[0] &&
-            args[0].change &&
-            args[0].change.last_seq
-          ) {
-            const upper = Math.max(localUpdateSeq, remoteUpdateSeq);
-            const lower = Math.min(localUpdateSeq, remoteUpdateSeq);
-            const current = parseInt(args[0].change.last_seq, 10);
-
-            // In some cases such as when our initial sync is
-            // a bidirectional sync, we can't really produce a reliable
-            // progress value. In future we will fix this by using CouchDB
-            // 2.0's 'pending' value (once PouchDB exposes it) and possibly
-            // do a separate download then upload as part of the initial
-            // sync. For now, we just fall back to using an indeterminate
-            // progress value if we detect such a case.
-            if (current < lower || upper === lower) {
-              localUpdateSeq = undefined;
-              remoteUpdateSeq = undefined;
-            } else {
-              progress = (current - lower) / (upper - lower);
-            }
-          }
-          args[0].progress = progress;
-        }
-
         // We only report progress for the initial sync
         if (evt === 'paused') {
           localUpdateSeq = undefined;
@@ -870,8 +838,59 @@ class CardStore {
       };
     };
 
+    // The change callback is special because we always want to set it
+    // so that we can resolve conflicts. It also is where we do the (slightly
+    // complicated) progress calculation.
+    const changeCallback = info => {
+      // Skip events if they are from an old remote DB
+      if (!this.remoteDb || originalDbName !== this.remoteDb.name) {
+        return;
+      }
+
+      // Resolve any conflicts
+      if (info.direction === 'pull') {
+        this.onSyncChange(info.change.docs);
+      }
+
+      // Call onProgress handlers with the up-to-date progress
+      if (options && typeof options.onProgress === 'function') {
+        // Calculate progress. Null means 'indeterminate' which is
+        // what we report for all but the initial sync.
+        let progress = null;
+        if (
+          typeof localUpdateSeq === 'number' &&
+          typeof remoteUpdateSeq === 'number' &&
+          info &&
+          info.change &&
+          info.change.last_seq
+        ) {
+          const upper = Math.max(localUpdateSeq, remoteUpdateSeq);
+          const lower = Math.min(localUpdateSeq, remoteUpdateSeq);
+          const current = parseInt(info.change.last_seq, 10);
+
+          // In some cases such as when our initial sync is
+          // a bidirectional sync, we can't really produce a reliable
+          // progress value. In future we will fix this by using CouchDB
+          // 2.0's 'pending' value (once PouchDB exposes it) and possibly
+          // do a separate download then upload as part of the initial
+          // sync. For now, we just fall back to using an indeterminate
+          // progress value if we detect such a case.
+          if (current < lower || upper === lower) {
+            localUpdateSeq = undefined;
+            remoteUpdateSeq = undefined;
+          } else {
+            progress = (current - lower) / (upper - lower);
+          }
+        }
+
+        options.onProgress(progress);
+      }
+    };
+
+    // Always register the change callback.
+    this.remoteSync.on('change', changeCallback);
+
     const callbackMap = {
-      change: 'onChange',
       paused: 'onIdle',
       active: 'onActive',
       error: 'onError',
@@ -880,10 +899,18 @@ class CardStore {
     if (options) {
       // eslint-disable-next-line guard-for-in
       for (const evt in callbackMap) {
-        // TODO: This probably needs to call parseCard for the onChange
-        // callback.
+        // If we have any callbacks at all then we need to listen for 'active'
+        // otherwise we won't get the expected number of callbacks it seems.
+        if (
+          typeof options[callbackMap[evt]] !== 'function' &&
+          evt !== 'active'
+        ) {
+          continue;
+        }
         this.remoteSync.on(evt, wrapCallback(evt, options[callbackMap[evt]]));
       }
+    } else {
+      this.remoteSync.on('active', wrapCallback('active', undefined));
     }
 
     // As far as I can tell, this.remoteSync is a then-able that resolves
@@ -891,6 +918,51 @@ class CardStore {
     // that's not going to happen any time soon, so we need to be careful
     // *not* to wait on this.remoteSync here.
     await this.remoteDb;
+  }
+
+  async onSyncChange(docs) {
+    for (const doc of docs) {
+      if (doc._id.startsWith(REVIEW_PREFIX)) {
+        // eslint-disable-next-line no-await-in-loop
+        await this.onSyncReviewChange(doc);
+      }
+    }
+  }
+
+  async onSyncReviewChange(doc) {
+    // If we have a new/updated review doc, make sure we clear out any old
+    // review docs.
+    if (doc.deleted) {
+      return;
+    }
+
+    // Get the latest review
+    const review = await this._getReview();
+    if (!review) {
+      // This shouldn't happen but just in case.
+      return;
+    }
+
+    // Grab all the older reviews
+    const reviews = await this.db.allDocs({
+      startkey: REVIEW_PREFIX,
+      endkey: review._id,
+      inclusive_end: false,
+    });
+    if (!reviews.rows.length) {
+      return;
+    }
+
+    // Delete them all
+    await this.db.bulkDocs(
+      reviews.rows.map(row => ({
+        _id: row.id,
+        _rev: row.value.rev,
+        _deleted: true,
+      }))
+    );
+    // We don't bother looking for errors since we'll do a more thorough job of
+    // cleaning up on the next call to deleteReview.
   }
 
   // Maintenance functions
