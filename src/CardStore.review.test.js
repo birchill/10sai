@@ -166,43 +166,30 @@ describe('CardStore progress reporting', () => {
     expect(result.rows).toHaveLength(0);
   });
 
-  it('deletes older reviews when synchronizing', async () => {
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+  it('resolves conflicts by choosing the furthest review progress', async () => {
+    // Create a new review and get the ID
+    await subject.putReview(typicalReview);
+    const localReview = await subject._getReview();
 
-    // Push two new docs to the remote
-    await testRemote.put({
-      ...typicalReview,
-      completed: 1,
-      _id: 'review-1',
-    });
+    // Create a new review with the same ID on the remote but with a greater
+    // completed value.
     await testRemote.put({
       ...typicalReview,
       completed: 2,
-      _id: 'review-2',
+      _id: localReview._id,
     });
 
-    // Wait for everything to sync back to the remote
+    // Now connect the two and let chaos ensue
+    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
     await waitForIdle();
 
-    // Check that the older doc got deleted
-    const result = await testRemote.allDocs({
-      startkey: 'review',
-      endkey: 'review-\ufff0',
-      include_docs: true,
-    });
-    expect(result.rows).toHaveLength(1);
-    expect(result.rows[0].doc.completed).toBe(2);
+    // Check that the conflict is gone
+    const result = await testRemote.get(localReview._id, { conflicts: true });
+    expect(result._conflicts).toBeUndefined();
+    expect(result.completed).toBe(2);
   });
 
   /*
-  it('resolves conflicts by choosing the furthest review progress', async () => {
-    // -- put a doc -- somehow work out what ID it got (use a separate remote?)
-    // -- put a doc with an identical ID in a remote
-    // -- connect the remote
-    // -- wait for them to sync
-    // -- check that the conflict is gone from the remote
-  });
-
   it('reports changes to review doc', async() => {
   });
 

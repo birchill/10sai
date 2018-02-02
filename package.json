@@ -22,6 +22,7 @@
     "deep-equal": "^1.0.1",
     "draft-js": "^0.10.5",
     "normalize-css": "^2.3.1",
+    "pouch-resolve-conflicts": "jo/pouch-resolve-conflicts#5677508b650118c1",
     "pouchdb": "^6.4.2",
     "pouchdb-collate": "^6.4.2",
     "pouchdb-upsert": "^2.2.0",

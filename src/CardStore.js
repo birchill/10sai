@@ -3,6 +3,7 @@
 import PouchDB from 'pouchdb';
 
 PouchDB.plugin(require('pouchdb-upsert'));
+PouchDB.plugin(require('pouch-resolve-conflicts'));
 
 let prevTimeStamp = 0;
 
@@ -926,43 +927,36 @@ class CardStore {
         // eslint-disable-next-line no-await-in-loop
         await this.onSyncReviewChange(doc);
       }
+
+      // NOTE: resolveConflicts will currently drop attachments on the floor.
+      // Need to be careful once we start using them.
     }
   }
 
   async onSyncReviewChange(doc) {
-    // If we have a new/updated review doc, make sure we clear out any old
-    // review docs.
     if (doc.deleted) {
       return;
     }
 
-    // Get the latest review
-    const review = await this._getReview();
-    if (!review) {
-      // This shouldn't happen but just in case.
+    // We could (and we used to) check for old review docs and delete them but
+    // in the interests of keeping things simple we just wait until the next
+    // call to deleteReview() to delete them.
+    const result = await this.db.get(doc._id, { conflicts: true });
+    if (!result._conflicts) {
       return;
     }
 
-    // Grab all the older reviews
-    const reviews = await this.db.allDocs({
-      startkey: REVIEW_PREFIX,
-      endkey: review._id,
-      inclusive_end: false,
+    const completeness = review => {
+      return (
+        review.completed -
+        review.failedCardsLevel2.length * 2 -
+        review.failedCardsLevel1.length
+      );
+    };
+
+    await this.db.resolveConflicts(result, (a, b) => {
+      return completeness(a) >= completeness(b) ? a : b;
     });
-    if (!reviews.rows.length) {
-      return;
-    }
-
-    // Delete them all
-    await this.db.bulkDocs(
-      reviews.rows.map(row => ({
-        _id: row.id,
-        _rev: row.value.rev,
-        _deleted: true,
-      }))
-    );
-    // We don't bother looking for errors since we'll do a more thorough job of
-    // cleaning up on the next call to deleteReview.
   }
 
   // Maintenance functions
