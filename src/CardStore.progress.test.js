@@ -43,7 +43,7 @@ describe('CardStore progress reporting', () => {
 
   it('returns the progress when reporting added cards', async () => {
     let updateInfo;
-    subject.changes.on('change', info => {
+    subject.changes.on('card', info => {
       updateInfo = info;
     });
 
@@ -157,7 +157,7 @@ describe('CardStore progress reporting', () => {
 
   it('reports changes to the progress', async () => {
     const updates = [];
-    subject.changes.on('change', info => {
+    subject.changes.on('card', info => {
       updates.push(info);
     });
 
@@ -178,7 +178,7 @@ describe('CardStore progress reporting', () => {
 
   it('only reports once when a card and its progress are deleted', async () => {
     const updates = [];
-    subject.changes.on('change', info => {
+    subject.changes.on('card', info => {
       updates.push(info);
     });
 

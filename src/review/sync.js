@@ -48,7 +48,7 @@ function sync(cardStore, store) {
     store.dispatch(reviewActions.queryAvailableCards());
   });
 
-  cardStore.changes.on('change', change => {
+  cardStore.changes.on('card', change => {
     // Update available cards if needed
     if (needAvailableCards) {
       if (delayedCallback) {

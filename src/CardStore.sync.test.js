@@ -166,7 +166,7 @@ describe('CardStore remote sync', () => {
     const expectedCards = [firstCard, secondCard];
 
     subject.changes.on(
-      'change',
+      'card',
       wrapAssertingFunction(info => {
         expect(info.doc).toEqual(expectedCards.shift());
       })
@@ -219,7 +219,7 @@ describe('CardStore remote sync', () => {
     const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
 
     subject.changes.on(
-      'change',
+      'card',
       wrapAssertingFunction(() => {
         expect(false).toBe(true);
       })

@@ -218,7 +218,7 @@ export function* beforeEditScreenChange() {
 }
 
 export function syncEditChanges(cardStore, store) {
-  cardStore.changes.on('change', change => {
+  cardStore.changes.on('card', change => {
     const cardBeingEdited = getActiveRecord(store.getState()).card;
     if (cardBeingEdited && cardBeingEdited._id === change.id) {
       store.dispatch({ type: 'SYNC_EDIT_CARD', card: change.doc });

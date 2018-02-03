@@ -110,7 +110,7 @@ describe('CardStore', () => {
 
   it('reports added cards', async () => {
     let updateInfo;
-    subject.changes.on('change', info => {
+    subject.changes.on('card', info => {
       updateInfo = info;
     });
 
@@ -210,7 +210,7 @@ describe('CardStore', () => {
 
   it('reports deleted cards', async () => {
     let updateInfo;
-    subject.changes.on('change', info => {
+    subject.changes.on('card', info => {
       updateInfo = info;
     });
     const addedCard = await subject.putCard({
@@ -364,7 +364,7 @@ describe('CardStore', () => {
 
   it('reports changes to cards', async () => {
     const updates = [];
-    subject.changes.on('change', info => {
+    subject.changes.on('card', info => {
       updates.push(info);
     });
 

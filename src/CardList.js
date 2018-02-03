@@ -45,7 +45,7 @@ class CardList {
       this.cards = cards;
     });
 
-    this.cardStore.changes.on('change', change => {
+    this.cardStore.changes.on('card', change => {
       const cards = this.cards.slice();
       const [found, index] = findCard(change.id, cards);
       if (found) {

@@ -112,7 +112,7 @@ describe('review:sync', () => {
       expect(store.actions).toEqual([queryAvailableCards()]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
 
-      cardStore.__triggerChange('change', {});
+      cardStore.__triggerChange('card', {});
 
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
@@ -135,7 +135,7 @@ describe('review:sync', () => {
       expect(store.actions).toEqual([queryAvailableCards()]);
 
       // Trigger a delayed update
-      cardStore.__triggerChange('change', {});
+      cardStore.__triggerChange('card', {});
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
       // Then trigger an immediate update
@@ -165,7 +165,7 @@ describe('review:sync', () => {
       expect(store.actions).toEqual([queryAvailableCards()]);
 
       // Trigger a delayed update
-      cardStore.__triggerChange('change', {});
+      cardStore.__triggerChange('card', {});
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
       // Then change screen
@@ -214,7 +214,7 @@ describe('review:sync', () => {
       expect(store.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
 
-      cardStore.__triggerChange('change', {});
+      cardStore.__triggerChange('card', {});
 
       expect(store.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
@@ -228,9 +228,9 @@ describe('review:sync', () => {
       });
       expect(store.actions).toEqual([queryAvailableCards()]);
 
-      cardStore.__triggerChange('change', {});
-      cardStore.__triggerChange('change', {});
-      cardStore.__triggerChange('change', {});
+      cardStore.__triggerChange('card', {});
+      cardStore.__triggerChange('card', {});
+      cardStore.__triggerChange('card', {});
 
       jest.runAllTimers();
       expect(store.actions).toEqual([
@@ -261,7 +261,7 @@ describe('review:sync', () => {
         ...card,
         question: 'Updated question',
       };
-      cardStore.__triggerChange('change', {
+      cardStore.__triggerChange('card', {
         id: 'abc',
         doc: updatedCard,
       });
@@ -289,7 +289,7 @@ describe('review:sync', () => {
         ...card,
         question: 'Updated question',
       };
-      cardStore.__triggerChange('change', {
+      cardStore.__triggerChange('card', {
         id: 'abc',
         doc: updatedCard,
       });
@@ -317,7 +317,7 @@ describe('review:sync', () => {
         ...card,
         question: 'Updated question',
       };
-      cardStore.__triggerChange('change', {
+      cardStore.__triggerChange('card', {
         id: 'abc',
         doc: updatedCard,
       });
@@ -345,7 +345,7 @@ describe('review:sync', () => {
         ...card,
         question: 'Updated question',
       };
-      cardStore.__triggerChange('change', {
+      cardStore.__triggerChange('card', {
         id: 'abc',
         deleted: true,
         doc: {
@@ -375,7 +375,7 @@ describe('review:sync', () => {
         },
       });
 
-      cardStore.__triggerChange('change', {
+      cardStore.__triggerChange('card', {
         id: 'abc',
         doc: { ...card },
       });
@@ -399,7 +399,7 @@ describe('review:sync', () => {
         },
       });
 
-      cardStore.__triggerChange('change', {
+      cardStore.__triggerChange('card', {
         id: 'xyz',
         doc: {
           ...card,
@@ -426,7 +426,7 @@ describe('review:sync', () => {
         },
       });
 
-      cardStore.__triggerChange('change', {
+      cardStore.__triggerChange('card', {
         id: 'xyz',
         deleted: true,
         doc: {

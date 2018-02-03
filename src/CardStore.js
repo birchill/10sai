@@ -1,6 +1,7 @@
 /* eslint-disable no-shadow */
 
 import PouchDB from 'pouchdb';
+import EventEmitter from 'event-emitter';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
@@ -538,8 +539,19 @@ class CardStore {
     await deleteReviews();
   }
 
+  // Topics include:
+  // - card
+  // - review
   get changes() {
-    const eventEmitter = this.db.changes({
+    if (this.changesEmitter) {
+      return this.changesEmitter;
+    }
+
+    // Once subclassable EventTargets are available in all browsers we should
+    // use that instead.
+    this.changesEmitter = EventEmitter();
+
+    const dbChanges = this.db.changes({
       since: 'now',
       live: true,
       include_docs: true,
@@ -573,88 +585,82 @@ class CardStore {
       return false;
     };
 
-    // Wrap callbacks to strip ID prefix
-    const originalOnFn = eventEmitter.on;
-    eventEmitter.on = (eventName, listener) => {
-      if (eventName !== 'change') {
-        console.error("Events other than 'change' are not yet supported");
-        // (Read: I haven't botherered wrapping them yet.)
-        return;
-      }
-      originalOnFn.call(eventEmitter, eventName, async arg => {
-        console.assert(arg.changes && arg.doc, 'Unexpected changes event');
+    dbChanges.on('change', async change => {
+      console.assert(change.changes && change.doc, 'Unexpected changes event');
 
-        if (arg.doc._id.startsWith(CARD_PREFIX)) {
-          const id = stripCardPrefix(arg.id);
-          let progress;
-          if (!arg.deleted) {
-            try {
-              progress = await this.db.get(PROGRESS_PREFIX + id);
-            } catch (e) {
-              if (e.status === 404) {
-                // If we can't find the progress record there are two
-                // possibilities we know about:
-                //
-                // (a) It has been deleted. This happens normally as part of the
-                //     deletion process and we just let |progress| be undefined
-                //     in that case.
-                //
-                // (b) We haven't synced it yet. In that case just we will just
-                //     wait until it syncs and report the change then.
-                if (e.reason !== 'deleted') {
-                  return;
-                }
-              } else {
-                throw e;
-              }
-            }
-          }
-          // We have to check this after the async call above since while
-          // fetching the progress record, it might be reported here.
-          if (alreadyReturnedCard(arg.doc)) {
-            return;
-          }
-          returnedCards[id] = {
-            cardRev: arg.doc._rev,
-            progressRev: progress ? progress._rev : null,
-          };
-          listener({
-            ...arg,
-            id,
-            doc: mergeRecords(arg.doc, progress),
-          });
-        } else if (arg.doc._id.startsWith(PROGRESS_PREFIX)) {
-          // If the progress has been deleted, we'll report the deletion when
-          // the corresponding card is dropped.
-          if (arg.deleted) {
-            return;
-          }
-          const id = stripProgressPrefix(arg.id);
-          let card;
+      if (change.doc._id.startsWith(CARD_PREFIX)) {
+        const id = stripCardPrefix(change.id);
+        let progress;
+        if (!change.deleted) {
           try {
-            card = await this.db.get(CARD_PREFIX + id);
+            progress = await this.db.get(PROGRESS_PREFIX + id);
           } catch (e) {
-            // If the card was deleted, just ignore. We'll report when we get
-            // the corresponding change for the card.
-            if (e.status === 404 && e.reason === 'deleted') {
-              return;
+            if (e.status === 404) {
+              // If we can't find the progress record there are two
+              // possibilities we know about:
+              //
+              // (a) It has been deleted. This happens normally as part of the
+              //     deletion process and we just let |progress| be undefined
+              //     in that case.
+              //
+              // (b) We haven't synced it yet. In that case just we will just
+              //     wait until it syncs and report the change then.
+              if (e.reason !== 'deleted') {
+                return;
+              }
+            } else {
+              throw e;
             }
-            throw e;
           }
-          if (alreadyReturnedCard(arg.doc)) {
+        }
+        // We have to check this after the async call above since while
+        // fetching the progress record, it might be reported here.
+        if (alreadyReturnedCard(change.doc)) {
+          return;
+        }
+        returnedCards[id] = {
+          cardRev: change.doc._rev,
+          progressRev: progress ? progress._rev : null,
+        };
+        this.changesEmitter.emit('card', {
+          ...change,
+          id,
+          doc: mergeRecords(change.doc, progress),
+        });
+      } else if (change.doc._id.startsWith(PROGRESS_PREFIX)) {
+        // If the progress has been deleted, we'll report the deletion when
+        // the corresponding card is dropped.
+        if (change.deleted) {
+          return;
+        }
+        const id = stripProgressPrefix(change.id);
+        let card;
+        try {
+          card = await this.db.get(CARD_PREFIX + id);
+        } catch (e) {
+          // If the card was deleted, just ignore. We'll report when we get
+          // the corresponding change for the card.
+          if (e.status === 404 && e.reason === 'deleted') {
             return;
           }
-          returnedCards[id] = { cardRev: card._rev, progressRev: arg.doc._rev };
-          listener({
-            ...arg,
-            id,
-            doc: mergeRecords(card, arg.doc),
-          });
+          throw e;
         }
-      });
-    };
+        if (alreadyReturnedCard(change.doc)) {
+          return;
+        }
+        returnedCards[id] = {
+          cardRev: card._rev,
+          progressRev: change.doc._rev,
+        };
+        this.changesEmitter.emit('card', {
+          ...change,
+          id,
+          doc: mergeRecords(card, change.doc),
+        });
+      }
+    });
 
-    return eventEmitter;
+    return this.changesEmitter;
   }
 
   async updateOverduenessView() {
