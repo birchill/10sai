@@ -4,6 +4,7 @@
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 import CardStore from './CardStore';
+import { waitForEvents } from '../test/testcommon';
 
 const waitForMs = ms =>
   new Promise(resolve => {
@@ -218,8 +219,37 @@ describe('CardStore review storage', () => {
     });
   });
 
-  /*
-  it('doesn't report new review docs older than current', async() => {
+  it('reports deleted review docs', async () => {
+    await subject.putReview(typicalReview);
+    const changesPromise = waitForNumReviewEvents(subject, 1);
+    await subject.deleteReview();
+    const changes = await changesPromise;
+    expect(changes[0]).toBeNull();
   });
-  */
+
+  it('does not report new review docs older than current', async () => {
+    // Create regular review and wait for it to be reported
+    const changesPromise = waitForNumReviewEvents(subject, 1);
+    await subject.putReview(typicalReview);
+    await changesPromise;
+
+    // Start monitoring for further changes
+    const changes = [];
+    subject.changes.on('review', change => {
+      changes.push(change);
+    });
+
+    // Create remote with a review with earlier ID and wait for them to sync
+    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    await testRemote.put({
+      ...typicalReview,
+      completed: 2,
+      _id: 'review-0',
+    });
+    await waitForIdle();
+
+    // Wait for a few cycles and test that no changes are reported
+    await waitForEvents(5);
+    expect(changes).toHaveLength(0);
+  });
 });

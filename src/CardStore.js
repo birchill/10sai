@@ -658,10 +658,24 @@ class CardStore {
           doc: mergeRecords(card, change.doc),
         });
       } else if (change.doc._id.startsWith(REVIEW_PREFIX)) {
-        const sanitizedReview = change.doc;
-        delete sanitizedReview._id;
-        delete sanitizedReview._rev;
-        this.changesEmitter.emit('review', sanitizedReview);
+        const currentReviewDoc = await this._getReview();
+
+        // If a review doc was deleted, report null but only if it was the most
+        // recent review doc that was deleted.
+        if (change.doc._deleted) {
+          if (!currentReviewDoc || currentReviewDoc._id < change.doc._id) {
+            this.changesEmitter.emit('review', null);
+          }
+          // Only report changes if they are to the current review doc
+        } else if (
+          currentReviewDoc &&
+          change.doc._id === currentReviewDoc._id
+        ) {
+          const reviewDoc = change.doc;
+          delete reviewDoc._id;
+          delete reviewDoc._rev;
+          this.changesEmitter.emit('review', reviewDoc);
+        }
       }
     });
 
