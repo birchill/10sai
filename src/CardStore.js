@@ -657,6 +657,11 @@ class CardStore {
           id,
           doc: mergeRecords(card, change.doc),
         });
+      } else if (change.doc._id.startsWith(REVIEW_PREFIX)) {
+        const sanitizedReview = change.doc;
+        delete sanitizedReview._id;
+        delete sanitizedReview._rev;
+        this.changesEmitter.emit('review', sanitizedReview);
       }
     });
 

@@ -29,6 +29,25 @@ const waitForNumReviewChanges = (db, num) => {
   return promise;
 };
 
+const waitForNumReviewEvents = (store, num) => {
+  const events = [];
+
+  let resolver;
+  const promise = new Promise(resolve => {
+    resolver = resolve;
+  });
+
+  let recordedChanges = 0;
+  store.changes.on('review', change => {
+    events.push(change);
+    if (++recordedChanges === num) {
+      resolver(events);
+    }
+  });
+
+  return promise;
+};
+
 const syncWithWaitableRemote = async (cardStore, remote) => {
   let pauseAction;
   await cardStore.setSyncServer(remote, {
@@ -48,7 +67,7 @@ const syncWithWaitableRemote = async (cardStore, remote) => {
   return waitForIdle;
 };
 
-describe('CardStore progress reporting', () => {
+describe('CardStore review storage', () => {
   let subject;
   let testRemote;
 
@@ -190,10 +209,16 @@ describe('CardStore progress reporting', () => {
     expect(result.completed).toBe(2);
   });
 
-  /*
-  it('reports changes to review doc', async() => {
+  it('reports new review docs', async () => {
+    const changesPromise = waitForNumReviewEvents(subject, 1);
+    await subject.putReview({ ...typicalReview, completed: 7 });
+    const changes = await changesPromise;
+    expect(changes[0]).toMatchObject({
+      completed: 7,
+    });
   });
 
+  /*
   it('doesn't report new review docs older than current', async() => {
   });
   */
