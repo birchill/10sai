@@ -183,9 +183,10 @@ describe('CardStore progress reporting', () => {
     const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
     await waitForIdle();
 
-    // Check that the conflict is gone
+    // Check that the conflict is gone...
     const result = await testRemote.get(localReview._id, { conflicts: true });
     expect(result._conflicts).toBeUndefined();
+    // ... and that we chose the right review
     expect(result.completed).toBe(2);
   });
 
