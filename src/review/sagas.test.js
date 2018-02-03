@@ -14,6 +14,7 @@ import reducer from '../reducer';
 describe('sagas:review updateHeap', () => {
   const cardStore = {
     getCards: () => {},
+    putReview: () => {},
   };
 
   const getCardStoreProvider = (newCards, overdueCards) => {
@@ -176,6 +177,26 @@ describe('sagas:review updateHeap', () => {
       .call([cardStore, 'getCards'], { limit: 1, type: 'new' })
       .not.call.fn([cardStore, 'getCards'])
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
+      .run();
+  });
+
+  it('saves the review state', async () => {
+    const newCards = ['New card 1', 'New card 2'];
+    const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
+    const action = reviewActions.newReview(2, 3);
+
+    return expectSaga(updateHeapSaga, cardStore, action)
+      .provide(getCardStoreProvider(newCards, overdueCards))
+      .withState(reducer(undefined, action))
+      .call([cardStore, 'putReview'], {
+        maxCards: 3,
+        maxNewCards: 2,
+        completed: 0,
+        newCardsCompleted: 0,
+        history: [],
+        failedCardsLevel1: [],
+        failedCardsLevel2: [],
+      })
       .run();
   });
 });

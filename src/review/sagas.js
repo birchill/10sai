@@ -1,15 +1,12 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import * as reviewActions from './actions';
+import { getReviewSummary } from './selectors';
 import ReviewState from './states';
-
-// Selectors
-
-const getReviewInfo = state => (state ? state.review : {});
 
 // Sagas
 
 export function* updateHeap(cardStore, action) {
-  const reviewInfo = yield select(getReviewInfo);
+  const reviewInfo = yield select(state => (state ? state.review : {}));
 
   // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
   // action.
@@ -60,10 +57,11 @@ export function* updateHeap(cardStore, action) {
   }
 
   yield put(reviewActions.reviewLoaded(cards));
+  yield call([cardStore, 'putReview'], yield select(getReviewSummary));
 }
 
 export function* updateProgress(cardStore, action) {
-  const reviewInfo = yield select(getReviewInfo);
+  const reviewInfo = yield select(state => (state ? state.review : {}));
 
   // Fetch the updated card from the state. Normally this is the last card in
   // the history, unless we happen to choose the same card twice which should
@@ -95,6 +93,11 @@ export function* updateProgress(cardStore, action) {
     // For now just pretend it worked:
     yield put(reviewActions.finishUpdateProgress());
   }
+
+  // TODO: Put review doc
+  // (Should we throttle this? Put it to local storage instead? It seems like
+  //  we would waste a bit of bandwidth doing this too often, but then, maybe
+  //  it's the same for updating progress records?)
 }
 
 export function* updateReviewTime(cardStore, action) {

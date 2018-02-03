@@ -66,4 +66,23 @@ export const getReviewCards = state => [
   ),
 ];
 
+export const getReviewInfo = state => (state ? state.review : {});
+
+const extractId = card => card._id;
+const newCardsCompleted = state =>
+  state.review.newCardsInPlay -
+  (state.review.currentCard && state.review.currentCard.reviewed === null
+    ? 1
+    : 0);
+
+export const getReviewSummary = state => ({
+  maxCards: state.review.maxCards,
+  maxNewCards: state.review.maxNewCards,
+  completed: state.review.completed,
+  newCardsCompleted: newCardsCompleted(state),
+  history: state.review.history.map(extractId),
+  failedCardsLevel1: state.review.failedCardsLevel1.map(extractId),
+  failedCardsLevel2: state.review.failedCardsLevel2.map(extractId),
+});
+
 export default getReviewProgress;
