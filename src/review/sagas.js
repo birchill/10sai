@@ -57,7 +57,12 @@ export function* updateHeap(cardStore, action) {
   }
 
   yield put(reviewActions.reviewLoaded(cards));
-  yield call([cardStore, 'putReview'], yield select(getReviewSummary));
+
+  try {
+    yield call([cardStore, 'putReview'], yield select(getReviewSummary));
+  } catch (error) {
+    // Do we really care?
+  }
 }
 
 export function* updateProgress(cardStore, action) {
@@ -94,10 +99,11 @@ export function* updateProgress(cardStore, action) {
     yield put(reviewActions.finishUpdateProgress());
   }
 
-  // TODO: Put review doc
-  // (Should we throttle this? Put it to local storage instead? It seems like
-  //  we would waste a bit of bandwidth doing this too often, but then, maybe
-  //  it's the same for updating progress records?)
+  try {
+    yield call([cardStore, 'putReview'], yield select(getReviewSummary));
+  } catch (error) {
+    // Do we really care?
+  }
 }
 
 export function* updateReviewTime(cardStore, action) {

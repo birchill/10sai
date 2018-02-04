@@ -203,12 +203,17 @@ describe('sagas:review updateHeap', () => {
 
 describe('sagas:review updateProgress', () => {
   const MS_PER_DAY = 1000 * 60 * 60 * 24;
+  const cardStore = {
+    putCard: card => card,
+    putReview: () => {},
+  };
 
   const getCards = (maxNewCards, maxExistingCards, reviewTime) => {
     const cards = new Array(Math.max(maxNewCards, maxExistingCards));
     for (let i = 0; i < cards.length; i++) {
       const newCard = i < maxNewCards;
       cards[i] = {
+        _id: i,
         question: `Question ${i + 1}`,
         answer: `Answer ${i + 1}`,
         progress: {
@@ -216,11 +221,27 @@ describe('sagas:review updateProgress', () => {
           reviewed: newCard ? null : new Date(reviewTime - 3 * MS_PER_DAY),
         },
       };
-      if (!newCard) {
-        cards[i]._id = i;
-      }
     }
     return cards;
+  };
+
+  const reviewLoaded = (cards, seed1, seed2) => {
+    const action = reviewActions.reviewLoaded(cards);
+    action.currentCardSeed = seed1;
+    action.nextCardSeed = seed2;
+    return action;
+  };
+
+  const passCard = seed => {
+    const action = reviewActions.passCard();
+    action.nextCardSeed = seed;
+    return action;
+  };
+
+  const failCard = seed => {
+    const action = reviewActions.failCard();
+    action.nextCardSeed = seed;
+    return action;
   };
 
   const cardInHistory = (card, state) => {
@@ -240,7 +261,6 @@ describe('sagas:review updateProgress', () => {
     const action = reviewActions.passCard();
     state = reducer(state, action);
 
-    const cardStore = { putCard: card => card };
     return expectSaga(updateProgressSaga, cardStore, action)
       .withState(state)
       .call([cardStore, 'putCard'], {
@@ -263,7 +283,6 @@ describe('sagas:review updateProgress', () => {
     const action = reviewActions.failCard();
     state = reducer(state, action);
 
-    const cardStore = { putCard: card => card };
     return expectSaga(updateProgressSaga, cardStore, action)
       .withState(state)
       .call([cardStore, 'putCard'], {
@@ -286,7 +305,6 @@ describe('sagas:review updateProgress', () => {
     expect(state.review.currentCard).toBe(null);
     expect(cardInHistory(cardToUpdate, state)).toBe(true);
 
-    const cardStore = { putCard: card => card };
     return expectSaga(updateProgressSaga, cardStore, action)
       .withState(state)
       .call([cardStore, 'putCard'], {
@@ -318,12 +336,37 @@ describe('sagas:review updateProgress', () => {
     expect(state.review.currentCard).toEqual(cardToUpdate);
     expect(cardInHistory(cardToUpdate, state)).toBe(false);
 
-    const cardStore = { putCard: card => card };
     return expectSaga(updateProgressSaga, cardStore, action)
       .withState(state)
       .call([cardStore, 'putCard'], {
         _id: cardToUpdate._id,
         progress: { level: 0, reviewed: state.review.reviewTime },
+      })
+      .run();
+  });
+
+  it('stores the updated review when the progress changes', async () => {
+    let state = reducer(undefined, reviewActions.newReview(2, 3));
+
+    const cards = getCards(1, 3, state.review.reviewTime);
+    state = reducer(state, reviewLoaded(cards, 0, 0));
+
+    state = reducer(state, passCard(0));
+    state = reducer(state, passCard(0));
+
+    const action = failCard(0);
+    state = reducer(state, action);
+
+    return expectSaga(updateProgressSaga, cardStore, action)
+      .withState(state)
+      .call([cardStore, 'putReview'], {
+        maxCards: 3,
+        maxNewCards: 2,
+        completed: 2,
+        newCardsCompleted: 1,
+        history: [0, 1],
+        failedCardsLevel1: [],
+        failedCardsLevel2: [2],
       })
       .run();
   });
