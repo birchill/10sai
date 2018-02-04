@@ -120,6 +120,11 @@ export function* queryAvailableCards(cardStore) {
   yield put(reviewActions.updateAvailableCards(availableCards));
 }
 
+export function* cancelReview(cardStore) {
+  // TODO: Error handling
+  yield call([cardStore, 'deleteReview']);
+}
+
 function* reviewSagas(cardStore) {
   yield* [
     takeEvery(
@@ -130,6 +135,7 @@ function* reviewSagas(cardStore) {
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, cardStore),
     takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, cardStore),
+    takeLatest(['CANCEL_REVIEW'], cancelReview, cardStore),
   ];
 }
 

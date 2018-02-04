@@ -151,6 +151,30 @@ export default function review(state = initialState, action) {
       return updatedState;
     }
 
+    case 'CANCEL_REVIEW': {
+      if (
+        state.reviewState === ReviewState.IDLE ||
+        state.reviewState === ReviewState.COMPLETE
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        reviewState: ReviewState.IDLE,
+        maxCards: 0,
+        maxNewCards: 0,
+        completed: 0,
+        newCardsInPlay: 0,
+        heap: [],
+        failedCardsLevel1: [],
+        failedCardsLevel2: [],
+        history: [],
+        currentCard: null,
+        nextCard: null,
+      };
+    }
+
     case 'PASS_CARD': {
       if (
         state.reviewState !== ReviewState.ANSWER &&

@@ -39,6 +39,10 @@ export function reviewLoaded(cards) {
   };
 }
 
+export function cancelReview() {
+  return { type: 'CANCEL_REVIEW' };
+}
+
 export function showAnswer() {
   return { type: 'SHOW_ANSWER' };
 }
