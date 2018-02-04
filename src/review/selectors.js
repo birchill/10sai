@@ -71,9 +71,7 @@ export const getReviewInfo = state => (state ? state.review : {});
 const extractId = card => card._id;
 const newCardsCompleted = state =>
   state.review.newCardsInPlay -
-  (state.review.currentCard && state.review.currentCard.reviewed === null
-    ? 1
-    : 0);
+  (state.review.currentCard && !state.review.currentCard.reviewed ? 1 : 0);
 
 export const getReviewSummary = state => ({
   maxCards: state.review.maxCards,

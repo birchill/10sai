@@ -439,6 +439,19 @@ export default function review(state = initialState, action) {
       };
     }
 
+    case 'SYNC_REVIEW': {
+      return {
+        ...state,
+        reviewState: ReviewState.LOADING,
+        completed: action.review.completed,
+        newCardsInPlay: action.review.newCardsCompleted,
+        // We set the current card to null simply to reflect the fact that
+        // newCardsInPlay will not count the current card if it was a new card.
+        currentCard: null,
+        nextCard: null,
+      };
+    }
+
     case 'CANCEL_REVIEW': {
       if (
         state.reviewState === ReviewState.IDLE ||

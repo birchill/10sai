@@ -4,6 +4,7 @@
 import subject from './reducer';
 import ReviewState from './states';
 import * as actions from './actions';
+import { getReviewSummary } from './selectors';
 import { generateCards } from '../../test/testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -596,5 +597,22 @@ describe('reducer:review', () => {
 
     const resetState = subject(undefined, { type: 'none' });
     expect(updatedState).toEqual(resetState);
+  });
+
+  it('should integrate changes to the review state on SYNC_REVIEW', () => {
+    const [initialState, cards] = newReview(1, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+
+    const reviewSummary = getReviewSummary({ review: updatedState });
+    reviewSummary.completed = 1;
+    reviewSummary.newCardsCompleted = 1;
+    reviewSummary.heap = [cards[0]._id];
+    updatedState = subject(updatedState, actions.syncReview(reviewSummary));
+
+    expect(updatedState).toMatchObject({
+      reviewState: ReviewState.LOADING,
+      completed: 1,
+      newCardsInPlay: 1,
+    });
   });
 });
