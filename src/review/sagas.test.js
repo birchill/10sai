@@ -206,6 +206,7 @@ describe('sagas:review updateProgress', () => {
   const cardStore = {
     putCard: card => card,
     putReview: () => {},
+    deleteReview: () => {},
   };
 
   const getCards = (maxNewCards, maxExistingCards, reviewTime) => {
@@ -368,6 +369,21 @@ describe('sagas:review updateProgress', () => {
         failedCardsLevel1: [],
         failedCardsLevel2: [2],
       })
+      .run();
+  });
+
+  it('deletes the review when the review is finished', async () => {
+    let state = reducer(undefined, reviewActions.newReview(1, 1));
+
+    const cards = getCards(1, 1, state.review.reviewTime);
+    state = reducer(state, reviewLoaded(cards, 0, 0));
+
+    const action = passCard(0);
+    state = reducer(state, action);
+
+    return expectSaga(updateProgressSaga, cardStore, action)
+      .withState(state)
+      .call([cardStore, 'deleteReview'])
       .run();
   });
 });

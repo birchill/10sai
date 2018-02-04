@@ -100,7 +100,11 @@ export function* updateProgress(cardStore, action) {
   }
 
   try {
-    yield call([cardStore, 'putReview'], yield select(getReviewSummary));
+    if (reviewInfo.reviewState === ReviewState.COMPLETE) {
+      yield call([cardStore, 'deleteReview']);
+    } else {
+      yield call([cardStore, 'putReview'], yield select(getReviewSummary));
+    }
   } catch (error) {
     // Do we really care?
   }
