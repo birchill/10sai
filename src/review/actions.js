@@ -39,10 +39,6 @@ export function reviewLoaded(cards) {
   };
 }
 
-export function cancelReview() {
-  return { type: 'CANCEL_REVIEW' };
-}
-
 export function showAnswer() {
   return { type: 'SHOW_ANSWER' };
 }
@@ -95,6 +91,17 @@ export function deleteReviewCard(id) {
     id,
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
+}
+
+export function syncReview(review) {
+  return {
+    type: 'SYNC_REVIEW',
+    review,
+  };
+}
+
+export function cancelReview() {
+  return { type: 'CANCEL_REVIEW' };
 }
 
 // TODO: failUpdateProgress

@@ -158,16 +158,6 @@ describe('reducer:review', () => {
     expect(updatedState.reviewState).toBe(ReviewState.QUESTION);
   });
 
-  it('should reset the review state on CANCEL_REVIEW', () => {
-    const [initialState, cards] = newReview(1, 3);
-    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
-
-    updatedState = subject(updatedState, actions.cancelReview());
-
-    const resetState = subject(undefined, { type: 'none' });
-    expect(updatedState).toEqual(resetState);
-  });
-
   it('should update the review state on SHOW_ANSWER', () => {
     const [initialState, cards] = newReview(1, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
@@ -596,5 +586,15 @@ describe('reducer:review', () => {
       actions.deleteReviewCard('random-id')
     );
     expect(stateAfterUpdate).toBe(stateBeforeUpdate);
+  });
+
+  it('should reset the review state on CANCEL_REVIEW', () => {
+    const [initialState, cards] = newReview(1, 3);
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+
+    updatedState = subject(updatedState, actions.cancelReview());
+
+    const resetState = subject(undefined, { type: 'none' });
+    expect(updatedState).toEqual(resetState);
   });
 });

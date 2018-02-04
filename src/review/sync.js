@@ -1,12 +1,14 @@
 import deepEqual from 'deep-equal';
 import {
   getAvailableCards,
-  getNeedAvailableCards,
   getLoadingAvailableCards,
-  getSavingProgress,
+  getNeedAvailableCards,
   getReviewCards,
+  getReviewSummary,
+  getSavingProgress,
 } from './selectors';
 import * as reviewActions from './actions';
+import ReviewState from './states';
 
 // In some circumstances we delay querying available cards. We do this so that
 // changes that occur in rapid succession are batched, but also because when
@@ -87,6 +89,33 @@ function sync(cardStore, store) {
     }
 
     store.dispatch(reviewActions.updateReviewCard(change.doc));
+  });
+
+  // Synchronize changes to review document
+  cardStore.changes.on('review', review => {
+    const currentState = getReviewSummary(store.getState());
+
+    // Review document was deleted
+    if (!review) {
+      if (
+        currentState.reviewState !== ReviewState.IDLE &&
+        currentState.reviewState !== ReviewState.COMPLETE
+      ) {
+        store.dispatch(reviewActions.cancelReview());
+      }
+      return;
+    }
+
+    if (!deepEqual(currentState, review)) {
+      store.dispatch(reviewActions.syncReview(review));
+    }
+  });
+
+  // Do initial sync
+  cardStore.getReview().then(review => {
+    if (review) {
+      store.dispatch(reviewActions.syncReview(review));
+    }
   });
 }
 

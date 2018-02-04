@@ -3,6 +3,8 @@
 import subject from './sync';
 import { queryAvailableCards, updateReviewCard } from './actions';
 import reducer from './reducer';
+import { getReviewSummary } from './selectors';
+import ReviewState from './states';
 
 jest.useFakeTimers();
 
@@ -28,6 +30,11 @@ class MockCardStore {
     for (const cb of this.cbs[type]) {
       cb(change);
     }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async getReview() {
+    return null;
   }
 }
 
@@ -438,6 +445,66 @@ describe('review:sync', () => {
 
       expect(store.actions).not.toContainEqual(
         expect.objectContaining({ type: 'DELETE_REVIEW_CARD', id: 'xyz' })
+      );
+    });
+  });
+
+  describe('review state', () => {
+    it('triggers a sync when the review has changed', () => {
+      subject(cardStore, store);
+
+      store.__update({
+        screen: 'review',
+        review: initialState,
+      });
+
+      const review = {
+        maxCards: 3,
+        maxNewCards: 2,
+        completed: 1,
+        newCardsCompleted: 0,
+        history: ['abc', 'def'],
+        failedCardsLevel1: ['def'],
+        failedCardsLevel2: [],
+      };
+
+      cardStore.__triggerChange('review', review);
+      expect(store.actions).toContainEqual(
+        expect.objectContaining({ type: 'SYNC_REVIEW', review })
+      );
+    });
+
+    it('does NOT trigger a sync when nothing has changed', () => {
+      subject(cardStore, store);
+
+      store.__update({
+        screen: 'review',
+        review: initialState,
+      });
+      const reviewSummary = getReviewSummary({
+        review: initialState,
+      });
+
+      cardStore.__triggerChange('review', reviewSummary);
+      expect(store.actions).not.toContainEqual(
+        expect.objectContaining({ type: 'SYNC_REVIEW', review: reviewSummary })
+      );
+    });
+
+    it('cancels the review when the review is deleted', () => {
+      subject(cardStore, store);
+      store.__update({
+        screen: 'review',
+        review: {
+          ...initialState,
+          reviewState: ReviewState.QUESTION,
+        },
+      });
+
+      cardStore.__triggerChange('review', null);
+
+      expect(store.actions).toContainEqual(
+        expect.objectContaining({ type: 'CANCEL_REVIEW' })
       );
     });
   });
