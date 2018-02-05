@@ -38,6 +38,17 @@ const parseProgress = progress => {
   return result;
 };
 
+const parseReview = review => {
+  const result = { ...review };
+  if (result.reviewTime) {
+    result.reviewTime = new Date(result.reviewTime);
+  }
+  delete result._id;
+  delete result._rev;
+
+  return result;
+};
+
 const mergeRecords = (card, progress) => {
   const result = parseCard(card);
   if (progress) {
@@ -497,12 +508,7 @@ class CardStore {
 
   async getReview() {
     const review = await this._getReview();
-    if (review) {
-      delete review._id;
-      delete review._rev;
-    }
-
-    return review;
+    return review ? parseReview(review) : null;
   }
 
   async _getReview() {
@@ -536,8 +542,11 @@ class CardStore {
       reviewId = existingReview._id;
     }
 
+    const reviewToPut = { ...review };
+    reviewToPut.reviewTime = reviewToPut.reviewTime.getTime();
+
     // Copy passed-in review object so upsert doesn't mutate it
-    await this.db.upsert(reviewId, () => ({ ...review }));
+    await this.db.upsert(reviewId, () => reviewToPut);
   }
 
   async deleteReview() {
@@ -695,10 +704,7 @@ class CardStore {
           currentReviewDoc &&
           change.doc._id === currentReviewDoc._id
         ) {
-          const reviewDoc = change.doc;
-          delete reviewDoc._id;
-          delete reviewDoc._rev;
-          this.changesEmitter.emit('review', reviewDoc);
+          this.changesEmitter.emit('review', parseReview(change.doc));
         }
       }
     });

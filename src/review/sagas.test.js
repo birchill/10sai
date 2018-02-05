@@ -187,11 +187,13 @@ describe('sagas:review updateHeap', () => {
     const newCards = ['New card 1', 'New card 2'];
     const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
     const action = reviewActions.newReview(2, 3);
+    const initialState = reducer(undefined, action);
 
     return expectSaga(updateHeapSaga, cardStore, action)
       .provide(getCardStoreProvider(newCards, overdueCards))
-      .withState(reducer(undefined, action))
+      .withState(initialState)
       .call([cardStore, 'putReview'], {
+        reviewTime: initialState.review.reviewTime,
         maxCards: 3,
         maxNewCards: 2,
         completed: 0,
@@ -363,6 +365,7 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, cardStore, action)
       .withState(state)
       .call([cardStore, 'putReview'], {
+        reviewTime: state.review.reviewTime,
         maxCards: 3,
         maxNewCards: 2,
         completed: 2,

@@ -158,12 +158,13 @@ export function* syncReview(cardStore, action) {
   );
 
   // Update review time if necessary (and before we query for overdue cards)
-  /*
-  XXX Need to fix this
-  if (action.review.reviewTime.getTime() !== cardStore.reviewTime.getTime()) {
+  if (
+    action.review.reviewTime &&
+    action.review.reviewTime instanceof Date &&
+    action.review.reviewTime.getTime() !== cardStore.reviewTime.getTime()
+  ) {
     yield call([cardStore, 'setReviewTime'], action.review.reviewTime);
   }
-  */
 
   // Fetch and update reviewInfo so that getCardsForHeap knows how many slots it
   // needs to fill.

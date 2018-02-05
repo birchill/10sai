@@ -80,6 +80,7 @@ describe('CardStore review storage', () => {
     history: ['abc', 'def'],
     failedCardsLevel1: ['def'],
     failedCardsLevel2: [],
+    reviewTime: new Date(),
   };
 
   beforeEach(() => {
