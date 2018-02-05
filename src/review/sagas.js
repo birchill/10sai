@@ -3,7 +3,21 @@ import * as reviewActions from './actions';
 import { getReviewSummary } from './selectors';
 import ReviewState from './states';
 
-// Sagas
+// Which cards to use when we update the heap.
+//
+// When we're updating in the middle of a review, we don't want to fetch cards
+// that are already in one of our failed lists. However, we haven't yet
+// implemented the logic to fetch a fixed number of cards but excluding certain
+// IDs. We should, but as a kind of hack for now, we just pass a flag to the
+// CardStore to tell it not to return any cards whose level is zero.
+//
+// This mostly works but it won't work if we don't address all failed cards in
+// a review (e.g. we cancel a review while there are still failed cards) and
+// then we refresh a review.
+const CardsToSelect = {
+  IncludeFailed: Symbol('IncludeFailed'),
+  SkipFailed: Symbol('SkipFailed'),
+};
 
 export function* updateHeap(cardStore, action) {
   const reviewInfo = yield select(state => (state ? state.review : {}));
@@ -14,6 +28,21 @@ export function* updateHeap(cardStore, action) {
     return;
   }
 
+  const cardsToSelect =
+    action.type === 'SET_REVIEW_LIMIT' || action.type === 'SET_REVIEW_TIME'
+      ? CardsToSelect.SkipFailed
+      : CardsToSelect.IncludeFailed;
+  const cards = yield* getCardsForHeap(cardStore, reviewInfo, cardsToSelect);
+  yield put(reviewActions.reviewLoaded(cards));
+
+  try {
+    yield call([cardStore, 'putReview'], yield select(getReviewSummary));
+  } catch (error) {
+    // Do we really care?
+  }
+}
+
+function* getCardsForHeap(cardStore, reviewInfo, cardsToSelect) {
   let freeSlots = Math.max(
     0,
     reviewInfo.maxCards -
@@ -45,24 +74,15 @@ export function* updateHeap(cardStore, action) {
   // Now fill up the overdue slots
   if (freeSlots) {
     const options = { type: 'overdue', limit: freeSlots };
-    // If we are updating the heap mid-review then avoid getting cards that
-    // are already in our failed heaps.
-    if (
-      action.type === 'SET_REVIEW_LIMIT' ||
-      action.type === 'SET_REVIEW_TIME'
-    ) {
+    // If we are updating the heap mid-review then avoid getting failed cards
+    // since they might already be in our failed heaps.
+    if (cardsToSelect === CardsToSelect.SkipFailed) {
       options.skipFailedCards = true;
     }
     cards.push(...(yield call([cardStore, 'getCards'], options)));
   }
 
-  yield put(reviewActions.reviewLoaded(cards));
-
-  try {
-    yield call([cardStore, 'putReview'], yield select(getReviewSummary));
-  } catch (error) {
-    // Do we really care?
-  }
+  return cards;
 }
 
 export function* updateProgress(cardStore, action) {
@@ -120,6 +140,16 @@ export function* queryAvailableCards(cardStore) {
   yield put(reviewActions.updateAvailableCards(availableCards));
 }
 
+export function* syncReview(/* cardStore */) {
+  // Load cards from history, failed cards etc.
+  //   -- need bulk card getter
+  //   -- how to handle failure here? Just filter out failed cards?
+  // Fill in heap and trigger reviewLoaded
+  //   -- need to factor out useful parts of updateHeap
+  // Trigger reviewLoaded
+  // Call setReviewTime on store if the review time has changed
+}
+
 export function* cancelReview(cardStore) {
   // TODO: Error handling
   yield call([cardStore, 'deleteReview']);
@@ -135,6 +165,7 @@ function* reviewSagas(cardStore) {
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, cardStore),
     takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, cardStore),
+    takeLatest(['SYNC_REVIEW'], syncReview, cardStore),
     takeLatest(['CANCEL_REVIEW'], cancelReview, cardStore),
   ];
 }
