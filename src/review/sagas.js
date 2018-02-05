@@ -140,13 +140,52 @@ export function* queryAvailableCards(cardStore) {
   yield put(reviewActions.updateAvailableCards(availableCards));
 }
 
-export function* syncReview(/* cardStore */) {
-  // Load cards from history, failed cards etc.
-  //   -- need bulk card getter
-  //   -- how to handle failure here? Just filter out failed cards?
-  // Fill in heap
-  // Trigger reviewLoaded
-  // Call setReviewTime on store if the review time has changed
+export function* syncReview(cardStore, action) {
+  // Load cards from history
+  const history = yield call(
+    [cardStore, 'getCardsById'],
+    action.review.history
+  );
+  // We could do this by looking into historyCards but this action is so rare
+  // it's not worth optimizing.
+  const failedCardsLevel1 = yield call(
+    [cardStore, 'getCardsById'],
+    action.review.failedCardsLevel1
+  );
+  const failedCardsLevel2 = yield call(
+    [cardStore, 'getCardsById'],
+    action.review.failedCardsLevel2
+  );
+
+  // Update review time if necessary (and before we query for overdue cards)
+  /*
+  XXX Need to fix this
+  if (action.review.reviewTime.getTime() !== cardStore.reviewTime.getTime()) {
+    yield call([cardStore, 'setReviewTime'], action.review.reviewTime);
+  }
+  */
+
+  // Fetch and update reviewInfo so that getCardsForHeap knows how many slots it
+  // needs to fill.
+  const reviewInfo = yield select(state => (state ? state.review : {}));
+  reviewInfo.history = history;
+  reviewInfo.failedCardsLevel1 = failedCardsLevel1;
+  reviewInfo.failedCardsLevel2 = failedCardsLevel2;
+
+  const heap = yield* getCardsForHeap(
+    cardStore,
+    reviewInfo,
+    CardsToSelect.SkipFailed
+  );
+
+  yield put(
+    reviewActions.reviewLoaded(
+      heap,
+      history,
+      failedCardsLevel1,
+      failedCardsLevel2
+    )
+  );
 }
 
 export function* cancelReview(cardStore) {

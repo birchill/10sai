@@ -5,11 +5,14 @@ import { expectSaga } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
 
 import {
+  syncReview as syncReviewSaga,
   updateHeap as updateHeapSaga,
   updateProgress as updateProgressSaga,
 } from './sagas';
 import * as reviewActions from './actions';
 import reducer from '../reducer';
+
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 describe('sagas:review updateHeap', () => {
   const cardStore = {
@@ -202,7 +205,6 @@ describe('sagas:review updateHeap', () => {
 });
 
 describe('sagas:review updateProgress', () => {
-  const MS_PER_DAY = 1000 * 60 * 60 * 24;
   const cardStore = {
     putCard: card => card,
     putReview: () => {},
@@ -384,6 +386,115 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, cardStore, action)
       .withState(state)
       .call([cardStore, 'deleteReview'])
+      .run();
+  });
+});
+
+describe('sagas:review syncReview', () => {
+  const cardStore = {
+    reviewTime: new Date(),
+    getCards: () => {},
+    getCardsById: () => {},
+  };
+
+  const getCardStoreProvider = cards => {
+    return {
+      call(effect, next) {
+        if (effect.fn === cardStore.getCardsById) {
+          const ids = effect.args[0];
+          const result = [];
+          for (const id of ids) {
+            const card = cards.find(card => card._id === id);
+            if (card) {
+              result.push(card);
+            }
+          }
+          return result;
+        }
+
+        if (effect.fn === cardStore.getCards) {
+          expect(effect.args.length).toBeGreaterThanOrEqual(1);
+          expect(effect.args[0].limit).toBeDefined();
+          expect(typeof effect.args[0].limit).toBe('number');
+
+          const { limit, type } = effect.args[0];
+
+          const result = [];
+          for (let i = 0; i < limit; i++) {
+            if (type === 'new') {
+              result.push({
+                _id: `new-${i}`,
+                question: `New question ${i + 1}`,
+                answer: `New answer ${i + 1}`,
+              });
+            } else {
+              result.push({
+                _id: i,
+                question: `Question ${i + 1}`,
+                answer: `Answer ${i + 1}`,
+              });
+            }
+          }
+          return result;
+        }
+
+        return next();
+      },
+    };
+  };
+
+  it('fills in the cards when the review is synced', async () => {
+    let state = reducer(undefined, { type: 'none' });
+
+    const cards = [
+      { _id: 'a', question: 'Question A', answer: 'Answer A' },
+      { _id: 'b', question: 'Question B', answer: 'Answer B' },
+      { _id: 'c', question: 'Question C', answer: 'Answer C' },
+      { _id: 'd', question: 'Question D', answer: 'Answer D' },
+    ];
+
+    const action = reviewActions.syncReview({
+      maxCards: 6,
+      maxNewCards: 2,
+      completed: 2,
+      newCardsCompleted: 1,
+      history: ['a', 'c'],
+      failedCardsLevel1: ['b'],
+      failedCardsLevel2: ['d'],
+      reviewTime: cardStore.reviewTime,
+    });
+    state = reducer(state, action);
+
+    return expectSaga(syncReviewSaga, cardStore, action)
+      .provide(getCardStoreProvider(cards))
+      .withState(state)
+      .put.like({
+        action: {
+          type: 'REVIEW_LOADED',
+          cards: [
+            {
+              _id: 'new-0',
+              question: 'New question 1',
+              answer: 'New answer 1',
+            },
+            {
+              _id: 0,
+              question: 'Question 1',
+              answer: 'Answer 1',
+            },
+          ],
+          history: [
+            { _id: 'a', question: 'Question A', answer: 'Answer A' },
+            { _id: 'c', question: 'Question C', answer: 'Answer C' },
+          ],
+          failedCardsLevel1: [
+            { _id: 'b', question: 'Question B', answer: 'Answer B' },
+          ],
+          failedCardsLevel2: [
+            { _id: 'd', question: 'Question D', answer: 'Answer D' },
+          ],
+        },
+      })
       .run();
   });
 });

@@ -76,6 +76,7 @@ const newCardsCompleted = state =>
     : 0);
 
 export const getReviewSummary = state => ({
+  reviewTime: state.review.reviewTime,
   maxCards: state.review.maxCards,
   maxNewCards: state.review.maxNewCards,
   completed: state.review.completed,

@@ -119,6 +119,17 @@ export default function review(state = initialState, action) {
         heap: action.cards,
       };
 
+      // Fill in extra fields (only set when doing a sync)
+      for (const field of [
+        'history',
+        'failedCardsLevel1',
+        'failedCardsLevel',
+      ]) {
+        if (typeof action[field] !== 'undefined') {
+          updatedState[field] = action[field];
+        }
+      }
+
       // Update the next card
       updatedState = updateNextCard(
         updatedState,
@@ -443,6 +454,8 @@ export default function review(state = initialState, action) {
       return {
         ...state,
         reviewState: ReviewState.LOADING,
+        maxCards: action.review.maxCards,
+        maxNewCards: action.review.maxNewCards,
         completed: action.review.completed,
         newCardsInPlay: action.review.newCardsCompleted,
         // We set the current card to null simply to reflect the fact that

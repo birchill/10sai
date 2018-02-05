@@ -24,10 +24,19 @@ export function setReviewTime(reviewTime) {
 // How much to weight seeds towards zero.
 const WEIGHT_FACTOR = 1.4;
 
-export function reviewLoaded(cards) {
+export function reviewLoaded(
+  cards,
+  history,
+  failedCardsLevel1,
+  failedCardsLevel2
+) {
   return {
     type: 'REVIEW_LOADED',
     cards,
+    history,
+    failedCardsLevel1,
+    failedCardsLevel2,
+
     // The way we avoid caring about if these two overlap is that we assign the
     // current card and then remove it from the corresponding list. That way
     // nextCard is guaranteed to be different. This also helps with the case
