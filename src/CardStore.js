@@ -25,11 +25,18 @@ const parseCard = card => ({
   // speculatively parsing them would be a waste.
 });
 
-const parseProgress = progress => ({
-  ...progress,
-  _id: stripProgressPrefix(progress._id),
-  reviewed: progress.reviewed ? new Date(progress.reviewed) : null,
-});
+const parseProgress = progress => {
+  const result = {
+    ...progress,
+    reviewed: progress.reviewed ? new Date(progress.reviewed) : null,
+  };
+  // We make the _id optional so we can re-use this when parsing the progress
+  // fields of views.
+  if (result._id) {
+    result._id = stripProgressPrefix(progress._id);
+  }
+  return result;
+};
 
 const mergeRecords = (card, progress) => {
   const result = parseCard(card);
@@ -48,8 +55,10 @@ const cardMapFunction = `function(doc) {
 
     emit(doc._id, {
       _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
-      level: doc.level,
-      reviewed: doc.reviewed,
+      progress: {
+        level: doc.level,
+        reviewed: doc.reviewed,
+      },
     });
   }`;
 
@@ -63,8 +72,10 @@ const newCardMapFunction = `function(doc) {
 
     emit(doc._id, {
       _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
-      level: doc.level,
-      reviewed: doc.reviewed,
+      progress: {
+        level: doc.level,
+        reviewed: doc.reviewed,
+      },
     });
   }`;
 
@@ -93,8 +104,10 @@ const getOverduenessFunction = reviewTime =>
       // Unfortunately 'Infinity' doesn't seem to work here
       emit(Number.MAX_VALUE, {
         _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
-        level: 0,
-        reviewed: doc.reviewed,
+        progress: {
+          level: 0,
+          reviewed: doc.reviewed,
+        },
       });
       return;
     }
@@ -106,8 +119,10 @@ const getOverduenessFunction = reviewTime =>
     const overdueValue = linearComponent + expComponent;
     emit(overdueValue, {
       _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
-      level: doc.level,
-      reviewed: doc.reviewed,
+      progress: {
+        level: doc.level,
+        reviewed: doc.reviewed,
+      }
     });
   }`;
 
@@ -150,45 +165,39 @@ class CardStore {
   }
 
   async getCards(options) {
-    return this.initDone
-      .then(() => {
-        const queryOptions = {
-          include_docs: true,
-          descending: true,
-        };
-        if (options && typeof options.limit === 'number') {
-          queryOptions.limit = options.limit;
-        }
+    await this.initDone;
 
-        let view = 'cards';
-        const type = options ? options.type : '';
-        if (type === 'new') {
-          view = 'new_cards';
-        } else if (type === 'overdue') {
-          view = 'overdueness';
-          queryOptions.endkey = 0;
-          if (options && options.skipFailedCards) {
-            // This really should be Number.MAX_VALUE - .0001 or something like
-            // that but that doesn't seem to work and I haven't debugged far
-            // enough into PouchDB to find out why.
-            //
-            // (Really getOverduenessFunction should use Infinity and this
-            // should use Number.MAX_VALUE but that too doesn't work.)
-            queryOptions.startkey = Number.MAX_SAFE_INTEGER;
-          }
-        }
+    const queryOptions = {
+      include_docs: true,
+      descending: true,
+    };
+    if (options && typeof options.limit === 'number') {
+      queryOptions.limit = options.limit;
+    }
 
-        return this.db.query(view, queryOptions);
-      })
-      .then(result =>
-        result.rows.filter(row => row.doc).map(row => ({
-          ...parseCard(row.doc),
-          progress: {
-            level: row.value.level,
-            reviewed: row.value.reviewed ? new Date(row.value.reviewed) : null,
-          },
-        }))
-      );
+    let view = 'cards';
+    const type = options ? options.type : '';
+    if (type === 'new') {
+      view = 'new_cards';
+    } else if (type === 'overdue') {
+      view = 'overdueness';
+      queryOptions.endkey = 0;
+      if (options && options.skipFailedCards) {
+        // This really should be Number.MAX_VALUE - .0001 or something like
+        // that but that doesn't seem to work and I haven't debugged far
+        // enough into PouchDB to find out why.
+        //
+        // (Really getOverduenessFunction should use Infinity and this
+        // should use Number.MAX_VALUE but that too doesn't work.)
+        queryOptions.startkey = Number.MAX_SAFE_INTEGER;
+      }
+    }
+
+    const result = await this.db.query(view, queryOptions);
+    return result.rows.filter(row => row.doc).map(row => ({
+      ...parseCard(row.doc),
+      progress: parseProgress(row.value.progress),
+    }));
   }
 
   async getCardsById(ids) {
@@ -200,13 +209,9 @@ class CardStore {
     };
     const result = await this.db.query('cards', options);
 
-    // XXX Filter out common code here
     return result.rows.filter(row => row.doc).map(row => ({
       ...parseCard(row.doc),
-      progress: {
-        level: row.value.level,
-        reviewed: row.value.reviewed ? new Date(row.value.reviewed) : null,
-      },
+      progress: parseProgress(row.value.progress),
     }));
   }
 
