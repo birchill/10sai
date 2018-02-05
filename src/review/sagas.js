@@ -144,8 +144,7 @@ export function* syncReview(/* cardStore */) {
   // Load cards from history, failed cards etc.
   //   -- need bulk card getter
   //   -- how to handle failure here? Just filter out failed cards?
-  // Fill in heap and trigger reviewLoaded
-  //   -- need to factor out useful parts of updateHeap
+  // Fill in heap
   // Trigger reviewLoaded
   // Call setReviewTime on store if the review time has changed
 }

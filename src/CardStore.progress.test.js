@@ -41,6 +41,26 @@ describe('CardStore progress reporting', () => {
     });
   });
 
+  it('returns the progress when getting cards by id', async () => {
+    const card1 = await subject.putCard({
+      question: 'Question 1',
+      answer: 'Answer 1',
+    });
+    const card2 = await subject.putCard({
+      question: 'Question 2',
+      answer: 'Answer 2',
+    });
+    const cards = await subject.getCards([card1._id, card2._id]);
+    expect(cards[0].progress).toMatchObject({
+      level: 0,
+      reviewed: null,
+    });
+    expect(cards[1].progress).toMatchObject({
+      level: 0,
+      reviewed: null,
+    });
+  });
+
   it('returns the progress when reporting added cards', async () => {
     let updateInfo;
     subject.changes.on('card', info => {
