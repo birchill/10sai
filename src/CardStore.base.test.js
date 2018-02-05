@@ -37,6 +37,29 @@ describe('CardStore', () => {
     expect(card.answer).toBe('Answer');
   });
 
+  it('returns cards by id', async () => {
+    const card1 = await subject.putCard({
+      question: 'Question 1',
+      answer: 'Answer 1',
+    });
+    const card2 = await subject.putCard({
+      question: 'Question 2',
+      answer: 'Answer 2',
+    });
+    const card3 = await subject.putCard({
+      question: 'Question 3',
+      answer: 'Answer 3',
+    });
+    const cards = await subject.getCardsById([card1._id, card3._id, card2._id]);
+    expect(cards.map(card => card._id)).toEqual([
+      card1._id,
+      card3._id,
+      card2._id,
+    ]);
+    // Spot check card contents
+    expect(cards[1].answer).toBe('Answer 3');
+  });
+
   it('does not return non-existent cards', async () => {
     // TODO: We should be able to write this as:
     //
@@ -57,6 +80,20 @@ describe('CardStore', () => {
       expect(err.message).toBe('missing');
       expect(err.reason).toBe('missing');
     }
+  });
+
+  it('does not return non-existent cards when fetching by id', async () => {
+    const existingCard = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+    });
+    const cards = await subject.getCardsById([
+      'batman',
+      existingCard._id,
+      'doily',
+    ]);
+    expect(cards).toHaveLength(1);
+    expect(cards.map(card => card._id)).toEqual([existingCard._id]);
   });
 
   it('generates unique ascending IDs', () => {
@@ -90,6 +127,16 @@ describe('CardStore', () => {
     await subject.putCard({ question: 'Q2', answer: 'A2' });
 
     const cards = await subject.getCards();
+    for (const card of cards) {
+      expect(card._id.substr(0, 5)).not.toBe('card-');
+    }
+  });
+
+  it('does not return the prefix when cards by id', async () => {
+    const card1 = await subject.putCard({ question: 'Q1', answer: 'A1' });
+    const card2 = await subject.putCard({ question: 'Q2', answer: 'A2' });
+
+    const cards = await subject.getCardsById([card1._id, card2._id]);
     for (const card of cards) {
       expect(card._id.substr(0, 5)).not.toBe('card-');
     }
@@ -158,6 +205,27 @@ describe('CardStore', () => {
       expect(err.message).toBe('missing');
       expect(err.reason).toBe('deleted');
     }
+  });
+
+  it('does not return deleted cards when fetching by id', async () => {
+    const deletedCard = await subject.putCard({
+      question: 'Question (deleted)',
+      answer: 'Answer (deleted)',
+    });
+    await subject.deleteCard(deletedCard);
+
+    const existingCard = await subject.putCard({
+      question: 'Question (existing)',
+      answer: 'Answer (existing)',
+    });
+
+    const cards = await subject.getCardsById([
+      deletedCard._id,
+      existingCard._id,
+    ]);
+
+    expect(cards).toHaveLength(1);
+    expect(cards[0]._id).toBe(existingCard._id);
   });
 
   it('deletes the specified card', async () => {

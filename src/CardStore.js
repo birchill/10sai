@@ -191,6 +191,25 @@ class CardStore {
       );
   }
 
+  async getCardsById(ids) {
+    await this.initDone;
+
+    const options = {
+      keys: ids.map(id => PROGRESS_PREFIX + id),
+      include_docs: true,
+    };
+    const result = await this.db.query('cards', options);
+
+    // XXX Filter out common code here
+    return result.rows.filter(row => row.doc).map(row => ({
+      ...parseCard(row.doc),
+      progress: {
+        level: row.value.level,
+        reviewed: row.value.reviewed ? new Date(row.value.reviewed) : null,
+      },
+    }));
+  }
+
   async getAvailableCards() {
     await this.initDone;
 
