@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware, compose } from 'redux';
 import { Provider } from 'react-redux';
 import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
@@ -33,9 +33,11 @@ if (process.env.NODE_ENV === 'development') {
   // eslint-disable-next-line global-require, import/no-extraneous-dependencies
   const { createLogger } = require('redux-logger');
   const loggerMiddleware = createLogger();
+  const composeEnhancers =
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
   store = createStore(
     reducer,
-    applyMiddleware(sagaMiddleware, loggerMiddleware)
+    composeEnhancers(applyMiddleware(sagaMiddleware, loggerMiddleware))
   );
 } else {
   store = createStore(reducer, applyMiddleware(sagaMiddleware));
