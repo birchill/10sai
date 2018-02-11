@@ -3,7 +3,7 @@
 
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
-import CardStore from './CardStore';
+import CardStore from './CardStore.ts';
 import { waitForEvents } from '../test/testcommon';
 
 const waitForMs = ms =>

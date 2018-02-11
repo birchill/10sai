@@ -1,7 +1,25 @@
 /* eslint-disable no-shadow */
 
-import PouchDB from 'pouchdb';
-import EventEmitter from 'event-emitter';
+// The typings don't define a default export so we can't just write:
+//
+//  import PouchDB from 'pouchdb';
+//
+// So we'd like to write:
+//
+//   const PouchDB = require('pouchdb').default;
+//
+// But then when we run tests we'll get errors because when Node sees
+// `require('pouchdb')` it will return the default export.
+//
+// More details at:
+//
+//   https://github.com/DefinitelyTyped/DefinitelyTyped/issues/19691
+//
+let PouchDB = require('pouchdb');
+if (PouchDB.default) {
+  PouchDB = PouchDB.default;
+}
+import * as EventEmitter from 'event-emitter';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
@@ -12,52 +30,124 @@ const CARD_PREFIX = 'card-';
 const PROGRESS_PREFIX = 'progress-';
 const REVIEW_PREFIX = 'review-';
 
-const stripCardPrefix = id => id.substr(CARD_PREFIX.length);
-const stripProgressPrefix = id => id.substr(PROGRESS_PREFIX.length);
+const stripCardPrefix = (id: string) => id.substr(CARD_PREFIX.length);
+const stripProgressPrefix = (id: string) => id.substr(PROGRESS_PREFIX.length);
+
+// FIXME: Move this to some sort of generic definitions file
+type Omit<T, K extends keyof T> = Pick<
+  T,
+  ({ [P in keyof T]: P } &
+    { [P in K]: never } & { [x: string]: never })[keyof T]
+>;
+
+interface Card {
+  _id: string;
+  question: string;
+  answer: string;
+  created: string;
+  modified: string;
+  progress: Progress;
+}
+
+interface CardRecord {
+  _id: string;
+  _rev?: string;
+  question: string;
+  answer: string;
+  created: string;
+  modified: string;
+}
+
+interface Progress {
+  level: number;
+  reviewed: Date | null;
+}
+
+interface ProgressRecord {
+  _id: string;
+  _rev?: string;
+  level: number;
+  reviewed: number | null;
+}
+
+// FIXME: Extract this in to a more general PartialPartial
+type CardWithOptionalProgress = Omit<Card, 'progress'> &
+  Pick<Partial<Card>, 'progress'>;
+type CardChange = CardWithOptionalProgress & PouchDB.Core.ChangesMeta;
 
 // Take a card from the DB and turn it into a more appropriate form for
 // client consumption
-const parseCard = card => ({
-  ...card,
-  _id: stripCardPrefix(card._id),
-  // We deliberately *don't* parse the 'created' or 'modified' fields into
-  // Date objects since they're currently not used in the app and so
-  // speculatively parsing them would be a waste.
-});
+const parseCard = (card: CardRecord): Omit<Card, 'progress'> => {
+  const result = {
+    ...card,
+    _id: stripCardPrefix(card._id),
+    // We deliberately *don't* parse the 'created' or 'modified' fields into
+    // Date objects since they're currently not used in the app and so
+    // speculatively parsing them would be a waste.
+  };
+  delete result._rev;
+  return result;
+};
 
-const parseProgress = progress => {
+const parseProgress = (progress: ProgressRecord): Progress => {
   const result = {
     ...progress,
     reviewed: progress.reviewed ? new Date(progress.reviewed) : null,
   };
-  // We make the _id optional so we can re-use this when parsing the progress
-  // fields of views.
-  if (result._id) {
-    result._id = stripProgressPrefix(progress._id);
-  }
-  return result;
-};
-
-const parseReview = review => {
-  const result = { ...review };
-  if (result.reviewTime) {
-    result.reviewTime = new Date(result.reviewTime);
-  }
   delete result._id;
   delete result._rev;
 
   return result;
 };
 
-const mergeRecords = (card, progress) => {
-  const result = parseCard(card);
-  if (progress) {
-    result.progress = parseProgress(progress);
-    delete result.progress._id;
-    delete result.progress._rev;
-  }
+const mergeRecords = (card: CardRecord, progress: ProgressRecord): Card => {
+  const result = {
+    ...parseCard(card),
+    progress: parseProgress(progress),
+  };
   return result;
 };
+
+interface Review {
+  reviewTime: Date;
+  maxCards: number;
+  maxNewCards: number;
+  completed: number;
+  newCardsCompleted: number;
+  history: string[];
+  failedCardsLevel1: string[];
+  failedCardsLevel2: string[];
+}
+
+interface ReviewRecord {
+  _id: string;
+  _rev?: string;
+  reviewTime: number;
+  maxCards: number;
+  maxNewCards: number;
+  completed: number;
+  newCardsCompleted: number;
+  history: string[];
+  failedCardsLevel1: string[];
+  failedCardsLevel2: string[];
+}
+
+const parseReview = (review: ReviewRecord): Review => {
+  const result = {
+    ...review,
+    reviewTime: new Date(review.reviewTime),
+  };
+  delete result._id;
+  delete result._rev;
+
+  return result;
+};
+
+// ---------------------------------------------------------------------------
+//
+// Map functions
+//
+// ---------------------------------------------------------------------------
 
 const cardMapFunction = `function(doc) {
     if (!doc._id.startsWith('${PROGRESS_PREFIX}')) {
@@ -101,7 +191,7 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 // is one day overdue.
 const EXP_FACTOR = 0.00225;
 
-const getOverduenessFunction = reviewTime =>
+const getOverduenessFunction = (reviewTime: Date) =>
   `function(doc) {
     if (
       !doc._id.startsWith('${PROGRESS_PREFIX}') ||
@@ -137,33 +227,121 @@ const getOverduenessFunction = reviewTime =>
     });
   }`;
 
-const stubbornDelete = async (doc, db) => {
+// ---------------------------------------------------------------------------
+//
+// Utility functions
+//
+// ---------------------------------------------------------------------------
+
+const stubbornDelete = async (
+  id: string,
+  db: PouchDB.Database
+): Promise<void> => {
+  let doc;
   try {
-    return await db.remove(doc);
+    doc = await db.get(id);
+  } catch (err) {
+    // If the document is missing then just return
+    if (err.status === 404) {
+      return;
+    }
+    throw err;
+  }
+
+  try {
+    await db.remove(doc);
+    return;
   } catch (err) {
     if (err.status !== 409) {
       throw err;
     }
     // If there is a conflict, just keep trying
-    doc = await db.get(doc._id);
-    return stubbornDelete(doc, db);
+    doc = await db.get(id);
+    return stubbornDelete(doc._id, db);
   }
 };
 
+// The way the typings for PouchDB-adapter-idb are set up, if you want to
+// specify 'storage' you also must specify adapter: 'pouchdb' but we don't want
+// that--we want to let Pouch decide the adapter and, if it happens to be IDB,
+// use persistent storage.
+interface ExtendedDatabaseConfiguration
+  extends PouchDB.Configuration.LocalDatabaseConfiguration {
+  storage?: 'persistent' | 'temporary';
+}
+
+interface CardStoreOptions {
+  pouch?: ExtendedDatabaseConfiguration;
+  reviewTime?: Date;
+  prefetchViews?: boolean;
+}
+
+interface GetCardsOptions {
+  limit?: number;
+  type?: 'new' | 'overdue';
+  skipFailedCards?: boolean;
+}
+
+interface SyncOptions {
+  onProgress?: (progress: number | null) => void;
+  onIdle?: (err: PouchDB.Core.Error) => void;
+  onActive?: () => void;
+  onError?: (err: PouchDB.Core.Error) => void;
+  username?: string;
+  password?: string;
+  batchSize?: number;
+}
+
+type RecordTypes = CardRecord | ProgressRecord | ReviewRecord;
+
+interface CardStoreError {
+  status?: number;
+  name: string;
+  message: string;
+  reason?: string;
+  error?: string | boolean;
+}
+
+class CardStoreError extends Error {
+  constructor(status: number, error: string, reason: string) {
+    super(reason);
+    this.name = error;
+    this.message = reason;
+    this.error = true;
+  }
+}
+
+// Unfortunately the PouchDB typings forgot the 'name' member of Database.
+// FIXME: File a PR for this.
+type DatabaseWithName = PouchDB.Database & { name: string };
+
+// ---------------------------------------------------------------------------
+//
+// CardStore class
+//
+// ---------------------------------------------------------------------------
+
 class CardStore {
-  constructor(options) {
+  db: PouchDB.Database;
+  reviewTime: Date;
+  prefetchViews: boolean;
+  initDone: Promise<void>;
+  changesEmitter?: EventEmitter.Emitter;
+  remoteDb?: PouchDB.Database;
+  remoteSync?: PouchDB.Replication.Sync<RecordTypes>;
+
+  constructor(options?: CardStoreOptions) {
     const pouchOptions = options && options.pouch ? options.pouch : {};
     if (typeof pouchOptions.auto_compaction === 'undefined') {
       pouchOptions.auto_compaction = true;
     }
-    this.db = new PouchDB('cards', { storage: 'persistant', ...pouchOptions });
+    pouchOptions.storage = 'persistent';
+    this.db = new PouchDB('cards', pouchOptions);
 
     this.reviewTime =
-      options && options.reviewTime && options.reviewTime instanceof Date
-        ? options.reviewTime
-        : new Date();
+      options && options.reviewTime ? options.reviewTime : new Date();
 
-    this.prefetchViews = !options || options.prefetchViews;
+    this.prefetchViews = !options || !!options.prefetchViews;
     this.initDone = this.db
       .info()
       .then(() => this.updateCardsView())
@@ -175,10 +353,10 @@ class CardStore {
       });
   }
 
-  async getCards(options) {
+  async getCards(options: GetCardsOptions): Promise<Card[]> {
     await this.initDone;
 
-    const queryOptions = {
+    const queryOptions: PouchDB.Query.Options<any, any> = {
       include_docs: true,
       descending: true,
     };
@@ -204,24 +382,24 @@ class CardStore {
       }
     }
 
-    const result = await this.db.query(view, queryOptions);
+    const result = await this.db.query<CardRecord>(view, queryOptions);
     return result.rows.filter(row => row.doc).map(row => ({
-      ...parseCard(row.doc),
+      ...parseCard(row.doc!),
       progress: parseProgress(row.value.progress),
     }));
   }
 
-  async getCardsById(ids) {
+  async getCardsById(ids: string[]): Promise<Card[]> {
     await this.initDone;
 
     const options = {
       keys: ids.map(id => PROGRESS_PREFIX + id),
       include_docs: true,
     };
-    const result = await this.db.query('cards', options);
+    const result = await this.db.query<CardRecord>('cards', options);
 
     return result.rows.filter(row => row.doc).map(row => ({
-      ...parseCard(row.doc),
+      ...parseCard(row.doc!),
       progress: parseProgress(row.value.progress),
     }));
   }
@@ -249,30 +427,33 @@ class CardStore {
     return this._updateMapView('new_cards', newCardMapFunction);
   }
 
-  async _updateMapView(view, mapFunction) {
+  async _updateMapView(view: string, mapFunction: string) {
     return this.db
-      .upsert(`_design/${view}`, currentDoc => {
-        const doc = {
-          _id: `_design/${view}`,
-          views: {
-            [view]: {
-              map: mapFunction,
+      .upsert(
+        `_design/${view}`,
+        (currentDoc: PouchDB.Core.PostDocument<any>) => {
+          const doc = {
+            _id: `_design/${view}`,
+            views: {
+              [view]: {
+                map: mapFunction,
+              },
             },
-          },
-        };
+          };
 
-        if (
-          currentDoc &&
-          currentDoc.views &&
-          currentDoc.views[view] &&
-          currentDoc.views[view].map &&
-          currentDoc.views[view].map === doc.views[view].map
-        ) {
-          return false;
+          if (
+            currentDoc &&
+            currentDoc.views &&
+            currentDoc.views[view] &&
+            currentDoc.views[view].map &&
+            currentDoc.views[view].map === doc.views[view].map
+          ) {
+            return false;
+          }
+
+          return doc;
         }
-
-        return doc;
-      })
+      )
       .then(result => {
         if (!result.updated || !this.prefetchViews) {
           return;
@@ -285,51 +466,55 @@ class CardStore {
       });
   }
 
-  async putCard(card) {
+  async putCard(card: Partial<Card>): Promise<Card> {
     // New card
     if (!card._id) {
       return this._putNewCard(card);
     }
 
-    // Split progress part out of card and strip any non-content fields
-    const fieldsToSkip = ['_id', '_rev', 'progress'];
-    const justTheMeat = record => {
-      const result = {};
-      for (const [field, value] of Object.entries(record)) {
-        if (fieldsToSkip.includes(field)) {
-          continue;
-        }
-        result[field] = value;
-      }
-      return result;
-    };
-    const cardUpdate = justTheMeat(card);
-    const progressUpdate = card.progress ? justTheMeat(card.progress) : {};
-
+    const cardUpdate = { ...card };
+    delete cardUpdate.progress;
+    delete cardUpdate._id;
     const cardRecord = await this._updateCard(card._id, cardUpdate);
+
+    const progressUpdate = { ...card.progress };
     const progressRecord = await this._updateProgress(card._id, progressUpdate);
 
     return mergeRecords(cardRecord, progressRecord);
   }
 
-  async _putNewCard(card) {
+  async _putNewCard(card: Partial<Card>): Promise<Card> {
     const cardToPut = {
       ...card,
-      created: JSON.parse(JSON.stringify(new Date())),
-      modified: JSON.parse(JSON.stringify(new Date())),
+      // Fill-in mandatory fields
+      question: card.question || '',
+      answer: card.answer || '',
+      // Update dates
+      created: <string>JSON.parse(JSON.stringify(new Date())),
+      modified: <string>JSON.parse(JSON.stringify(new Date())),
     };
 
     if ('progress' in cardToPut) {
       delete cardToPut.progress;
     }
 
-    const progressToPut =
-      typeof card.progress === 'undefined' ? {} : card.progress;
-    if (progressToPut.reviewed && progressToPut.reviewed instanceof Date) {
-      progressToPut.reviewed = progressToPut.reviewed.getTime();
-    }
+    const progressToPut: Omit<ProgressRecord, '_id' | '_rev'> = {
+      reviewed:
+        card.progress && card.progress.reviewed instanceof Date
+          ? card.progress.reviewed.getTime()
+          : null,
+      level:
+        card.progress && typeof card.progress.level !== 'undefined'
+          ? card.progress.level
+          : 0,
+    };
 
-    return (async function tryPutNewCard(card, progress, db, id) {
+    return (async function tryPutNewCard(
+      card,
+      progress,
+      db,
+      id
+    ): Promise<Card> {
       let putCardResult;
       try {
         putCardResult = await db.put({ ...card, _id: CARD_PREFIX + id });
@@ -342,8 +527,8 @@ class CardStore {
         return tryPutNewCard(card, progress, db, CardStore.generateCardId());
       }
 
-      const newCard = {
-        ...cardToPut,
+      const newCard: CardRecord = {
+        ...card,
         _id: CARD_PREFIX + id,
         _rev: putCardResult.rev,
       };
@@ -366,15 +551,24 @@ class CardStore {
       }
 
       return mergeRecords(newCard, progressToPut);
-    })(cardToPut, progressToPut, this.db, CardStore.generateCardId());
+    })(
+      <Omit<CardRecord, '_id'>>cardToPut,
+      progressToPut,
+      this.db,
+      CardStore.generateCardId()
+    );
   }
 
-  async _updateCard(id, update) {
-    let card;
+  async _updateCard(
+    id: string,
+    update: Partial<Omit<Card, 'progress'>>
+  ): Promise<CardRecord> {
+    let card: CardRecord | undefined;
     let missing = false;
-    await this.db.upsert(CARD_PREFIX + id, doc => {
+
+    await this.db.upsert<CardRecord>(CARD_PREFIX + id, doc => {
       // Doc was not found -- must have been deleted
-      if (!doc._id) {
+      if (!doc.hasOwnProperty('_id')) {
         missing = true;
         return false;
       }
@@ -383,7 +577,7 @@ class CardStore {
       // in parseCard, then we'll need special handling here to make sure we
       // write and return the correct formats.
       card = {
-        ...doc,
+        ...(<CardRecord>doc),
         ...update,
         _id: CARD_PREFIX + id,
       };
@@ -397,8 +591,8 @@ class CardStore {
       return card;
     });
 
-    if (missing) {
-      const err = new Error('missing');
+    if (missing || !card) {
+      const err: Error & { status?: number } = new Error('missing');
       err.status = 404;
       err.name = 'not_found';
       throw err;
@@ -407,46 +601,50 @@ class CardStore {
     return card;
   }
 
-  async _updateProgress(id, update) {
-    let progress;
+  async _updateProgress(
+    id: string,
+    update: Partial<Progress>
+  ): Promise<ProgressRecord> {
+    let progress: ProgressRecord | undefined;
     let missing = false;
-    await this.db.upsert(PROGRESS_PREFIX + id, doc => {
+
+    await this.db.upsert<ProgressRecord>(PROGRESS_PREFIX + id, doc => {
       // Doc was not found -- must have been deleted
-      if (!doc._id) {
+      if (!doc.hasOwnProperty('_id')) {
         missing = true;
         return false;
       }
+
+      progress = <ProgressRecord>doc;
 
       let hasChange = false;
       if (
         update &&
         update.reviewed &&
         update.reviewed instanceof Date &&
-        doc.reviewed !== update.reviewed.getTime()
+        progress!.reviewed !== update.reviewed.getTime()
       ) {
-        doc.reviewed = update.reviewed.getTime();
+        progress!.reviewed = update.reviewed.getTime();
         hasChange = true;
       }
       if (
         update &&
         typeof update.level === 'number' &&
-        doc.level !== update.level
+        progress!.level !== update.level
       ) {
-        doc.level = update.level;
+        progress!.level = update.level;
         hasChange = true;
       }
-
-      progress = doc;
 
       if (!hasChange) {
         return false;
       }
 
-      return doc;
+      return progress;
     });
 
-    if (missing) {
-      const err = new Error('missing');
+    if (missing || !progress) {
+      const err: Error & { status?: number } = new Error('missing');
       err.status = 404;
       err.name = 'not_found';
       throw err;
@@ -455,30 +653,17 @@ class CardStore {
     return progress;
   }
 
-  async getCard(id) {
-    const card = await this.db.get(CARD_PREFIX + id);
-    const progress = await this.db.get(PROGRESS_PREFIX + id);
+  async getCard(id: string): Promise<Card> {
+    const card = await (<Promise<CardRecord>>this.db.get(CARD_PREFIX + id));
+    const progress = await (<Promise<ProgressRecord>>this.db.get(
+      PROGRESS_PREFIX + id
+    ));
     return mergeRecords(card, progress);
   }
 
-  async deleteCard(card) {
-    const cardToDelete = { ...card, _id: CARD_PREFIX + card._id };
-    delete cardToDelete.progress;
-    await stubbornDelete(cardToDelete, this.db);
-
-    const progressToDelete = {
-      ...card.progress,
-      _id: PROGRESS_PREFIX + card._id,
-    };
-    try {
-      await stubbornDelete(progressToDelete, this.db);
-    } catch (err) {
-      // If the progress record doesn't exist, that's fine.
-      if (err.status === 404) {
-        return;
-      }
-      throw err;
-    }
+  async deleteCard(id: string) {
+    await stubbornDelete(CARD_PREFIX + id, this.db);
+    await stubbornDelete(PROGRESS_PREFIX + id, this.db);
   }
 
   static generateCardId() {
@@ -506,13 +691,13 @@ class CardStore {
     return id;
   }
 
-  async getReview() {
+  async getReview(): Promise<Review | null> {
     const review = await this._getReview();
     return review ? parseReview(review) : null;
   }
 
-  async _getReview() {
-    const reviews = await this.db.allDocs({
+  async _getReview(): Promise<ReviewRecord | null> {
+    const reviews = await this.db.allDocs<ReviewRecord>({
       include_docs: true,
       descending: true,
       limit: 1,
@@ -520,21 +705,21 @@ class CardStore {
       endkey: REVIEW_PREFIX,
     });
 
-    if (!reviews.rows.length) {
+    if (!reviews.rows.length || !reviews.rows[0].doc) {
       return null;
     }
 
-    return reviews.rows[0].doc;
+    return reviews.rows[0].doc!;
   }
 
-  async putReview(review) {
+  async putReview(review: Review) {
     const existingReview = await this._getReview();
 
     // If we don't have an existing review doc to update generate an ID for the
     // review based on the current time.
     // We don't care do much about collisions here. If we overlap, it's ok to
     // just clobber the existing data.
-    let reviewId;
+    let reviewId: string;
     if (!existingReview) {
       const timestamp = Date.now() - Date.UTC(2016, 0, 1);
       reviewId = REVIEW_PREFIX + `0${timestamp.toString(36)}`.slice(-8);
@@ -542,11 +727,14 @@ class CardStore {
       reviewId = existingReview._id;
     }
 
-    const reviewToPut = { ...review };
-    reviewToPut.reviewTime = reviewToPut.reviewTime.getTime();
+    const reviewToPut: ReviewRecord = {
+      ...review,
+      _id: reviewId,
+      reviewTime: review.reviewTime.getTime(),
+    };
 
     // Copy passed-in review object so upsert doesn't mutate it
-    await this.db.upsert(reviewId, () => reviewToPut);
+    await this.db.upsert<ReviewRecord>(reviewId, () => reviewToPut);
   }
 
   async deleteReview() {
@@ -565,7 +753,19 @@ class CardStore {
           _deleted: true,
         }))
       );
-      if (results.some(result => result.error && result.status === 409)) {
+      // Check for any conflicts
+      // (Either my reading of the docs is wrong or the types for bulkDocs is
+      // wrong but as far as I can tell bulkDocs returns an array of Response
+      // and Error objects)
+      // FIXME: Verify the above and submit a PR for the typings if they're
+      // wrong
+      if (
+        results.some(
+          result =>
+            !!(<PouchDB.Core.Error>result).error &&
+            (<PouchDB.Core.Error>result).status === 409
+        )
+      ) {
         await deleteReviews();
       }
     };
@@ -582,7 +782,7 @@ class CardStore {
 
     // Once subclassable EventTargets are available in all browsers we should
     // use that instead.
-    this.changesEmitter = EventEmitter();
+    this.changesEmitter = EventEmitter(null);
 
     const dbChanges = this.db.changes({
       since: 'now',
@@ -602,10 +802,11 @@ class CardStore {
     // hide.
     //
     // To mediate that, we maintain a map of all the card/progress revisions we
-    // have returned so we can avoid returning
-    // the same thing twice.
-    const returnedCards = {};
-    const alreadyReturnedCard = record => {
+    // have returned so we can avoid returning the same thing twice.
+    const returnedCards: {
+      [id: string]: { cardRev: string; progressRev: string | null };
+    } = {};
+    const alreadyReturnedCard = (record: CardRecord | ProgressRecord) => {
       if (record._id.startsWith(CARD_PREFIX)) {
         const id = stripCardPrefix(record._id);
         return returnedCards[id] && returnedCards[id].cardRev === record._rev;
@@ -621,12 +822,16 @@ class CardStore {
     dbChanges.on('change', async change => {
       console.assert(change.changes && change.doc, 'Unexpected changes event');
 
+      if (!change.doc) {
+        return;
+      }
+
       if (change.doc._id.startsWith(CARD_PREFIX)) {
         const id = stripCardPrefix(change.id);
         let progress;
         if (!change.deleted) {
           try {
-            progress = await this.db.get(PROGRESS_PREFIX + id);
+            progress = await this.db.get<ProgressRecord>(PROGRESS_PREFIX + id);
           } catch (e) {
             if (e.status === 404) {
               // If we can't find the progress record there are two
@@ -648,17 +853,20 @@ class CardStore {
         }
         // We have to check this after the async call above since while
         // fetching the progress record, it might be reported here.
-        if (alreadyReturnedCard(change.doc)) {
+        if (alreadyReturnedCard(<CardRecord>change.doc)) {
           return;
         }
         returnedCards[id] = {
           cardRev: change.doc._rev,
-          progressRev: progress ? progress._rev : null,
+          progressRev: progress && progress._rev ? progress._rev : null,
         };
-        this.changesEmitter.emit('card', {
+        const changeDoc: CardChange = progress
+          ? mergeRecords(<CardRecord>change.doc, progress)
+          : parseCard(<CardRecord>change.doc);
+        this.changesEmitter!.emit('card', {
           ...change,
           id,
-          doc: mergeRecords(change.doc, progress),
+          doc: changeDoc,
         });
       } else if (change.doc._id.startsWith(PROGRESS_PREFIX)) {
         // If the progress has been deleted, we'll report the deletion when
@@ -669,7 +877,7 @@ class CardStore {
         const id = stripProgressPrefix(change.id);
         let card;
         try {
-          card = await this.db.get(CARD_PREFIX + id);
+          card = await this.db.get<CardRecord>(CARD_PREFIX + id);
         } catch (e) {
           // If the card was deleted, just ignore. We'll report when we get
           // the corresponding change for the card.
@@ -678,17 +886,17 @@ class CardStore {
           }
           throw e;
         }
-        if (alreadyReturnedCard(change.doc)) {
+        if (alreadyReturnedCard(<ProgressRecord>change.doc)) {
           return;
         }
         returnedCards[id] = {
           cardRev: card._rev,
           progressRev: change.doc._rev,
         };
-        this.changesEmitter.emit('card', {
+        this.changesEmitter!.emit('card', {
           ...change,
           id,
-          doc: mergeRecords(card, change.doc),
+          doc: mergeRecords(card, <ProgressRecord>change.doc),
         });
       } else if (change.doc._id.startsWith(REVIEW_PREFIX)) {
         const currentReviewDoc = await this._getReview();
@@ -697,14 +905,17 @@ class CardStore {
         // recent review doc that was deleted.
         if (change.doc._deleted) {
           if (!currentReviewDoc || currentReviewDoc._id < change.doc._id) {
-            this.changesEmitter.emit('review', null);
+            this.changesEmitter!.emit('review', null);
           }
           // Only report changes if they are to the current review doc
         } else if (
           currentReviewDoc &&
           change.doc._id === currentReviewDoc._id
         ) {
-          this.changesEmitter.emit('review', parseReview(change.doc));
+          this.changesEmitter!.emit(
+            'review',
+            parseReview(<ReviewRecord>change.doc)
+          );
         }
       }
     });
@@ -736,7 +947,7 @@ class CardStore {
       });
   }
 
-  async setReviewTime(reviewTime) {
+  async setReviewTime(reviewTime: Date) {
     this.reviewTime = reviewTime;
     return this.initDone.then(() => this.updateOverduenessView()).then(() => {
       // Don't return this because we don't want to block on it
@@ -763,27 +974,33 @@ class CardStore {
   // - onError
   // as well as the |batchSize| member for specifying the number of records
   // to include in a batch.
-  async setSyncServer(syncServer, options) {
+  async setSyncServer(
+    syncServer: string | PouchDB.Database | null | undefined,
+    options?: SyncOptions
+  ) {
     // Setup an alias for error handling
-    const reportErrorAsync = err => {
+    const reportErrorAsync = (err: Error) => {
       if (options && options.onError) {
         setImmediate(() => {
-          options.onError(err);
+          options.onError!(err);
         });
       }
     };
 
     // Validate syncServer argument
+    // FIXME: Once we use TypeScript everywhere we can probably drop a lot of
+    // this checking
     if (
       typeof syncServer !== 'string' &&
       syncServer !== null &&
       syncServer !== undefined &&
       !(typeof syncServer === 'object' && syncServer.constructor === PouchDB)
     ) {
-      const err = {
-        code: 'INVALID_SERVER',
-        message: 'Unrecognized type of sync server',
-      };
+      const err = new CardStoreError(
+        400,
+        'bad_request',
+        'Unrecognized type of sync server'
+      );
       reportErrorAsync(err);
       throw err;
     }
@@ -795,10 +1012,11 @@ class CardStore {
         !syncServer.startsWith('http://') &&
         !syncServer.startsWith('https://')
       ) {
-        const err = {
-          code: 'INVALID_SERVER',
-          message: 'Only http and https remote servers are recognized',
-        };
+        const err = new CardStoreError(
+          400,
+          'bad_request',
+          'Only http and https remote servers are recognized'
+        );
         reportErrorAsync(err);
         throw err;
       }
@@ -831,22 +1049,29 @@ class CardStore {
         ? new PouchDB(syncServer, dbOptions)
         : syncServer;
 
-    const originalDbName = this.remoteDb.name;
+    // Unfortunately the PouchDB typings forgot the 'name' member of Database.
+    // FIXME: File a PR for this.
+    const originalDbName = (this.remoteDb as DatabaseWithName).name;
 
     // Initial sync
-    let localUpdateSeq;
-    let remoteUpdateSeq;
+    let localUpdateSeq: number | undefined;
+    let remoteUpdateSeq: number | undefined;
     try {
       const localInfo = await this.db.info();
-      localUpdateSeq = parseInt(localInfo.update_seq, 10);
+      // parseInt will stringify its first argument so it doesn't matter than
+      // update_seq can sometimes be a number.
+      localUpdateSeq = parseInt(<string>localInfo.update_seq, 10);
 
-      const remoteInfo = await this.remoteDb.info();
-      remoteUpdateSeq = parseInt(remoteInfo.update_seq, 10);
+      const remoteInfo = await this.remoteDb!.info();
+      remoteUpdateSeq = parseInt(<string>remoteInfo.update_seq, 10);
     } catch (err) {
       // Skip error if the remote DB has already been changed.
       // This happens, for example, if we cancel while attempting to connect
       // to a server.
-      if (!this.remoteDb || originalDbName !== this.remoteDb.name) {
+      if (
+        !this.remoteDb ||
+        originalDbName !== (this.remoteDb as DatabaseWithName).name
+      ) {
         return;
       }
       this.remoteDb = undefined;
@@ -863,11 +1088,11 @@ class CardStore {
     // design docs we create are also very temporary.
     const pushOpts = {
       ...pushPullOpts,
-      filter: doc => {
+      filter: (doc: PouchDB.Core.Document<{}>) => {
         return !doc._id.startsWith('_design/');
       },
     };
-    this.remoteSync = this.db.sync(this.remoteDb, {
+    this.remoteSync = this.db.sync<RecordTypes>(this.remoteDb!, {
       live: true,
       retry: true,
       pull: pushPullOpts,
@@ -875,10 +1100,13 @@ class CardStore {
     });
 
     // Wrap and set callbacks
-    const wrapCallback = (evt, callback) => {
-      return (...args) => {
+    const wrapCallback = (evt: string, callback: Function | undefined) => {
+      return (...args: any[]) => {
         // Skip events if they are from an old remote DB
-        if (!this.remoteDb || originalDbName !== this.remoteDb.name) {
+        if (
+          !this.remoteDb ||
+          originalDbName !== (this.remoteDb as DatabaseWithName).name
+        ) {
           return;
         }
 
@@ -897,9 +1125,14 @@ class CardStore {
     // The change callback is special because we always want to set it
     // so that we can resolve conflicts. It also is where we do the (slightly
     // complicated) progress calculation.
-    const changeCallback = info => {
+    const changeCallback = (
+      info: PouchDB.Replication.SyncResult<RecordTypes>
+    ) => {
       // Skip events if they are from an old remote DB
-      if (!this.remoteDb || originalDbName !== this.remoteDb.name) {
+      if (
+        !this.remoteDb ||
+        originalDbName !== (this.remoteDb as DatabaseWithName).name
+      ) {
         return;
       }
 
@@ -922,7 +1155,16 @@ class CardStore {
         ) {
           const upper = Math.max(localUpdateSeq, remoteUpdateSeq);
           const lower = Math.min(localUpdateSeq, remoteUpdateSeq);
-          const current = parseInt(info.change.last_seq, 10);
+          // This redudant arrangement is my way of saying these PouchDB
+          // typings leave a lot to be desired. Looking at the pouch
+          // source last_seq can clearly be a string as well and yet the
+          // typings insist its a number. Then the parseInt typings fail
+          // to recognize that parseInt will stringify its first argument
+          // so its fine to pass an number in as well.
+          const current = parseInt(
+            <string>(info.change.last_seq as string | number),
+            10
+          );
 
           // In some cases such as when our initial sync is
           // a bidirectional sync, we can't really produce a reliable
@@ -946,7 +1188,9 @@ class CardStore {
     // Always register the change callback.
     this.remoteSync.on('change', changeCallback);
 
-    const callbackMap = {
+    const callbackMap: {
+      [key in 'paused' | 'active' | 'error' | 'denied']: keyof SyncOptions
+    } = {
       paused: 'onIdle',
       active: 'onActive',
       error: 'onError',
@@ -954,16 +1198,16 @@ class CardStore {
     };
     if (options) {
       // eslint-disable-next-line guard-for-in
-      for (const evt in callbackMap) {
+      for (const [evt, callbackKey] of Object.entries(callbackMap)) {
         // If we have any callbacks at all then we need to listen for 'active'
         // otherwise we won't get the expected number of callbacks it seems.
-        if (
-          typeof options[callbackMap[evt]] !== 'function' &&
-          evt !== 'active'
-        ) {
+        if (typeof options[callbackKey] !== 'function' && evt !== 'active') {
           continue;
         }
-        this.remoteSync.on(evt, wrapCallback(evt, options[callbackMap[evt]]));
+        this.remoteSync.on(
+          <any>evt,
+          wrapCallback(evt, <Function>options[callbackKey])
+        );
       }
     } else {
       this.remoteSync.on('active', wrapCallback('active', undefined));
@@ -976,11 +1220,13 @@ class CardStore {
     await this.remoteDb;
   }
 
-  async onSyncChange(docs) {
+  async onSyncChange(docs: PouchDB.Core.ExistingDocument<RecordTypes>[]) {
     for (const doc of docs) {
       if (doc._id.startsWith(REVIEW_PREFIX)) {
         // eslint-disable-next-line no-await-in-loop
-        await this.onSyncReviewChange(doc);
+        await this.onSyncReviewChange(<PouchDB.Core.ExistingDocument<
+          ReviewRecord & PouchDB.Core.ChangesMeta
+        >>doc);
       }
 
       // NOTE: resolveConflicts will currently drop attachments on the floor.
@@ -988,20 +1234,24 @@ class CardStore {
     }
   }
 
-  async onSyncReviewChange(doc) {
-    if (doc.deleted) {
+  async onSyncReviewChange(
+    doc: PouchDB.Core.ExistingDocument<ReviewRecord & PouchDB.Core.ChangesMeta>
+  ) {
+    if (doc._deleted) {
       return;
     }
 
     // We could (and we used to) check for old review docs and delete them but
     // in the interests of keeping things simple we just wait until the next
     // call to deleteReview() to delete them.
-    const result = await this.db.get(doc._id, { conflicts: true });
+    const result = await this.db.get<ReviewRecord>(doc._id, {
+      conflicts: true,
+    });
     if (!result._conflicts) {
       return;
     }
 
-    const completeness = review => {
+    const completeness = (review: ReviewRecord) => {
       return (
         review.completed -
         review.failedCardsLevel2.length * 2 -
@@ -1040,7 +1290,7 @@ class CardStore {
     return orphans;
   }
 
-  async addProgressRecordForCard(cardId) {
+  async addProgressRecordForCard(cardId: string) {
     const progressToPut = {
       _id: PROGRESS_PREFIX + stripCardPrefix(cardId),
       reviewed: null,
@@ -1075,7 +1325,7 @@ class CardStore {
     return orphans;
   }
 
-  async deleteProgressRecord(progressId) {
+  async deleteProgressRecord(progressId: string) {
     let doc;
     try {
       doc = await this.db.get(progressId);
@@ -1099,7 +1349,7 @@ class CardStore {
   getSyncServer() {
     return this.remoteDb;
   }
-  async hasProgressRecord(id) {
+  async hasProgressRecord(id: string) {
     try {
       await this.db.get(PROGRESS_PREFIX + id);
       return true;

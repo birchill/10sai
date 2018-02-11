@@ -4,7 +4,7 @@
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
-import CardStore from './CardStore';
+import CardStore from './CardStore.ts';
 import { waitForEvents } from '../test/testcommon';
 
 const cardForDirectPut = card => ({
@@ -105,7 +105,7 @@ describe('CardStore remote sync', () => {
       await subject.setSyncServer('irc://irc.mozilla.org');
       expect(false).toBe(true);
     } catch (err) {
-      expect(err.code).toBe('INVALID_SERVER');
+      expect(err.name).toBe('bad_request');
     }
   });
 
@@ -114,7 +114,7 @@ describe('CardStore remote sync', () => {
       await subject.setSyncServer(new Date());
       expect(false).toBe(true);
     } catch (err) {
-      expect(err.code).toBe('INVALID_SERVER');
+      expect(err.name).toBe('bad_request');
     }
   });
 
@@ -174,9 +174,6 @@ describe('CardStore remote sync', () => {
 
     testRemote
       .put(cardForDirectPut(firstCard))
-      .then(result => {
-        firstCard._rev = result.rev;
-      })
       .then(() =>
         testRemote.put({ _id: 'progress-' + firstCard._id, ...initialProgress })
       )
@@ -184,9 +181,6 @@ describe('CardStore remote sync', () => {
         expectedCards[0].progress = initialProgress;
       })
       .then(() => testRemote.put(cardForDirectPut(secondCard)))
-      .then(result => {
-        secondCard._rev = result.rev;
-      })
       .then(() =>
         testRemote.put({
           _id: 'progress-' + secondCard._id,

@@ -323,7 +323,7 @@ describe('sagas:edit watchCardEdits', () => {
     return expectSaga(watchCardEditsSaga, cardStore)
       .withState(notFoundState(formId, true))
       .dispatch(editActions.deleteEditCard(formId))
-      .call([cardStore, 'deleteCard'], { _id: 'abc' })
+      .call([cardStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
 
@@ -335,7 +335,7 @@ describe('sagas:edit watchCardEdits', () => {
     return expectSaga(watchCardEditsSaga, cardStore)
       .withState(dirtyState(formId, card))
       .dispatch(editActions.deleteEditCard(formId))
-      .not.call([cardStore, 'deleteCard'], { _id: 'abc' })
+      .not.call([cardStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
 
@@ -352,7 +352,7 @@ describe('sagas:edit watchCardEdits', () => {
     return expectSaga(watchCardEditsSaga, cardStore)
       .withState(notFoundState(formId, true))
       .dispatch(editActions.deleteEditCard(formId))
-      .call([cardStore, 'deleteCard'], { _id: 'abc' })
+      .call([cardStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
 

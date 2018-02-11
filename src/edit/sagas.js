@@ -183,7 +183,7 @@ export function* watchCardEdits(cardStore) {
       case 'DELETE_EDIT_CARD':
         if (activeRecord.deleted) {
           try {
-            yield call([cardStore, 'deleteCard'], { _id: id });
+            yield call([cardStore, 'deleteCard'], id);
           } catch (error) {
             console.error(`Failed to delete card: ${error}`);
           }

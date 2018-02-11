@@ -2,7 +2,7 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import memdown from 'memdown';
-import CardStore from './CardStore';
+import CardStore from './CardStore.ts';
 import { waitForEvents } from '../test/testcommon';
 
 describe('CardStore', () => {
@@ -173,7 +173,7 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard(card);
+    await subject.deleteCard(card._id);
 
     const cards = await subject.getCards();
 
@@ -186,7 +186,7 @@ describe('CardStore', () => {
       answer: 'Answer',
     });
     const id = card._id;
-    await subject.deleteCard(card);
+    await subject.deleteCard(card._id);
 
     // TODO: As before we should be able to write this as
     //
@@ -212,7 +212,7 @@ describe('CardStore', () => {
       question: 'Question (deleted)',
       answer: 'Answer (deleted)',
     });
-    await subject.deleteCard(deletedCard);
+    await subject.deleteCard(deletedCard._id);
 
     const existingCard = await subject.putCard({
       question: 'Question (existing)',
@@ -235,7 +235,7 @@ describe('CardStore', () => {
     });
     await subject.putCard({ question: 'Question 2', answer: 'Answer 2' });
 
-    await subject.deleteCard(firstCard);
+    await subject.deleteCard(firstCard._id);
 
     const cards = await subject.getCards();
     expect(cards).toHaveLength(1);
@@ -243,24 +243,8 @@ describe('CardStore', () => {
     expect(cards[0].answer).toBe('Answer 2');
   });
 
-  it('reports an error when the card to be deleted cannot be found', async () => {
-    // TODO: As before we should be able to write this as
-    //
-    // await expect(subject.deleteCard({ _id: 'abc' })).rejects.toMatchObject({
-    //   status: 404,
-    //   name: 'not_found',
-    //   message: 'missing',
-    //   reason: 'deleted',
-    // });
-    try {
-      await subject.deleteCard({ _id: 'abc' });
-      expect(false).toBe(true);
-    } catch (err) {
-      expect(err.status).toBe(404);
-      expect(err.name).toBe('not_found');
-      expect(err.message).toBe('missing');
-      expect(err.reason).toBe('deleted');
-    }
+  it('fails silently when the card to be deleted cannot be found', async () => {
+    await expect(subject.deleteCard('abc')).resolves.toBeUndefined();
   });
 
   it('deletes the specified card even when the revision is old', async () => {
@@ -270,7 +254,7 @@ describe('CardStore', () => {
     });
     await subject.putCard({ ...card, question: 'Updated question' });
 
-    await subject.deleteCard(card);
+    await subject.deleteCard(card._id);
 
     const cards = await subject.getCards();
     expect(cards).toHaveLength(0);
@@ -286,7 +270,7 @@ describe('CardStore', () => {
       answer: 'Answer',
     });
 
-    await subject.deleteCard(addedCard);
+    await subject.deleteCard(addedCard._id);
 
     await waitForEvents(5);
     expect(updateInfo.id).toBe(addedCard._id);
@@ -380,7 +364,7 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard(card);
+    await subject.deleteCard(card._id);
 
     // TODO: As before we should be able to write this as
     //

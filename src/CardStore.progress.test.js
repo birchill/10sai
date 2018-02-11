@@ -3,7 +3,7 @@
 
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
-import CardStore from './CardStore';
+import CardStore from './CardStore.ts';
 import { waitForEvents } from '../test/testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -203,7 +203,7 @@ describe('CardStore progress reporting', () => {
     });
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
-    await subject.deleteCard(card);
+    await subject.deleteCard(card._id);
 
     // Wait for a few rounds of events so the update records can happen
     await waitForEvents(8);
@@ -262,7 +262,7 @@ describe('CardStore progress reporting', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard(card);
+    await subject.deleteCard(card._id);
 
     expect(await subject.hasProgressRecord(card._id)).toBe(false);
   });
@@ -272,7 +272,7 @@ describe('CardStore progress reporting', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard({ _id: card._id });
+    await subject.deleteCard(card._id);
 
     expect(await subject.hasProgressRecord(card._id)).toBe(false);
   });
@@ -496,7 +496,7 @@ describe('CardStore progress reporting', () => {
       overdueCards: 0,
     });
 
-    await subject.deleteCard({ _id: card._id });
+    await subject.deleteCard(card._id);
     expect(await subject.getAvailableCards()).toMatchObject({
       newCards: 0,
       overdueCards: 0,

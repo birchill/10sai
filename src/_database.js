@@ -1,4 +1,4 @@
-import CardStore from './CardStore';
+import CardStore from './CardStore.ts';
 
 const cardStore = new CardStore();
 
@@ -43,21 +43,25 @@ async function listOrphans() {
   fixButton.setAttribute('value', 'Restore');
   container.appendChild(fixButton);
 
-  fixButton.addEventListener('click', async () => {
-    const checkedCards = document.querySelectorAll(
-      'input[type=checkbox][name=orphan-card]:checked'
-    );
-    const putResults = [];
-    for (const checkbox of checkedCards) {
-      putResults.push(cardStore.addProgressRecordForCard(checkbox.value));
-    }
-    try {
-      await Promise.all(putResults);
-    } catch (e) {
-      console.error(e);
-    }
-    listOrphans();
-  }, { once: true });
+  fixButton.addEventListener(
+    'click',
+    async () => {
+      const checkedCards = document.querySelectorAll(
+        'input[type=checkbox][name=orphan-card]:checked'
+      );
+      const putResults = [];
+      for (const checkbox of checkedCards) {
+        putResults.push(cardStore.addProgressRecordForCard(checkbox.value));
+      }
+      try {
+        await Promise.all(putResults);
+      } catch (e) {
+        console.error(e);
+      }
+      listOrphans();
+    },
+    { once: true }
+  );
 }
 
 async function listOrphanedProgress() {
@@ -100,21 +104,25 @@ async function listOrphanedProgress() {
   deleteButton.setAttribute('value', 'Delete');
   container.appendChild(deleteButton);
 
-  deleteButton.addEventListener('click', async () => {
-    const checkedProgress = document.querySelectorAll(
-      'input[type=checkbox][name=orphan-progress]:checked'
-    );
-    const deleteResults = [];
-    for (const checkbox of checkedProgress) {
-      deleteResults.push(cardStore.deleteProgressRecord(checkbox.value));
-    }
-    try {
-      await Promise.all(deleteResults);
-    } catch (e) {
-      console.error(e);
-    }
-    listOrphanedProgress();
-  }, { once: true });
+  deleteButton.addEventListener(
+    'click',
+    async () => {
+      const checkedProgress = document.querySelectorAll(
+        'input[type=checkbox][name=orphan-progress]:checked'
+      );
+      const deleteResults = [];
+      for (const checkbox of checkedProgress) {
+        deleteResults.push(cardStore.deleteProgressRecord(checkbox.value));
+      }
+      try {
+        await Promise.all(deleteResults);
+      } catch (e) {
+        console.error(e);
+      }
+      listOrphanedProgress();
+    },
+    { once: true }
+  );
 }
 
 listOrphans();

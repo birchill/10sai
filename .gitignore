@@ -1,13 +1,12 @@
-deploy_key
-deploy_key.pub
+.vscode
 node_modules
 npm-debug.log*
 public/10sai.js
 public/10sai.js.map
 public/_assets.js
 public/_assets.js.map
-public/_db.js
-public/_db.js.map
+public/_database.js
+public/_database.js.map
 public/_grid.js
 public/_grid.js.map
 public/10sai.css

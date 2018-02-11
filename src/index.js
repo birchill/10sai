@@ -17,7 +17,7 @@ import reviewSync from './review/sync';
 import * as routeActions from './route/actions';
 
 import SettingsStore from './SettingsStore';
-import CardStore from './CardStore';
+import CardStore from './CardStore.ts';
 import App from './components/App.jsx';
 
 import 'main.scss'; // eslint-disable-line
