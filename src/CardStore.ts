@@ -1,24 +1,6 @@
 /* eslint-disable no-shadow */
 
-// The typings don't define a default export so we can't just write:
-//
-//  import PouchDB from 'pouchdb';
-//
-// So we'd like to write:
-//
-//   const PouchDB = require('pouchdb').default;
-//
-// But then when we run tests we'll get errors because when Node sees
-// `require('pouchdb')` it will return the default export.
-//
-// More details at:
-//
-//   https://github.com/DefinitelyTyped/DefinitelyTyped/issues/19691
-//
-let PouchDB = require('pouchdb');
-if (PouchDB.default) {
-  PouchDB = PouchDB.default;
-}
+import PouchDB from 'pouchdb';
 import EventEmitter from 'event-emitter';
 
 PouchDB.plugin(require('pouchdb-upsert'));
