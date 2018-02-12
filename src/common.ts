@@ -1,6 +1,3 @@
-// This is probably not how you are supposed to use .d.ts files but I'm using it
-// here just to avoid having to import Card etc. everywhere.
-
 /**
  * A card.
  */

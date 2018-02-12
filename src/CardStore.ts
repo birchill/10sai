@@ -3,7 +3,9 @@
 import PouchDB from 'pouchdb';
 import EventEmitter from 'event-emitter';
 
+import { Card, Progress, Review } from './common';
 import { Omit, MakeOptional } from './utils/type-helpers';
+import { stubbornDelete } from './utils/db';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
@@ -92,6 +94,8 @@ const parseReview = (review: ReviewRecord): Review => {
   return result;
 };
 
+type RecordTypes = CardRecord | ProgressRecord | ReviewRecord;
+
 // ---------------------------------------------------------------------------
 //
 // Map functions
@@ -176,40 +180,6 @@ const getOverduenessFunction = (reviewTime: Date) =>
     });
   }`;
 
-// ---------------------------------------------------------------------------
-//
-// Utility functions
-//
-// ---------------------------------------------------------------------------
-
-const stubbornDelete = async (
-  id: string,
-  db: PouchDB.Database
-): Promise<void> => {
-  let doc;
-  try {
-    doc = await db.get(id);
-  } catch (err) {
-    // If the document is missing then just return
-    if (err.status === 404) {
-      return;
-    }
-    throw err;
-  }
-
-  try {
-    await db.remove(doc);
-    return;
-  } catch (err) {
-    if (err.status !== 409) {
-      throw err;
-    }
-    // If there is a conflict, just keep trying
-    doc = await db.get(id);
-    return stubbornDelete(doc._id, db);
-  }
-};
-
 // The way the typings for PouchDB-adapter-idb are set up, if you want to
 // specify 'storage' you also must specify adapter: 'pouchdb' but we don't want
 // that--we want to let Pouch decide the adapter and, if it happens to be IDB,
@@ -240,8 +210,6 @@ interface SyncOptions {
   password?: string;
   batchSize?: number;
 }
-
-type RecordTypes = CardRecord | ProgressRecord | ReviewRecord;
 
 interface CardStoreError {
   status?: number;
