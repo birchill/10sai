@@ -3,7 +3,7 @@
 import PouchDB from 'pouchdb';
 import EventEmitter from 'event-emitter';
 
-import { Omit, MakeOptional } from './utils/typescript';
+import { Omit, MakeOptional } from './utils/type-helpers';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
@@ -17,15 +17,6 @@ const REVIEW_PREFIX = 'review-';
 const stripCardPrefix = (id: string) => id.substr(CARD_PREFIX.length);
 const stripProgressPrefix = (id: string) => id.substr(PROGRESS_PREFIX.length);
 
-interface Card {
-  _id: string;
-  question: string;
-  answer: string;
-  created: string;
-  modified: string;
-  progress: Progress;
-}
-
 interface CardRecord {
   _id: string;
   _rev?: string;
@@ -33,11 +24,6 @@ interface CardRecord {
   answer: string;
   created: string;
   modified: string;
-}
-
-interface Progress {
-  level: number;
-  reviewed: Date | null;
 }
 
 interface ProgressRecord {
@@ -81,17 +67,6 @@ const mergeRecords = (card: CardRecord, progress: ProgressRecord): Card => {
   };
   return result;
 };
-
-interface Review {
-  reviewTime: Date;
-  maxCards: number;
-  maxNewCards: number;
-  completed: number;
-  newCardsCompleted: number;
-  history: string[];
-  failedCardsLevel1: string[];
-  failedCardsLevel2: string[];
-}
 
 interface ReviewRecord {
   _id: string;
