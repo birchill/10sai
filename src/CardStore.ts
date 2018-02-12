@@ -19,7 +19,7 @@ let PouchDB = require('pouchdb');
 if (PouchDB.default) {
   PouchDB = PouchDB.default;
 }
-import * as EventEmitter from 'event-emitter';
+import EventEmitter from 'event-emitter';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));

@@ -8,8 +8,8 @@
     "url": "https://github.com/birtles/10sai.git"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=development webpack --define process.env.NODE_ENV=production --colors",
-    "build:prod": "cross-env NODE_ENV=production webpack --define process.env.NODE_ENV=development --colors",
+    "build": "cross-env NODE_ENV=development webpack --define process.env.NODE_ENV=development --colors",
+    "build:prod": "cross-env NODE_ENV=production webpack --define process.env.NODE_ENV=production --colors",
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
     "start": "cross-env NODE_ENV=development webpack-dev-server --define process.env.NODE_ENV=development --progress --colors --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server --define process.env.NODE_ENV=production --progress --colors --history-api-fallback --content-base public/",
@@ -37,7 +37,8 @@
     "react-redux": "*",
     "redux": "*",
     "redux-saga": "^0.16.0",
-    "reselect": "^3.0.1"
+    "reselect": "^3.0.1",
+    "uglify-es": "^3.3.9"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.38",
@@ -48,6 +49,8 @@
     "@babel/preset-react": "^7.0.0-beta.38",
     "@babel/register": "^7.0.0-beta.38",
     "@types/pouchdb": "^6.3.2",
+    "@types/react": "^16.0.36",
+    "@types/react-dom": "^16.0.3",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^22.1.0",
     "babel-loader": "^8.0.0-beta.0",

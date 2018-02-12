@@ -9,13 +9,12 @@ import CardList from '../CardList';
 
 import EditCardScreen from './EditCardScreen.jsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
-import Link from './Link.jsx';
 import LookupScreen from './LookupScreen.jsx';
+import MainTabBlock from './MainTabBlock.tsx';
 import Popup from './Popup.jsx';
 import ReviewScreenContainer from './ReviewScreenContainer.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
-import TabBlock from './TabBlock.jsx';
 import TabPanel from './TabPanel.jsx';
 
 class App extends React.PureComponent {
@@ -92,11 +91,6 @@ class App extends React.PureComponent {
     }
     const tabPanelClass = typeof activeTab === 'undefined' ? '-allhidden' : '';
 
-    // Edit/Add handling
-    const [addEditLink, addEditLabel, addEditClass] = this.props.activeCardId
-      ? [`/cards/${this.props.activeCardId}`, 'Edit', '-edit-card']
-      : ['/cards/new', 'Add', '-add-card'];
-
     // Review handling
     let remainingReviews;
     if (this.props.reviewProgress) {
@@ -153,33 +147,13 @@ class App extends React.PureComponent {
               />
             </TabPanel>
           </div>
-          <TabBlock active={activeTab} className="tabbar -white">
-            <Link
-              id="lookup-tab"
-              href="/lookup"
-              aria-controls="lookup-page"
-              className="-icon -lookup"
-            >
-              Lookup
-            </Link>
-            <Link
-              id="edit-tab"
-              href={addEditLink}
-              aria-controls="edit-page"
-              className={`-icon ${addEditClass}`}
-            >
-              {addEditLabel}
-            </Link>
-            <Link
-              id="review-tab"
-              href="/review"
-              aria-controls="review-page"
-              className={`-icon -review ${remainingReviews ? '-badge' : ''}`}
-              data-badge={remainingReviews}
-            >
-              Review
-            </Link>
-          </TabBlock>
+          <MainTabBlock
+            className="-white"
+            activeTab={this.props.route.screen}
+            activeIndex={activeTab}
+            activeCardId={this.props.activeCardId}
+            remainingReviews={remainingReviews}
+          />
           <Popup
             active={this.props.route.popup === 'settings'}
             currentScreenLink={this.currentScreenLink}
