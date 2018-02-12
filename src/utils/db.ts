@@ -28,3 +28,7 @@ export const stubbornDelete = async (
     return stubbornDelete(doc._id, db);
   }
 };
+
+// Unfortunately the PouchDB typings forgot the 'name' member of Database.
+// FIXME: File a PR for this.
+export type DatabaseWithName = PouchDB.Database & { name: string };

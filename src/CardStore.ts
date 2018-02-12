@@ -5,12 +5,10 @@ import EventEmitter from 'event-emitter';
 
 import { Card, Progress, Review } from './common';
 import { Omit, MakeOptional } from './utils/type-helpers';
-import { stubbornDelete } from './utils/db';
+import { DatabaseWithName, stubbornDelete } from './utils/db';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
-
-let prevTimeStamp = 0;
 
 const CARD_PREFIX = 'card-';
 const PROGRESS_PREFIX = 'progress-';
@@ -228,15 +226,13 @@ class CardStoreError extends Error {
   }
 }
 
-// Unfortunately the PouchDB typings forgot the 'name' member of Database.
-// FIXME: File a PR for this.
-type DatabaseWithName = PouchDB.Database & { name: string };
-
 // ---------------------------------------------------------------------------
 //
 // CardStore class
 //
 // ---------------------------------------------------------------------------
+
+let prevTimeStamp = 0;
 
 class CardStore {
   db: PouchDB.Database;
