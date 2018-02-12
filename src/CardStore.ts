@@ -3,6 +3,8 @@
 import PouchDB from 'pouchdb';
 import EventEmitter from 'event-emitter';
 
+import { Omit, MakeOptional } from './utils/typescript';
+
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
 
@@ -14,13 +16,6 @@ const REVIEW_PREFIX = 'review-';
 
 const stripCardPrefix = (id: string) => id.substr(CARD_PREFIX.length);
 const stripProgressPrefix = (id: string) => id.substr(PROGRESS_PREFIX.length);
-
-// FIXME: Move this to some sort of generic definitions file
-type Omit<T, K extends keyof T> = Pick<
-  T,
-  ({ [P in keyof T]: P } &
-    { [P in K]: never } & { [x: string]: never })[keyof T]
->;
 
 interface Card {
   _id: string;
@@ -52,10 +47,7 @@ interface ProgressRecord {
   reviewed: number | null;
 }
 
-// FIXME: Extract this in to a more general PartialPartial
-type CardWithOptionalProgress = Omit<Card, 'progress'> &
-  Pick<Partial<Card>, 'progress'>;
-type CardChange = CardWithOptionalProgress & PouchDB.Core.ChangesMeta;
+type CardChange = MakeOptional<Card, 'progress'> & PouchDB.Core.ChangesMeta;
 
 // Take a card from the DB and turn it into a more appropriate form for
 // client consumption
