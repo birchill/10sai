@@ -84,12 +84,10 @@ class App extends React.PureComponent {
       title += ` - ${toTitle(this.props.route.popup)}`;
     }
 
-    const screens = ['lookup', 'edit-card', 'review'];
-    let activeTab = screens.indexOf(this.props.route.screen);
-    if (activeTab === -1) {
-      activeTab = undefined;
-    }
-    const tabPanelClass = typeof activeTab === 'undefined' ? '-allhidden' : '';
+    const tabSelected = ['lookup', 'edit-card', 'review'].includes(
+      this.props.route.screen
+    );
+    const tabPanelClass = tabSelected ? '-allhidden' : '';
 
     // Review handling
     let remainingReviews;
@@ -150,7 +148,6 @@ class App extends React.PureComponent {
           <MainTabBlock
             className="-white"
             activeTab={this.props.route.screen}
-            activeIndex={activeTab}
             activeCardId={this.props.activeCardId}
             remainingReviews={remainingReviews}
           />

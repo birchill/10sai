@@ -6,7 +6,6 @@ import TabBlock from './TabBlock.jsx';
 interface Props {
   className?: string;
   activeTab?: 'lookup' | 'edit-card' | 'review';
-  activeIndex?: number;
   activeCardId?: string;
   remainingReviews?: number;
 }
@@ -33,8 +32,12 @@ const MainTabBlock: React.SFC<Props> = props => {
 
   const reviewLink = props.activeTab === 'review' ? '/' : '/review';
 
+  const activeIndex = props.activeTab
+    ? ['lookup', 'edit-card', 'review'].indexOf(props.activeTab)
+    : undefined;
+
   return (
-    <TabBlock active={props.activeIndex} className={classes.join(' ')}>
+    <TabBlock active={activeIndex} className={classes.join(' ')}>
       <Link
         id="lookup-tab"
         href={lookupLink}
