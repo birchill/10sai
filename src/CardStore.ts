@@ -248,7 +248,8 @@ class CardStore {
     if (typeof pouchOptions.auto_compaction === 'undefined') {
       pouchOptions.auto_compaction = true;
     }
-    pouchOptions.storage = 'persistent';
+    // FIXME: Use the storage API instead
+    // pouchOptions.storage = 'persistent';
     this.db = new PouchDB('cards', pouchOptions);
 
     this.reviewTime =
