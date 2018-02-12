@@ -8,11 +8,11 @@
     "url": "https://github.com/birtles/10sai.git"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=development webpack --define process.env.NODE_ENV=development --colors",
-    "build:prod": "cross-env NODE_ENV=production webpack --define process.env.NODE_ENV=production --colors",
+    "build": "cross-env NODE_ENV=development webpack --define process.env.NODE_ENV=development --config webpack.dev.js --colors",
+    "build:prod": "cross-env NODE_ENV=production webpack --define process.env.NODE_ENV=production --config webpack.prod.js --colors",
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
-    "start": "cross-env NODE_ENV=development webpack-dev-server --define process.env.NODE_ENV=development --progress --colors --history-api-fallback --content-base public/",
-    "start:prod": "cross-env NODE_ENV=production webpack-dev-server --define process.env.NODE_ENV=production --progress --colors --history-api-fallback --content-base public/",
+    "start": "cross-env NODE_ENV=development webpack-dev-server --define process.env.NODE_ENV=development --config webpack.dev.js --progress --colors --history-api-fallback --content-base public/",
+    "start:prod": "cross-env NODE_ENV=production webpack-dev-server --define process.env.NODE_ENV=production --config webpack.prod.js --progress --colors --history-api-fallback --content-base public/",
     "lint": "eslint src/**/.jsx? test/**",
     "precommit": "lint-staged && npm run lint -q",
     "test": "jest"
@@ -80,7 +80,8 @@
     "typescript": "^2.7.1",
     "uglifyjs-webpack-plugin": "^1.1.8",
     "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.11.1"
+    "webpack-dev-server": "^2.11.1",
+    "webpack-merge": "^4.1.1"
   },
   "jest": {
     "moduleFileExtensions": [
