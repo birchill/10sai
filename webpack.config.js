@@ -1,6 +1,7 @@
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -64,6 +65,12 @@ module.exports = {
     new ExtractTextPlugin({ filename: '10sai.css', allChunks: true }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
+    }),
+    new UglifyJsPlugin({
+      uglifyOptions: {
+        ecma: 6,
+      },
+      sourceMap: true,
     }),
   ],
 };
