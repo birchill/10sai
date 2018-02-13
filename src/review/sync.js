@@ -18,12 +18,12 @@ import ReviewState from './states';
 // be enough, normally, for views to be updated.
 const QUERY_AVAILABLE_CARDS_DELAY = 3000;
 
-function sync(cardStore, store) {
+function sync(cardStore, stateStore) {
   let needAvailableCards;
   let delayedCallback;
 
-  store.subscribe(() => {
-    const state = store.getState();
+  stateStore.subscribe(() => {
+    const state = stateStore.getState();
 
     if (getLoadingAvailableCards(state) || getSavingProgress(state)) {
       return;
@@ -47,7 +47,7 @@ function sync(cardStore, store) {
       return;
     }
 
-    store.dispatch(reviewActions.queryAvailableCards());
+    stateStore.dispatch(reviewActions.queryAvailableCards());
   });
 
   cardStore.changes.on('card', change => {
@@ -64,12 +64,12 @@ function sync(cardStore, store) {
       // anything changes. Since we debounce and delay these updates, and only
       // do them when we're looking at the review screen it should be fine.
       delayedCallback = setTimeout(() => {
-        store.dispatch(reviewActions.queryAvailableCards());
+        stateStore.dispatch(reviewActions.queryAvailableCards());
         delayedCallback = undefined;
       }, QUERY_AVAILABLE_CARDS_DELAY);
     }
 
-    const reviewCard = getReviewCards(store.getState()).find(
+    const reviewCard = getReviewCards(stateStore.getState()).find(
       card => card._id === change.id
     );
 
@@ -79,7 +79,7 @@ function sync(cardStore, store) {
     }
 
     if (change.deleted) {
-      store.dispatch(reviewActions.deleteReviewCard(change.id));
+      stateStore.dispatch(reviewActions.deleteReviewCard(change.id));
       return;
     }
 
@@ -88,12 +88,12 @@ function sync(cardStore, store) {
       return;
     }
 
-    store.dispatch(reviewActions.updateReviewCard(change.doc));
+    stateStore.dispatch(reviewActions.updateReviewCard(change.doc));
   });
 
   // Synchronize changes to review document
   cardStore.changes.on('review', review => {
-    const currentState = getReviewSummary(store.getState());
+    const currentState = getReviewSummary(stateStore.getState());
 
     // Review document was deleted
     if (!review) {
@@ -101,20 +101,20 @@ function sync(cardStore, store) {
         currentState.reviewState !== ReviewState.IDLE &&
         currentState.reviewState !== ReviewState.COMPLETE
       ) {
-        store.dispatch(reviewActions.cancelReview());
+        stateStore.dispatch(reviewActions.cancelReview());
       }
       return;
     }
 
     if (!deepEqual(currentState, review)) {
-      store.dispatch(reviewActions.syncReview(review));
+      stateStore.dispatch(reviewActions.syncReview(review));
     }
   });
 
   // Do initial sync
   cardStore.getReview().then(review => {
     if (review) {
-      store.dispatch(reviewActions.syncReview(review));
+      stateStore.dispatch(reviewActions.syncReview(review));
     }
   });
 }

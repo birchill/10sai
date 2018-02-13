@@ -28,19 +28,19 @@ import 'main.scss'; // eslint-disable-line
 
 const sagaMiddleware = createSagaMiddleware();
 
-let store;
+let stateStore;
 if (process.env.NODE_ENV === 'development') {
   // eslint-disable-next-line global-require, import/no-extraneous-dependencies
   const { createLogger } = require('redux-logger');
   const loggerMiddleware = createLogger();
   const composeEnhancers =
     window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-  store = createStore(
+  stateStore = createStore(
     reducer,
     composeEnhancers(applyMiddleware(sagaMiddleware, loggerMiddleware))
   );
 } else {
-  store = createStore(reducer, applyMiddleware(sagaMiddleware));
+  stateStore = createStore(reducer, applyMiddleware(sagaMiddleware));
 }
 
 //
@@ -49,15 +49,19 @@ if (process.env.NODE_ENV === 'development') {
 
 const cardStore = new CardStore();
 
-syncEditChanges(cardStore, store);
-reviewSync(cardStore, store);
+syncEditChanges(cardStore, stateStore);
+reviewSync(cardStore, stateStore);
 
 const settingsStore = new SettingsStore();
 
 const dispatchSettingUpdates = settings => {
   for (const key in settings) {
     if (settings.hasOwnProperty(key)) {
-      store.dispatch({ type: 'UPDATE_SETTING', key, value: settings[key] });
+      stateStore.dispatch({
+        type: 'UPDATE_SETTING',
+        key,
+        value: settings[key],
+      });
     }
   }
 };
@@ -73,7 +77,7 @@ sagaMiddleware.run(function* allSagas() {
   yield all([
     editSagas(cardStore),
     reviewSagas(cardStore),
-    syncSagas(cardStore, settingsStore, store.dispatch.bind(store)),
+    syncSagas(cardStore, settingsStore, stateStore.dispatch.bind(stateStore)),
     routeSagas(),
   ]);
 });
@@ -82,7 +86,7 @@ sagaMiddleware.run(function* allSagas() {
 // Router
 //
 
-store.dispatch(
+stateStore.dispatch(
   routeActions.navigate({
     path: window.location.pathname,
     search: window.location.search,
@@ -97,8 +101,8 @@ window.addEventListener('popstate', evt => {
   // This requires that the beforeScreenChange fetches anything it needs from
   // the current state in a synchronous state (as the navigate action might
   // cause parts of the current state to be clobbered).
-  store.dispatch(routeActions.beforeScreenChange());
-  store.dispatch(
+  stateStore.dispatch(routeActions.beforeScreenChange());
+  stateStore.dispatch(
     routeActions.navigate({
       path: window.location.pathname,
       search: window.location.search,
@@ -114,10 +118,10 @@ window.addEventListener('popstate', evt => {
 //
 
 window.addEventListener('online', () => {
-  store.dispatch({ type: 'GO_ONLINE' });
+  stateStore.dispatch({ type: 'GO_ONLINE' });
 });
 window.addEventListener('offline', () => {
-  store.dispatch({ type: 'GO_OFFLINE' });
+  stateStore.dispatch({ type: 'GO_OFFLINE' });
 });
 
 //
@@ -138,7 +142,7 @@ const updateReviewTime = () => {
   reviewTime.setMinutes(0);
   reviewTime.setSeconds(0);
   reviewTime.setMilliseconds(0);
-  store.dispatch({ type: 'SET_REVIEW_TIME', reviewTime });
+  stateStore.dispatch({ type: 'SET_REVIEW_TIME', reviewTime });
 };
 (() => {
   const MS_PER_HOUR = 60 * 60 * 1000;
@@ -151,7 +155,7 @@ updateReviewTime();
 //
 
 ReactDOM.render(
-  <Provider store={store}>
+  <Provider store={stateStore}>
     <App cardStore={cardStore} />
   </Provider>,
   document.getElementById('container')

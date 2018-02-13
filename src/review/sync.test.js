@@ -38,7 +38,7 @@ class MockCardStore {
   }
 }
 
-class MockStore {
+class MockStateStore {
   constructor() {
     this.state = {};
     this.actions = [];
@@ -74,11 +74,11 @@ const initialState = reducer(undefined, { type: 'NONE' });
 
 describe('review:sync', () => {
   let cardStore;
-  let store;
+  let stateStore;
 
   beforeEach(() => {
     cardStore = new MockCardStore();
-    store = new MockStore();
+    stateStore = new MockStateStore();
 
     setTimeout.mockClear();
     clearTimeout.mockClear();
@@ -86,19 +86,19 @@ describe('review:sync', () => {
 
   describe('available cards', () => {
     it('triggers an update immediately when cards are needed and there are none', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: initialState,
       });
 
-      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(stateStore.actions).toEqual([queryAvailableCards()]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
     it('triggers an update immediately when cards are newly-needed due to a state change, even if there are some', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -106,17 +106,17 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(stateStore.actions).toEqual([queryAvailableCards()]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
     it('triggers a delayed update when a card is added', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: initialState,
       });
-      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(stateStore.actions).toEqual([queryAvailableCards()]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
 
       cardStore.__triggerChange('card', {});
@@ -124,29 +124,29 @@ describe('review:sync', () => {
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
       jest.runAllTimers();
-      expect(store.actions).toEqual([
+      expect(stateStore.actions).toEqual([
         queryAvailableCards(),
         queryAvailableCards(),
       ]);
     });
 
     it('cancels a delayed update when cards are needed immediately', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
           availableCards: { newCards: 2, overdueCards: 3 },
         },
       });
-      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(stateStore.actions).toEqual([queryAvailableCards()]);
 
       // Trigger a delayed update
       cardStore.__triggerChange('card', {});
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
       // Then trigger an immediate update
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -154,39 +154,39 @@ describe('review:sync', () => {
         },
       });
       expect(clearTimeout).toHaveBeenCalledTimes(1);
-      expect(store.actions).toEqual([
+      expect(stateStore.actions).toEqual([
         queryAvailableCards(),
         queryAvailableCards(),
       ]);
     });
 
     it('cancels a delayed update when cards are no longer needed', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
           availableCards: { newCards: 2, overdueCards: 3 },
         },
       });
-      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(stateStore.actions).toEqual([queryAvailableCards()]);
 
       // Trigger a delayed update
       cardStore.__triggerChange('card', {});
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
       // Then change screen
-      store.__update({
+      stateStore.__update({
         screen: 'home',
         review: initialState,
       });
       expect(clearTimeout).toHaveBeenCalledTimes(1);
-      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(stateStore.actions).toEqual([queryAvailableCards()]);
     });
 
     it('does NOT trigger an update when cards are already being loaded', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -194,13 +194,13 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toEqual([]);
+      expect(stateStore.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
     it('does NOT trigger an update when the progress is being saved', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -208,39 +208,39 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toEqual([]);
+      expect(stateStore.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
     it('does NOT trigger an update when a card is added when not in an appropriate state', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'home',
         review: initialState,
       });
-      expect(store.actions).toEqual([]);
+      expect(stateStore.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
 
       cardStore.__triggerChange('card', {});
 
-      expect(store.actions).toEqual([]);
+      expect(stateStore.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
     });
 
     it('batches updates from multiple card changes', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: initialState,
       });
-      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(stateStore.actions).toEqual([queryAvailableCards()]);
 
       cardStore.__triggerChange('card', {});
       cardStore.__triggerChange('card', {});
       cardStore.__triggerChange('card', {});
 
       jest.runAllTimers();
-      expect(store.actions).toEqual([
+      expect(stateStore.actions).toEqual([
         queryAvailableCards(),
         queryAvailableCards(),
       ]);
@@ -249,14 +249,14 @@ describe('review:sync', () => {
 
   describe('review cards', () => {
     it('triggers an update when the current card is updated', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
       };
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -273,18 +273,18 @@ describe('review:sync', () => {
         doc: updatedCard,
       });
 
-      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
+      expect(stateStore.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
     it('triggers an update when an unreviewed card is updated', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
       };
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -301,18 +301,18 @@ describe('review:sync', () => {
         doc: updatedCard,
       });
 
-      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
+      expect(stateStore.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
     it('triggers an update when a failed card is updated', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
       };
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -329,18 +329,18 @@ describe('review:sync', () => {
         doc: updatedCard,
       });
 
-      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
+      expect(stateStore.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
     it('triggers an update when the current card is deleted', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
       };
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -361,20 +361,20 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toContainEqual(
+      expect(stateStore.actions).toContainEqual(
         expect.objectContaining({ type: 'DELETE_REVIEW_CARD', id: 'abc' })
       );
     });
 
     it('does NOT trigger an update when there is no change to the card', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
       };
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -387,18 +387,18 @@ describe('review:sync', () => {
         doc: { ...card },
       });
 
-      expect(store.actions).not.toContainEqual(updateReviewCard(card));
+      expect(stateStore.actions).not.toContainEqual(updateReviewCard(card));
     });
 
     it('does NOT trigger an update when an unrelated card is updated', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
       };
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -414,18 +414,18 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).not.toContainEqual(updateReviewCard(card));
+      expect(stateStore.actions).not.toContainEqual(updateReviewCard(card));
     });
 
     it('does NOT trigger an update when an unrelated card is deleted', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
       };
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -443,7 +443,7 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).not.toContainEqual(
+      expect(stateStore.actions).not.toContainEqual(
         expect.objectContaining({ type: 'DELETE_REVIEW_CARD', id: 'xyz' })
       );
     });
@@ -451,9 +451,9 @@ describe('review:sync', () => {
 
   describe('review state', () => {
     it('triggers a sync when the review has changed', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: initialState,
       });
@@ -469,15 +469,15 @@ describe('review:sync', () => {
       };
 
       cardStore.__triggerChange('review', review);
-      expect(store.actions).toContainEqual(
+      expect(stateStore.actions).toContainEqual(
         expect.objectContaining({ type: 'SYNC_REVIEW', review })
       );
     });
 
     it('does NOT trigger a sync when nothing has changed', () => {
-      subject(cardStore, store);
+      subject(cardStore, stateStore);
 
-      store.__update({
+      stateStore.__update({
         screen: 'review',
         review: initialState,
       });
@@ -486,14 +486,14 @@ describe('review:sync', () => {
       });
 
       cardStore.__triggerChange('review', reviewSummary);
-      expect(store.actions).not.toContainEqual(
+      expect(stateStore.actions).not.toContainEqual(
         expect.objectContaining({ type: 'SYNC_REVIEW', review: reviewSummary })
       );
     });
 
     it('cancels the review when the review is deleted', () => {
-      subject(cardStore, store);
-      store.__update({
+      subject(cardStore, stateStore);
+      stateStore.__update({
         screen: 'review',
         review: {
           ...initialState,
@@ -503,7 +503,7 @@ describe('review:sync', () => {
 
       cardStore.__triggerChange('review', null);
 
-      expect(store.actions).toContainEqual(
+      expect(stateStore.actions).toContainEqual(
         expect.objectContaining({ type: 'CANCEL_REVIEW' })
       );
     });
