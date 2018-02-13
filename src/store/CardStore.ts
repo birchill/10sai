@@ -5,7 +5,7 @@ import EventEmitter from 'event-emitter';
 
 import { Card, Progress, Review } from '../model';
 import { Omit, MakeOptional } from '../utils/type-helpers';
-import { DatabaseWithName, stubbornDelete } from '../utils/db';
+import { DatabaseWithName, stubbornDelete } from './utils';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));

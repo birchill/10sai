@@ -2,6 +2,7 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import memdown from 'memdown';
+
 import CardStore from './CardStore.ts';
 import { waitForEvents } from '../../test/testcommon';
 
