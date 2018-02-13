@@ -3,8 +3,9 @@
 
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
+
 import CardStore from './CardStore.ts';
-import { waitForEvents } from '../test/testcommon';
+import { waitForEvents } from '../../test/testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 

@@ -1,4 +1,4 @@
-import CardStore from './CardStore.ts';
+import CardStore from './store/CardStore.ts';
 
 const cardStore = new CardStore();
 
