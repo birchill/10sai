@@ -4,8 +4,8 @@
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
-import CardStore from './CardStore.ts';
-import { waitForEvents } from '../../test/testcommon';
+import ReviewStore from './ReviewStore.ts';
+import { waitForEvents } from '../../../test/testcommon';
 
 const waitForMs = ms =>
   new Promise(resolve => {
@@ -69,7 +69,7 @@ const syncWithWaitableRemote = async (cardStore, remote) => {
   return waitForIdle;
 };
 
-describe('CardStore review storage', () => {
+describe('ReviewStore', () => {
   let subject;
   let testRemote;
 
