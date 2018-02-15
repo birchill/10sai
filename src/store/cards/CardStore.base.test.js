@@ -3,17 +3,20 @@
 
 import memdown from 'memdown';
 
+import Store from '../Store.ts';
 import CardStore from './CardStore.ts';
-import { waitForEvents } from '../../test/testcommon';
+import { waitForEvents } from '../../../test/testcommon';
 
 describe('CardStore', () => {
+  let store;
   let subject;
 
   beforeEach(() => {
-    subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
+    store = new Store({ pouch: { db: memdown }, prefetchViews: false });
+    subject = store.cards;
   });
 
-  afterEach(() => subject.destroy());
+  afterEach(() => store.destroy());
 
   it('is initially empty', async () => {
     const cards = await subject.getCards();
@@ -158,7 +161,7 @@ describe('CardStore', () => {
 
   it('reports added cards', async () => {
     let updateInfo;
-    subject.changes.on('card', info => {
+    store.changes.on('card', info => {
       updateInfo = info;
     });
 
@@ -263,7 +266,7 @@ describe('CardStore', () => {
 
   it('reports deleted cards', async () => {
     let updateInfo;
-    subject.changes.on('card', info => {
+    store.changes.on('card', info => {
       updateInfo = info;
     });
     const addedCard = await subject.putCard({
@@ -417,7 +420,7 @@ describe('CardStore', () => {
 
   it('reports changes to cards', async () => {
     const updates = [];
-    subject.changes.on('card', info => {
+    store.changes.on('card', info => {
       updates.push(info);
     });
 

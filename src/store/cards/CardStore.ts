@@ -60,6 +60,8 @@ interface CardStoreOptions {
 
 export class CardStore {
   db: PouchDB.Database;
+  createdViews: Promise<void>;
+  resolveCreatedViews: (() => void) | null;
   prefetchViews: boolean;
   returnedCards: {
     [id: string]: { cardRev: string; progressRev: string | null };
@@ -69,10 +71,13 @@ export class CardStore {
     this.db = db;
     this.returnedCards = {};
     this.prefetchViews = <boolean>(options && options.prefetchViews);
+    this.createdViews = new Promise(resolve => {
+      this.resolveCreatedViews = resolve;
+    });
   }
 
   async getCards(options: GetCardsOptions): Promise<Card[]> {
-    // await this.initDone;
+    await this.createdViews;
 
     const queryOptions: PouchDB.Query.Options<any, any> = {
       include_docs: true,
@@ -108,7 +113,7 @@ export class CardStore {
   }
 
   async getCardsById(ids: string[]): Promise<Card[]> {
-    // await this.initDone;
+    await this.createdViews;
 
     const options = {
       keys: ids.map(id => PROGRESS_PREFIX + id),
@@ -123,7 +128,7 @@ export class CardStore {
   }
 
   async getAvailableCards() {
-    // await this.initDone;
+    await this.createdViews;
 
     const overdueResult = await this.db.query('overdueness', {
       include_docs: false,
@@ -366,6 +371,14 @@ export class CardStore {
     await this.updateCardsView();
     await this.updateNewCardsView();
     await this.updateOverduenessView(reviewTime);
+
+    // If this is the first time we created the views, resolve anyone who was
+    // blocked on them.
+    if (this.resolveCreatedViews) {
+      const resolve = this.resolveCreatedViews;
+      this.resolveCreatedViews = null;
+      resolve();
+    }
   }
 
   async updateCardsView() {
