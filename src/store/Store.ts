@@ -121,7 +121,7 @@ class Store {
     dbChanges.on('change', async change => {
       console.assert(change.changes && change.doc, 'Unexpected changes event');
 
-      const emit = this.changesEmitter!.emit;
+      const emit = this.changesEmitter!.emit.bind(this.changesEmitter!);
       await this.cardStore.onChange(change, emit);
       await this.reviewStore.onChange(change, emit);
     });

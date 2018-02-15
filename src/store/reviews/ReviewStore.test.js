@@ -4,7 +4,7 @@
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
-import ReviewStore from './ReviewStore.ts';
+import Store from '../Store.ts';
 import { waitForEvents } from '../../../test/testcommon';
 
 const waitForMs = ms =>
@@ -70,6 +70,7 @@ const syncWithWaitableRemote = async (cardStore, remote) => {
 };
 
 describe('ReviewStore', () => {
+  let store;
   let subject;
   let testRemote;
 
@@ -86,14 +87,15 @@ describe('ReviewStore', () => {
 
   beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
-    subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
+    store = new Store({ pouch: { db: memdown }, prefetchViews: false });
+    subject = store.reviews;
 
     // A separate remote we use for reading back records directly, injecting
     // conflicting records etc.
     testRemote = new PouchDB('cards_remote', { db: memdown });
   });
 
-  afterEach(() => Promise.all([subject.destroy(), testRemote.destroy()]));
+  afterEach(() => Promise.all([store.destroy(), testRemote.destroy()]));
 
   it('returns a newly-added review', async () => {
     await subject.putReview(typicalReview);
@@ -103,7 +105,7 @@ describe('ReviewStore', () => {
 
   it('updates the latest review', async () => {
     // Setup a remote so we can read back the review record
-    await subject.setSyncServer(testRemote);
+    await store.setSyncServer(testRemote);
 
     // Set up a promise to track changes
     const changesPromise = waitForNumReviewChanges(testRemote, 2);
@@ -129,7 +131,7 @@ describe('ReviewStore', () => {
   });
 
   it('returns the latest review', async () => {
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    const waitForIdle = await syncWithWaitableRemote(store, testRemote);
 
     // Push two new docs to the remote
     await testRemote.put({
@@ -159,7 +161,7 @@ describe('ReviewStore', () => {
   });
 
   it('deletes all reviews', async () => {
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    const waitForIdle = await syncWithWaitableRemote(store, testRemote);
 
     // Push two new docs to the remote
     await testRemote.put({
@@ -202,7 +204,7 @@ describe('ReviewStore', () => {
     });
 
     // Now connect the two and let chaos ensue
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    const waitForIdle = await syncWithWaitableRemote(store, testRemote);
     await waitForIdle();
 
     // Check that the conflict is gone...
@@ -213,7 +215,7 @@ describe('ReviewStore', () => {
   });
 
   it('reports new review docs', async () => {
-    const changesPromise = waitForNumReviewEvents(subject, 1);
+    const changesPromise = waitForNumReviewEvents(store, 1);
     await subject.putReview({ ...typicalReview, completed: 7 });
     const changes = await changesPromise;
     expect(changes[0]).toMatchObject({
@@ -223,7 +225,7 @@ describe('ReviewStore', () => {
 
   it('reports deleted review docs', async () => {
     await subject.putReview(typicalReview);
-    const changesPromise = waitForNumReviewEvents(subject, 1);
+    const changesPromise = waitForNumReviewEvents(store, 1);
     await subject.deleteReview();
     const changes = await changesPromise;
     expect(changes[0]).toBeNull();
@@ -231,18 +233,18 @@ describe('ReviewStore', () => {
 
   it('does not report new review docs older than current', async () => {
     // Create regular review and wait for it to be reported
-    const changesPromise = waitForNumReviewEvents(subject, 1);
+    const changesPromise = waitForNumReviewEvents(store, 1);
     await subject.putReview(typicalReview);
     await changesPromise;
 
     // Start monitoring for further changes
     const changes = [];
-    subject.changes.on('review', change => {
+    store.changes.on('review', change => {
       changes.push(change);
     });
 
     // Create remote with a review with earlier ID and wait for them to sync
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    const waitForIdle = await syncWithWaitableRemote(store, testRemote);
     await testRemote.put({
       ...typicalReview,
       completed: 2,
