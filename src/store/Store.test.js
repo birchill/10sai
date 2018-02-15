@@ -1,10 +1,8 @@
-/* global afterEach, beforeEach, describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
-
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
-import CardStore from './CardStore.ts';
+import Store from './Store.ts';
+import CardStore from './cards/CardStore.ts';
 import { waitForEvents } from '../../test/testcommon';
 
 const cardForDirectPut = card => ({
@@ -35,7 +33,7 @@ function idleSync() {
   return [idleCallback, idlePromise];
 }
 
-describe('CardStore remote sync', () => {
+describe('Store remote sync', () => {
   let subject;
   let testRemote;
   let failedAssertion;
@@ -58,7 +56,7 @@ describe('CardStore remote sync', () => {
   }
 
   beforeEach(() => {
-    subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
+    subject = new Store({ pouch: { db: memdown }, prefetchViews: false });
 
     failedAssertion = undefined;
 
@@ -245,8 +243,8 @@ describe('CardStore remote sync', () => {
   it('uploads existing local cards', async () => {
     const [idleCallback, idlePromise] = idleSync();
 
-    await subject.putCard({ question: 'Question 1', answer: 'Answer 1' });
-    await subject.putCard({ question: 'Question 2', answer: 'Answer 2' });
+    await subject.cards.putCard({ question: 'Question 1', answer: 'Answer 1' });
+    await subject.cards.putCard({ question: 'Question 2', answer: 'Answer 2' });
     await subject.setSyncServer(testRemote, { onIdle: idleCallback });
     await idlePromise;
 
@@ -282,7 +280,7 @@ describe('CardStore remote sync', () => {
       }),
     });
 
-    subject.putCard({ question: 'Question', answer: 'Answer' });
+    subject.cards.putCard({ question: 'Question', answer: 'Answer' });
   });
 
   it('reports sync progress on initial download', async () => {
@@ -328,7 +326,7 @@ describe('CardStore remote sync', () => {
     const putPromises = [];
     for (let i = 0; i < numCards; i++) {
       putPromises.push(
-        subject.putCard({
+        subject.cards.putCard({
           question: `Question ${i + 1}`,
           answer: `Answer ${i + 1}`,
         })
@@ -366,7 +364,7 @@ describe('CardStore remote sync', () => {
     const putPromises = [];
     for (let i = 0; i < localCards; i++) {
       putPromises.push(
-        subject.putCard({
+        subject.cards.putCard({
           question: `Local question ${i + 1}`,
           answer: `Local answer ${i + 1}`,
         })
@@ -444,6 +442,4 @@ describe('CardStore remote sync', () => {
 
   // XXX Reports an appropriate error when the remote server doesn't have
   // the specified database
-
-  // XXX: Conflict resolution
 });
