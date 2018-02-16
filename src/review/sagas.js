@@ -194,18 +194,18 @@ export function* cancelReview(cardStore) {
   yield call([cardStore, 'deleteReview']);
 }
 
-function* reviewSagas(cardStore) {
+function* reviewSagas(store) {
   yield* [
     takeEvery(
       ['NEW_REVIEW', 'SET_REVIEW_LIMITS', 'SET_REVIEW_TIME'],
       updateHeap,
-      cardStore
+      store.cards
     ),
-    takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
-    takeEvery(['SET_REVIEW_TIME'], updateReviewTime, cardStore),
-    takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, cardStore),
-    takeLatest(['SYNC_REVIEW'], syncReview, cardStore),
-    takeLatest(['CANCEL_REVIEW'], cancelReview, cardStore),
+    takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, store.cards),
+    takeEvery(['SET_REVIEW_TIME'], updateReviewTime, store.cards),
+    takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, store.cards),
+    takeLatest(['SYNC_REVIEW'], syncReview, store.cards),
+    takeLatest(['CANCEL_REVIEW'], cancelReview, store.cards),
   ];
 }
 
