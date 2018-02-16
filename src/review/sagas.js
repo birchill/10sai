@@ -130,8 +130,8 @@ export function* updateProgress(cardStore, action) {
   }
 }
 
-export function* updateReviewTime(cardStore, action) {
-  yield call([cardStore, 'setReviewTime'], action.reviewTime);
+export function* updateReviewTime(store, action) {
+  yield call([store, 'setReviewTime'], action.reviewTime);
 }
 
 export function* queryAvailableCards(cardStore) {
@@ -202,7 +202,7 @@ function* reviewSagas(store) {
       store.cards
     ),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, store.cards),
-    takeEvery(['SET_REVIEW_TIME'], updateReviewTime, store.cards),
+    takeEvery(['SET_REVIEW_TIME'], updateReviewTime, store),
     takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, store.cards),
     takeLatest(['SYNC_REVIEW'], syncReview, store.cards),
     takeLatest(['CANCEL_REVIEW'], cancelReview, store.cards),
