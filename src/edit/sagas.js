@@ -197,10 +197,10 @@ export function* watchCardEdits(cardStore) {
   }
 }
 
-export function* editSagas(cardStore) {
+export function* editSagas(store) {
   yield* [
-    takeEvery(['NAVIGATE'], navigate, cardStore),
-    watchCardEdits(cardStore),
+    takeEvery(['NAVIGATE'], navigate, store.cards),
+    watchCardEdits(store.cards),
   ];
 }
 
@@ -217,8 +217,8 @@ export function* beforeEditScreenChange() {
   return action.type !== 'FAIL_SAVE_CARD';
 }
 
-export function syncEditChanges(cardStore, stateStore) {
-  cardStore.changes.on('card', change => {
+export function syncEditChanges(store, stateStore) {
+  store.changes.on('card', change => {
     const cardBeingEdited = getActiveRecord(stateStore.getState()).card;
     if (cardBeingEdited && cardBeingEdited._id === change.id) {
       stateStore.dispatch({ type: 'SYNC_EDIT_CARD', card: change.doc });

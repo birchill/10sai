@@ -11,7 +11,7 @@ import EditState from '../../src/edit/states';
 
 describe('integration:edit', () => {
   it('should allow creating and saving a new card', () => {
-    const cardStore = { putCard: card => ({ ...card, _id: 'abc' }) };
+    const store = { cards: { putCard: card => ({ ...card, _id: 'abc' }) } };
     const formId = 12;
     global.location = {
       pathname: '/cards/abc',
@@ -25,7 +25,7 @@ describe('integration:edit', () => {
     state = reducer(state, { type: 'UPDATE_URL', url: '/cards/abc' });
 
     return (
-      expectSaga(editSagas, cardStore)
+      expectSaga(editSagas, store)
         // Danger -- withReducer must come before withState!
         .withReducer(reducer)
         .withState(state)
