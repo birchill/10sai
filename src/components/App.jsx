@@ -21,7 +21,7 @@ class App extends React.PureComponent {
   static get propTypes() {
     return {
       // eslint-disable-next-line react/forbid-prop-types
-      cardStore: PropTypes.object.isRequired,
+      store: PropTypes.object.isRequired,
       route: PropTypes.shape({
         screen: PropTypes.string,
         popup: PropTypes.string,
@@ -52,7 +52,7 @@ class App extends React.PureComponent {
   constructor(props) {
     super(props);
     this.closePopup = this.closePopup.bind(this);
-    this.cardList = new CardList(props.cardStore);
+    this.cardList = new CardList(props.store);
   }
 
   getChildContext() {

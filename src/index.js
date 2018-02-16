@@ -17,7 +17,7 @@ import reviewSync from './review/sync';
 import * as routeActions from './route/actions';
 
 import SettingsStore from './SettingsStore';
-import CardStore from './store/CardStore.ts';
+import Store from './store/Store.ts';
 import App from './components/App.jsx';
 
 import 'main.scss'; // eslint-disable-line
@@ -47,10 +47,10 @@ if (process.env.NODE_ENV === 'development') {
 // Local data stores
 //
 
-const cardStore = new CardStore();
+const store = new Store();
 
-syncEditChanges(cardStore, stateStore);
-reviewSync(cardStore, stateStore);
+syncEditChanges(store, stateStore);
+reviewSync(store, stateStore);
 
 const settingsStore = new SettingsStore();
 
@@ -75,9 +75,9 @@ settingsStore.onUpdate(dispatchSettingUpdates);
 
 sagaMiddleware.run(function* allSagas() {
   yield all([
-    editSagas(cardStore),
-    reviewSagas(cardStore),
-    syncSagas(cardStore, settingsStore, stateStore.dispatch.bind(stateStore)),
+    editSagas(store),
+    reviewSagas(store),
+    syncSagas(store, settingsStore, stateStore.dispatch.bind(stateStore)),
     routeSagas(),
   ]);
 });
@@ -156,7 +156,7 @@ updateReviewTime();
 
 ReactDOM.render(
   <Provider store={stateStore}>
-    <App cardStore={cardStore} />
+    <App store={store} />
   </Provider>,
   document.getElementById('container')
 );

@@ -1,9 +1,9 @@
-import CardStore from './store/CardStore.ts';
+import Store from './store/Store.ts';
 
-const cardStore = new CardStore();
+const store = new Store();
 
 async function listOrphans() {
-  const orphans = await cardStore.getOrphanedCards();
+  const orphans = await store.cards.getOrphanedCards();
 
   // Empty container
   const container = document.getElementById('orphaned-cards');
@@ -51,7 +51,7 @@ async function listOrphans() {
       );
       const putResults = [];
       for (const checkbox of checkedCards) {
-        putResults.push(cardStore.addProgressRecordForCard(checkbox.value));
+        putResults.push(store.cards.addProgressRecordForCard(checkbox.value));
       }
       try {
         await Promise.all(putResults);
@@ -65,7 +65,7 @@ async function listOrphans() {
 }
 
 async function listOrphanedProgress() {
-  const orphans = await cardStore.getOrphanedProgress();
+  const orphans = await store.cards.getOrphanedProgress();
 
   const container = document.getElementById('orphaned-progress');
   while (container.firstChild) {
@@ -112,7 +112,7 @@ async function listOrphanedProgress() {
       );
       const deleteResults = [];
       for (const checkbox of checkedProgress) {
-        deleteResults.push(cardStore.deleteProgressRecord(checkbox.value));
+        deleteResults.push(store.cards.deleteProgressRecord(checkbox.value));
       }
       try {
         await Promise.all(deleteResults);

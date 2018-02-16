@@ -1,6 +1,6 @@
 import { collate } from 'pouchdb-collate';
 
-// A simple wrapper around CardStore that represents a particular view onto the
+// A simple wrapper around a Store that represents a particular view onto the
 // cards performing incremental updates to the view in response to change
 // events (without having to re-query the database).
 
@@ -35,17 +35,17 @@ const findCard = (id, cards) => {
 };
 
 class CardList {
-  constructor(cardStore) {
-    this.cardStore = cardStore;
+  constructor(store) {
+    this.store = store;
 
     this.cards = [];
     this.listeners = [];
 
-    this.initDone = this.cardStore.getCards().then(cards => {
+    this.initDone = this.store.cards.getCards().then(cards => {
       this.cards = cards;
     });
 
-    this.cardStore.changes.on('card', change => {
+    this.store.changes.on('card', change => {
       const cards = this.cards.slice();
       const [found, index] = findCard(change.id, cards);
       if (found) {
