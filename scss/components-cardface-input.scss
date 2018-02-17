@@ -5,10 +5,16 @@
 
   display: flex;
   flex-direction: column;
+  justify-content: center;
 
   > .DraftEditor-root {
     // Make the text area fill the component height
     flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
     > .DraftEditor-editorContainer {
       height: 100%;
     }
@@ -23,6 +29,13 @@
 
     > .public-DraftEditorPlaceholder-hasFocus {
       display: none;
+    }
+
+    // Vertically center contents
+    .public-DraftEditor-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
   }
 }
