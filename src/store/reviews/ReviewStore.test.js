@@ -6,6 +6,7 @@ import memdown from 'memdown';
 
 import DataStore from '../DataStore.ts';
 import { waitForEvents } from '../../../test/testcommon';
+import { syncWithWaitableRemote } from '../test-utils';
 
 const waitForMs = ms =>
   new Promise(resolve => {
@@ -48,25 +49,6 @@ const waitForNumReviewEvents = (dataStore, num) => {
   });
 
   return promise;
-};
-
-const syncWithWaitableRemote = async (dataStore, remote) => {
-  let pauseAction;
-  await dataStore.setSyncServer(remote, {
-    onIdle: () => {
-      if (pauseAction) {
-        pauseAction();
-      }
-    },
-  });
-
-  const waitForIdle = () => {
-    return new Promise(resolve => {
-      pauseAction = resolve;
-    });
-  };
-
-  return waitForIdle;
 };
 
 describe('ReviewStore', () => {

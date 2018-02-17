@@ -148,6 +148,9 @@ describe('DataStore remote sync', () => {
       _id: CardStore.generateCardId(),
       created: now,
       modified: now,
+      keywords: [],
+      tags: [],
+      starred: false,
     };
     const secondCard = {
       question: 'Question 2',
@@ -155,6 +158,9 @@ describe('DataStore remote sync', () => {
       _id: CardStore.generateCardId(),
       created: now,
       modified: now,
+      keywords: [],
+      tags: [],
+      starred: false,
     };
     const initialProgress = {
       level: 0,

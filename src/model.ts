@@ -5,6 +5,9 @@ export interface Card {
   _id: string;
   question: string;
   answer: string;
+  keywords: string[];
+  tags: string[];
+  starred: boolean;
   created: number;
   modified: number;
   progress: Progress;

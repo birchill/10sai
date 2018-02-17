@@ -1,11 +1,13 @@
 /* global afterEach, beforeEach, describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
+import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
 import DataStore from '../DataStore.ts';
 import CardStore from './CardStore.ts';
 import { waitForEvents } from '../../../test/testcommon';
+import { syncWithWaitableRemote } from '../test-utils';
 
 describe('CardStore', () => {
   let dataStore;
@@ -416,6 +418,62 @@ describe('CardStore', () => {
       question: 'Updated question',
     });
     expect(new Date(card.modified)).toBeInDateRange(beginDate, new Date());
+  });
+
+  it('does not write empty optional fields for new cards', async () => {
+    const card = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+      keywords: [],
+      tags: [],
+      starred: false,
+    });
+    const testRemote = new PouchDB('cards_remote', { db: memdown });
+
+    try {
+      const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
+      await waitForIdle();
+
+      const record = await testRemote.get(`card-${card._id}`, {
+        include_docs: true,
+      });
+      expect(record.keywords).not.toBeDefined();
+      expect(record.tags).not.toBeDefined();
+      expect(record.starred).not.toBeDefined();
+    } finally {
+      testRemote.destroy();
+    }
+  });
+
+  it('does not write empty optional fields when updating cards', async () => {
+    const card = await subject.putCard({
+      question: 'Question',
+      answer: 'Answer',
+      keywords: ['abc'],
+      tags: ['abc', 'def'],
+      starred: true,
+    });
+    await subject.putCard({
+      _id: card._id,
+      keywords: [],
+      tags: [],
+      starred: false,
+    });
+
+    const testRemote = new PouchDB('cards_remote', { db: memdown });
+    try {
+      const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
+      await waitForIdle();
+
+      const record = await testRemote.get(`card-${card._id}`, {
+        include_docs: true,
+      });
+      expect(record.keywords).not.toBeDefined();
+      expect(record.tags).not.toBeDefined();
+      expect(record.starred).not.toBeDefined();
+    } finally {
+      testRemote.destroy();
+    }
   });
 
   it('reports changes to cards', async () => {

@@ -6,6 +6,9 @@ export interface CardRecord {
   _rev?: string;
   question: string;
   answer: string;
+  keywords?: string[];
+  tags?: string[];
+  starred?: boolean;
   created: number;
   modified: number;
 }

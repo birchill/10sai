@@ -229,7 +229,7 @@ describe('CardStore progress reporting', () => {
     let testRemote;
     try {
       // Create a remote with a progress record that will conflict
-      const testRemote = new PouchDB('cards_remote', { db: memdown });
+      testRemote = new PouchDB('cards_remote', { db: memdown });
       await testRemote.put({ _id: 'progress-abc' });
 
       // Sync it to our subject

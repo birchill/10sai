@@ -15,6 +15,9 @@ const parseCard = (card: CardRecord): Omit<Card, 'progress'> => {
   const result = {
     ...card,
     _id: stripCardPrefix(card._id),
+    keywords: card.keywords || [],
+    tags: card.tags || [],
+    starred: !!card.starred,
     // We deliberately *don't* parse the 'created' or 'modified' fields into
     // Date objects since they're currently not used in the app and so
     // speculatively parsing them would be a waste.
@@ -171,6 +174,17 @@ export class CardStore {
       modified: now,
     };
 
+    // Drop empty optional fields
+    if (cardToPut.keywords && !cardToPut.keywords.length) {
+      delete cardToPut.keywords;
+    }
+    if (cardToPut.tags && !cardToPut.tags.length) {
+      delete cardToPut.tags;
+    }
+    if (typeof cardToPut.starred !== 'undefined' && !cardToPut.starred) {
+      delete cardToPut.starred;
+    }
+
     if ('progress' in cardToPut) {
       delete cardToPut.progress;
     }
@@ -261,6 +275,16 @@ export class CardStore {
 
       if (!Object.keys(update).length) {
         return false;
+      }
+
+      if (update.keywords && !update.keywords.length) {
+        delete card.keywords;
+      }
+      if (update.tags && !update.tags.length) {
+        delete card.tags;
+      }
+      if (typeof update.starred !== 'undefined' && !update.starred) {
+        delete card.starred;
       }
 
       card.modified = new Date().getTime();
