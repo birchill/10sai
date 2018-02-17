@@ -18,7 +18,7 @@ describe('CardStore progress reporting', () => {
   beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
     dataStore = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
-    subject = dataStore.cards;
+    subject = dataStore.cardStore;
     relativeTime = diffInDays =>
       new Date(dataStore.reviewTime.getTime() + diffInDays * MS_PER_DAY);
   });

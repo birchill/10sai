@@ -112,7 +112,7 @@ function sync(store, stateStore) {
   });
 
   // Do initial sync
-  store.reviews.getReview().then(review => {
+  store.getReview().then(review => {
     if (review) {
       stateStore.dispatch(reviewActions.syncReview(review));
     }

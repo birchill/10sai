@@ -50,9 +50,9 @@ const waitForNumReviewEvents = (dataStore, num) => {
   return promise;
 };
 
-const syncWithWaitableRemote = async (cardStore, remote) => {
+const syncWithWaitableRemote = async (dataStore, remote) => {
   let pauseAction;
-  await cardStore.setSyncServer(remote, {
+  await dataStore.setSyncServer(remote, {
     onIdle: () => {
       if (pauseAction) {
         pauseAction();
@@ -88,7 +88,7 @@ describe('ReviewStore', () => {
   beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
     dataStore = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
-    subject = dataStore.reviews;
+    subject = dataStore.reviewStore;
 
     // A separate remote we use for reading back records directly, injecting
     // conflicting records etc.

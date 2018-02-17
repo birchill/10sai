@@ -42,7 +42,7 @@ const mergeRecords = (card: CardRecord, progress: ProgressRecord): Card => {
   return result;
 };
 
-interface GetCardsOptions {
+export interface GetCardsOptions {
   limit?: number;
   type?: 'new' | 'overdue';
   skipFailedCards?: boolean;

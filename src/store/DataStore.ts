@@ -1,10 +1,11 @@
 import PouchDB from 'pouchdb';
 import EventEmitter from 'event-emitter';
 
+import { Card, Review } from '../model';
 import { DatabaseWithName } from './utils';
 import { CardRecord, ProgressRecord } from './cards/records';
 import { ReviewRecord } from './reviews/records';
-import CardStore from './cards/CardStore';
+import { CardStore, GetCardsOptions } from './cards/CardStore';
 import ReviewStore from './reviews/ReviewStore';
 import { REVIEW_PREFIX } from './reviews/records';
 
@@ -92,12 +93,35 @@ class DataStore {
       });
   }
 
-  get cards(): CardStore {
-    return this.cardStore;
+  // Card API
+  async getCard(id: string): Promise<Card> {
+    return this.cardStore.getCard(id);
+  }
+  async deleteCard(id: string) {
+    return this.cardStore.deleteCard(id);
+  }
+  async getCards(options: GetCardsOptions): Promise<Card[]> {
+    return this.cardStore.getCards(options);
+  }
+  async getCardsById(ids: string[]): Promise<Card[]> {
+    return this.cardStore.getCardsById(ids);
+  }
+  async getAvailableCards() {
+    return this.cardStore.getAvailableCards();
+  }
+  async putCard(card: Partial<Card>): Promise<Card> {
+    return this.cardStore.putCard(card);
   }
 
-  get reviews(): ReviewStore {
-    return this.reviewStore;
+  // Review API
+  async getReview(): Promise<Review | null> {
+    return this.reviewStore.getReview();
+  }
+  async putReview(review: Review) {
+    return this.reviewStore.putReview(review);
+  }
+  async deleteReview() {
+    return this.reviewStore.deleteReview();
   }
 
   // Topics include:

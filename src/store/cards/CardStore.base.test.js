@@ -13,7 +13,7 @@ describe('CardStore', () => {
 
   beforeEach(() => {
     dataStore = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
-    subject = dataStore.cards;
+    subject = dataStore.cardStore;
   });
 
   afterEach(() => dataStore.destroy());

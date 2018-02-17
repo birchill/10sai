@@ -243,8 +243,8 @@ describe('DataStore remote sync', () => {
   it('uploads existing local cards', async () => {
     const [idleCallback, idlePromise] = idleSync();
 
-    await subject.cards.putCard({ question: 'Question 1', answer: 'Answer 1' });
-    await subject.cards.putCard({ question: 'Question 2', answer: 'Answer 2' });
+    await subject.putCard({ question: 'Question 1', answer: 'Answer 1' });
+    await subject.putCard({ question: 'Question 2', answer: 'Answer 2' });
     await subject.setSyncServer(testRemote, { onIdle: idleCallback });
     await idlePromise;
 
@@ -280,7 +280,7 @@ describe('DataStore remote sync', () => {
       }),
     });
 
-    subject.cards.putCard({ question: 'Question', answer: 'Answer' });
+    subject.putCard({ question: 'Question', answer: 'Answer' });
   });
 
   it('reports sync progress on initial download', async () => {
@@ -326,7 +326,7 @@ describe('DataStore remote sync', () => {
     const putPromises = [];
     for (let i = 0; i < numCards; i++) {
       putPromises.push(
-        subject.cards.putCard({
+        subject.putCard({
           question: `Question ${i + 1}`,
           answer: `Answer ${i + 1}`,
         })
@@ -364,7 +364,7 @@ describe('DataStore remote sync', () => {
     const putPromises = [];
     for (let i = 0; i < localCards; i++) {
       putPromises.push(
-        subject.cards.putCard({
+        subject.putCard({
           question: `Local question ${i + 1}`,
           answer: `Local answer ${i + 1}`,
         })

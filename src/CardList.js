@@ -41,7 +41,7 @@ class CardList {
     this.cards = [];
     this.listeners = [];
 
-    this.initDone = this.dataStore.cards.getCards().then(cards => {
+    this.initDone = this.dataStore.getCards().then(cards => {
       this.cards = cards;
     });
 

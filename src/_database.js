@@ -3,7 +3,7 @@ import DataStore from './store/DataStore.ts';
 const dataStore = new DataStore();
 
 async function listOrphans() {
-  const orphans = await dataStore.cards.getOrphanedCards();
+  const orphans = await dataStore.cardStore.getOrphanedCards();
 
   // Empty container
   const container = document.getElementById('orphaned-cards');
@@ -52,7 +52,7 @@ async function listOrphans() {
       const putResults = [];
       for (const checkbox of checkedCards) {
         putResults.push(
-          dataStore.cards.addProgressRecordForCard(checkbox.value)
+          dataStore.cardStore.addProgressRecordForCard(checkbox.value)
         );
       }
       try {
@@ -67,7 +67,7 @@ async function listOrphans() {
 }
 
 async function listOrphanedProgress() {
-  const orphans = await dataStore.cards.getOrphanedProgress();
+  const orphans = await dataStore.cardStore.getOrphanedProgress();
 
   const container = document.getElementById('orphaned-progress');
   while (container.firstChild) {
@@ -115,7 +115,7 @@ async function listOrphanedProgress() {
       const deleteResults = [];
       for (const checkbox of checkedProgress) {
         deleteResults.push(
-          dataStore.cards.deleteProgressRecord(checkbox.value)
+          dataStore.cardStore.deleteProgressRecord(checkbox.value)
         );
       }
       try {
