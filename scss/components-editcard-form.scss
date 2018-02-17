@@ -1,10 +1,21 @@
 .editcard-form {
+  box-sizing: border-box;
+
+  background: white;
+  border: $border-width solid $dark-grey;
+  border-radius: 1rem;
+  box-shadow: 0px 1px 3px rgba(0, 0, 30, 0.2);
+
   > * {
     box-sizing: border-box;
     width: 100%;
   }
 
   input[type=text], input[type=search], textarea {
+    border: none;
+    background: transparent;
+    border-radius: 0;
+
     &::placeholder {
       opacity: initial;
       color: $dark-grey;
@@ -17,31 +28,23 @@
       }
     }
   }
+
+  > .divider {
+    box-sizing: border-box;
+    margin-top: 0;
+    margin-bottom: 0;
+    height: 1%;
+    width: 80%;
+    border: none;
+    border-top: 2px dotted $dark-grey;
+  }
 }
 
 .-textpanel {
-  border: none;
-  border-radius: 0;
-  border-top: 1px solid $light-grey;
-
   padding-left: 1rem;
   padding-right: 1rem;
 
-  background: white;
-
   &.-large {
     min-height: 5rem;
-  }
-
-  &:focus, &.hasFocus {
-    border-top-color: $highlight;
-    box-shadow: 0 -.2rem 0 .2rem lighten($highlight, 50%);
-  }
-
-  &.-yellow, &.yellow:focus, &.yellow.hasFocus {
-    border-top-color: $keyword-yellow-dark;
-  }
-  &.-yellow:focus, &.-yellow.hasFocus {
-    box-shadow: 0 -.2rem .4rem .2rem $keyword-yellow;
   }
 }
