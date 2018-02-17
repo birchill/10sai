@@ -129,5 +129,62 @@ async function listOrphanedProgress() {
   );
 }
 
+async function listUnrecognizedDocs() {
+  const unrecognizedDocs = await dataStore.getUnrecognizedDocs();
+
+  const container = document.getElementById('unrecognized-docs');
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+
+  if (!unrecognizedDocs.length) {
+    container.textContent = 'No unrecognized documents found.';
+    return;
+  }
+
+  for (const doc of unrecognizedDocs) {
+    const id = `unrecognized-${doc._id}`;
+
+    const div = document.createElement('div');
+    div.classList.add('box-and-label');
+    container.appendChild(div);
+
+    const checkbox = document.createElement('input');
+    checkbox.setAttribute('type', 'checkbox');
+    checkbox.setAttribute('id', id);
+    checkbox.setAttribute('name', 'unrecognized-doc');
+    checkbox.setAttribute('value', doc._id);
+    div.appendChild(checkbox);
+
+    const label = document.createElement('label');
+    label.setAttribute('for', id);
+    const pre = document.createElement('pre');
+    pre.textContent = JSON.stringify(doc);
+    label.appendChild(pre);
+    div.appendChild(label);
+  }
+
+  const deleteButton = document.createElement('input');
+  deleteButton.setAttribute('type', 'button');
+  deleteButton.setAttribute('value', 'Delete');
+  container.appendChild(deleteButton);
+
+  deleteButton.addEventListener(
+    'click',
+    async () => {
+      const checkedUnrecognized = document.querySelectorAll(
+        'input[type=checkbox][name=unrecognized-doc]:checked'
+      );
+      const ids = Array.from(checkedUnrecognized).map(
+        checkbox => checkbox.value
+      );
+      await dataStore.deleteUnrecognizedDocs(ids);
+      listUnrecognizedDocs();
+    },
+    { once: true }
+  );
+}
+
 listOrphans();
 listOrphanedProgress();
+listUnrecognizedDocs();

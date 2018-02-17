@@ -3,7 +3,12 @@ import EventEmitter from 'event-emitter';
 
 import { Card, Review } from '../model';
 import { DatabaseWithName } from './utils';
-import { CardRecord, ProgressRecord } from './cards/records';
+import {
+  CardRecord,
+  ProgressRecord,
+  CARD_PREFIX,
+  PROGRESS_PREFIX,
+} from './cards/records';
 import { ReviewRecord } from './reviews/records';
 import { CardStore, GetCardsOptions } from './cards/CardStore';
 import ReviewStore from './reviews/ReviewStore';
@@ -440,6 +445,49 @@ class DataStore {
       // NOTE: resolveConflicts will currently drop attachments on the floor.
       // Need to be careful once we start using them.
     }
+  }
+
+  // Maintenance methods
+
+  async getUnrecognizedDocs() {
+    const records = await this.db.allDocs({ include_docs: true });
+
+    const unrecognized = [];
+
+    for (const record of records.rows) {
+      if (
+        !record.id.startsWith('_design') &&
+        !record.id.startsWith(CARD_PREFIX) &&
+        !record.id.startsWith(PROGRESS_PREFIX) &&
+        !record.id.startsWith(REVIEW_PREFIX)
+      ) {
+        unrecognized.push(record.doc);
+      }
+    }
+
+    return unrecognized;
+  }
+
+  async deleteUnrecognizedDocs(ids: string[]) {
+    for (const id of ids) {
+      if (
+        id.startsWith('_design') ||
+        id.startsWith(CARD_PREFIX) ||
+        id.startsWith(PROGRESS_PREFIX) ||
+        id.startsWith(REVIEW_PREFIX)
+      ) {
+        throw new Error('I recognize this doc');
+      }
+    }
+
+    const result = await this.db.allDocs({ keys: ids });
+    await this.db.bulkDocs(
+      result.rows.map(row => ({
+        _id: row.id,
+        _rev: row.value.rev,
+        _deleted: true,
+      }))
+    );
   }
 
   // Intended for unit testing only
