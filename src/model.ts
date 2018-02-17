@@ -5,8 +5,8 @@ export interface Card {
   _id: string;
   question: string;
   answer: string;
-  created: string;
-  modified: string;
+  created: number;
+  modified: number;
   progress: Progress;
 }
 

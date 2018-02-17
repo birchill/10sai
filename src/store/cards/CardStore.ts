@@ -160,14 +160,15 @@ export class CardStore {
   }
 
   async _putNewCard(card: Partial<Card>): Promise<Card> {
+    const now = new Date().getTime();
     const cardToPut = {
       ...card,
       // Fill-in mandatory fields
       question: card.question || '',
       answer: card.answer || '',
       // Update dates
-      created: <string>JSON.parse(JSON.stringify(new Date())),
-      modified: <string>JSON.parse(JSON.stringify(new Date())),
+      created: now,
+      modified: now,
     };
 
     if ('progress' in cardToPut) {
@@ -262,7 +263,7 @@ export class CardStore {
         return false;
       }
 
-      card.modified = JSON.parse(JSON.stringify(new Date()));
+      card.modified = new Date().getTime();
 
       return card;
     });

@@ -6,8 +6,8 @@ export interface CardRecord {
   _rev?: string;
   question: string;
   answer: string;
-  created: string;
-  modified: string;
+  created: number;
+  modified: number;
 }
 
 export interface ProgressRecord {
