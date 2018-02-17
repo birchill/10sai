@@ -17,7 +17,7 @@ import reviewSync from './review/sync';
 import * as routeActions from './route/actions';
 
 import SettingsStore from './SettingsStore';
-import CardStore from './store/CardStore.ts';
+import DataStore from './store/DataStore.ts';
 import App from './components/App.jsx';
 
 import 'main.scss'; // eslint-disable-line
@@ -28,36 +28,36 @@ import 'main.scss'; // eslint-disable-line
 
 const sagaMiddleware = createSagaMiddleware();
 
-let stateStore;
+let store;
 if (process.env.NODE_ENV === 'development') {
   // eslint-disable-next-line global-require, import/no-extraneous-dependencies
   const { createLogger } = require('redux-logger');
   const loggerMiddleware = createLogger();
   const composeEnhancers =
     window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-  stateStore = createStore(
+  store = createStore(
     reducer,
     composeEnhancers(applyMiddleware(sagaMiddleware, loggerMiddleware))
   );
 } else {
-  stateStore = createStore(reducer, applyMiddleware(sagaMiddleware));
+  store = createStore(reducer, applyMiddleware(sagaMiddleware));
 }
 
 //
 // Local data stores
 //
 
-const cardStore = new CardStore();
+const dataStore = new DataStore();
 
-syncEditChanges(cardStore, stateStore);
-reviewSync(cardStore, stateStore);
+syncEditChanges(dataStore, store);
+reviewSync(dataStore, store);
 
 const settingsStore = new SettingsStore();
 
 const dispatchSettingUpdates = settings => {
   for (const key in settings) {
     if (settings.hasOwnProperty(key)) {
-      stateStore.dispatch({
+      store.dispatch({
         type: 'UPDATE_SETTING',
         key,
         value: settings[key],
@@ -75,9 +75,9 @@ settingsStore.onUpdate(dispatchSettingUpdates);
 
 sagaMiddleware.run(function* allSagas() {
   yield all([
-    editSagas(cardStore),
-    reviewSagas(cardStore),
-    syncSagas(cardStore, settingsStore, stateStore.dispatch.bind(stateStore)),
+    editSagas(dataStore),
+    reviewSagas(dataStore),
+    syncSagas(dataStore, settingsStore, store.dispatch.bind(store)),
     routeSagas(),
   ]);
 });
@@ -86,7 +86,7 @@ sagaMiddleware.run(function* allSagas() {
 // Router
 //
 
-stateStore.dispatch(
+store.dispatch(
   routeActions.navigate({
     path: window.location.pathname,
     search: window.location.search,
@@ -101,8 +101,8 @@ window.addEventListener('popstate', evt => {
   // This requires that the beforeScreenChange fetches anything it needs from
   // the current state in a synchronous state (as the navigate action might
   // cause parts of the current state to be clobbered).
-  stateStore.dispatch(routeActions.beforeScreenChange());
-  stateStore.dispatch(
+  store.dispatch(routeActions.beforeScreenChange());
+  store.dispatch(
     routeActions.navigate({
       path: window.location.pathname,
       search: window.location.search,
@@ -118,10 +118,10 @@ window.addEventListener('popstate', evt => {
 //
 
 window.addEventListener('online', () => {
-  stateStore.dispatch({ type: 'GO_ONLINE' });
+  store.dispatch({ type: 'GO_ONLINE' });
 });
 window.addEventListener('offline', () => {
-  stateStore.dispatch({ type: 'GO_OFFLINE' });
+  store.dispatch({ type: 'GO_OFFLINE' });
 });
 
 //
@@ -142,7 +142,7 @@ const updateReviewTime = () => {
   reviewTime.setMinutes(0);
   reviewTime.setSeconds(0);
   reviewTime.setMilliseconds(0);
-  stateStore.dispatch({ type: 'SET_REVIEW_TIME', reviewTime });
+  store.dispatch({ type: 'SET_REVIEW_TIME', reviewTime });
 };
 (() => {
   const MS_PER_HOUR = 60 * 60 * 1000;
@@ -155,8 +155,8 @@ updateReviewTime();
 //
 
 ReactDOM.render(
-  <Provider store={stateStore}>
-    <App cardStore={cardStore} />
+  <Provider store={store}>
+    <App dataStore={dataStore} />
   </Provider>,
   document.getElementById('container')
 );

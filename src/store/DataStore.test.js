@@ -1,10 +1,8 @@
-/* global afterEach, beforeEach, describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
-
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
-import CardStore from './CardStore.ts';
+import DataStore from './DataStore.ts';
+import CardStore from './cards/CardStore.ts';
 import { waitForEvents } from '../../test/testcommon';
 
 const cardForDirectPut = card => ({
@@ -35,7 +33,7 @@ function idleSync() {
   return [idleCallback, idlePromise];
 }
 
-describe('CardStore remote sync', () => {
+describe('DataStore remote sync', () => {
   let subject;
   let testRemote;
   let failedAssertion;
@@ -58,7 +56,7 @@ describe('CardStore remote sync', () => {
   }
 
   beforeEach(() => {
-    subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
+    subject = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
 
     failedAssertion = undefined;
 
@@ -444,6 +442,4 @@ describe('CardStore remote sync', () => {
 
   // XXX Reports an appropriate error when the remote server doesn't have
   // the specified database
-
-  // XXX: Conflict resolution
 });

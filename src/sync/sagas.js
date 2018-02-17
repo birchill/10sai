@@ -27,7 +27,7 @@ const getOffline = obj => !!(obj && obj.offline);
 
 // Replication helpers
 
-function* startReplication(cardStore, server, dispatch) {
+function* startReplication(dataStore, server, dispatch) {
   const offline = yield select(getFromSync(getOffline));
   if (offline) {
     return;
@@ -61,18 +61,18 @@ function* startReplication(cardStore, server, dispatch) {
   }
 
   try {
-    yield cardStore.setSyncServer(syncServer, options);
+    yield dataStore.setSyncServer(syncServer, options);
   } catch (e) {
     // Ignore errors from setSyncServer since we deal with them in the onError
     // callback.
   }
 }
 
-function* stopReplication(cardStore) {
-  yield cardStore.setSyncServer();
+function* stopReplication(dataStore) {
+  yield dataStore.setSyncServer();
 }
 
-function* setSyncServer(cardStore, settingsStore, dispatch, action) {
+function* setSyncServer(dataStore, settingsStore, dispatch, action) {
   // Normalize server so we can reliably compare the new server with the old
   // in updateSetting.
   const server = getServer(action);
@@ -99,12 +99,12 @@ function* setSyncServer(cardStore, settingsStore, dispatch, action) {
   yield put({ type: 'FINISH_EDIT_SYNC_SERVER' });
 
   // Kick off and/or cancel replication
-  yield startReplication(cardStore, server, dispatch);
+  yield startReplication(dataStore, server, dispatch);
 }
 
-function* retrySync(cardStore, dispatch) {
+function* retrySync(dataStore, dispatch) {
   const server = yield select(getFromSync(getServer));
-  yield startReplication(cardStore, server, dispatch);
+  yield startReplication(dataStore, server, dispatch);
 }
 
 function* finishSync(settingsStore, action) {
@@ -119,7 +119,7 @@ function* finishSync(settingsStore, action) {
   yield settingsStore.updateSetting('syncServer', updatedServer);
 }
 
-function* pauseSync(cardStore, settingsStore) {
+function* pauseSync(dataStore, settingsStore) {
   // Update stored paused state
   const server = yield select(getFromSync(getServer));
   const lastSyncTime = yield select(getFromSync(getLastSyncTime));
@@ -131,10 +131,10 @@ function* pauseSync(cardStore, settingsStore) {
   const updatedServer = { server, lastSyncTime, paused: true };
   yield settingsStore.updateSetting('syncServer', updatedServer);
 
-  yield stopReplication(cardStore);
+  yield stopReplication(dataStore);
 }
 
-function* resumeSync(cardStore, settingsStore, dispatch) {
+function* resumeSync(dataStore, settingsStore, dispatch) {
   // Update stored paused state
   const server = yield select(getFromSync(getServer));
   const lastSyncTime = yield select(getFromSync(getLastSyncTime));
@@ -146,10 +146,10 @@ function* resumeSync(cardStore, settingsStore, dispatch) {
   const updatedServer = { server, lastSyncTime };
   yield settingsStore.updateSetting('syncServer', updatedServer);
 
-  yield startReplication(cardStore, server, dispatch);
+  yield startReplication(dataStore, server, dispatch);
 }
 
-function* updateSetting(cardStore, dispatch, action) {
+function* updateSetting(dataStore, dispatch, action) {
   if (action.key !== 'syncServer') {
     return;
   }
@@ -192,43 +192,43 @@ function* updateSetting(cardStore, dispatch, action) {
   // Check if we need to trigger replication due to a change in server
   // name or being unpaused.
   if (!updatedPaused && (serverUpdated || paused)) {
-    yield startReplication(cardStore, updatedServer, dispatch);
+    yield startReplication(dataStore, updatedServer, dispatch);
     // And likewise check if we need to stop it
   } else if (updatedPaused && !paused) {
-    yield stopReplication(cardStore);
+    yield stopReplication(dataStore);
   }
 }
 
-function* goOnline(cardStore, dispatch) {
+function* goOnline(dataStore, dispatch) {
   const paused = yield select(getFromSync(getPaused));
   if (paused) {
     return;
   }
 
   const server = yield select(getFromSync(getServer));
-  yield startReplication(cardStore, server, dispatch);
+  yield startReplication(dataStore, server, dispatch);
 }
 
-function* goOffline(cardStore) {
-  yield stopReplication(cardStore);
+function* goOffline(dataStore) {
+  yield stopReplication(dataStore);
 }
 
-function* syncSagas(cardStore, settingsStore, dispatch) {
+function* syncSagas(dataStore, settingsStore, dispatch) {
   yield* [
     takeLatest(
       'SET_SYNC_SERVER',
       setSyncServer,
-      cardStore,
+      dataStore,
       settingsStore,
       dispatch
     ),
-    takeLatest('RETRY_SYNC', retrySync, cardStore, dispatch),
+    takeLatest('RETRY_SYNC', retrySync, dataStore, dispatch),
     takeLatest('FINISH_SYNC', finishSync, settingsStore),
-    takeEvery('PAUSE_SYNC', pauseSync, cardStore, settingsStore),
-    takeEvery('RESUME_SYNC', resumeSync, cardStore, settingsStore, dispatch),
-    takeEvery('UPDATE_SETTING', updateSetting, cardStore, dispatch),
-    takeEvery('GO_ONLINE', goOnline, cardStore, dispatch),
-    takeEvery('GO_OFFLINE', goOffline, cardStore),
+    takeEvery('PAUSE_SYNC', pauseSync, dataStore, settingsStore),
+    takeEvery('RESUME_SYNC', resumeSync, dataStore, settingsStore, dispatch),
+    takeEvery('UPDATE_SETTING', updateSetting, dataStore, dispatch),
+    takeEvery('GO_ONLINE', goOnline, dataStore, dispatch),
+    takeEvery('GO_OFFLINE', goOffline, dataStore),
   ];
 }
 

@@ -18,7 +18,7 @@ import ReviewState from './states';
 // be enough, normally, for views to be updated.
 const QUERY_AVAILABLE_CARDS_DELAY = 3000;
 
-function sync(cardStore, stateStore) {
+function sync(store, stateStore) {
   let needAvailableCards;
   let delayedCallback;
 
@@ -50,7 +50,7 @@ function sync(cardStore, stateStore) {
     stateStore.dispatch(reviewActions.queryAvailableCards());
   });
 
-  cardStore.changes.on('card', change => {
+  store.changes.on('card', change => {
     // Update available cards if needed
     if (needAvailableCards) {
       if (delayedCallback) {
@@ -92,7 +92,7 @@ function sync(cardStore, stateStore) {
   });
 
   // Synchronize changes to review document
-  cardStore.changes.on('review', review => {
+  store.changes.on('review', review => {
     const currentState = getReviewSummary(stateStore.getState());
 
     // Review document was deleted
@@ -112,7 +112,7 @@ function sync(cardStore, stateStore) {
   });
 
   // Do initial sync
-  cardStore.getReview().then(review => {
+  store.getReview().then(review => {
     if (review) {
       stateStore.dispatch(reviewActions.syncReview(review));
     }

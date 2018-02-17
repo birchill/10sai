@@ -4,8 +4,8 @@
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
-import CardStore from './CardStore.ts';
-import { waitForEvents } from '../../test/testcommon';
+import DataStore from '../DataStore.ts';
+import { waitForEvents } from '../../../test/testcommon';
 
 const waitForMs = ms =>
   new Promise(resolve => {
@@ -31,7 +31,7 @@ const waitForNumReviewChanges = (db, num) => {
   return promise;
 };
 
-const waitForNumReviewEvents = (store, num) => {
+const waitForNumReviewEvents = (dataStore, num) => {
   const events = [];
 
   let resolver;
@@ -40,7 +40,7 @@ const waitForNumReviewEvents = (store, num) => {
   });
 
   let recordedChanges = 0;
-  store.changes.on('review', change => {
+  dataStore.changes.on('review', change => {
     events.push(change);
     if (++recordedChanges === num) {
       resolver(events);
@@ -50,9 +50,9 @@ const waitForNumReviewEvents = (store, num) => {
   return promise;
 };
 
-const syncWithWaitableRemote = async (cardStore, remote) => {
+const syncWithWaitableRemote = async (dataStore, remote) => {
   let pauseAction;
-  await cardStore.setSyncServer(remote, {
+  await dataStore.setSyncServer(remote, {
     onIdle: () => {
       if (pauseAction) {
         pauseAction();
@@ -69,7 +69,8 @@ const syncWithWaitableRemote = async (cardStore, remote) => {
   return waitForIdle;
 };
 
-describe('CardStore review storage', () => {
+describe('ReviewStore', () => {
+  let dataStore;
   let subject;
   let testRemote;
 
@@ -86,14 +87,15 @@ describe('CardStore review storage', () => {
 
   beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
-    subject = new CardStore({ pouch: { db: memdown }, prefetchViews: false });
+    dataStore = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
+    subject = dataStore.reviewStore;
 
     // A separate remote we use for reading back records directly, injecting
     // conflicting records etc.
     testRemote = new PouchDB('cards_remote', { db: memdown });
   });
 
-  afterEach(() => Promise.all([subject.destroy(), testRemote.destroy()]));
+  afterEach(() => Promise.all([dataStore.destroy(), testRemote.destroy()]));
 
   it('returns a newly-added review', async () => {
     await subject.putReview(typicalReview);
@@ -103,7 +105,7 @@ describe('CardStore review storage', () => {
 
   it('updates the latest review', async () => {
     // Setup a remote so we can read back the review record
-    await subject.setSyncServer(testRemote);
+    await dataStore.setSyncServer(testRemote);
 
     // Set up a promise to track changes
     const changesPromise = waitForNumReviewChanges(testRemote, 2);
@@ -129,7 +131,7 @@ describe('CardStore review storage', () => {
   });
 
   it('returns the latest review', async () => {
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
 
     // Push two new docs to the remote
     await testRemote.put({
@@ -159,7 +161,7 @@ describe('CardStore review storage', () => {
   });
 
   it('deletes all reviews', async () => {
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
 
     // Push two new docs to the remote
     await testRemote.put({
@@ -202,7 +204,7 @@ describe('CardStore review storage', () => {
     });
 
     // Now connect the two and let chaos ensue
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
     await waitForIdle();
 
     // Check that the conflict is gone...
@@ -213,7 +215,7 @@ describe('CardStore review storage', () => {
   });
 
   it('reports new review docs', async () => {
-    const changesPromise = waitForNumReviewEvents(subject, 1);
+    const changesPromise = waitForNumReviewEvents(dataStore, 1);
     await subject.putReview({ ...typicalReview, completed: 7 });
     const changes = await changesPromise;
     expect(changes[0]).toMatchObject({
@@ -223,7 +225,7 @@ describe('CardStore review storage', () => {
 
   it('reports deleted review docs', async () => {
     await subject.putReview(typicalReview);
-    const changesPromise = waitForNumReviewEvents(subject, 1);
+    const changesPromise = waitForNumReviewEvents(dataStore, 1);
     await subject.deleteReview();
     const changes = await changesPromise;
     expect(changes[0]).toBeNull();
@@ -231,18 +233,18 @@ describe('CardStore review storage', () => {
 
   it('does not report new review docs older than current', async () => {
     // Create regular review and wait for it to be reported
-    const changesPromise = waitForNumReviewEvents(subject, 1);
+    const changesPromise = waitForNumReviewEvents(dataStore, 1);
     await subject.putReview(typicalReview);
     await changesPromise;
 
     // Start monitoring for further changes
     const changes = [];
-    subject.changes.on('review', change => {
+    dataStore.changes.on('review', change => {
       changes.push(change);
     });
 
     // Create remote with a review with earlier ID and wait for them to sync
-    const waitForIdle = await syncWithWaitableRemote(subject, testRemote);
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
     await testRemote.put({
       ...typicalReview,
       completed: 2,

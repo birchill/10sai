@@ -26,7 +26,7 @@ const getActiveRecord = state => (state ? state.edit.forms.active : {});
 
 // Sagas
 
-export function* navigate(cardStore, action) {
+export function* navigate(dataStore, action) {
   // Look for navigation actions that should load a card
   const route = action.url
     ? routeFromURL(action.url)
@@ -46,7 +46,7 @@ export function* navigate(cardStore, action) {
   const { formId } = activeRecord;
 
   try {
-    const card = yield call([cardStore, 'getCard'], route.card);
+    const card = yield call([dataStore, 'getCard'], route.card);
     yield put(editActions.finishLoadCard(formId, card));
   } catch (error) {
     if (error && error.reason !== 'deleted') {
@@ -56,9 +56,9 @@ export function* navigate(cardStore, action) {
   }
 }
 
-export function* save(cardStore, formId, card) {
+export function* save(dataStore, formId, card) {
   try {
-    const savedCard = yield call([cardStore, 'putCard'], card);
+    const savedCard = yield call([dataStore, 'putCard'], card);
 
     // Get the active record since we may have navigated while the card was
     // being saved.
@@ -94,7 +94,7 @@ export function* save(cardStore, formId, card) {
   }
 }
 
-function* autoSave(cardStore, formId, card) {
+function* autoSave(dataStore, formId, card) {
   // Debounce -- we allow this part of the task to be cancelled
   // eslint-disable-next-line no-unused-vars
   const { wait, cancel } = yield race({
@@ -109,7 +109,7 @@ function* autoSave(cardStore, formId, card) {
   // The remaining steps should not be cancelled since otherwise we risk
   // writing the card twice with different IDs.
   try {
-    return yield save(cardStore, formId, card);
+    return yield save(dataStore, formId, card);
   } catch (error) {
     // Nothing special to do here. We'll have already dispatched the appropriate
     // action and that's enough for auto-saving.
@@ -117,7 +117,7 @@ function* autoSave(cardStore, formId, card) {
   }
 }
 
-export function* watchCardEdits(cardStore) {
+export function* watchCardEdits(dataStore) {
   let autoSaveTask;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -169,12 +169,12 @@ export function* watchCardEdits(cardStore) {
 
     switch (action.type) {
       case 'EDIT_CARD':
-        autoSaveTask = yield fork(autoSave, cardStore, id, activeRecord.card);
+        autoSaveTask = yield fork(autoSave, dataStore, id, activeRecord.card);
         break;
 
       case 'SAVE_EDIT_CARD':
         try {
-          yield save(cardStore, id, activeRecord.card);
+          yield save(dataStore, id, activeRecord.card);
         } catch (error) {
           // Don't do anything
         }
@@ -183,7 +183,7 @@ export function* watchCardEdits(cardStore) {
       case 'DELETE_EDIT_CARD':
         if (activeRecord.deleted) {
           try {
-            yield call([cardStore, 'deleteCard'], id);
+            yield call([dataStore, 'deleteCard'], id);
           } catch (error) {
             console.error(`Failed to delete card: ${error}`);
           }
@@ -197,10 +197,10 @@ export function* watchCardEdits(cardStore) {
   }
 }
 
-export function* editSagas(cardStore) {
+export function* editSagas(dataStore) {
   yield* [
-    takeEvery(['NAVIGATE'], navigate, cardStore),
-    watchCardEdits(cardStore),
+    takeEvery(['NAVIGATE'], navigate, dataStore),
+    watchCardEdits(dataStore),
   ];
 }
 
@@ -217,8 +217,8 @@ export function* beforeEditScreenChange() {
   return action.type !== 'FAIL_SAVE_CARD';
 }
 
-export function syncEditChanges(cardStore, stateStore) {
-  cardStore.changes.on('card', change => {
+export function syncEditChanges(dataStore, stateStore) {
+  dataStore.changes.on('card', change => {
     const cardBeingEdited = getActiveRecord(stateStore.getState()).card;
     if (cardBeingEdited && cardBeingEdited._id === change.id) {
       stateStore.dispatch({ type: 'SYNC_EDIT_CARD', card: change.doc });

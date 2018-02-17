@@ -11,7 +11,7 @@ import EditState from '../../src/edit/states';
 
 describe('integration:edit', () => {
   it('should allow creating and saving a new card', () => {
-    const cardStore = { putCard: card => ({ ...card, _id: 'abc' }) };
+    const dataStore = { putCard: card => ({ ...card, _id: 'abc' }) };
     const formId = 12;
     global.location = {
       pathname: '/cards/abc',
@@ -25,7 +25,7 @@ describe('integration:edit', () => {
     state = reducer(state, { type: 'UPDATE_URL', url: '/cards/abc' });
 
     return (
-      expectSaga(editSagas, cardStore)
+      expectSaga(editSagas, dataStore)
         // Danger -- withReducer must come before withState!
         .withReducer(reducer)
         .withState(state)
@@ -63,7 +63,7 @@ describe('integration:edit', () => {
   it('should allow loading, editing, and saving a new card', () => {
     /*
     const originalCard = { _id: 'abc', prompt: 'Prompt', answer: 'Answer' };
-    const cardStore = {
+    const dataStore = {
       putCard: card => card,
       getCard: () => originalCard,
     };
@@ -71,7 +71,7 @@ describe('integration:edit', () => {
 
     let initialState = reducer(undefined, {});
 
-    return expectSaga(editSagas, cardStore)
+    return expectSaga(editSagas, dataStore)
       .withReducer(reducer)
       .dispatch(routeActions.navigate('/cards/123'))
       // XXX Need to delay the following until the card has loaded

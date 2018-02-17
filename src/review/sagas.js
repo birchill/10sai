@@ -9,7 +9,7 @@ import ReviewState from './states';
 // that are already in one of our failed lists. However, we haven't yet
 // implemented the logic to fetch a fixed number of cards but excluding certain
 // IDs. We should, but as a kind of hack for now, we just pass a flag to the
-// CardStore to tell it not to return any cards whose level is zero.
+// DataStore to tell it not to return any cards whose level is zero.
 //
 // This mostly works but it won't work if we don't address all failed cards in
 // a review (e.g. we cancel a review while there are still failed cards) and
@@ -19,7 +19,7 @@ const CardsToSelect = {
   SkipFailed: Symbol('SkipFailed'),
 };
 
-export function* updateHeap(cardStore, action) {
+export function* updateHeap(dataStore, action) {
   const reviewInfo = yield select(state => (state ? state.review : {}));
 
   // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
@@ -32,17 +32,17 @@ export function* updateHeap(cardStore, action) {
     action.type === 'SET_REVIEW_LIMIT' || action.type === 'SET_REVIEW_TIME'
       ? CardsToSelect.SkipFailed
       : CardsToSelect.IncludeFailed;
-  const cards = yield* getCardsForHeap(cardStore, reviewInfo, cardsToSelect);
+  const cards = yield* getCardsForHeap(dataStore, reviewInfo, cardsToSelect);
   yield put(reviewActions.reviewLoaded(cards));
 
   try {
-    yield call([cardStore, 'putReview'], yield select(getReviewSummary));
+    yield call([dataStore, 'putReview'], yield select(getReviewSummary));
   } catch (error) {
     // Do we really care?
   }
 }
 
-function* getCardsForHeap(cardStore, reviewInfo, cardsToSelect) {
+function* getCardsForHeap(dataStore, reviewInfo, cardsToSelect) {
   let freeSlots = Math.max(
     0,
     reviewInfo.maxCards -
@@ -64,7 +64,7 @@ function* getCardsForHeap(cardStore, reviewInfo, cardsToSelect) {
   );
   let cards = [];
   if (newCardSlots) {
-    cards = yield call([cardStore, 'getCards'], {
+    cards = yield call([dataStore, 'getCards'], {
       limit: newCardSlots,
       type: 'new',
     });
@@ -79,13 +79,13 @@ function* getCardsForHeap(cardStore, reviewInfo, cardsToSelect) {
     if (cardsToSelect === CardsToSelect.SkipFailed) {
       options.skipFailedCards = true;
     }
-    cards.push(...(yield call([cardStore, 'getCards'], options)));
+    cards.push(...(yield call([dataStore, 'getCards'], options)));
   }
 
   return cards;
 }
 
-export function* updateProgress(cardStore, action) {
+export function* updateProgress(dataStore, action) {
   const reviewInfo = yield select(state => (state ? state.review : {}));
 
   // Fetch the updated card from the state. Normally this is the last card in
@@ -109,7 +109,7 @@ export function* updateProgress(cardStore, action) {
   };
 
   try {
-    yield call([cardStore, 'putCard'], update);
+    yield call([dataStore, 'putCard'], update);
     yield put(reviewActions.finishUpdateProgress());
   } catch (error) {
     console.error(`Failed to update progress of card: ${error}`);
@@ -121,39 +121,39 @@ export function* updateProgress(cardStore, action) {
 
   try {
     if (reviewInfo.reviewState === ReviewState.COMPLETE) {
-      yield call([cardStore, 'deleteReview']);
+      yield call([dataStore, 'deleteReview']);
     } else {
-      yield call([cardStore, 'putReview'], yield select(getReviewSummary));
+      yield call([dataStore, 'putReview'], yield select(getReviewSummary));
     }
   } catch (error) {
     // Do we really care?
   }
 }
 
-export function* updateReviewTime(cardStore, action) {
-  yield call([cardStore, 'setReviewTime'], action.reviewTime);
+export function* updateReviewTime(dataStore, action) {
+  yield call([dataStore, 'setReviewTime'], action.reviewTime);
 }
 
-export function* queryAvailableCards(cardStore) {
+export function* queryAvailableCards(dataStore) {
   // TODO: Error handling
-  const availableCards = yield call([cardStore, 'getAvailableCards']);
+  const availableCards = yield call([dataStore, 'getAvailableCards']);
   yield put(reviewActions.updateAvailableCards(availableCards));
 }
 
-export function* syncReview(cardStore, action) {
+export function* syncReview(dataStore, action) {
   // Load cards from history
   const history = yield call(
-    [cardStore, 'getCardsById'],
+    [dataStore, 'getCardsById'],
     action.review.history
   );
   // We could do this by looking into historyCards but this action is so rare
   // it's not worth optimizing.
   const failedCardsLevel1 = yield call(
-    [cardStore, 'getCardsById'],
+    [dataStore, 'getCardsById'],
     action.review.failedCardsLevel1
   );
   const failedCardsLevel2 = yield call(
-    [cardStore, 'getCardsById'],
+    [dataStore, 'getCardsById'],
     action.review.failedCardsLevel2
   );
 
@@ -161,9 +161,9 @@ export function* syncReview(cardStore, action) {
   if (
     action.review.reviewTime &&
     action.review.reviewTime instanceof Date &&
-    action.review.reviewTime.getTime() !== cardStore.reviewTime.getTime()
+    action.review.reviewTime.getTime() !== dataStore.reviewTime.getTime()
   ) {
-    yield call([cardStore, 'setReviewTime'], action.review.reviewTime);
+    yield call([dataStore, 'setReviewTime'], action.review.reviewTime);
   }
 
   // Fetch and update reviewInfo so that getCardsForHeap knows how many slots it
@@ -174,7 +174,7 @@ export function* syncReview(cardStore, action) {
   reviewInfo.failedCardsLevel2 = failedCardsLevel2;
 
   const heap = yield* getCardsForHeap(
-    cardStore,
+    dataStore,
     reviewInfo,
     CardsToSelect.SkipFailed
   );
@@ -189,23 +189,23 @@ export function* syncReview(cardStore, action) {
   );
 }
 
-export function* cancelReview(cardStore) {
+export function* cancelReview(dataStore) {
   // TODO: Error handling
-  yield call([cardStore, 'deleteReview']);
+  yield call([dataStore, 'deleteReview']);
 }
 
-function* reviewSagas(cardStore) {
+function* reviewSagas(dataStore) {
   yield* [
     takeEvery(
       ['NEW_REVIEW', 'SET_REVIEW_LIMITS', 'SET_REVIEW_TIME'],
       updateHeap,
-      cardStore
+      dataStore
     ),
-    takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, cardStore),
-    takeEvery(['SET_REVIEW_TIME'], updateReviewTime, cardStore),
-    takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, cardStore),
-    takeLatest(['SYNC_REVIEW'], syncReview, cardStore),
-    takeLatest(['CANCEL_REVIEW'], cancelReview, cardStore),
+    takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
+    takeEvery(['SET_REVIEW_TIME'], updateReviewTime, dataStore),
+    takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, dataStore),
+    takeLatest(['SYNC_REVIEW'], syncReview, dataStore),
+    takeLatest(['CANCEL_REVIEW'], cancelReview, dataStore),
   ];
 }
 
