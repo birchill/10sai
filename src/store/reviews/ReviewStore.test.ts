@@ -2,11 +2,15 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
-import memdown from 'memdown';
 
-import DataStore from '../DataStore.ts';
+import DataStore from '../DataStore';
+import ReviewStore from './ReviewStore';
+import { ReviewRecord } from './records';
+import { Review } from '../../model';
 import { waitForEvents } from '../../../test/testcommon';
 import { syncWithWaitableRemote } from '../test-utils';
+
+PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 const waitForMs = ms =>
   new Promise(resolve => {
@@ -52,11 +56,11 @@ const waitForNumReviewEvents = (dataStore, num) => {
 };
 
 describe('ReviewStore', () => {
-  let dataStore;
-  let subject;
-  let testRemote;
+  let dataStore: DataStore;
+  let subject: ReviewStore;
+  let testRemote: PouchDB.Database;
 
-  const typicalReview = {
+  const typicalReview: Review = {
     maxCards: 3,
     maxNewCards: 2,
     completed: 1,
@@ -69,12 +73,15 @@ describe('ReviewStore', () => {
 
   beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
-    dataStore = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
+    dataStore = new DataStore({
+      pouch: { adapter: 'memory' },
+      prefetchViews: false,
+    });
     subject = dataStore.reviewStore;
 
     // A separate remote we use for reading back records directly, injecting
     // conflicting records etc.
-    testRemote = new PouchDB('cards_remote', { db: memdown });
+    testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
   });
 
   afterEach(() => Promise.all([dataStore.destroy(), testRemote.destroy()]));
@@ -100,7 +107,7 @@ describe('ReviewStore', () => {
 
     // Wait for the record(s) to sync
     await changesPromise;
-    const reviews = await testRemote.allDocs({
+    const reviews = await testRemote.allDocs<ReviewRecord>({
       startkey: 'review-',
       endkey: 'review-\ufff0',
       include_docs: true,
@@ -190,7 +197,9 @@ describe('ReviewStore', () => {
     await waitForIdle();
 
     // Check that the conflict is gone...
-    const result = await testRemote.get(localReview._id, { conflicts: true });
+    const result = await testRemote.get<ReviewRecord>(localReview._id, {
+      conflicts: true,
+    });
     expect(result._conflicts).toBeUndefined();
     // ... and that we chose the right review
     expect(result.completed).toBe(2);

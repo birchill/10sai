@@ -2,11 +2,12 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
-import memdown from 'memdown';
 
 import DataStore from '../DataStore.ts';
 import CardStore from './CardStore.ts';
 import { waitForEvents } from '../../../test/testcommon';
+
+PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -17,7 +18,10 @@ describe('CardStore progress reporting', () => {
 
   beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
-    dataStore = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
+    dataStore = new DataStore({
+      pouch: { adapter: 'memory' },
+      prefetchViews: false,
+    });
     subject = dataStore.cardStore;
     relativeTime = diffInDays =>
       new Date(dataStore.reviewTime.getTime() + diffInDays * MS_PER_DAY);
@@ -229,7 +233,7 @@ describe('CardStore progress reporting', () => {
     let testRemote;
     try {
       // Create a remote with a progress record that will conflict
-      testRemote = new PouchDB('cards_remote', { db: memdown });
+      testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
       await testRemote.put({ _id: 'progress-abc' });
 
       // Sync it to our subject

@@ -1,9 +1,10 @@
 import PouchDB from 'pouchdb';
-import memdown from 'memdown';
 
 import DataStore from './DataStore.ts';
 import CardStore from './cards/CardStore.ts';
 import { waitForEvents } from '../../test/testcommon';
+
+PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 const cardForDirectPut = card => ({
   ...card,
@@ -56,11 +57,14 @@ describe('DataStore remote sync', () => {
   }
 
   beforeEach(() => {
-    subject = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
+    subject = new DataStore({
+      pouch: { adapter: 'memory' },
+      prefetchViews: false,
+    });
 
     failedAssertion = undefined;
 
-    testRemote = new PouchDB('cards_remote', { db: memdown });
+    testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
   });
 
   afterEach(() => {
@@ -214,7 +218,9 @@ describe('DataStore remote sync', () => {
       created: JSON.parse(JSON.stringify(new Date())),
     };
 
-    const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
+    const alternateRemote = new PouchDB('cards_remote_2', {
+      adapter: 'memory',
+    });
 
     subject.changes.on(
       'card',
@@ -232,7 +238,9 @@ describe('DataStore remote sync', () => {
   });
 
   it('does not report events from the old remote', async () => {
-    const alternateRemote = new PouchDB('cards_remote_2', { db: memdown });
+    const alternateRemote = new PouchDB('cards_remote_2', {
+      adapter: 'memory',
+    });
     const callbacks = {
       onIdle: wrapAssertingFunction(() => {
         expect(false).toBe(true);

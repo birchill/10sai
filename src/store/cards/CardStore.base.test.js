@@ -2,19 +2,23 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
-import memdown from 'memdown';
 
 import DataStore from '../DataStore.ts';
 import CardStore from './CardStore.ts';
 import { waitForEvents } from '../../../test/testcommon';
 import { syncWithWaitableRemote } from '../test-utils';
 
+PouchDB.plugin(require('pouchdb-adapter-memory'));
+
 describe('CardStore', () => {
   let dataStore;
   let subject;
 
   beforeEach(() => {
-    dataStore = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
+    dataStore = new DataStore({
+      pouch: { adapter: 'memory' },
+      prefetchViews: false,
+    });
     subject = dataStore.cardStore;
   });
 
@@ -428,7 +432,7 @@ describe('CardStore', () => {
       tags: [],
       starred: false,
     });
-    const testRemote = new PouchDB('cards_remote', { db: memdown });
+    const testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
 
     try {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
@@ -460,7 +464,7 @@ describe('CardStore', () => {
       starred: false,
     });
 
-    const testRemote = new PouchDB('cards_remote', { db: memdown });
+    const testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
     try {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();

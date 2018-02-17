@@ -1,15 +1,17 @@
 /* global afterEach, beforeEach, describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
-import memdown from 'memdown';
+import PouchDB from 'pouchdb';
 import SettingsStore from './SettingsStore';
 import { waitForEvents } from '../test/testcommon';
+
+PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 describe('SettingsStore', () => {
   let subject;
 
   beforeEach(() => {
-    subject = new SettingsStore({ db: memdown });
+    subject = new SettingsStore({ adapter: 'memory' });
   });
 
   afterEach(() => subject.destroy());
