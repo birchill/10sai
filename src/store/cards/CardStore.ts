@@ -645,6 +645,29 @@ export class CardStore {
     }
   }
 
+  async updateDateFields() {
+    const cards = await this.db.allDocs({
+      include_docs: true,
+      startkey: CARD_PREFIX,
+      endkey: CARD_PREFIX + '\ufff0',
+    });
+
+    const needsUpgrade = [];
+
+    for (const card of cards.rows) {
+      if (typeof (<any>card.doc).created === 'string') {
+        const updatedCard = {
+          ...card.doc,
+          created: new Date((<any>card.doc).created).getTime(),
+          modified: new Date((<any>card.doc).modified).getTime(),
+        };
+        needsUpgrade.push(updatedCard);
+      }
+    }
+
+    const result = await this.db.bulkDocs(needsUpgrade);
+  }
+
   // Intended for unit testing only
 
   async hasProgressRecord(id: string) {
