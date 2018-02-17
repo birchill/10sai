@@ -394,16 +394,18 @@ describe('sagas:review updateProgress', () => {
 });
 
 describe('sagas:review syncReview', () => {
-  const cardStore = {
+  const dataStore = {
     reviewTime: new Date(),
-    getCards: () => {},
-    getCardsById: () => {},
+    cards: {
+      getCards: () => {},
+      getCardsById: () => {},
+    },
   };
 
   const getCardStoreProvider = cards => {
     return {
       call(effect, next) {
-        if (effect.fn === cardStore.getCardsById) {
+        if (effect.fn === dataStore.cards.getCardsById) {
           const ids = effect.args[0];
           const result = [];
           for (const id of ids) {
@@ -415,7 +417,7 @@ describe('sagas:review syncReview', () => {
           return result;
         }
 
-        if (effect.fn === cardStore.getCards) {
+        if (effect.fn === dataStore.cards.getCards) {
           expect(effect.args.length).toBeGreaterThanOrEqual(1);
           expect(effect.args[0].limit).toBeDefined();
           expect(typeof effect.args[0].limit).toBe('number');
@@ -464,11 +466,11 @@ describe('sagas:review syncReview', () => {
       history: ['a', 'c'],
       failedCardsLevel1: ['b'],
       failedCardsLevel2: ['d'],
-      reviewTime: cardStore.reviewTime,
+      reviewTime: dataStore.reviewTime,
     });
     state = reducer(state, action);
 
-    return expectSaga(syncReviewSaga, cardStore, action)
+    return expectSaga(syncReviewSaga, dataStore, action)
       .provide(getCardStoreProvider(cards))
       .withState(state)
       .put.like({

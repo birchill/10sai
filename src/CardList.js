@@ -35,17 +35,17 @@ const findCard = (id, cards) => {
 };
 
 class CardList {
-  constructor(store) {
-    this.store = store;
+  constructor(dataStore) {
+    this.dataStore = dataStore;
 
     this.cards = [];
     this.listeners = [];
 
-    this.initDone = this.store.cards.getCards().then(cards => {
+    this.initDone = this.dataStore.cards.getCards().then(cards => {
       this.cards = cards;
     });
 
-    this.store.changes.on('card', change => {
+    this.dataStore.changes.on('card', change => {
       const cards = this.cards.slice();
       const [found, index] = findCard(change.id, cards);
       if (found) {

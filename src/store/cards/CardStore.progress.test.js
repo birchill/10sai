@@ -4,26 +4,26 @@
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
-import Store from '../Store.ts';
+import DataStore from '../DataStore.ts';
 import CardStore from './CardStore.ts';
 import { waitForEvents } from '../../../test/testcommon';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 describe('CardStore progress reporting', () => {
-  let store;
+  let dataStore;
   let subject;
   let relativeTime;
 
   beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
-    store = new Store({ pouch: { db: memdown }, prefetchViews: false });
-    subject = store.cards;
+    dataStore = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
+    subject = dataStore.cards;
     relativeTime = diffInDays =>
-      new Date(store.reviewTime.getTime() + diffInDays * MS_PER_DAY);
+      new Date(dataStore.reviewTime.getTime() + diffInDays * MS_PER_DAY);
   });
 
-  afterEach(() => store.destroy());
+  afterEach(() => dataStore.destroy());
 
   it('returns the progress when getting cards', async () => {
     await subject.putCard({ question: 'Question', answer: 'Answer' });
@@ -67,7 +67,7 @@ describe('CardStore progress reporting', () => {
 
   it('returns the progress when reporting added cards', async () => {
     let updateInfo;
-    store.changes.on('card', info => {
+    dataStore.changes.on('card', info => {
       updateInfo = info;
     });
 
@@ -181,7 +181,7 @@ describe('CardStore progress reporting', () => {
 
   it('reports changes to the progress', async () => {
     const updates = [];
-    store.changes.on('card', info => {
+    dataStore.changes.on('card', info => {
       updates.push(info);
     });
 
@@ -202,7 +202,7 @@ describe('CardStore progress reporting', () => {
 
   it('only reports once when a card and its progress are deleted', async () => {
     const updates = [];
-    store.changes.on('card', info => {
+    dataStore.changes.on('card', info => {
       updates.push(info);
     });
 
@@ -237,7 +237,9 @@ describe('CardStore progress reporting', () => {
       const idlePromise = new Promise(resolve => {
         resolveIdle = resolve;
       });
-      await store.setSyncServer(testRemote, { onIdle: () => resolveIdle() });
+      await dataStore.setSyncServer(testRemote, {
+        onIdle: () => resolveIdle(),
+      });
       await idlePromise;
       expect(await subject.hasProgressRecord('abc')).toBe(true);
 
@@ -348,7 +350,7 @@ describe('CardStore progress reporting', () => {
     const cards = await addCards(4);
 
     // Make the cards progressively overdue.
-    const reviewed = new Date(store.reviewTime.getTime() - 3 * MS_PER_DAY);
+    const reviewed = new Date(dataStore.reviewTime.getTime() - 3 * MS_PER_DAY);
     for (const card of cards) {
       reviewed.setTime(reviewed.getTime() - MS_PER_DAY);
       // eslint-disable-next-line no-await-in-loop
@@ -424,7 +426,7 @@ describe('CardStore progress reporting', () => {
     // Card 1: Level now: -1, in 10 days' time: 9
     await subject.putCard({
       _id: cards[0]._id,
-      progress: { reviewed: store.reviewTime, level: 1 },
+      progress: { reviewed: dataStore.reviewTime, level: 1 },
     });
     // Card 2: Level now: 0.2, in 10 days' time: 10.2
     await subject.putCard({

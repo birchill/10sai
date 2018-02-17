@@ -1,7 +1,7 @@
 import PouchDB from 'pouchdb';
 import memdown from 'memdown';
 
-import Store from './Store.ts';
+import DataStore from './DataStore.ts';
 import CardStore from './cards/CardStore.ts';
 import { waitForEvents } from '../../test/testcommon';
 
@@ -33,7 +33,7 @@ function idleSync() {
   return [idleCallback, idlePromise];
 }
 
-describe('Store remote sync', () => {
+describe('DataStore remote sync', () => {
   let subject;
   let testRemote;
   let failedAssertion;
@@ -56,7 +56,7 @@ describe('Store remote sync', () => {
   }
 
   beforeEach(() => {
-    subject = new Store({ pouch: { db: memdown }, prefetchViews: false });
+    subject = new DataStore({ pouch: { db: memdown }, prefetchViews: false });
 
     failedAssertion = undefined;
 

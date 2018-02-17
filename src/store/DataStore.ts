@@ -55,7 +55,7 @@ class StoreError extends Error {
   }
 }
 
-class Store {
+class DataStore {
   db: PouchDB.Database;
   cardStore: CardStore;
   reviewStore: ReviewStore;
@@ -428,4 +428,4 @@ class Store {
   }
 }
 
-export default Store;
+export default DataStore;
