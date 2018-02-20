@@ -15,6 +15,7 @@
     border: none;
     background: transparent;
     border-radius: 0;
+    box-shadow: none;
 
     &::placeholder {
       opacity: initial;
@@ -25,6 +26,14 @@
       background: $keyword-yellow;
       &::placeholder {
         color: $keyword-yellow-dark;
+      }
+    }
+
+    &.-focushighlight:hover, &.-focushighlight:focus {
+      border-top: 1px dotted $dark-grey;
+
+      &.-yellow {
+        border-top-color: $keyword-yellow-dark;
       }
     }
   }
