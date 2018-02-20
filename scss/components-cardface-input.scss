@@ -3,17 +3,13 @@
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  @include vertical-center;
 
   > .DraftEditor-root {
     // Make the text area fill the component height
     flex: 1;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    @include vertical-center;
 
     > .DraftEditor-editorContainer {
       height: 100%;
@@ -33,9 +29,7 @@
 
     // Vertically center contents
     .public-DraftEditor-content {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      @include vertical-center;
     }
   }
 }

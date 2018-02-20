@@ -1,7 +1,5 @@
 .text-region {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  @include vertical-center;
   align-items: center;
   text-align: center;
   overflow: hidden;

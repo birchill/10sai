@@ -34,9 +34,7 @@
   border-top: $border-width * 2 solid transparent;
   color: $text-color;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  @include vertical-center;
 
   & > * {
     height: 100%;

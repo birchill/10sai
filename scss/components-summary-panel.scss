@@ -4,9 +4,7 @@
   padding: 1rem;
   box-sizing: border-box;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  @include vertical-center;
   align-content: center;
 
   $icon-size: 5rem;
