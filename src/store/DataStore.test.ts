@@ -1,7 +1,8 @@
 import PouchDB from 'pouchdb';
 
-import DataStore from './DataStore.ts';
-import CardStore from './cards/CardStore.ts';
+import DataStore from './DataStore';
+import CardStore from './cards/CardStore';
+import { Card } from '../model';
 import { waitForEvents } from '../../test/testcommon';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -17,7 +18,7 @@ const cardForDirectPut = card => ({
 // active again so we add a little timeout after getting an initial onIdle
 // callback to make sure it really is idle.
 
-function idleSync() {
+function idleSync(): [({}) => any, Promise<{}>] {
   const idleTimeout = 50; // ms
 
   let resolver;
@@ -35,9 +36,9 @@ function idleSync() {
 }
 
 describe('DataStore remote sync', () => {
-  let subject;
-  let testRemote;
-  let failedAssertion;
+  let subject: DataStore;
+  let testRemote: PouchDB.Database;
+  let failedAssertion: Error;
 
   // PouchDB swallows exceptions thrown from certain callbacks like the on
   // 'changes' callback which, unfortunately, includes exceptions which are
@@ -85,7 +86,7 @@ describe('DataStore remote sync', () => {
       await subject.setSyncServer('http://not.found/');
       expect(false).toBe(true);
     } catch (err) {
-      expect(['ENOTFOUND', 'ENOENT', 'ECONNREFUSED']).toContain(err.code);
+      expect(err.status).toEqual(500);
     }
   });
 
@@ -93,7 +94,7 @@ describe('DataStore remote sync', () => {
     subject
       .setSyncServer('http://not.found/', {
         onError: err => {
-          expect(['ENOTFOUND', 'ENOENT', 'ECONNREFUSED']).toContain(err.code);
+          expect(err.status).toEqual(500);
           done();
         },
       })
@@ -105,15 +106,6 @@ describe('DataStore remote sync', () => {
   it('rejects a non-http/https database', async () => {
     try {
       await subject.setSyncServer('irc://irc.mozilla.org');
-      expect(false).toBe(true);
-    } catch (err) {
-      expect(err.name).toBe('bad_request');
-    }
-  });
-
-  it('rejects a non-PouchDB object', async () => {
-    try {
-      await subject.setSyncServer(new Date());
       expect(false).toBe(true);
     } catch (err) {
       expect(err.name).toBe('bad_request');
@@ -146,7 +138,7 @@ describe('DataStore remote sync', () => {
 
   it('downloads existing cards on the remote server', done => {
     const now = JSON.parse(JSON.stringify(new Date()));
-    const firstCard = {
+    const firstCard: Partial<Card> = {
       question: 'Question 1',
       answer: 'Answer 1',
       _id: CardStore.generateCardId(),
@@ -156,7 +148,7 @@ describe('DataStore remote sync', () => {
       tags: [],
       starred: false,
     };
-    const secondCard = {
+    const secondCard: Partial<Card> = {
       question: 'Question 2',
       answer: 'Answer 2',
       _id: CardStore.generateCardId(),

@@ -154,7 +154,9 @@ export class CardStore {
     const cardUpdate = { ...card };
     delete cardUpdate.progress;
     delete cardUpdate._id;
-    const cardRecord = await this._updateCard(card._id, cardUpdate);
+    const cardRecord = await this._updateCard(card._id, <Partial<
+      Card
+    >>cardUpdate);
 
     const progressUpdate = { ...card.progress };
     const progressRecord = await this._updateProgress(card._id, progressUpdate);
@@ -162,7 +164,7 @@ export class CardStore {
     return mergeRecords(cardRecord, progressRecord);
   }
 
-  async _putNewCard(card: Partial<Card>): Promise<Card> {
+  async _putNewCard(card: DeepPartial<Card>): Promise<Card> {
     const now = new Date().getTime();
     const cardToPut = {
       ...card,

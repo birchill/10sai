@@ -188,7 +188,7 @@ class DataStore {
   // as well as the |batchSize| member for specifying the number of records
   // to include in a batch.
   async setSyncServer(
-    syncServer: string | PouchDB.Database | null | undefined,
+    syncServer?: string | PouchDB.Database | null | undefined,
     options?: SyncOptions
   ) {
     // Setup an alias for error handling
