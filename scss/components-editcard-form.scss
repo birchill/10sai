@@ -38,13 +38,18 @@
     border: none;
     border-top: 2px dotted $dark-grey;
   }
-}
 
-.-textpanel {
-  padding-left: 1rem;
-  padding-right: 1rem;
+  .-textpanel {
+    padding-left: 1rem;
+    padding-right: 1rem;
 
-  &.-large {
-    min-height: 5rem;
+    &.-large {
+      min-height: 5rem;
+    }
+
+    color: lighten($text-color, 30%);
+    &:hover, &:focus-within {
+      color: $text-color;
+    }
   }
 }
