@@ -3,8 +3,8 @@
 
 import PouchDB from 'pouchdb';
 
-import DataStore from '../DataStore.ts';
-import CardStore from './CardStore.ts';
+import DataStore from '../DataStore';
+import CardStore from './CardStore';
 import { waitForEvents } from '../../../test/testcommon';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -12,9 +12,9 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 describe('CardStore progress reporting', () => {
-  let dataStore;
-  let subject;
-  let relativeTime;
+  let dataStore: DataStore;
+  let subject: CardStore;
+  let relativeTime: (diffInDays: number) => Date;
 
   beforeEach(() => {
     // Pre-fetching views seems to be a real bottle-neck when running tests
@@ -58,7 +58,7 @@ describe('CardStore progress reporting', () => {
       question: 'Question 2',
       answer: 'Answer 2',
     });
-    const cards = await subject.getCards([card1._id, card2._id]);
+    const cards = await subject.getCardsById([card1._id, card2._id]);
     expect(cards[0].progress).toMatchObject({
       level: 0,
       reviewed: null,

@@ -3,7 +3,7 @@ import * as views from './views';
 import { Card, Progress } from '../../model';
 import { CARD_PREFIX, PROGRESS_PREFIX } from './records';
 import { CardRecord, ProgressRecord } from './records';
-import { Omit, MakeOptional } from '../../utils/type-helpers';
+import { DeepPartial, MakeOptional, Omit } from '../../utils/type-helpers';
 import { stubbornDelete } from '../utils';
 
 const stripCardPrefix = (id: string) => id.substr(CARD_PREFIX.length);
@@ -145,7 +145,7 @@ export class CardStore {
     };
   }
 
-  async putCard(card: Partial<Card>): Promise<Card> {
+  async putCard(card: DeepPartial<Card>): Promise<Card> {
     // New card
     if (!card._id) {
       return this._putNewCard(card);
