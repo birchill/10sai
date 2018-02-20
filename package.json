@@ -96,7 +96,7 @@
       "^.+\\.tsx?$": "./node_modules/ts-jest/preprocessor.js"
     },
     "testRegex": ".test.(tsx?|jsx?)$",
-    "setupTestFrameworkScriptFile": "./jest/customMatchers.js"
+    "setupTestFrameworkScriptFile": "./jest/customMatchers.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,css}": [

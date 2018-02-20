@@ -3,16 +3,18 @@
 
 import PouchDB from 'pouchdb';
 
-import DataStore from '../DataStore.ts';
-import CardStore from './CardStore.ts';
+import DataStore from '../DataStore';
+import CardStore from './CardStore';
 import { waitForEvents } from '../../../test/testcommon';
 import { syncWithWaitableRemote } from '../test-utils';
+import { CardRecord } from './records';
+import '../../../jest/customMatchers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 describe('CardStore', () => {
-  let dataStore;
-  let subject;
+  let dataStore: DataStore;
+  let subject: CardStore;
 
   beforeEach(() => {
     dataStore = new DataStore({
@@ -295,7 +297,6 @@ describe('CardStore', () => {
 
     card = await subject.putCard({
       _id: card._id,
-      _rev: card._rev,
       question: 'Updated question',
     });
 
@@ -326,29 +327,6 @@ describe('CardStore', () => {
     expect(cards).toHaveLength(1);
     expect(cards[0].question).toBe('Updated question');
     expect(cards[0].answer).toBe('Answer');
-  });
-
-  it('updates cards even when the revision is old', async () => {
-    let card = await subject.putCard({
-      question: 'Original question',
-      answer: 'Answer',
-    });
-    const oldRevision = card._rev;
-    card = await subject.putCard({
-      _id: card._id,
-      question: 'Updated question',
-    });
-
-    await subject.putCard({
-      _id: card._id,
-      _rev: oldRevision,
-      answer: 'Updated answer',
-    });
-
-    const cards = await subject.getCards();
-    expect(cards).toHaveLength(1);
-    expect(cards[0].question).toBe('Updated question');
-    expect(cards[0].answer).toBe('Updated answer');
   });
 
   it('returns an error when trying to update a missing card', async () => {
@@ -438,9 +416,7 @@ describe('CardStore', () => {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();
 
-      const record = await testRemote.get(`card-${card._id}`, {
-        include_docs: true,
-      });
+      const record = await testRemote.get<CardRecord>(`card-${card._id}`);
       expect(record.keywords).not.toBeDefined();
       expect(record.tags).not.toBeDefined();
       expect(record.starred).not.toBeDefined();
@@ -469,9 +445,7 @@ describe('CardStore', () => {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();
 
-      const record = await testRemote.get(`card-${card._id}`, {
-        include_docs: true,
-      });
+      const record = await testRemote.get<CardRecord>(`card-${card._id}`);
       expect(record.keywords).not.toBeDefined();
       expect(record.tags).not.toBeDefined();
       expect(record.starred).not.toBeDefined();

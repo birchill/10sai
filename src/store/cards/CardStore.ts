@@ -79,7 +79,7 @@ export class CardStore {
     });
   }
 
-  async getCards(options: GetCardsOptions): Promise<Card[]> {
+  async getCards(options?: GetCardsOptions): Promise<Card[]> {
     await this.createdViews;
 
     const queryOptions: PouchDB.Query.Options<any, any> = {
