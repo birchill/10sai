@@ -45,7 +45,7 @@ export class EditCardForm extends React.Component {
             this.questionTextBox = questionTextBox;
           }}
         />
-        <hr className="divider" />
+        <hr className="card-divider divider" />
         <CardFaceInput
           name="answer"
           value={this.props.card.answer || ''}

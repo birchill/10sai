@@ -20,13 +20,14 @@ function ReviewCard(props) {
         if (evt.key === 'Enter' || evt.key === 'Space') {
           props.onSelectCard();
         }
-      }}>
+      }}
+    >
       <div className="front">
         <TextRegion className="question" text={props.question} />
       </div>
       <div className="back">
         <TextRegion className="question" text={props.question} />
-        <hr className="divider" />
+        <hr className="card-divider divider" />
         <TextRegion className="answer" text={props.answer} />
       </div>
     </div>

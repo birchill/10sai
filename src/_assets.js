@@ -253,7 +253,7 @@ for (const container of cardBacks) {
     <div className="review-card current -showanswer">
       <div className="back">
         <TextRegion className="question" text={container.dataset.question} />
-        <hr className="divider" />
+        <hr className="card-divider divider" />
         <TextRegion className="answer" text={container.dataset.answer} />
       </div>
     </div>,
