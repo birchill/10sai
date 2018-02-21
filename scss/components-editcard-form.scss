@@ -27,17 +27,21 @@
     }
 
     &.-yellow {
-      background: $keyword-yellow;
+      background-color: $keyword-yellow;
       &::placeholder {
         color: $keyword-yellow-dark;
       }
     }
 
-    &.-focushighlight:hover, &.-focushighlight:focus {
-      border-top: 1px dotted $dark-grey;
+    &.-focushighlight {
+      border-top: 1px dotted transparent;
 
-      &.-yellow {
-        border-top-color: $keyword-yellow-dark;
+      &:hover, &:focus {
+        border-top: 1px dotted $dark-grey;
+
+        &.-yellow {
+          border-top-color: $keyword-yellow-dark;
+        }
       }
     }
   }

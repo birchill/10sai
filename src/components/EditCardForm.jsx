@@ -56,13 +56,13 @@ export class EditCardForm extends React.Component {
         <input
           type="text"
           name="keywords"
-          className="-textpanel -yellow -focushighlight"
+          className="-textpanel -yellow -focushighlight -icon -key"
           placeholder="Keywords"
         />
         <input
           type="text"
           name="tags"
-          className="-textpanel -focushighlight"
+          className="-textpanel -focushighlight -icon -tag"
           placeholder="Tags"
         />
       </form>
