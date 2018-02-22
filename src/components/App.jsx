@@ -87,7 +87,7 @@ class App extends React.PureComponent {
     const tabSelected = ['lookup', 'edit-card', 'review'].includes(
       this.props.route.screen
     );
-    const tabPanelClass = tabSelected ? '-allhidden' : '';
+    const tabPanelClass = tabSelected ? '' : '-allhidden';
 
     // Review handling
     let remainingReviews;
