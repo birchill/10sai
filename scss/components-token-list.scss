@@ -124,4 +124,54 @@
       }
     }
   }
+
+  &.-yellow {
+
+    > .input {
+      background-color: $keyword-yellow;
+
+      > .textentry {
+        background-color: $keyword-yellow;
+        color: $keyword-yellow-dark;
+      }
+
+      > .chip {
+        border-color: $keyword-yellow-dark;
+        color: $keyword-yellow-dark;
+        background-color: lighten($keyword-yellow, 5%);
+
+        > .clear {
+          color: $keyword-yellow-dark;
+        }
+
+        &:hover, &:focus-within {
+          // The brightness we use for the normal style washes this out
+          filter: brightness(1.06);
+        }
+      }
+    }
+
+    > .candidates {
+      background: $keyword-yellow;
+      border-top-color: $keyword-yellow-dark;
+
+      > .item {
+        border-color: $keyword-yellow-dark;
+        color: $keyword-yellow;
+
+        background-color: lighten($keyword-yellow, 5%);
+
+        &:hover, &:focus-within {
+          filter: brightness(1.06);
+        }
+
+        > a {
+          color: $keyword-yellow-dark;
+        }
+        mark {
+          background: white;
+        }
+      }
+    }
+  }
 }
