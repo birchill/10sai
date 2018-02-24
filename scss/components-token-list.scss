@@ -60,6 +60,7 @@
 
     > .textentry, > .textentry:focus {
       flex: 1;
+      outline: none;
 
       border: none;
       box-shadow: none;
