@@ -1,0 +1,20 @@
+@mixin textbox-styles {
+  -webkit-appearance: none;
+  background: #fff;
+  background-image: none;
+  border: $border-width solid $light-grey;
+  border-radius: .3em;
+  color: $text-color;
+
+  height: 3rem;
+  padding: .4em .6em;
+
+  &:hover {
+    border-color: $dark-grey;
+  }
+
+  &:focus-within {
+    border-color: $highlight;
+    box-shadow: 0 0 0 .2rem lighten($highlight, 50%);
+  }
+}

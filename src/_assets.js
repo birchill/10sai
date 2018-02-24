@@ -10,6 +10,7 @@ import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
 import TextRegion from './components/TextRegion.jsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
+import TokenList from './components/TokenList.tsx';
 
 import SyncState from './sync/states';
 
@@ -25,6 +26,28 @@ ReactDOM.render(
   />,
   document.getElementById('cancelable-textbox-container')
 );
+
+(function renderTokenList(tags) {
+  const onAddTag = tag => {
+    tags.push(tag);
+    renderTokenList(tags);
+  };
+
+  const onDeleteTag = (tag, index) => {
+    tags.splice(index, 1);
+    renderTokenList(tags);
+  };
+
+  ReactDOM.render(
+    <TokenList
+      tags={tags}
+      placeholder="Tags"
+      onAddTag={onAddTag}
+      onDeleteTag={onDeleteTag}
+    />,
+    document.getElementById('token-list-container')
+  );
+})([]);
 
 ReactDOM.render(
   <LoadingIndicator />,

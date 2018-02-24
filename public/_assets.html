@@ -67,6 +67,107 @@
       <input class="-icon -lock" type=password value="-password">
     </div>
 
+    <h3>Autocomplete tag boxes</h3>
+
+    <style>
+    /* We can drop this when we make this dynamic */
+    #token-list-eg.token-list .candidates {
+      position: static;
+      margin-left: 2px;
+    }
+    </style>
+
+    <div class=token-list id=token-list-eg>
+      <div class="input">
+        <span class=chip>
+          漢字
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <span class=chip>
+          N1
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <input class=textentry type=text value="Text goes here">
+        <span class=spinner>&nbsp;</span>
+      </div>
+      <ul class=candidates>
+        <li class=item><a href="#"><mark>N</mark>2</a></li><li
+          class=item><a href="#"><mark>N</mark>3</a></li><li
+          class=item><a href="#">Really long one</a></li><li
+          class=item><a href="#">Really long one</a></li><li
+          class=item><a href="#">Really long one</a></li><li
+          class=item><a href="#">Really long one</a></li><li
+          class=item><a href="#">Really long one</a></li><li
+          class=item><a href="#">Really long one</a></li>
+      </ul>
+    </div>
+
+    <div id=token-list-container></div>
+
+    <div class=token-list>
+      <div class="input">
+        <span class=chip>
+          Really really really really long tag here
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <span class=chip>
+          Short!
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <span class=chip>
+          Longness longness
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <span class=chip>
+          短い!
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <span class=chip>
+          And another one
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <input class=textentry type=text>
+        <span class=spinner>&nbsp;</span>
+      </div>
+    </div>
+
+    <div class="token-list">
+      <div class="input">
+        <input class=textentry type=text placeholder="Empty tags">
+      </div>
+    </div>
+
+    <style>
+    /* We can drop this when we make this dynamic */
+    #yellow-token-list.token-list .candidates {
+      position: static;
+      margin-left: 2px;
+    }
+    </style>
+
+    <div id=yellow-token-list class="token-list -yellow">
+      <div class="input">
+        <span class=chip>
+          Yellow
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <span class=chip>
+          Variant
+          <button class=clear aria-label="Delete">&#x2715;</button>
+        </span>
+        <input class=textentry type=text placeholder="Yellow tags">
+        <span class=spinner>&nbsp;</span>
+      </div>
+      <ul class=candidates>
+        <li class=item>
+          <a href="#"><mark>N</mark>2</a>
+        </li>
+        <li class=item>
+          <a href="#"><mark>N</mark>3</a>
+        </li>
+      </ul>
+    </div>
+
     <h3>Throbbers</h3>
     <div
       id=loading-indicator-container

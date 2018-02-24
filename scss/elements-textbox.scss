@@ -3,24 +3,7 @@ input[type=text],
 input[type=password],
 input[type=search],
 textarea {
-  -webkit-appearance: none;
-  background: #fff;
-  background-image: none;
-  border: $border-width solid $light-grey;
-  border-radius: .3em;
-  color: $text-color;
-
-  height: 3rem;
-  padding: .4em 0.6em;
-
-  &:hover {
-    border-color: $dark-grey;
-  }
-
-  &:focus {
-    border-color: $highlight;
-    box-shadow: 0 0 0 .2rem lighten($highlight, 50%);
-  }
+  @include textbox-styles;
 }
 
 input[type=search] {
