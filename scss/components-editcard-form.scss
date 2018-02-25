@@ -8,6 +8,17 @@
     width: 100%;
   }
 
+  > .prompt, > .answer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    min-height: 5rem;
+
+    color: lighten($text-color, 30%);
+    &:hover, &:focus-within {
+      color: $text-color;
+    }
+  }
+
   > .divider {
     width: 80%;
   }
@@ -39,20 +50,6 @@
 
     > .icon {
       background-position-y: -5em;
-    }
-  }
-
-  .-textpanel {
-    padding-left: 1rem;
-    padding-right: 1rem;
-
-    &.-large {
-      min-height: 5rem;
-    }
-
-    color: lighten($text-color, 30%);
-    &:hover, &:focus-within {
-      color: $text-color;
     }
   }
 }

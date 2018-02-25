@@ -51,8 +51,8 @@ export class EditCardForm extends React.Component {
       <form className="form editcard-form" autoComplete="off">
         <CardFaceInput
           name="prompt"
+          className="prompt"
           value={this.props.card.question || ''}
-          className="-textpanel -large"
           placeholder="Prompt"
           required
           onChange={this.handlePromptChange}
@@ -63,8 +63,8 @@ export class EditCardForm extends React.Component {
         <hr className="card-divider divider" />
         <CardFaceInput
           name="answer"
+          className="answer"
           value={this.props.card.answer || ''}
-          className="-textpanel -large"
           placeholder="Answer"
           onChange={this.handleAnswerChange}
         />
