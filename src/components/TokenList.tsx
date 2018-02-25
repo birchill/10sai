@@ -6,12 +6,11 @@ interface Props {
   tags?: string[];
   text?: string;
   placeholder?: string;
-  onAddTag?: (tag: string) => void;
-  onDeleteTag?: (tag: string, index: number) => void;
+  onChange?: (tags: string[]) => void;
 }
 
 export class TokenList extends React.Component<Props> {
-  state: { text: '' };
+  state: { text: string; tags: string[] } = { text: '', tags: [] };
   textInput?: HTMLInputElement;
 
   static get propTypes() {
@@ -20,8 +19,7 @@ export class TokenList extends React.Component<Props> {
       tags: PropTypes.arrayOf(PropTypes.string),
       text: PropTypes.string,
       placeholder: PropTypes.string,
-      onAddTag: PropTypes.func,
-      onDeleteTag: PropTypes.func,
+      onChange: PropTypes.func,
     };
   }
 
@@ -37,27 +35,37 @@ export class TokenList extends React.Component<Props> {
   }
 
   componentWillMount() {
-    this.setState({ text: this.props.text || '' });
+    this.setState({
+      text: this.props.text || '',
+      tags: this.props.tags || [],
+    });
   }
 
   componentWillReceiveProps(nextProps: Props) {
-    this.setState({ text: nextProps.text || '' });
+    this.setState({
+      text: nextProps.text || '',
+      tags: nextProps.tags || [],
+    });
   }
 
   handleTextChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
-    const newTags = value.split(/[,、]/);
+    const tags = value.split(/[,、]/);
 
     // Make the new text the last tag, if any.
-    this.setState({ text: newTags[newTags.length - 1] });
+    this.setState({ text: tags[tags.length - 1] });
 
-    // If we have more than one tag, then add them
-    if (this.props.onAddTag) {
-      for (const tag of newTags.map(tag => tag.trim()).slice(0, -1)) {
-        if (tag === '') {
-          continue;
-        }
-        this.props.onAddTag(tag);
+    // Add any extra non-empty tags
+    const addedTags = tags
+      .slice(0, -1)
+      .map(tag => tag.trim())
+      .filter(tag => tag);
+    if (addedTags.length) {
+      const tags = this.state.tags.concat(addedTags);
+      this.setState({ tags });
+
+      if (this.props.onChange) {
+        this.props.onChange(tags);
       }
     }
   }
@@ -73,10 +81,10 @@ export class TokenList extends React.Component<Props> {
     if (
       e.key === 'Backspace' &&
       !this.state.text.length &&
-      this.props.tags &&
-      this.props.tags.length
+      this.state.tags &&
+      this.state.tags.length
     ) {
-      this.deleteTag(this.props.tags.length - 1);
+      this.deleteTag(this.state.tags.length - 1);
     }
   }
 
@@ -89,10 +97,15 @@ export class TokenList extends React.Component<Props> {
       return;
     }
 
-    const { text } = this.state;
-    this.setState({ text: '' });
-    if (this.props.onAddTag) {
-      this.props.onAddTag(text);
+    const tags = this.state.tags.slice();
+    tags.push(this.state.text);
+    this.setState({
+      text: '',
+      tags,
+    });
+
+    if (this.props.onChange) {
+      this.props.onChange(tags);
     }
   }
 
@@ -110,14 +123,19 @@ export class TokenList extends React.Component<Props> {
   }
 
   deleteTag(index: number) {
-    if (!this.props.tags || index >= this.props.tags.length) {
+    if (!this.state.tags || index >= this.state.tags.length) {
       return;
     }
 
-    const deletedLastTag = index === this.props.tags.length - 1;
+    const deletedLastTag = index === this.state.tags.length - 1;
 
-    if (this.props.onDeleteTag) {
-      this.props.onDeleteTag(this.props.tags[index], index);
+    const tags = this.state.tags.slice();
+    tags.splice(index, 1);
+
+    this.setState({ tags });
+
+    if (this.props.onChange) {
+      this.props.onChange(tags);
     }
 
     // If we deleted the last tag, focus the text field
@@ -128,13 +146,14 @@ export class TokenList extends React.Component<Props> {
 
   render() {
     const classes = ['token-list', this.props.className];
-    const tags = this.props.tags || [];
-    const placeholder = tags.length ? '' : this.props.placeholder || '';
+    const placeholder = this.state.tags.length
+      ? ''
+      : this.props.placeholder || '';
 
     return (
       <div className={classes.join(' ')}>
         <div className="input">
-          {tags.map((tag, i) => (
+          {this.state.tags.map((tag, i) => (
             <span key={i} className="chip">
               {tag}
               <button

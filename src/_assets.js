@@ -28,23 +28,12 @@ ReactDOM.render(
 );
 
 (function renderTokenList(tags) {
-  const onAddTag = tag => {
-    tags.push(tag);
-    renderTokenList(tags);
-  };
-
-  const onDeleteTag = (tag, index) => {
-    tags.splice(index, 1);
+  const onChange = tags => {
     renderTokenList(tags);
   };
 
   ReactDOM.render(
-    <TokenList
-      tags={tags}
-      placeholder="Tags"
-      onAddTag={onAddTag}
-      onDeleteTag={onDeleteTag}
-    />,
+    <TokenList tags={tags} placeholder="Tags" onChange={onChange} />,
     document.getElementById('token-list-container')
   );
 })([]);

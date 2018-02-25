@@ -334,6 +334,4 @@
   <view id="search-grey" viewBox="100 200 100 100"/>
   <view id="user-grey" viewBox="1000 200 100 100"/>
   <view id="lock-grey" viewBox="1100 200 100 100"/>
-  <view id="tag-grey" viewBox="1700 200 100 100"/>
-  <view id="key-yellow" viewBox="1800 500 100 100"/>
 </svg>

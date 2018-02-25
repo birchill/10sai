@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import CardFaceInput from './CardFaceInput.jsx';
+import TokenList from './TokenList.tsx';
 
 export class EditCardForm extends React.Component {
   static get propTypes() {
@@ -17,6 +18,8 @@ export class EditCardForm extends React.Component {
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
+    this.handleTagChange = this.handleTagChange.bind(this);
+    this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
   }
 
   handlePromptChange(value) {
@@ -28,6 +31,18 @@ export class EditCardForm extends React.Component {
   handleAnswerChange(value) {
     if (this.props.onChange) {
       this.props.onChange('answer', value);
+    }
+  }
+
+  handleTagChange(tags) {
+    if (this.props.onChange) {
+      this.props.onChange('tags', tags);
+    }
+  }
+
+  handleKeywordsChange(tags) {
+    if (this.props.onChange) {
+      this.props.onChange('keywords', tags);
     }
   }
 
@@ -53,18 +68,24 @@ export class EditCardForm extends React.Component {
           placeholder="Answer"
           onChange={this.handleAnswerChange}
         />
-        <input
-          type="text"
-          name="keywords"
-          className="-textpanel -yellow -focushighlight -icon -key"
-          placeholder="Keywords"
-        />
-        <input
-          type="text"
-          name="tags"
-          className="-textpanel -focushighlight -icon -tag"
-          placeholder="Tags"
-        />
+        <div className="keywords -yellow">
+          <span className="icon -key" />
+          <TokenList
+            className="tokens -yellow"
+            tags={this.props.card.keywords || []}
+            placeholder="Keywords"
+            onChange={this.handleKeywordsChange}
+          />
+        </div>
+        <div className="tags">
+          <span className="icon -tag -grey" />
+          <TokenList
+            className="tokens"
+            tags={this.props.card.tags || []}
+            placeholder="Tags"
+            onChange={this.handleTagChange}
+          />
+        </div>
       </form>
     );
   }
