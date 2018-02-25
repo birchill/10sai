@@ -71,7 +71,7 @@ export class EditCardForm extends React.Component {
         <div className="keywords -yellow">
           <span className="icon -key" />
           <TokenList
-            className="tokens -yellow"
+            className="tokens -yellow -seamless"
             tags={this.props.card.keywords || []}
             placeholder="Keywords"
             onChange={this.handleKeywordsChange}
@@ -80,7 +80,7 @@ export class EditCardForm extends React.Component {
         <div className="tags">
           <span className="icon -tag -grey" />
           <TokenList
-            className="tokens"
+            className="tokens -seamless"
             tags={this.props.card.tags || []}
             placeholder="Tags"
             onChange={this.handleTagChange}

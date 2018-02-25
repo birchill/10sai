@@ -126,6 +126,16 @@
     }
   }
 
+  // A variation that does not include borders so it can be incorporated in
+  // other components.
+  &.-seamless {
+    > .input {
+      border: none;
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+
   &.-yellow {
 
     > .input {
