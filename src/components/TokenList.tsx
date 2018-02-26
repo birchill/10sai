@@ -35,6 +35,8 @@ export class TokenList extends React.Component<Props> {
     this.handleTagClick = this.handleTagClick.bind(this);
     this.handleTagKeyUp = this.handleTagKeyUp.bind(this);
     this.handleSuggestionClick = this.handleSuggestionClick.bind(this);
+
+    this.renderSuggestion = this.renderSuggestion.bind(this);
   }
 
   componentWillMount() {
@@ -203,19 +205,38 @@ export class TokenList extends React.Component<Props> {
           />
         </div>
         <ul className="suggestions" hidden={!suggestionsToShow.length}>
-          {suggestionsToShow.map((suggestion, i) => (
-            <li className="item" key={i}>
-              <a
-                href="#"
-                data-suggestion={suggestion}
-                onClick={this.handleSuggestionClick}
-              >
-                {suggestion}
-              </a>
-            </li>
-          ))}
+          {suggestionsToShow.map(this.renderSuggestion)}
         </ul>
       </div>
+    );
+  }
+
+  renderSuggestion(suggestion: string, i: number) {
+    const textToMatch = this.state.text;
+    const wordBreakCharacters = /([\s!"#$%&'()*+,\-./\\:;<=>?@[\]^_`{|}~\uff01-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65\uffe0-\uffee\u3000-\u303f])/;
+
+    return (
+      <li className="item" key={i}>
+        <a
+          href="#"
+          data-suggestion={suggestion}
+          onClick={this.handleSuggestionClick}
+        >
+          {suggestion.split(wordBreakCharacters).map((substring, i) => {
+            if (textToMatch.length && substring.startsWith(textToMatch)) {
+              return (
+                <React.Fragment key={i}>
+                  <mark>{textToMatch}</mark>
+                  {substring.substring(textToMatch.length)}
+                </React.Fragment>
+              );
+            } else {
+              console.log(`No match on "${substring}"`);
+              return substring;
+            }
+          })}
+        </a>
+      </li>
     );
   }
 }
