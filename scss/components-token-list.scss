@@ -73,7 +73,7 @@
     }
   }
 
-  > .candidates {
+  > .suggestions {
     position: absolute;
     left: 2px;
     top: 100%;
@@ -81,7 +81,11 @@
     box-sizing: border-box;
 
     // Move up enough to overlap bottom border of text box
-    transform: translateY(-.2rem);
+    // (The scale component is so that we can transition with the hidden state)
+    transform: translateY(-0.2rem) scaleY(1);
+
+    transform-origin: 50% 0%;
+    transition: transform 0.15s;
 
     background: white;
     box-shadow: 0px 2px 3px rgba(0, 0, 30, 0.2);
@@ -162,7 +166,7 @@
       }
     }
 
-    > .candidates {
+    > .suggestions {
       background: $keyword-yellow;
       border-top-color: $keyword-yellow-dark;
 
@@ -184,5 +188,10 @@
         }
       }
     }
+  }
+
+  &:not(:focus-within) > .suggestions,
+  > .suggestions.hidden {
+    transform: translateY(-0.2rem) scaleY(0);
   }
 }

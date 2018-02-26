@@ -7,6 +7,7 @@ interface Props {
   text?: string;
   placeholder?: string;
   onChange?: (tags: string[]) => void;
+  suggestions?: string[];
 }
 
 export class TokenList extends React.Component<Props> {
@@ -20,6 +21,7 @@ export class TokenList extends React.Component<Props> {
       text: PropTypes.string,
       placeholder: PropTypes.string,
       onChange: PropTypes.func,
+      suggestions: PropTypes.arrayOf(PropTypes.string),
     };
   }
 
@@ -32,6 +34,7 @@ export class TokenList extends React.Component<Props> {
     this.handleTextBlur = this.handleTextBlur.bind(this);
     this.handleTagClick = this.handleTagClick.bind(this);
     this.handleTagKeyUp = this.handleTagKeyUp.bind(this);
+    this.handleSuggestionClick = this.handleSuggestionClick.bind(this);
   }
 
   componentWillMount() {
@@ -97,8 +100,7 @@ export class TokenList extends React.Component<Props> {
       return;
     }
 
-    const tags = this.state.tags.slice();
-    tags.push(this.state.text);
+    const tags = this.state.tags.concat(this.state.text);
     this.setState({
       text: '',
       tags,
@@ -110,6 +112,7 @@ export class TokenList extends React.Component<Props> {
   }
 
   handleTagClick(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
     const index = parseInt((e.target as HTMLButtonElement).dataset.index!);
     this.deleteTag(index);
   }
@@ -144,11 +147,29 @@ export class TokenList extends React.Component<Props> {
     }
   }
 
+  handleSuggestionClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    const suggestion = (e.target as HTMLAnchorElement).dataset.suggestion!;
+    const tags = this.state.tags.concat(suggestion);
+    this.setState({ tags });
+
+    if (this.props.onChange) {
+      this.props.onChange(tags);
+    }
+  }
+
   render() {
     const classes = ['token-list', this.props.className];
     const placeholder = this.state.tags.length
       ? ''
       : this.props.placeholder || '';
+
+    // Get all unique suggestions not already in use
+    const uniqueSuggestions = new Set(this.props.suggestions);
+    const tagsInUse = new Set(this.state.tags);
+    const suggestionsToShow = [
+      ...new Set([...uniqueSuggestions].filter(x => !tagsInUse.has(x))),
+    ];
 
     return (
       <div className={classes.join(' ')}>
@@ -181,6 +202,19 @@ export class TokenList extends React.Component<Props> {
             }}
           />
         </div>
+        <ul className="suggestions" hidden={!suggestionsToShow.length}>
+          {suggestionsToShow.map((suggestion, i) => (
+            <li className="item" key={i}>
+              <a
+                href="#"
+                data-suggestion={suggestion}
+                onClick={this.handleSuggestionClick}
+              >
+                {suggestion}
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
     );
   }

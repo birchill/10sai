@@ -75,6 +75,7 @@ export class EditCardForm extends React.Component {
             tags={this.props.card.keywords || []}
             placeholder="Keywords"
             onChange={this.handleKeywordsChange}
+            suggestions={['漢字', '漢', '字']}
           />
         </div>
         <div className="tags">
@@ -84,6 +85,7 @@ export class EditCardForm extends React.Component {
             tags={this.props.card.tags || []}
             placeholder="Tags"
             onChange={this.handleTagChange}
+            suggestions={['N1', 'N2', 'N3']}
           />
         </div>
       </form>
