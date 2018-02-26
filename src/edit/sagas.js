@@ -135,11 +135,22 @@ export function* watchCardEdits(dataStore) {
       `Active record mismatch ${activeRecord.formId} vs ${action.formId}`
     );
 
-    // Check if anything needs saving
-    if (
-      activeRecord.editState !== EditState.DIRTY &&
-      action.type !== 'DELETE_EDIT_CARD'
-    ) {
+    // Check if anything needs saving.
+    //
+    // The complexity here is that we don't want to auto-save if the only data
+    // in the card are keywords and tags. However, if we're modifying an
+    // existing card then we *do* want to autosave in that case.
+    const cardHasNonEmptyField = field =>
+      typeof activeRecord.card[field] !== 'undefined' &&
+      activeRecord.card[field].length;
+    const hasDataWorthSaving = () =>
+      activeRecord.card._id ||
+      cardHasNonEmptyField('question') ||
+      cardHasNonEmptyField('answer');
+    const shouldSave =
+      action.type === 'DELETE_EDIT_CARD' ||
+      (activeRecord.editState === EditState.DIRTY && hasDataWorthSaving());
+    if (!shouldSave) {
       // If we are responding to a save action, put the finish action anyway
       // in case someone is waiting on either a finished or fail to indicate
       // completion of the save.

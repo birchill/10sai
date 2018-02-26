@@ -100,8 +100,8 @@ export default function edit(state = initialState, action) {
           field =>
             field !== '_id' &&
             !deepEqual(action.card[field], state.forms.active.card[field]) &&
-            // This use of indexOf is not awesome but generally dirtyFields will be
-            // 0 ~ 1 items so it's probably ok.
+            // This use of indexOf is not awesome but generally dirtyFields will
+            // be 0 ~ 1 items so it's probably ok.
             dirtyFields.indexOf(field) === -1
         )
       );
