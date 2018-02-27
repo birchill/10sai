@@ -231,7 +231,6 @@ export class TokenList extends React.Component<Props> {
                 </React.Fragment>
               );
             } else {
-              console.log(`No match on "${substring}"`);
               return substring;
             }
           })}
