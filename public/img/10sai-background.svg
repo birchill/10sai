@@ -16,6 +16,8 @@
       <stop offset="1"/>
     </linearGradient>
   </defs>
+  <rect x=".1" y=".1" width="512" height="512" rx="112.5" ry="112.5" fill="#3ea5fe"/>
+  <rect x=".1" y=".1" width="512" height="512" rx="112.5" ry="112.5" fill="url(#linear-gradient)" opacity=".2"/>
   <path d="M95.45 210.23h-62v-53.65A199.61 199.61 0 0 0 67.7 154q14.33-2.55 24.51-8.33A47.8 47.8 0 0 0 108.86 130a91.06 91.06 0 0 0 10.64-24.28h62v327.43h-86z" stroke-width="12" stroke-linejoin="round" stroke-linecap="round" stroke="#3a6582" fill="#fff"/>
   <path class="cls-5" d="M197.79 105.75h-40.92v13.83l11.41 22.24a40.18 40.18 0 0 0 41.55 19.29l20.17-3.52 19.31-26.26c-2.56-4.54-24.59-26.78-51.52-25.58z"/>
   <path class="cls-6" d="M216.86 122.48c-5.89-4-12.89-7.19-20-7.19h-28.55a3 3 0 0 0-3 3V136l3 5.85a40.18 40.18 0 0 0 41.55 19.29l20.14-3.55 12.84-17.46z"/>
