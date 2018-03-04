@@ -370,35 +370,25 @@ export class TokenList extends React.Component<Props> {
     e.preventDefault();
     const suggestion = (e.target as HTMLAnchorElement).dataset.suggestion!;
     const tags = this.state.tags.concat(suggestion);
-    this.setState({ tags });
+    this.setState(
+      {
+        tags,
+        // Focus on the text field.
+        //
+        // In some cases it might be more convenient to move the focus on the
+        // next suggestion so you can do rapid entry of suggestions, but
+        // generally it seems like you want to enter some text. If rapid entry
+        // of multiple initial suggestions is common, perhaps we can distinguish
+        // between the case where there is text in the text box and when there
+        // is not.
+        focusRegion: FocusRegion.TextInput,
+        focusIndex: 0,
+      },
+      () => this.updateFocus()
+    );
 
     if (this.props.onChange) {
       this.props.onChange(tags);
-    }
-
-    // TODO: Should we just always focus on the text field?
-    // Keeping the focus on the suggestions makes it easy when you want to add
-    // multiple, but I feel like most of the time you want to just add one.
-
-    // If we deleted the last suggestion, focus the text field
-    const updatedSuggestions = this.suggestionsToDisplay(tags);
-    if (
-      this.state.focusRegion === FocusRegion.Suggestions &&
-      this.state.focusIndex >= updatedSuggestions.length
-    ) {
-      if (updatedSuggestions.length) {
-        this.setState({ focusIndex: updatedSuggestions.length - 1 }, () =>
-          this.updateFocus()
-        );
-      } else {
-        this.setState(
-          {
-            focusRegion: FocusRegion.TextInput,
-            focusIndex: 0,
-          },
-          () => this.updateFocus()
-        );
-      }
     }
   }
 
