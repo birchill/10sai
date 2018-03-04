@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 interface Props {
   className?: string;
   tokens?: string[];
-  text?: string;
   placeholder?: string;
   onChange?: (tokens: string[]) => void;
   suggestions?: string[];
@@ -37,7 +36,6 @@ export class TokenList extends React.Component<Props> {
     return {
       className: PropTypes.string,
       tokens: PropTypes.arrayOf(PropTypes.string),
-      text: PropTypes.string,
       placeholder: PropTypes.string,
       onChange: PropTypes.func,
       suggestions: PropTypes.arrayOf(PropTypes.string),
@@ -60,17 +58,11 @@ export class TokenList extends React.Component<Props> {
   }
 
   componentWillMount() {
-    this.setState({
-      text: this.props.text || '',
-      tokens: this.props.tokens || [],
-    });
+    this.setState({ tokens: this.props.tokens || [] });
   }
 
   componentWillReceiveProps(nextProps: Props) {
-    const updatedState: Partial<State> = {
-      text: nextProps.text || '',
-      tokens: nextProps.tokens || [],
-    };
+    const updatedState: Partial<State> = { tokens: nextProps.tokens || [] };
 
     // Make sure the focus is in range for tokens
     if (
@@ -372,6 +364,9 @@ export class TokenList extends React.Component<Props> {
     this.setState(
       {
         tokens,
+        // Clobber any in-progress text because often you'll type a few
+        // characters then choose a suggestion (i.e. autocomplete).
+        text: '',
         // Focus on the text field.
         //
         // In some cases it might be more convenient to move the focus on the
