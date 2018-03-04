@@ -351,25 +351,18 @@ export class TokenList extends React.Component<Props> {
       this.props.onChange(tags);
     }
 
-    // If we deleted the last tag and it was focussed, we may need to update
-    // focus.
+    // If we deleted the last tag in the list, focus on the text field.
     if (
       this.state.focusRegion === FocusRegion.Tags &&
       this.state.focusIndex >= tags.length
     ) {
-      if (tags.length) {
-        this.setState({ focusIndex: tags.length - 1 }, () =>
-          this.updateFocus()
-        );
-      } else {
-        this.setState(
-          {
-            focusRegion: FocusRegion.TextInput,
-            focusIndex: 0,
-          },
-          () => this.updateFocus()
-        );
-      }
+      this.setState(
+        {
+          focusRegion: FocusRegion.TextInput,
+          focusIndex: 0,
+        },
+        () => this.updateFocus()
+      );
     }
   }
 
