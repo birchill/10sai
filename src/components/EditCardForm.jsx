@@ -72,7 +72,7 @@ export class EditCardForm extends React.Component {
           <span className="icon -key" />
           <TokenList
             className="tokens -yellow -seamless"
-            tags={this.props.card.keywords || []}
+            tokens={this.props.card.keywords || []}
             placeholder="Keywords"
             onChange={this.handleKeywordsChange}
             suggestions={['漢字', '漢', '字']}
@@ -82,7 +82,7 @@ export class EditCardForm extends React.Component {
           <span className="icon -tag -grey" />
           <TokenList
             className="tokens -seamless"
-            tags={this.props.card.tags || []}
+            tokens={this.props.card.tags || []}
             placeholder="Tags"
             onChange={this.handleTagChange}
             suggestions={['N1', 'N2', 'N3']}

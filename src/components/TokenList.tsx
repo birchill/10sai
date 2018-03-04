@@ -3,22 +3,22 @@ import PropTypes from 'prop-types';
 
 interface Props {
   className?: string;
-  tags?: string[];
+  tokens?: string[];
   text?: string;
   placeholder?: string;
-  onChange?: (tags: string[]) => void;
+  onChange?: (tokens: string[]) => void;
   suggestions?: string[];
 }
 
 enum FocusRegion {
   TextInput,
-  Tags,
+  Tokens,
   Suggestions,
 }
 
 interface State {
   text: string;
-  tags: string[];
+  tokens: string[];
   focusRegion: FocusRegion;
   focusIndex: number;
 }
@@ -26,18 +26,17 @@ interface State {
 export class TokenList extends React.Component<Props> {
   state: State = {
     text: '',
-    tags: [],
+    tokens: [],
     focusRegion: FocusRegion.TextInput,
     focusIndex: 0,
   };
   rootElem?: HTMLDivElement;
   textInput?: HTMLInputElement;
-  tagButtons: HTMLButtonElement[];
 
   static get propTypes() {
     return {
       className: PropTypes.string,
-      tags: PropTypes.arrayOf(PropTypes.string),
+      tokens: PropTypes.arrayOf(PropTypes.string),
       text: PropTypes.string,
       placeholder: PropTypes.string,
       onChange: PropTypes.func,
@@ -53,8 +52,8 @@ export class TokenList extends React.Component<Props> {
     this.handleTextChange = this.handleTextChange.bind(this);
     this.handleTextKeyPress = this.handleTextKeyPress.bind(this);
     this.handleTextKeyDown = this.handleTextKeyDown.bind(this);
-    this.handleTagClick = this.handleTagClick.bind(this);
-    this.handleTagKeyUp = this.handleTagKeyUp.bind(this);
+    this.handleTokenClick = this.handleTokenClick.bind(this);
+    this.handleTokenKeyUp = this.handleTokenKeyUp.bind(this);
     this.handleSuggestionClick = this.handleSuggestionClick.bind(this);
 
     this.renderSuggestion = this.renderSuggestion.bind(this);
@@ -63,23 +62,23 @@ export class TokenList extends React.Component<Props> {
   componentWillMount() {
     this.setState({
       text: this.props.text || '',
-      tags: this.props.tags || [],
+      tokens: this.props.tokens || [],
     });
   }
 
   componentWillReceiveProps(nextProps: Props) {
     const updatedState: Partial<State> = {
       text: nextProps.text || '',
-      tags: nextProps.tags || [],
+      tokens: nextProps.tokens || [],
     };
 
-    // Make sure the focus is in range for tags
+    // Make sure the focus is in range for tokens
     if (
-      this.state.focusRegion === FocusRegion.Tags &&
-      this.state.focusIndex >= updatedState.tags!.length
+      this.state.focusRegion === FocusRegion.Tokens &&
+      this.state.focusIndex >= updatedState.tokens!.length
     ) {
-      if (updatedState.tags!.length) {
-        updatedState.focusIndex = updatedState.tags!.length - 1;
+      if (updatedState.tokens!.length) {
+        updatedState.focusIndex = updatedState.tokens!.length - 1;
       } else {
         updatedState.focusRegion = FocusRegion.TextInput;
         updatedState.focusIndex = 0;
@@ -112,11 +111,11 @@ export class TokenList extends React.Component<Props> {
       case 'ArrowLeft':
         {
           if (this.state.focusRegion === FocusRegion.TextInput) {
-            if (this.state.tags.length) {
+            if (this.state.tokens.length) {
               this.setState(
                 {
-                  focusRegion: FocusRegion.Tags,
-                  focusIndex: this.state.tags.length - 1,
+                  focusRegion: FocusRegion.Tokens,
+                  focusIndex: this.state.tokens.length - 1,
                 },
                 () => this.updateFocus()
               );
@@ -125,7 +124,7 @@ export class TokenList extends React.Component<Props> {
             return;
           }
 
-          if (this.state.focusRegion === FocusRegion.Tags) {
+          if (this.state.focusRegion === FocusRegion.Tokens) {
             if (this.state.focusIndex === 0) {
               return;
             }
@@ -157,8 +156,8 @@ export class TokenList extends React.Component<Props> {
 
       case 'ArrowRight':
         {
-          if (this.state.focusRegion === FocusRegion.Tags) {
-            if (this.state.focusIndex >= this.state.tags.length - 1) {
+          if (this.state.focusRegion === FocusRegion.Tokens) {
+            if (this.state.focusIndex >= this.state.tokens.length - 1) {
               this.setState(
                 {
                   focusRegion: FocusRegion.TextInput,
@@ -198,7 +197,7 @@ export class TokenList extends React.Component<Props> {
         {
           if (
             (this.state.focusRegion === FocusRegion.TextInput ||
-              this.state.focusRegion === FocusRegion.Tags) &&
+              this.state.focusRegion === FocusRegion.Tokens) &&
             this.suggestionsToDisplay().length
           ) {
             this.setState(
@@ -266,23 +265,23 @@ export class TokenList extends React.Component<Props> {
 
   handleTextChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
-    const tags = value.split(/[,、]/);
+    const tokens = value.split(/[,、]/);
 
     // Make the new text the last tag, if any.
-    this.setState({ text: tags[tags.length - 1] });
+    this.setState({ text: tokens[tokens.length - 1] });
 
-    // Add any extra non-empty tags
-    const addedTags = tags
+    // Add any extra non-empty tokens
+    const addedTokens = tokens
       .slice(0, -1)
       .map(tag => tag.trim())
       .filter(tag => tag);
-    if (addedTags.length) {
-      const tags = this.state.tags.concat(addedTags);
-      // Since we're only adding tags, the existing focus should be fine.
-      this.setState({ tags });
+    if (addedTokens.length) {
+      const tokens = this.state.tokens.concat(addedTokens);
+      // Since we're only adding tokens, the existing focus should be fine.
+      this.setState({ tokens });
 
       if (this.props.onChange) {
-        this.props.onChange(tags);
+        this.props.onChange(tokens);
       }
     }
   }
@@ -298,10 +297,10 @@ export class TokenList extends React.Component<Props> {
     if (
       e.key === 'Backspace' &&
       !this.state.text.length &&
-      this.state.tags &&
-      this.state.tags.length
+      this.state.tokens &&
+      this.state.tokens.length
     ) {
-      this.deleteTag(this.state.tags.length - 1);
+      this.deleteToken(this.state.tokens.length - 1);
     }
   }
 
@@ -310,51 +309,51 @@ export class TokenList extends React.Component<Props> {
       return;
     }
 
-    const tags = this.state.tags.concat(this.state.text);
+    const tokens = this.state.tokens.concat(this.state.text);
     // Presumably we are currently focussed on the text input so we don't need
     // to update focus here.
     this.setState({
       text: '',
-      tags,
+      tokens,
     });
 
     if (this.props.onChange) {
-      this.props.onChange(tags);
+      this.props.onChange(tokens);
     }
   }
 
-  handleTagClick(e: React.MouseEvent<HTMLButtonElement>) {
+  handleTokenClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     const index = parseInt((e.target as HTMLButtonElement).dataset.index!);
-    this.deleteTag(index);
+    this.deleteToken(index);
   }
 
-  handleTagKeyUp(e: React.KeyboardEvent<HTMLButtonElement>) {
+  handleTokenKeyUp(e: React.KeyboardEvent<HTMLButtonElement>) {
     if (e.key === 'Delete') {
       e.preventDefault();
       const index = parseInt((e.target as HTMLButtonElement).dataset.index!);
-      this.deleteTag(index);
+      this.deleteToken(index);
     }
   }
 
-  deleteTag(index: number) {
-    if (!this.state.tags || index >= this.state.tags.length) {
+  deleteToken(index: number) {
+    if (!this.state.tokens || index >= this.state.tokens.length) {
       return;
     }
 
-    const tags = this.state.tags.slice();
-    tags.splice(index, 1);
+    const tokens = this.state.tokens.slice();
+    tokens.splice(index, 1);
 
-    this.setState({ tags });
+    this.setState({ tokens });
 
     if (this.props.onChange) {
-      this.props.onChange(tags);
+      this.props.onChange(tokens);
     }
 
     // If we deleted the last tag in the list, focus on the text field.
     if (
-      this.state.focusRegion === FocusRegion.Tags &&
-      this.state.focusIndex >= tags.length
+      this.state.focusRegion === FocusRegion.Tokens &&
+      this.state.focusIndex >= tokens.length
     ) {
       this.setState(
         {
@@ -369,10 +368,10 @@ export class TokenList extends React.Component<Props> {
   handleSuggestionClick(e: React.MouseEvent<HTMLAnchorElement>) {
     e.preventDefault();
     const suggestion = (e.target as HTMLAnchorElement).dataset.suggestion!;
-    const tags = this.state.tags.concat(suggestion);
+    const tokens = this.state.tokens.concat(suggestion);
     this.setState(
       {
-        tags,
+        tokens,
         // Focus on the text field.
         //
         // In some cases it might be more convenient to move the focus on the
@@ -388,7 +387,7 @@ export class TokenList extends React.Component<Props> {
     );
 
     if (this.props.onChange) {
-      this.props.onChange(tags);
+      this.props.onChange(tokens);
     }
   }
 
@@ -423,7 +422,7 @@ export class TokenList extends React.Component<Props> {
         }
         break;
 
-      case FocusRegion.Tags:
+      case FocusRegion.Tokens:
         const button = getNthTokenButton(this.state.focusIndex);
         if (button) {
           button.focus();
@@ -439,10 +438,12 @@ export class TokenList extends React.Component<Props> {
     }
   }
 
-  suggestionsToDisplay(tags?: string[]): string[] {
+  suggestionsToDisplay(tokens?: string[]): string[] {
     const uniqueSuggestions = new Set(this.props.suggestions);
-    const tagsInUse = new Set(tags || this.state.tags);
-    return [...new Set([...uniqueSuggestions].filter(x => !tagsInUse.has(x)))];
+    const tokensInUse = new Set(tokens || this.state.tokens);
+    return [
+      ...new Set([...uniqueSuggestions].filter(x => !tokensInUse.has(x))),
+    ];
   }
 
   render() {
@@ -460,14 +461,14 @@ export class TokenList extends React.Component<Props> {
         }}
       >
         <div className="input">
-          {this.state.tags.map((tag, i) => (
+          {this.state.tokens.map((token, i) => (
             <span key={i} className="chip">
-              {tag}
+              {token}
               <button
                 className="clear"
                 aria-label="Delete"
-                onClick={this.handleTagClick}
-                onKeyUp={this.handleTagKeyUp}
+                onClick={this.handleTokenClick}
+                onKeyUp={this.handleTokenKeyUp}
                 tabIndex={-1}
                 data-index={i}
               >

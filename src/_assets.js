@@ -27,13 +27,13 @@ ReactDOM.render(
   document.getElementById('cancelable-textbox-container')
 );
 
-(function renderTokenList(tags) {
-  const onChange = tags => {
-    renderTokenList(tags);
+(function renderTokenList(tokens) {
+  const onChange = tokens => {
+    renderTokenList(tokens);
   };
 
   ReactDOM.render(
-    <TokenList tags={tags} placeholder="Tags" onChange={onChange} />,
+    <TokenList tokens={tokens} placeholder="Tags" onChange={onChange} />,
     document.getElementById('token-list-container')
   );
 })([]);
