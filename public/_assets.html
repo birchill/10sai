@@ -69,14 +69,6 @@
 
     <h3>Autocomplete tag boxes</h3>
 
-    <style>
-    /* We can drop this when we make this dynamic */
-    #token-list-eg.token-list .suggestions {
-      position: static;
-      margin-left: 2px;
-    }
-    </style>
-
     <div class=token-list id=token-list-eg>
       <div class="input">
         <span class=chip>
@@ -88,18 +80,20 @@
           <button class=clear aria-label="Delete">&#x2715;</button>
         </span>
         <input class=textentry type=text value="Text goes here">
-        <span class=spinner>&nbsp;</span>
       </div>
-      <ul class=suggestions>
-        <li class=item><a href="#"><mark>N</mark>2</a></li><li
-          class=item><a href="#"><mark>N</mark>3</a></li><li
-          class=item><a href="#">Really long one</a></li><li
-          class=item><a href="#">Really long one</a></li><li
-          class=item><a href="#">Really long one</a></li><li
-          class=item><a href="#">Really long one</a></li><li
-          class=item><a href="#">Really long one</a></li><li
-          class=item><a href="#">Really long one</a></li>
-      </ul>
+      <div class=suggestions>
+        <label class=label>e.g.</label>
+        <ul class=suggestion-list>
+          <li class=item><a href="#"><mark>N</mark>2</a></li><li
+            class=item><a href="#"><mark>N</mark>3</a></li><li
+            class=item><a href="#">Really long one</a></li><li
+            class=item><a href="#">Really long one</a></li><li
+            class=item><a href="#">Really long one</a></li><li
+            class=item><a href="#">Really long one</a></li><li
+            class=item><a href="#">Really long one</a></li><li
+            class=item><a href="#">Really long one</a></li>
+        </ul>
+      </div>
     </div>
 
     <div id=token-list-container></div>
@@ -127,7 +121,6 @@
           <button class=clear aria-label="Delete">&#x2715;</button>
         </span>
         <input class=textentry type=text>
-        <span class=spinner>&nbsp;</span>
       </div>
     </div>
 
@@ -136,14 +129,6 @@
         <input class=textentry type=text placeholder="Empty tags">
       </div>
     </div>
-
-    <style>
-    /* We can drop this when we make this dynamic */
-    #yellow-token-list.token-list .suggestions {
-      position: static;
-      margin-left: 2px;
-    }
-    </style>
 
     <div id=yellow-token-list class="token-list -yellow">
       <div class="input">
@@ -156,16 +141,18 @@
           <button class=clear aria-label="Delete">&#x2715;</button>
         </span>
         <input class=textentry type=text placeholder="Yellow tags">
-        <span class=spinner>&nbsp;</span>
       </div>
-      <ul class=suggestions>
-        <li class=item>
-          <a href="#"><mark>N</mark>2</a>
-        </li>
-        <li class=item>
-          <a href="#"><mark>N</mark>3</a>
-        </li>
-      </ul>
+      <div class=suggestions>
+        <label class=label>e.g.</label>
+        <ul class=suggestion-list>
+          <li class=item>
+            <a href="#"><mark>N</mark>2</a>
+          </li>
+          <li class=item>
+            <a href="#"><mark>N</mark>3</a>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <h3>Throbbers</h3>

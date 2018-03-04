@@ -162,9 +162,7 @@ export class TokenList extends React.Component<Props> {
 
   render() {
     const classes = ['token-list', this.props.className];
-    const placeholder = this.state.tags.length
-      ? ''
-      : this.props.placeholder || '';
+    const placeholder = this.props.placeholder || '';
 
     // Get all unique suggestions not already in use
     const uniqueSuggestions = new Set(this.props.suggestions);
@@ -204,9 +202,14 @@ export class TokenList extends React.Component<Props> {
             }}
           />
         </div>
-        <ul className="suggestions" hidden={!suggestionsToShow.length}>
-          {suggestionsToShow.map(this.renderSuggestion)}
-        </ul>
+        {suggestionsToShow.length ? (
+          <div className="suggestions">
+            <label className="label">e.g.</label>
+            <ul className="suggestion-list" hidden={!suggestionsToShow.length}>
+              {suggestionsToShow.map(this.renderSuggestion)}
+            </ul>
+          </div>
+        ) : null}
       </div>
     );
   }

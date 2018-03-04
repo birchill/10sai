@@ -1,23 +1,29 @@
 .token-list {
-  position: relative;
+  @include textbox-styles;
+
+  // Textboxes have uneven vertical and horizonal padding so we make the
+  // vertical padding equal here.
+  padding-top: .6em;
+  // For the bottom, however, we incorporate it in the suggestions part.
+  padding-bottom: 0;
+
+  // Text boxes have a fixed height but we want to stretch to fit in the
+  // suggestions as needed.
+  height: auto;
 
   > .input {
-    @include textbox-styles;
-
     display: flex;
     align-content: flex-start;
     flex-wrap: wrap;
 
     // Replace textbox-styles' height: 3rem with an equivalent min-height since
     // we expect this to wrap.
-    height: auto;
-    min-height: 3rem;
     box-sizing: border-box;
 
     // We drop 0.4em from the padding-bottom and put it on the chip and text's
     // margin-bottom instead so that there is a gap between chips when the
     // control wraps
-    padding-bottom: 0.4em - 0.4em;
+    padding-bottom: 0.6em - 0.4em;
 
     > .chip {
       display: inline-flex;
@@ -74,57 +80,62 @@
   }
 
   > .suggestions {
-    position: absolute;
-    left: 2px;
-    top: 100%;
-    width: calc(100% - 4px);
-    box-sizing: border-box;
-
-    // Move up enough to overlap bottom border of text box
-    // (The scale component is so that we can transition with the hidden state)
-    transform: translateY(-0.2rem) scaleY(1);
-
-    transform-origin: 50% 0%;
-    transition: transform 0.15s;
-
-    background: white;
-    box-shadow: 0px 2px 3px rgba(0, 0, 30, 0.2);
-    border-top: 2px dotted $light-grey;
-    border-bottom-left-radius: .3em;
-    border-bottom-right-radius: .3em;
-
-    list-style: none;
-    margin: 0;
-    padding: .6em;
-    // As above, we move some of the bottom padding to the item margin
     padding-bottom: .6em - .4em;
-    z-index: 300;
 
-    > .item {
+    > .label {
       display: inline-block;
 
       margin: 0 .4em .4em 0;
-      padding: .2em .4em;
-
+      padding: .2em 0;
       vertical-align: middle;
 
-      border: $border-width solid $highlight;
-      border-radius: .3em;
-      color: $highlight;
-
-      background: lighten($highlight, 50%);
-      // Make these a bit more feint so it's clear they're not locked-in yet
+      font-style: italic;
       opacity: 0.6;
+    }
 
-      &:hover, &:focus-within {
-        filter: brightness(1.2);
-        opacity: 1;
-      }
+    > .suggestion-list {
+      display: inline;
+      list-style: none;
+      margin: 0;
+      padding: 0;
 
-      &:focus-within {
-        border-style: dashed;
-        & a {
-          outline: none;
+      > .item {
+        display: inline-block;
+
+        margin: 0 .4em .4em 0;
+
+        // This is cheating a little but we push the padding into the child link
+        // since it makes the hit region larger.
+        > a {
+          display: inline-block;
+          padding: .2em .4em;
+
+          // We add a min-width too so that single kanji suggestions are easier
+          // to select
+          min-width: 2em;
+          text-align: center;
+        }
+
+        vertical-align: middle;
+
+        border: $border-width dashed transparent;
+        border-radius: .3em;
+        color: $highlight;
+
+        background: lighten($highlight, 50%);
+        // Make these a bit more feint so it's clear they're not locked-in yet
+        opacity: 0.6;
+
+        &:hover, &:focus-within {
+          filter: brightness(1.2);
+          opacity: 1;
+        }
+
+        &:focus-within {
+          border-color: $highlight;
+          & a {
+            outline: none;
+          }
         }
       }
     }
@@ -133,18 +144,15 @@
   // A variation that does not include borders so it can be incorporated in
   // other components.
   &.-seamless {
-    > .input {
-      border: none;
-      background: transparent;
-      box-shadow: none;
-    }
+    border: none;
+    background: transparent;
+    box-shadow: none;
   }
 
   &.-yellow {
+    background-color: $keyword-yellow;
 
     > .input {
-      background-color: $keyword-yellow;
-
       > .textentry {
         background-color: $keyword-yellow;
         color: $keyword-yellow-dark;
@@ -168,16 +176,21 @@
 
     > .suggestions {
       background: $keyword-yellow;
-      border-top-color: $keyword-yellow-dark;
 
-      > .item {
-        border-color: $keyword-yellow-dark;
+      > .label {
+        color: $keyword-yellow-dark;
+      }
+
+      > .suggestion-list > .item {
         color: $keyword-yellow;
-
         background-color: lighten($keyword-yellow, 5%);
 
         &:hover, &:focus-within {
           filter: brightness(1.06);
+        }
+
+        &:focus-within {
+          border-color: $keyword-yellow-dark;
         }
 
         > a {
@@ -188,10 +201,5 @@
         }
       }
     }
-  }
-
-  &:not(:focus-within) > .suggestions,
-  > .suggestions.hidden {
-    transform: translateY(-0.2rem) scaleY(0);
   }
 }
