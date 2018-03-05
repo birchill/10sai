@@ -61,13 +61,13 @@ export class LRUMap<K, V> {
   clear(): void;
 
   // Returns an iterator over all keys, starting with the oldest.
-  keys(): Iterator<K>;
+  keys(): IterableIterator<K>;
 
   // Returns an iterator over all values, starting with the oldest.
-  values(): Iterator<V>;
+  values(): IterableIterator<V>;
 
   // Returns an iterator over all entries, starting with the oldest.
-  entries(): Iterator<[K, V]>;
+  entries(): IterableIterator<[K, V]>;
 
   // Returns an iterator over all entries, starting with the oldest.
   [Symbol.iterator](): Iterator<[K, V]>;

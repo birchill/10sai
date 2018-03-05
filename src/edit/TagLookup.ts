@@ -1,7 +1,7 @@
 import DataStore from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
 
-type asyncSuggestionsCallbacks = (suggestions: string[]) => void;
+type asyncSuggestionsCallback = (suggestions: string[]) => void;
 
 const NUM_SESSION_TAGS = 3;
 const LOOKUP_CACHE_SIZE = 15;
@@ -19,7 +19,7 @@ export class TagLookup {
   currentInput: string;
 
   // Callback to call once performing any async lookup.
-  asyncCallback?: asyncSuggestionsCallbacks;
+  asyncCallback?: asyncSuggestionsCallback;
 
   // Cache of tags we have looked up.
   lookupCache: LRUMap<string, string[]>;
