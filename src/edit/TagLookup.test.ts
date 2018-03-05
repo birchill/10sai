@@ -48,7 +48,15 @@ describe('TagLookup', () => {
     expect(result).toEqual(['D', 'A', 'C']);
   });
 
-  it('returns frequently used tags asynchronously', () => {});
+  it('returns frequently used tags asynchronously', () => {
+    // XXX
+  });
 
-  it('returns less suggestions when there are more session tags', () => {});
+  it('returns less suggestions when there are more session tags', () => {
+    // XXX
+  });
+
+  it('de-duplicates recent and frequent tags', () => {
+    // XXX
+  });
 });

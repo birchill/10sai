@@ -55,6 +55,9 @@ export class TagLookup {
       suggestions.push(...[...this.sessionTags.keys()].reverse());
 
       // XXX Add this.frequentlyUsed tags up to our maximum number of tags.
+      // XXX This needs to de-dupe between the two lists
+
+      // XXX Do I even need this -- can't I just use the closure above for this?
       this.asyncCallback = callback;
     } else {
       // XXX Progressively shorten the string (starting with the full string)
