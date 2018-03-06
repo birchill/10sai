@@ -159,6 +159,10 @@ class DataStore {
   }
 
   async setReviewTime(reviewTime: Date) {
+    if (reviewTime.getTime() === this.reviewTime.getTime()) {
+      return;
+    }
+
     this.reviewTime = reviewTime;
     return this.initDone
       .then(() => this.cardStore.updateReviewTime(reviewTime))
