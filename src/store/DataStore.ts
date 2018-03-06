@@ -61,6 +61,8 @@ class StoreError extends Error {
   }
 }
 
+const VIEW_CLEANUP_DELAY = 5000; // 5s
+
 class DataStore {
   db: PouchDB.Database;
   cardStore: CardStore;
@@ -71,6 +73,7 @@ class DataStore {
   changesEmitter?: EventEmitter.Emitter;
   remoteDb?: PouchDB.Database;
   remoteSync?: PouchDB.Replication.Sync<RecordTypes>;
+  viewCleanupScheduled: boolean;
 
   constructor(options?: StoreOptions) {
     const pouchOptions = options && options.pouch ? options.pouch : {};
@@ -89,13 +92,12 @@ class DataStore {
     });
     this.reviewStore = new ReviewStore(this.db);
 
+    this.viewCleanupScheduled = false;
+
     this.initDone = this.db
       .info()
       .then(() => this.cardStore.updateViews(this.reviewTime))
-      .then(() => {
-        // Don't return this since we don't want to block on it
-        this.db.viewCleanup();
-      });
+      .then(() => this.scheduleViewCleanup());
   }
 
   // Card API
@@ -166,10 +168,7 @@ class DataStore {
     this.reviewTime = reviewTime;
     return this.initDone
       .then(() => this.cardStore.updateReviewTime(reviewTime))
-      .then(() => {
-        // Don't return this because we don't want to block on it
-        this.db.viewCleanup();
-      });
+      .then(() => this.scheduleViewCleanup());
   }
 
   // Sets a server for synchronizing with and begins live synchonization.
@@ -449,6 +448,18 @@ class DataStore {
       // NOTE: resolveConflicts will currently drop attachments on the floor.
       // Need to be careful once we start using them.
     }
+  }
+
+  scheduleViewCleanup() {
+    if (this.viewCleanupScheduled) {
+      return;
+    }
+
+    this.viewCleanupScheduled = true;
+    setTimeout(() => {
+      this.viewCleanupScheduled = false;
+      this.db.viewCleanup();
+    }, VIEW_CLEANUP_DELAY);
   }
 
   // Maintenance methods
