@@ -19,9 +19,6 @@ export class TagLookup {
   // Tags that have been *entered* (i.e. added to cards) this session.
   sessionTags: LRUMap<string, undefined>;
 
-  // Tags that are frequently used.
-  frequentTags: string[];
-
   // The current string we may be doing a lookup for.
   currentInput: string;
 
@@ -50,11 +47,8 @@ export class TagLookup {
     );
 
     this.sessionTags = new LRUMap(this.maxSessionTags);
-    this.frequentTags = [];
     this.currentInput = '';
     this.lookupCache = new LRUMap(LOOKUP_CACHE_SIZE);
-
-    // XXX Trigger query of frequently used tags
   }
 
   recordAddedTag(tag: string) {
@@ -76,18 +70,40 @@ export class TagLookup {
   // replace or re-order the synchronous results (since that would mean the user
   // might accidentally click the wrong thing).
   getSuggestions(input: string, callback: asyncSuggestionsCallback): string[] {
-    const suggestions: string[] = [];
+    // Initial suggestions case:
     if (input === '') {
-      // Add as many session tags as we have
-      suggestions.push(...[...this.sessionTags.keys()].reverse());
+      this.currentInput = input;
 
-      // XXX Should we be storing the frequent tags here locally (or even as
-      // part of our regular lookup cache.
+      const mergeFrequentTagsWithSessionTags = (
+        sessionTags: string[],
+        frequentTags: string[]
+      ): string[] =>
+        [...new Set(sessionTags.concat(frequentTags))].slice(
+          0,
+          this.maxSuggestions
+        );
+
+      // Add as many session tags as we have
+      const sessionTags: string[] = [...this.sessionTags.keys()].reverse();
+
+      // If we have a cached result, return straight away
+      if (this.lookupCache.has('')) {
+        return mergeFrequentTagsWithSessionTags(
+          sessionTags,
+          this.lookupCache.get('')!
+        );
+      }
 
       // Fetch up to the full number of suggestions in case all the session tags
       // we added are duped.
       this.store.getFrequentTags(this.maxSuggestions).then(frequentTags => {
-        if (!frequentTags || this.currentInput !== input) {
+        if (!frequentTags) {
+          return;
+        }
+
+        this.lookupCache.set(input, frequentTags);
+
+        if (this.currentInput !== input) {
           return;
         }
 
@@ -96,44 +112,32 @@ export class TagLookup {
         //
         // (ES6 Sets maintain insertion order including when dupes are added
         // which is very convenient for us.)
-        callback(
-          [...new Set(suggestions.concat(frequentTags))].slice(
-            0,
-            this.maxSuggestions
-          )
-        );
+        callback(mergeFrequentTagsWithSessionTags(sessionTags, frequentTags));
       });
-    } else {
-      // XXX Progressively shorten the string (starting with the full string)
-      // and check for matches in recent lookups.
-      //
-      // -- If there are any matches return them
-      //
-      // -- If we don't have an exact match, store the callback (after
-      //    debouncing) and trigger an async lookup
-      //    (Async lookup needs to check that currentInput matches input.
-      //     It should store the result regardless, but only check the input
-      //     string before calling the callback.)
+
+      // Return the session tags for now
+      return sessionTags;
     }
 
+    // XXX Progressively shorten the string (starting with the full string)
+    // and check for matches in recent lookups.
+    //
+    // -- If there are any matches return them
+    //
+    // -- If we don't have an exact match, store the callback (after
+    //    debouncing) and trigger an async lookup
+    //    (Async lookup needs to check that currentInput matches input.
+    //     It should store the result regardless, but only check the input
+    //     string before calling the callback.)
     this.currentInput = input;
 
-    return suggestions;
+    return [];
   }
 
   reset() {
     // XXX Clear current input here
     // XXX Retrigger query for frequently used tags
   }
-
-  lookupFrequentlyUsedTags() {
-    // Trigger query
-    // Once it returns, store the result in this.frequentTags, and, if the
-    // currentInput is '', call any stored async callback.
-  }
-
-  // XXX Add method here to querying frequently used tags
-  // -- On done, if current input is empty, call async callback
 }
 
 export default TagLookup;

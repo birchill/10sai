@@ -64,7 +64,7 @@ describe('TagLookup', () => {
     subject.recordAddedTag('R2');
     subject.recordAddedTag('R3');
 
-    const result = subject.getSuggestions('', suggestions => {
+    subject.getSuggestions('', suggestions => {
       expect(suggestions).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
       done();
     });
@@ -76,9 +76,36 @@ describe('TagLookup', () => {
     subject.recordAddedTag('B');
     subject.recordAddedTag('C');
 
-    const result = subject.getSuggestions('', suggestions => {
+    subject.getSuggestions('', suggestions => {
       expect(suggestions).toEqual(['C', 'B', 'A', 'E', 'G', 'I']);
       done();
     });
+  });
+
+  it('caches frequent tags', async () => {
+    store._frequentTags = ['D', 'E', 'F', 'G'];
+    subject.recordAddedTag('A');
+    subject.recordAddedTag('B');
+    subject.recordAddedTag('C');
+
+    // Do initial fetch
+    let initialFetchResolve;
+    const initialFetch = new Promise(resolve => {
+      initialFetchResolve = resolve;
+    });
+    subject.getSuggestions('', () => {
+      initialFetchResolve();
+    });
+    await initialFetch;
+
+    // Do a subsequent fetch
+    const result = subject.getSuggestions('', () => {
+      // The async callback should never be called
+      expect(false).toBe(true);
+    });
+    expect(result).toEqual(['C', 'B', 'A', 'D', 'E', 'F']);
+
+    // Wait a while to make sure the callback is not called
+    await waitForEvents(5);
   });
 });
