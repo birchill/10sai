@@ -3,8 +3,15 @@ import { LRUMap } from '../utils/lru';
 
 type asyncSuggestionsCallback = (suggestions: string[]) => void;
 
-const NUM_SESSION_TAGS = 3;
+const MAX_SESSION_TAGS = 3;
+const MAX_SUGGESTIONS = 6;
+
 const LOOKUP_CACHE_SIZE = 15;
+
+interface TagLookupOptions {
+  maxSessionTags?: number;
+  maxSuggestions?: number;
+}
 
 export class TagLookup {
   store: DataStore;
@@ -18,15 +25,31 @@ export class TagLookup {
   // The current string we may be doing a lookup for.
   currentInput: string;
 
-  // Callback to call once performing any async lookup.
-  asyncCallback?: asyncSuggestionsCallback;
-
   // Cache of tags we have looked up.
   lookupCache: LRUMap<string, string[]>;
 
-  constructor(store: DataStore) {
+  // The maximum number of initial suggestions to display based on tags that
+  // have already been added in this session.
+  maxSessionTags: number;
+
+  // The total maximum number of suggestions to return.
+  maxSuggestions: number;
+
+  constructor(store: DataStore, options?: TagLookupOptions) {
     this.store = store;
-    this.sessionTags = new LRUMap(NUM_SESSION_TAGS);
+
+    this.maxSessionTags =
+      options && typeof options.maxSessionTags !== 'undefined'
+        ? options.maxSessionTags
+        : MAX_SESSION_TAGS;
+    this.maxSuggestions = Math.max(
+      options && typeof options.maxSuggestions !== 'undefined'
+        ? options.maxSuggestions
+        : MAX_SUGGESTIONS,
+      this.maxSessionTags
+    );
+
+    this.sessionTags = new LRUMap(this.maxSessionTags);
     this.frequentTags = [];
     this.currentInput = '';
     this.lookupCache = new LRUMap(LOOKUP_CACHE_SIZE);
@@ -48,17 +71,38 @@ export class TagLookup {
   // So the return type here is the initial synchronous result, while the second
   // argument to the function is the callback function to call if there are any
   // asynchronous results.
+  //
+  // NOTE: The set of suggestions returned by the async callback must NEVER
+  // replace or re-order the synchronous results (since that would mean the user
+  // might accidentally click the wrong thing).
   getSuggestions(input: string, callback: asyncSuggestionsCallback): string[] {
-    const suggestions = [];
+    const suggestions: string[] = [];
     if (input === '') {
       // Add as many session tags as we have
       suggestions.push(...[...this.sessionTags.keys()].reverse());
 
-      // XXX Add this.frequentlyUsed tags up to our maximum number of tags.
-      // XXX This needs to de-dupe between the two lists
+      // XXX Should we be storing the frequent tags here locally (or even as
+      // part of our regular lookup cache.
 
-      // XXX Do I even need this -- can't I just use the closure above for this?
-      this.asyncCallback = callback;
+      // Fetch up to the full number of suggestions in case all the session tags
+      // we added are duped.
+      this.store.getFrequentTags(this.maxSuggestions).then(frequentTags => {
+        if (!frequentTags || this.currentInput !== input) {
+          return;
+        }
+
+        // De-dupe (whilst maintaining existing order of suggestions) and trim
+        // to the maximum number of suggestions.
+        //
+        // (ES6 Sets maintain insertion order including when dupes are added
+        // which is very convenient for us.)
+        callback(
+          [...new Set(suggestions.concat(frequentTags))].slice(
+            0,
+            this.maxSuggestions
+          )
+        );
+      });
     } else {
       // XXX Progressively shorten the string (starting with the full string)
       // and check for matches in recent lookups.
@@ -79,7 +123,6 @@ export class TagLookup {
 
   reset() {
     // XXX Clear current input here
-    // XXX Clear async callback
     // XXX Retrigger query for frequently used tags
   }
 

@@ -4,24 +4,21 @@ import TagLookup from './TagLookup';
 import DataStore from '../store/DataStore';
 import { waitForEvents } from '../../test/testcommon';
 
-PouchDB.plugin(require('pouchdb-adapter-memory'));
+class MockDataStore extends DataStore {
+  _frequentTags: string[];
+
+  async getFrequentTags(limit: number): Promise<string[]> {
+    return Promise.resolve(this._frequentTags);
+  }
+}
 
 describe('TagLookup', () => {
-  // XXX Should we just mock this and move the tests for looking up tags etc. to
-  // the DataStore tests?
-  let store: DataStore;
+  let store: MockDataStore;
   let subject: TagLookup;
 
   beforeEach(() => {
-    store = new DataStore({
-      pouch: { adapter: 'memory' },
-      prefetchViews: false,
-    });
-    subject = new TagLookup(store);
-  });
-
-  afterEach(() => {
-    return store.destroy();
+    store = new MockDataStore();
+    subject = new TagLookup(store, { maxSessionTags: 3, maxSuggestions: 6 });
   });
 
   it('returns no tags initially', async () => {
@@ -48,15 +45,40 @@ describe('TagLookup', () => {
     expect(result).toEqual(['D', 'A', 'C']);
   });
 
-  it('returns frequently used tags asynchronously', () => {
-    // XXX
+  it('returns frequently used tags asynchronously', done => {
+    store._frequentTags = ['F1', 'F2', 'F3'];
+    subject.recordAddedTag('R1');
+    subject.recordAddedTag('R2');
+    subject.recordAddedTag('R3');
+
+    const result = subject.getSuggestions('', suggestions => {
+      expect(suggestions).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
+      done();
+    });
+    expect(result).toEqual(['R3', 'R2', 'R1']);
   });
 
-  it('returns less suggestions when there are more session tags', () => {
-    // XXX
+  it('respects the maximum number of suggestions', done => {
+    store._frequentTags = ['F1', 'F2', 'F3', 'F4', 'F5'];
+    subject.recordAddedTag('R1');
+    subject.recordAddedTag('R2');
+    subject.recordAddedTag('R3');
+
+    const result = subject.getSuggestions('', suggestions => {
+      expect(suggestions).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
+      done();
+    });
   });
 
-  it('de-duplicates recent and frequent tags', () => {
-    // XXX
+  it('de-duplicates recent and frequent tags', done => {
+    store._frequentTags = ['A', 'C', 'E', 'G', 'I', 'K'];
+    subject.recordAddedTag('A');
+    subject.recordAddedTag('B');
+    subject.recordAddedTag('C');
+
+    const result = subject.getSuggestions('', suggestions => {
+      expect(suggestions).toEqual(['C', 'B', 'A', 'E', 'G', 'I']);
+      done();
+    });
   });
 });
