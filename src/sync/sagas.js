@@ -1,4 +1,5 @@
-import { takeEvery, takeLatest, put, select } from 'redux-saga/effects';
+import { call, takeEvery, takeLatest, put, select } from 'redux-saga/effects';
+import { delay } from 'redux-saga';
 import { waitForDocLoad } from '../utils';
 
 // Selector wrappers
@@ -192,7 +193,23 @@ function* updateSetting(dataStore, dispatch, action) {
   // Check if we need to trigger replication due to a change in server
   // name or being unpaused.
   if (!updatedPaused && (serverUpdated || paused)) {
+    // We hit this path on startup when the server has already been set.
+    // However, we don't want to trigger replication *too* quickly on startup
+    // because it will cause contention with all the other queries we run on
+    // startup so we add a little delay to let other things happen first.
+    yield call(delay, 1500);
+
+    // Check that the server hasn't changed while we were waiting.
+    // (The proper way to do this would be to make this saga cancelable and then
+    // have other sagas cancel it as appropriate, but that's quite a significant
+    // refactoring for something we don't expect to happen.)
+    const serverAfterDelay = yield select(getFromSync(getServer));
+    if (JSON.stringify(serverAfterDelay) !== JSON.stringify(updatedServer)) {
+      return;
+    }
+
     yield startReplication(dataStore, updatedServer, dispatch);
+
     // And likewise check if we need to stop it
   } else if (updatedPaused && !paused) {
     yield stopReplication(dataStore);
