@@ -5,10 +5,14 @@ import DataStore from '../store/DataStore';
 import { waitForEvents } from '../../test/testcommon';
 
 class MockDataStore extends DataStore {
-  _frequentTags: string[];
+  _tags: string[] = [];
 
-  async getFrequentTags(limit: number): Promise<string[]> {
-    return Promise.resolve(this._frequentTags);
+  async getTags(prefix: string, limit: number): Promise<string[]> {
+    const matchingTags = this._tags
+      .filter(tag => tag.startsWith(prefix))
+      .sort()
+      .slice(0, limit);
+    return Promise.resolve(matchingTags);
   }
 }
 
@@ -22,16 +26,12 @@ describe('TagLookup', () => {
   });
 
   it('returns no tags initially', async () => {
-    const callback = () => {
-      // We should never be called
-      expect(false).toBe(true);
-    };
+    const result = subject.getSuggestions('');
 
-    const result = subject.getSuggestions('', callback);
-    expect(result).toEqual([]);
-
-    // Wait a while to make sure the callback is not called
-    await waitForEvents(5);
+    expect(result.initialResult).toEqual([]);
+    expect(result.asyncResult).toBeTruthy();
+    const asyncResult = await result.asyncResult;
+    expect(asyncResult).toEqual([]);
   });
 
   it('returns recently added tags synchronously', () => {
@@ -41,71 +41,80 @@ describe('TagLookup', () => {
     subject.recordAddedTag('A'); // Bump A's access time
     subject.recordAddedTag('D'); // B should be dropped
 
-    const result = subject.getSuggestions('', () => {});
-    expect(result).toEqual(['D', 'A', 'C']);
+    const result = subject.getSuggestions('');
+
+    expect(result.initialResult).toEqual(['D', 'A', 'C']);
   });
 
-  it('returns frequently used tags asynchronously', done => {
-    store._frequentTags = ['F1', 'F2', 'F3'];
+  it('returns frequently used tags asynchronously', async () => {
+    store._tags = ['F1', 'F2', 'F3'];
     subject.recordAddedTag('R1');
     subject.recordAddedTag('R2');
     subject.recordAddedTag('R3');
 
-    const result = subject.getSuggestions('', suggestions => {
-      expect(suggestions).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
-      done();
-    });
-    expect(result).toEqual(['R3', 'R2', 'R1']);
+    const result = subject.getSuggestions('');
+
+    expect(result.initialResult).toEqual(['R3', 'R2', 'R1']);
+    const asyncResult = await result.asyncResult;
+    expect(asyncResult).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
   });
 
-  it('respects the maximum number of suggestions', done => {
-    store._frequentTags = ['F1', 'F2', 'F3', 'F4', 'F5'];
+  it('respects the maximum number of suggestions', async () => {
+    store._tags = ['F1', 'F2', 'F3', 'F4', 'F5'];
     subject.recordAddedTag('R1');
     subject.recordAddedTag('R2');
     subject.recordAddedTag('R3');
 
-    subject.getSuggestions('', suggestions => {
-      expect(suggestions).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
-      done();
-    });
+    const result = subject.getSuggestions('');
+
+    const asyncResult = await result.asyncResult;
+    expect(asyncResult).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
   });
 
-  it('de-duplicates recent and frequent tags', done => {
-    store._frequentTags = ['A', 'C', 'E', 'G', 'I', 'K'];
+  it('de-duplicates recent and frequent tags', async () => {
+    store._tags = ['A', 'C', 'E', 'G', 'I', 'K'];
     subject.recordAddedTag('A');
     subject.recordAddedTag('B');
     subject.recordAddedTag('C');
 
-    subject.getSuggestions('', suggestions => {
-      expect(suggestions).toEqual(['C', 'B', 'A', 'E', 'G', 'I']);
-      done();
-    });
+    const result = subject.getSuggestions('');
+
+    const asyncResult = await result.asyncResult;
+    expect(asyncResult).toEqual(['C', 'B', 'A', 'E', 'G', 'I']);
   });
 
   it('caches frequent tags', async () => {
-    store._frequentTags = ['D', 'E', 'F', 'G'];
+    store._tags = ['D', 'E', 'F', 'G'];
     subject.recordAddedTag('A');
     subject.recordAddedTag('B');
     subject.recordAddedTag('C');
 
     // Do initial fetch
-    let initialFetchResolve;
-    const initialFetch = new Promise(resolve => {
-      initialFetchResolve = resolve;
-    });
-    subject.getSuggestions('', () => {
-      initialFetchResolve();
-    });
-    await initialFetch;
+    const initialFetch = subject.getSuggestions('');
+    await initialFetch.asyncResult;
 
     // Do a subsequent fetch
-    const result = subject.getSuggestions('', () => {
-      // The async callback should never be called
-      expect(false).toBe(true);
-    });
-    expect(result).toEqual(['C', 'B', 'A', 'D', 'E', 'F']);
-
-    // Wait a while to make sure the callback is not called
-    await waitForEvents(5);
+    const secondFetch = subject.getSuggestions('');
+    expect(secondFetch.initialResult).toEqual(['C', 'B', 'A', 'D', 'E', 'F']);
+    expect(secondFetch.asyncResult).toBeUndefined();
   });
+
+  it('returns matching tags matching a prefix', async () => {
+    store._tags = ['ABC', 'ABCD', 'AB', 'DEF'];
+    subject.recordAddedTag('R1');
+    subject.recordAddedTag('R2');
+    subject.recordAddedTag('R3');
+
+    const result = subject.getSuggestions('ABC');
+
+    expect(result.initialResult).toBeUndefined();
+    const asyncResult = await result.asyncResult;
+    expect(asyncResult).toEqual(['ABC', 'ABCD']);
+  });
+
+  // XXX Test direct cache hit
+  // XXX Test substring cache hit
+  // XXX Test substring cache hit with possibly incomplete result
+  // XXX Test Promise rejection
+  // XXX Test cache clearing
 });

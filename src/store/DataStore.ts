@@ -119,7 +119,7 @@ class DataStore {
   async putCard(card: Partial<Card>): Promise<Card> {
     return this.cardStore.putCard(card);
   }
-  async getFrequentTags(limit: number): Promise<string[]> {
+  async getTags(prefix: string, limit: number): Promise<string[]> {
     // XXX
     return Promise.resolve([]);
   }

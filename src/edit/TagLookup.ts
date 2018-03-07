@@ -1,8 +1,6 @@
 import DataStore from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
 
-type asyncSuggestionsCallback = (suggestions: string[]) => void;
-
 const MAX_SESSION_TAGS = 3;
 const MAX_SUGGESTIONS = 6;
 
@@ -12,6 +10,28 @@ interface TagLookupOptions {
   maxSessionTags?: number;
   maxSuggestions?: number;
 }
+// Result of a call to SuggestionResult.
+//
+// At least one of |initialResult| or |asyncResult| must be set.
+interface SuggestionResult {
+  // If set, provides the result that could be determined synchronously.
+  // If |asyncResult| is also set, the value of |asyncResult| is guaranteed to
+  // be an extension of |initialResult|, i.e. elements are only appended to
+  // |initialResult|.
+  initialResult?: string[];
+
+  // If set, indicates that an asynchronous lookup is being performed. Once
+  // complete, the result of the asynchronous lookup is returned.
+  // If a subsequent call to getSuggestions is made while the lookup is in
+  // progress, the Promise will be rejected.
+  asyncResult?: Promise<string[]>;
+}
+
+// Note to self: From a UI point of view what we're hoping for here is:
+// -- If we have any kind of initialResult, show it
+// -- If "asyncResult" is set, display a spinner
+// -- If we have an undefined initialResult, make any current entries disabled
+//    while we wait
 
 export class TagLookup {
   store: DataStore;
@@ -55,30 +75,28 @@ export class TagLookup {
     this.sessionTags.set(tag, undefined);
   }
 
-  // This is a bit confusing but, for the same input we can end up returning
-  // twice:
-  //
-  // - Once synchronously (e.g. filtering existing suggestions by the longer
-  //   substring), and
-  // - Once asynchronously after doing any DB lookup
-  //
-  // So the return type here is the initial synchronous result, while the second
-  // argument to the function is the callback function to call if there are any
-  // asynchronous results.
-  //
-  // NOTE: The set of suggestions returned by the async callback must NEVER
-  // replace or re-order the synchronous results (since that would mean the user
-  // might accidentally click the wrong thing).
-  getSuggestions(input: string, callback: asyncSuggestionsCallback): string[] {
-    // Initial suggestions case:
-    if (input === '') {
-      this.currentInput = input;
+  getSuggestions(input: string): SuggestionResult {
+    const result: SuggestionResult = {};
 
-      const mergeFrequentTagsWithSessionTags = (
+    this.currentInput = input;
+
+    // Initial suggestions case:
+    //
+    // This is special because when there is no input we return not only
+    // frequently used tags, but also tags that have been used recently in this
+    // session (e.g. for when you're adding the same tag to a bunch of cards).
+    if (input === '') {
+      // Utility function to de-dupe session tags and tags we looked up in the
+      // database whilst maintaining existing order of suggestions and trim
+      // to the maximum number of suggestions.
+      //
+      // (ES6 Sets maintain insertion order including when dupes are added
+      // which is very convenient for us.)
+      const mergeLookupTagsWithSessionTags = (
         sessionTags: string[],
-        frequentTags: string[]
+        lookupTags: string[]
       ): string[] =>
-        [...new Set(sessionTags.concat(frequentTags))].slice(
+        [...new Set(sessionTags.concat(lookupTags))].slice(
           0,
           this.maxSuggestions
         );
@@ -88,55 +106,57 @@ export class TagLookup {
 
       // If we have a cached result, return straight away
       if (this.lookupCache.has('')) {
-        return mergeFrequentTagsWithSessionTags(
+        result.initialResult = mergeLookupTagsWithSessionTags(
           sessionTags,
           this.lookupCache.get('')!
         );
+        return result;
       }
 
-      // Fetch up to the full number of suggestions in case all the session tags
-      // we added are duped.
-      this.store.getFrequentTags(this.maxSuggestions).then(frequentTags => {
-        if (!frequentTags) {
-          return;
-        }
+      result.initialResult = sessionTags;
+      result.asyncResult = new Promise<string[]>((resolve, reject) => {
+        // Fetch up to the full number of suggestions in case all the session
+        // tags we added are duped.
+        this.store.getTags(input, this.maxSuggestions).then(tags => {
+          this.lookupCache.set(input, tags);
 
-        this.lookupCache.set(input, frequentTags);
+          // If a subsequent lookup has been initiated, reject.
+          //
+          // (Strictly speaking we should reject even if these match if we have
+          // done multiple subsequent lookups and ended up at the same string.)
+          if (this.currentInput !== input) {
+            reject();
+          }
 
-        if (this.currentInput !== input) {
-          return;
-        }
-
-        // De-dupe (whilst maintaining existing order of suggestions) and trim
-        // to the maximum number of suggestions.
-        //
-        // (ES6 Sets maintain insertion order including when dupes are added
-        // which is very convenient for us.)
-        callback(mergeFrequentTagsWithSessionTags(sessionTags, frequentTags));
+          resolve(mergeLookupTagsWithSessionTags(sessionTags, tags));
+        });
       });
 
-      // Return the session tags for now
-      return sessionTags;
+      return result;
     }
 
-    // XXX Progressively shorten the string (starting with the full string)
-    // and check for matches in recent lookups.
-    //
-    // -- If there are any matches return them
-    //
-    // -- If we don't have an exact match, store the callback (after
-    //    debouncing) and trigger an async lookup
-    //    (Async lookup needs to check that currentInput matches input.
-    //     It should store the result regardless, but only check the input
-    //     string before calling the callback.)
-    this.currentInput = input;
+    // XXX If we have a direct hit on the cache, return synchronously.
+    // XXX If we have a substring hit on the cache and the number of results is
+    //     less than the maximum, return synchronously.
+    // XXX Debounce lookups?
 
-    return [];
+    result.asyncResult = new Promise<string[]>((resolve, reject) => {
+      this.store.getTags(input, this.maxSuggestions).then(tags => {
+        this.lookupCache.set(input, tags);
+
+        if (this.currentInput !== input) {
+          reject();
+        }
+
+        resolve(tags);
+      });
+    });
+
+    return result;
   }
 
-  reset() {
-    // XXX Clear current input here
-    // XXX Retrigger query for frequently used tags
+  clearCache() {
+    // XXX Clear current input here too
   }
 }
 
