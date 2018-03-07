@@ -1,4 +1,4 @@
-import TagLookup from './TagLookup';
+import TagSuggestions from './TagSuggestions';
 import DataStore from '../store/DataStore';
 import { waitForEvents } from '../../test/testcommon';
 
@@ -14,13 +14,16 @@ class MockDataStore extends DataStore {
   }
 }
 
-describe('TagLookup', () => {
+describe('TagSuggestions', () => {
   let store: MockDataStore;
-  let subject: TagLookup;
+  let subject: TagSuggestions;
 
   beforeEach(() => {
     store = new MockDataStore();
-    subject = new TagLookup(store, { maxSessionTags: 3, maxSuggestions: 6 });
+    subject = new TagSuggestions(store, {
+      maxSessionTags: 3,
+      maxSuggestions: 6,
+    });
   });
 
   it('returns no tags initially', async () => {
