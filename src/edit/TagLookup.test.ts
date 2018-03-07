@@ -1,5 +1,3 @@
-import PouchDB from 'pouchdb';
-
 import TagLookup from './TagLookup';
 import DataStore from '../store/DataStore';
 import { waitForEvents } from '../../test/testcommon';
