@@ -75,6 +75,8 @@ let prevTimeStamp = 0;
 
 export class CardStore {
   db: PouchDB.Database;
+  // Promises we use to wait on when we *first* create the different types of
+  // views.
   viewPromises: ViewPromises;
   prefetchViews: boolean;
   returnedCards: {
@@ -421,6 +423,8 @@ export class CardStore {
 
   async updateViews(reviewTime: Date) {
     await this.updateCardsView();
+    // If this is the first time we created the view, resolve the appropriate
+    // promise.
     if (!this.viewPromises.cards.resolved) {
       this.viewPromises.cards.resolved = true;
       this.viewPromises.cards.resolve();
