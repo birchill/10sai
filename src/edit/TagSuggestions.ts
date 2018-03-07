@@ -125,7 +125,7 @@ export class TagSuggestions {
           // (Strictly speaking we should reject even if these match if we have
           // done multiple subsequent lookups and ended up at the same string.)
           if (this.currentInput !== input) {
-            reject();
+            reject(new Error('AbortError'));
           }
 
           resolve(mergeLookupTagsWithSessionTags(sessionTags, tags));
@@ -167,7 +167,7 @@ export class TagSuggestions {
         this.lookupCache.set(input, tags);
 
         if (this.currentInput !== input) {
-          reject();
+          reject(new Error('AbortError'));
         }
 
         resolve(tags);

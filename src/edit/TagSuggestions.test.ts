@@ -174,6 +174,26 @@ describe('TagSuggestions', () => {
     expect(secondAsyncResult).toEqual(['AB7']);
   });
 
+  it('rejects the async lookup when an overlapping request is performed', async () => {
+    // First request
+    const initialPromise = subject.getSuggestions('AB').asyncResult;
+
+    // Second request (different string)
+    subject.getSuggestions('ABC');
+
+    await expect(initialPromise).rejects.toThrow('AbortError');
+  });
+
+  it('rejects the async lookup when an overlapping request is performed (initial lookup)', async () => {
+    // First request
+    const initialPromise = subject.getSuggestions('').asyncResult;
+
+    // Second request (different string)
+    subject.getSuggestions('AB');
+
+    await expect(initialPromise).rejects.toThrow('AbortError');
+  });
+
   // XXX Test Promise rejection
   // XXX Test cache clearing
 });
