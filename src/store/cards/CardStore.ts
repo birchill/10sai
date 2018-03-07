@@ -42,6 +42,7 @@ const mergeRecords = (card: CardRecord, progress: ProgressRecord): Card => {
     ...parseCard(card),
     progress: parseProgress(progress),
   };
+
   return result;
 };
 
@@ -55,16 +56,26 @@ type CardChange = MakeOptional<Card, 'progress'> & PouchDB.Core.ChangesMeta;
 
 type EmitFunction = (type: string, ...args: any[]) => void;
 
-let prevTimeStamp = 0;
-
 interface CardStoreOptions {
   prefetchViews?: boolean;
 }
 
+interface LazyPromise {
+  promise: Promise<void>;
+  resolve: () => void;
+  resolved: boolean;
+}
+
+interface ViewPromises {
+  cards: LazyPromise;
+  review: LazyPromise;
+}
+
+let prevTimeStamp = 0;
+
 export class CardStore {
   db: PouchDB.Database;
-  createdViews: Promise<void>;
-  resolveCreatedViews: (() => void) | null;
+  viewPromises: ViewPromises;
   prefetchViews: boolean;
   returnedCards: {
     [id: string]: { cardRev: string; progressRev: string | null };
@@ -74,14 +85,22 @@ export class CardStore {
     this.db = db;
     this.returnedCards = {};
     this.prefetchViews = <boolean>(options && options.prefetchViews);
-    this.createdViews = new Promise(resolve => {
-      this.resolveCreatedViews = resolve;
-    });
+
+    const getLazyPromise = (): LazyPromise => {
+      let resolve: () => void;
+      const promise = new Promise<void>(resolveFn => {
+        resolve = resolveFn;
+      });
+      return { promise, resolve: resolve!, resolved: false };
+    };
+
+    this.viewPromises = {
+      cards: getLazyPromise(),
+      review: getLazyPromise(),
+    };
   }
 
   async getCards(options?: GetCardsOptions): Promise<Card[]> {
-    await this.createdViews;
-
     const queryOptions: PouchDB.Query.Options<any, any> = {
       include_docs: true,
       descending: true,
@@ -108,6 +127,12 @@ export class CardStore {
       }
     }
 
+    if (view === 'cards') {
+      await this.viewPromises.cards.promise;
+    } else {
+      await this.viewPromises.review.promise;
+    }
+
     const result = await this.db.query<CardRecord>(view, queryOptions);
     return result.rows.filter(row => row.doc).map(row => ({
       ...parseCard(row.doc!),
@@ -116,7 +141,7 @@ export class CardStore {
   }
 
   async getCardsById(ids: string[]): Promise<Card[]> {
-    await this.createdViews;
+    await this.viewPromises.cards.promise;
 
     const options = {
       keys: ids.map(id => PROGRESS_PREFIX + id),
@@ -131,7 +156,7 @@ export class CardStore {
   }
 
   async getAvailableCards() {
-    await this.createdViews;
+    await this.viewPromises.review.promise;
 
     const overdueResult = await this.db.query('overdueness', {
       include_docs: false,
@@ -396,15 +421,16 @@ export class CardStore {
 
   async updateViews(reviewTime: Date) {
     await this.updateCardsView();
+    if (!this.viewPromises.cards.resolved) {
+      this.viewPromises.cards.resolved = true;
+      this.viewPromises.cards.resolve();
+    }
+
     await this.updateNewCardsView();
     await this.updateOverduenessView(reviewTime);
-
-    // If this is the first time we created the views, resolve anyone who was
-    // blocked on them.
-    if (this.resolveCreatedViews) {
-      const resolve = this.resolveCreatedViews;
-      this.resolveCreatedViews = null;
-      resolve();
+    if (!this.viewPromises.review.resolved) {
+      this.viewPromises.review.resolved = true;
+      this.viewPromises.review.resolve();
     }
   }
 
