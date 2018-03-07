@@ -194,7 +194,7 @@ describe('TagSuggestions', () => {
     await expect(initialPromise).rejects.toThrow('AbortError');
   });
 
-  it('clears the cache when requested', async () => {
+  it('clears the cache when resetting', async () => {
     store._tags = ['F1', 'F2', 'F3'];
     subject.recordAddedTag('R1');
     subject.recordAddedTag('R2');
@@ -206,12 +206,18 @@ describe('TagSuggestions', () => {
     // At this point we should have R3, R2, R1, F1, F2, F3 in the cache for ''
     // such that a subsequent request for '' would return them immediately.
 
-    subject.clearCache();
+    subject.reset();
 
     // Try again
     const result = subject.getSuggestions('');
     expect(result.initialResult).toEqual(['R3', 'R2', 'R1']);
     const asyncResult = await result.asyncResult;
     expect(asyncResult).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
+  });
+
+  it('rejects any in-progress lookups when resetting', async () => {
+    const result = subject.getSuggestions('');
+    subject.reset();
+    await expect(result.asyncResult).rejects.toThrow('AbortError');
   });
 });

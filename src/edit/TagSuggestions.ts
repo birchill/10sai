@@ -40,7 +40,7 @@ export class TagSuggestions {
   sessionTags: LRUMap<string, undefined>;
 
   // The current string we may be doing a lookup for.
-  currentInput: string;
+  currentInput?: string;
 
   // Cache of tags we have looked up.
   lookupCache: LRUMap<string, string[]>;
@@ -67,7 +67,6 @@ export class TagSuggestions {
     );
 
     this.sessionTags = new LRUMap(this.maxSessionTags);
-    this.currentInput = '';
     this.lookupCache = new LRUMap(LOOKUP_CACHE_SIZE);
   }
 
@@ -177,8 +176,11 @@ export class TagSuggestions {
     return result;
   }
 
-  clearCache() {
+  // Resets this for use on a different card but does *not* clear session tags.
+  // To clear those (e.g. when switching subjects) just make a new object.
+  reset() {
     this.lookupCache.clear();
+    this.currentInput = undefined;
   }
 }
 
