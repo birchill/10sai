@@ -105,10 +105,10 @@ export class TagSuggestions {
       const sessionTags: string[] = [...this.sessionTags.keys()].reverse();
 
       // If we have a cached result, return straight away
-      if (this.lookupCache.has('')) {
+      if (this.lookupCache.has(input)) {
         result.initialResult = mergeLookupTagsWithSessionTags(
           sessionTags,
-          this.lookupCache.get('')!
+          this.lookupCache.get(input)!
         );
         return result;
       }
@@ -135,10 +135,32 @@ export class TagSuggestions {
       return result;
     }
 
-    // XXX If we have a direct hit on the cache, return synchronously.
-    // XXX If we have a substring hit on the cache and the number of results is
-    //     less than the maximum, return synchronously.
-    // XXX Debounce lookups?
+    // If we have a direct hit on the cache, return synchronously.
+    let substringKey = input;
+    while (substringKey.length) {
+      if (this.lookupCache.has(substringKey)) {
+        const substringResult = this.lookupCache.get(substringKey)!;
+
+        // If we are looking up a substring and our cached result includes the
+        // maximum possible number of results then it's possible there are more
+        // matches in the database that we truncated when we fetched the
+        // substring so we should do the async lookup.
+        if (
+          substringKey.length < input.length &&
+          substringResult.length >= this.maxSuggestions
+        ) {
+          break;
+        }
+
+        result.initialResult = substringResult.filter(tag =>
+          tag.startsWith(input)
+        );
+        // (We *could* store this result in our lookup cache but it's not
+        // necessary since we can deduce it from our map.)
+        return result;
+      }
+      substringKey = substringKey.substr(0, substringKey.length - 1);
+    }
 
     result.asyncResult = new Promise<string[]>((resolve, reject) => {
       this.store.getTags(input, this.maxSuggestions).then(tags => {

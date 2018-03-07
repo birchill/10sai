@@ -113,9 +113,67 @@ describe('TagSuggestions', () => {
     expect(asyncResult).toEqual(['ABC', 'ABCD']);
   });
 
-  // XXX Test direct cache hit
-  // XXX Test substring cache hit
-  // XXX Test substring cache hit with possibly incomplete result
+  it('returns direct cache hits immediately', async () => {
+    store._tags = ['ABC', 'ABCD', 'AB', 'DEF'];
+
+    // Do initial fetch
+    const initialFetch = subject.getSuggestions('AB');
+    await initialFetch.asyncResult;
+
+    // Do a subsequent fetch
+    const secondFetch = subject.getSuggestions('AB');
+    expect(secondFetch.initialResult).toEqual(['AB', 'ABC', 'ABCD']);
+    expect(secondFetch.asyncResult).toBeUndefined();
+  });
+
+  it('returns substring cache hits immediately', async () => {
+    store._tags = ['ABC', 'ABCD', 'AB', 'DEF'];
+
+    // Do initial fetch
+    const initialFetch = subject.getSuggestions('AB');
+    await initialFetch.asyncResult;
+
+    // Do a subsequent fetch
+    const secondFetch = subject.getSuggestions('ABC');
+    expect(secondFetch.initialResult).toEqual(['ABC', 'ABCD']);
+    expect(secondFetch.asyncResult).toBeUndefined();
+  });
+
+  it('does an async lookup when a substring cache hit might represent an incomplete result', async () => {
+    // We have a lot of tags such that when we search for 'AB' we'll reach the
+    // limit before we get to 'AB7'.
+    store._tags = [
+      'AB0',
+      'AB1',
+      'AB2',
+      'AB3',
+      'AB4',
+      'AB5',
+      'AB6',
+      'AB7',
+      'AB8',
+    ];
+
+    // Do initial fetch
+    const initialFetch = subject.getSuggestions('AB');
+    const initialAsyncResult = await initialFetch.asyncResult;
+    // Sanity check: We should only get the first six results
+    expect(initialAsyncResult).toEqual([
+      'AB0',
+      'AB1',
+      'AB2',
+      'AB3',
+      'AB4',
+      'AB5',
+    ]);
+
+    // Do a subsequent fetch
+    const secondFetch = subject.getSuggestions('AB7');
+    expect(secondFetch.initialResult).toBeUndefined();
+    const secondAsyncResult = await secondFetch.asyncResult;
+    expect(secondAsyncResult).toEqual(['AB7']);
+  });
+
   // XXX Test Promise rejection
   // XXX Test cache clearing
 });
