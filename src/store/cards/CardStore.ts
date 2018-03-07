@@ -69,6 +69,12 @@ interface LazyPromise {
 interface ViewPromises {
   cards: LazyPromise;
   review: LazyPromise;
+  tags: LazyPromise;
+}
+
+interface TagAndFrequency {
+  value: number;
+  key: string;
 }
 
 let prevTimeStamp = 0;
@@ -99,6 +105,7 @@ export class CardStore {
     this.viewPromises = {
       cards: getLazyPromise(),
       review: getLazyPromise(),
+      tags: getLazyPromise(),
     };
   }
 
@@ -396,6 +403,47 @@ export class CardStore {
     await stubbornDelete(PROGRESS_PREFIX + id, this.db);
   }
 
+  async getTags(prefix: string, limit: number): Promise<string[]> {
+    await this.viewPromises.tags.promise;
+
+    // XXX Some explanation here about why we might choose a limit larger than
+    // the provided one
+    const minRecords = prefix === '' ? 200 : 40;
+
+    const queryOptions: PouchDB.Query.Options<any, any> = {
+      limit: Math.max(minRecords, limit),
+      group: true,
+      // XXX Filter on prefixes here with startkey / endkey
+    };
+    const result = await this.db.query<TagAndFrequency>('tags', queryOptions);
+
+    const compareTagEntries = (
+      a: TagAndFrequency,
+      b: TagAndFrequency
+    ): number => {
+      // Sort exact matches first
+      if (a.key === prefix) {
+        return -1;
+      }
+      if (b.key === prefix) {
+        return 1;
+      }
+
+      // Then sort by frequency
+      if (a.value !== b.value) {
+        return b.value - a.value;
+      }
+      // Within the set of equal frequency strings sort by length
+      if (a.key.length !== b.key.length) {
+        return a.key.length - b.key.length;
+      }
+      // Finally sort by string value
+      return a.key.localeCompare(b.key);
+    };
+
+    return result.rows.sort(compareTagEntries).map(entry => entry.key);
+  }
+
   static generateCardId() {
     // Start off with the number of milliseconds since 1 Jan 2016.
     let timestamp = Date.now() - Date.UTC(2016, 0, 1);
@@ -436,6 +484,12 @@ export class CardStore {
       this.viewPromises.review.resolved = true;
       this.viewPromises.review.resolve();
     }
+
+    await this.updateTagsView();
+    if (!this.viewPromises.tags.resolved) {
+      this.viewPromises.tags.resolved = true;
+      this.viewPromises.tags.resolve();
+    }
   }
 
   async updateCardsView() {
@@ -446,7 +500,15 @@ export class CardStore {
     return this._updateMapView('new_cards', views.newCardMapFunction);
   }
 
-  async _updateMapView(view: string, mapFunction: string) {
+  async updateTagsView() {
+    return this._updateMapView('tags', views.tagMapFunction, '_sum');
+  }
+
+  async _updateMapView(
+    view: string,
+    mapFunction: string,
+    reduce: string | boolean = false
+  ) {
     return this.db
       .upsert(
         `_design/${view}`,
@@ -456,6 +518,7 @@ export class CardStore {
             views: {
               [view]: {
                 map: mapFunction,
+                reduce: reduce ? reduce : false,
               },
             },
           };

@@ -77,3 +77,17 @@ export const getOverduenessFunction = (reviewTime: Date) =>
       }
     });
   }`;
+
+export const tagMapFunction = `function(doc) {
+    if (!doc._id.startsWith('${CARD_PREFIX}')) {
+      return;
+    }
+
+    if (!Array.isArray(doc.tags) || !doc.tags.length) {
+      return;
+    }
+
+    for (const tag of doc.tags) {
+      emit(tag, 1);
+    }
+  }`;

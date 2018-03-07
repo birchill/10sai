@@ -101,37 +101,36 @@ class DataStore {
   }
 
   // Card API
-  async getCard(id: string): Promise<Card> {
+  getCard(id: string): Promise<Card> {
     return this.cardStore.getCard(id);
   }
-  async deleteCard(id: string) {
+  deleteCard(id: string) {
     return this.cardStore.deleteCard(id);
   }
-  async getCards(options: GetCardsOptions): Promise<Card[]> {
+  getCards(options: GetCardsOptions): Promise<Card[]> {
     return this.cardStore.getCards(options);
   }
-  async getCardsById(ids: string[]): Promise<Card[]> {
+  getCardsById(ids: string[]): Promise<Card[]> {
     return this.cardStore.getCardsById(ids);
   }
-  async getAvailableCards() {
+  getAvailableCards() {
     return this.cardStore.getAvailableCards();
   }
-  async putCard(card: Partial<Card>): Promise<Card> {
+  putCard(card: Partial<Card>): Promise<Card> {
     return this.cardStore.putCard(card);
   }
-  async getTags(prefix: string, limit: number): Promise<string[]> {
-    // XXX
-    return Promise.resolve([]);
+  getTags(prefix: string, limit: number): Promise<string[]> {
+    return this.cardStore.getTags(prefix, limit);
   }
 
   // Review API
-  async getReview(): Promise<Review | null> {
+  getReview(): Promise<Review | null> {
     return this.reviewStore.getReview();
   }
-  async putReview(review: Review) {
+  putReview(review: Review): Promise<void> {
     return this.reviewStore.putReview(review);
   }
-  async deleteReview() {
+  deleteReview(): Promise<void> {
     return this.reviewStore.deleteReview();
   }
 

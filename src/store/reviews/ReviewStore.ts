@@ -42,7 +42,7 @@ class ReviewStore {
     return reviews.rows[0].doc!;
   }
 
-  async putReview(review: Review) {
+  async putReview(review: Review): Promise<void> {
     const existingReview = await this._getReview();
 
     // If we don't have an existing review doc to update generate an ID for the
@@ -67,7 +67,7 @@ class ReviewStore {
     await this.db.upsert<ReviewRecord>(reviewId, () => reviewToPut);
   }
 
-  async deleteReview() {
+  async deleteReview(): Promise<void> {
     const deleteReviews = async () => {
       const reviews = await this.db.allDocs({
         startkey: REVIEW_PREFIX,
