@@ -178,7 +178,7 @@ export class TagSuggestions {
   }
 
   clearCache() {
-    // XXX Clear current input here too
+    this.lookupCache.clear();
   }
 }
 
