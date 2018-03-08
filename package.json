@@ -18,6 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@types/draft-js": "^0.10.20",
     "@types/event-emitter": "^0.3.2",
     "@types/pouchdb-upsert": "^2.2.3",
     "cross-env": "^5.1.3",

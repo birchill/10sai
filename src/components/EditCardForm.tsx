@@ -1,10 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import CardFaceInput from './CardFaceInput.jsx';
-import TokenList from './TokenList.tsx';
+import CardFaceInput from './CardFaceInput';
+import TokenList from './TokenList';
+import { Card } from '../model';
 
-export class EditCardForm extends React.Component {
+interface Props {
+  card: Card;
+  onChange?: (topic: string, value: string | string[]) => void;
+}
+
+export class EditCardForm extends React.Component<Props> {
+  questionTextBox?: CardFaceInput;
+
   static get propTypes() {
     return {
       // eslint-disable-next-line react/forbid-prop-types
@@ -13,7 +21,7 @@ export class EditCardForm extends React.Component {
     };
   }
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
@@ -22,25 +30,25 @@ export class EditCardForm extends React.Component {
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
   }
 
-  handlePromptChange(value) {
+  handlePromptChange(value: string) {
     if (this.props.onChange) {
       this.props.onChange('question', value);
     }
   }
 
-  handleAnswerChange(value) {
+  handleAnswerChange(value: string) {
     if (this.props.onChange) {
       this.props.onChange('answer', value);
     }
   }
 
-  handleTagChange(tags) {
+  handleTagChange(tags: string[]) {
     if (this.props.onChange) {
       this.props.onChange('tags', tags);
     }
   }
 
-  handleKeywordsChange(tags) {
+  handleKeywordsChange(tags: string[]) {
     if (this.props.onChange) {
       this.props.onChange('keywords', tags);
     }
@@ -50,19 +58,16 @@ export class EditCardForm extends React.Component {
     return (
       <form className="form editcard-form" autoComplete="off">
         <CardFaceInput
-          name="prompt"
           className="prompt"
           value={this.props.card.question || ''}
           placeholder="Prompt"
-          required
           onChange={this.handlePromptChange}
           ref={questionTextBox => {
-            this.questionTextBox = questionTextBox;
+            this.questionTextBox = questionTextBox || undefined;
           }}
         />
         <hr className="card-divider divider" />
         <CardFaceInput
-          name="answer"
           className="answer"
           value={this.props.card.answer || ''}
           placeholder="Answer"

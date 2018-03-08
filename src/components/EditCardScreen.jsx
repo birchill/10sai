@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import EditCardToolbar from './EditCardToolbar.jsx';
-import EditCardForm from './EditCardForm.jsx';
+import EditCardForm from './EditCardForm.tsx';
 import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit/states';
 import * as editActions from '../edit/actions';

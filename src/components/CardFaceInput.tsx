@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { ContentState, Editor, EditorState } from 'draft-js';
 
-function getEditorContent(editorState) {
+function getEditorContent(editorState: EditorState): string {
   return editorState.getCurrentContent().getPlainText();
 }
 
@@ -53,13 +53,13 @@ export class CardFaceInput extends React.PureComponent<Props> {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps: Props) {
     if (this.props.value !== nextProps.value) {
       this.updateValue(nextProps.value);
     }
   }
 
-  updateValue(value) {
+  updateValue(value?: string) {
     // Setting editorState can reset the selection so we should avoid doing it
     // when the content hasn't changed (since it can interrupt typing).
     const currentValue = getEditorContent(this.state.editorState);
@@ -68,11 +68,17 @@ export class CardFaceInput extends React.PureComponent<Props> {
     }
 
     const contentState = ContentState.createFromText(value || '');
-    const editorState = EditorState.push(this.state.editorState, contentState);
+    // Ok, so insert-characters is not quite right, but it's good enough for now
+    // until we implement proper rich text editing.
+    const editorState = EditorState.push(
+      this.state.editorState,
+      contentState,
+      'insert-characters'
+    );
     this.setState({ editorState });
   }
 
-  handleChange(editorState) {
+  handleChange(editorState: EditorState) {
     // We defer calling |onChange| until the state is actually updated so that
     // if that triggers a call to updateValue we can successfully recognize it
     // as a redundant change and avoid re-setting the editor state.
@@ -131,7 +137,7 @@ export class CardFaceInput extends React.PureComponent<Props> {
           textAlignment="center"
           stripPastedStyles
           ref={editor => {
-            this.editor = editor;
+            this.editor = editor || undefined;
           }}
         />
       </div>
