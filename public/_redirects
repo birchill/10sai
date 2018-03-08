@@ -1,0 +1,6 @@
+https://10sai.study/* https://10sai.io/:splat 301!
+http://10sai.study/* https://10sai.io/:splat 301!
+https://10sai.jp/* https://10sai.io/:splat 301!
+http://10sai.jp/* https://10sai.io/:splat 301!
+https://sync.10sai.io/* https://b62bf565-d36c-45ce-a12d-fc3bd31a256b-bluemix.cloudant.com/:splat 301!
+/* /index.html 200
