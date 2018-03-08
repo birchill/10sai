@@ -441,7 +441,10 @@ export class CardStore {
       return a.key.localeCompare(b.key);
     };
 
-    return result.rows.sort(compareTagEntries).map(entry => entry.key);
+    return result.rows
+      .sort(compareTagEntries)
+      .map(entry => entry.key)
+      .slice(0, limit);
   }
 
   static generateCardId() {

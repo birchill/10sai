@@ -54,7 +54,15 @@ describe('CardStore:tags', () => {
     expect(tags).toEqual(['DEF', 'ABC', 'JKY']);
   });
 
-  // XXX Respects the limits passed in
+  it('respects the limits set when returning tags', async () => {
+    await putNewCardWithTags(['ABC', 'DEF', 'GHI'], subject);
+    await putNewCardWithTags(['JKL', 'MNO', 'AAA'], subject);
+
+    const tags = await subject.getTags('', 5);
+
+    expect(tags).toEqual(['AAA', 'ABC', 'DEF', 'GHI', 'JKL']);
+  });
+
   // XXX Performs substring matches
   //    -- In descending order
   // XXX Sorts exact matches first
