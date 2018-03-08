@@ -71,8 +71,37 @@ describe('CardStore:tags', () => {
     expect(tags).toEqual(['AB', 'ABC', 'ABD']);
   });
 
-  // XXX Sorts exact matches first
-  // XXX Sorts by frequency next
-  // XXX Sorts shorter strings before longer strings with same frequency
-  // XXX Sorts strings with the same frequency and length by locale
+  it('sorts exact matches first, then frequency', async () => {
+    await putNewCardWithTags(['ABC', 'ABCD', 'ABCA'], subject);
+    await putNewCardWithTags(['ABCD'], subject);
+    await putNewCardWithTags(['ABCD'], subject);
+    await putNewCardWithTags(['ABCA'], subject);
+
+    // For frequency we now have:
+    // - ABC:  1
+    // - ABCD: 3
+    // - ABCA: 2
+
+    const tags = await subject.getTags('ABC', 5);
+
+    expect(tags).toEqual(['ABC', 'ABCD', 'ABCA']);
+  });
+
+  it('sorts shorter strings before longer strings with the same frequency', async () => {
+    await putNewCardWithTags(['ABCDE', 'ABCD', 'ABC'], subject);
+    await putNewCardWithTags(['ABC', 'ABCD', 'ABCDE'], subject);
+
+    const tags = await subject.getTags('ABC', 5);
+
+    expect(tags).toEqual(['ABC', 'ABCD', 'ABCDE']);
+  });
+
+  it('sorts strings with the same frequency and length by locale', async () => {
+    await putNewCardWithTags(['BBB', 'AAA', 'CCC'], subject);
+    await putNewCardWithTags(['CCC', 'BBB', 'AAA'], subject);
+
+    const tags = await subject.getTags('', 5);
+
+    expect(tags).toEqual(['AAA', 'BBB', 'CCC']);
+  });
 });
