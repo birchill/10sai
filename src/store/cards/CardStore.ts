@@ -406,8 +406,17 @@ export class CardStore {
   async getTags(prefix: string, limit: number): Promise<string[]> {
     await this.viewPromises.tags.promise;
 
-    // XXX Some explanation here about why we might choose a limit larger than
-    // the provided one
+    // We fetch a lot more records than requested since we want to return the
+    // highest frequency records, not just the first that |limit| tags that
+    // match.
+    //
+    // For the prefix === '' case we should ideally look at *all* the tags
+    // but I couldn't find an easy and efficient way to sort the tags view
+    // by frequency AND by key so we can do the substring lookup short of
+    // making two views so we just take the first 200 tags and return the
+    // highest frequency ones amongst them. If the user has more than 200 unique
+    // tags then (a) they can probably cope with not having the absolute optimal
+    // initial suggestions, and (b) they're probably doing it wrong anyway.
     const minRecords = prefix === '' ? 200 : 40;
 
     const queryOptions: PouchDB.Query.Options<any, any> = {
