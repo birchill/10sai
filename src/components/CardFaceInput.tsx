@@ -6,7 +6,23 @@ function getEditorContent(editorState) {
   return editorState.getCurrentContent().getPlainText();
 }
 
-export class CardFaceInput extends React.PureComponent {
+interface Props {
+  value?: string;
+  className?: string;
+  placeholder?: string;
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
+}
+
+interface State {
+  editorState: EditorState;
+  hasFocus: boolean;
+}
+
+export class CardFaceInput extends React.PureComponent<Props> {
+  state: State;
+  editor?: Editor;
+
   static get propTypes() {
     return {
       value: PropTypes.string,
@@ -18,11 +34,13 @@ export class CardFaceInput extends React.PureComponent {
     };
   }
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
 
-    this.state = { editorState: EditorState.createEmpty(),
-                   hasFocus: false };
+    this.state = {
+      editorState: EditorState.createEmpty(),
+      hasFocus: false,
+    };
     this.handleChange = this.handleChange.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
@@ -96,7 +114,7 @@ export class CardFaceInput extends React.PureComponent {
   }
 
   render() {
-    const classes = [ this.props.className, 'cardface-input' ];
+    const classes = [this.props.className, 'cardface-input'];
     if (this.state.hasFocus) {
       classes.push('hasFocus');
     }
@@ -112,7 +130,10 @@ export class CardFaceInput extends React.PureComponent {
           placeholder={this.props.placeholder}
           textAlignment="center"
           stripPastedStyles
-          ref={editor => { this.editor = editor; }} />
+          ref={editor => {
+            this.editor = editor;
+          }}
+        />
       </div>
     );
   }
