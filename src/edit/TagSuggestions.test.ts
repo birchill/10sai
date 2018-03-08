@@ -1,9 +1,39 @@
 import TagSuggestions from './TagSuggestions';
 import DataStore from '../store/DataStore';
+import EventEmitter from 'event-emitter';
 import { waitForEvents } from '../../test/testcommon';
 
-class MockDataStore extends DataStore {
+type ChangeCallback = (change: any) => void;
+
+class MockDataStore {
   _tags: string[] = [];
+  _cbs: {
+    [type: string]: ChangeCallback[];
+  };
+  changes: EventEmitter;
+
+  constructor() {
+    this._cbs = {};
+    this.changes = {
+      on: (type: string, cb: ChangeCallback) => {
+        if (this._cbs[type]) {
+          this._cbs[type].push(cb);
+        } else {
+          this._cbs[type] = [cb];
+        }
+      },
+    } as EventEmitter;
+  }
+
+  __triggerChange(type, change) {
+    if (!this._cbs[type]) {
+      return;
+    }
+
+    for (const cb of this._cbs[type]) {
+      cb(change);
+    }
+  }
 
   async getTags(prefix: string, limit: number): Promise<string[]> {
     const matchingTags = this._tags
@@ -20,7 +50,7 @@ describe('TagSuggestions', () => {
 
   beforeEach(() => {
     store = new MockDataStore();
-    subject = new TagSuggestions(store, {
+    subject = new TagSuggestions(store as any, {
       maxSessionTags: 3,
       maxSuggestions: 6,
     });
@@ -194,7 +224,7 @@ describe('TagSuggestions', () => {
     await expect(initialPromise).rejects.toThrow('AbortError');
   });
 
-  it('clears the cache when resetting', async () => {
+  it('clears the cache when cards are changed', async () => {
     store._tags = ['F1', 'F2', 'F3'];
     subject.recordAddedTag('R1');
     subject.recordAddedTag('R2');
@@ -206,18 +236,13 @@ describe('TagSuggestions', () => {
     // At this point we should have R3, R2, R1, F1, F2, F3 in the cache for ''
     // such that a subsequent request for '' would return them immediately.
 
-    subject.reset();
+    // Trigger change to the data store
+    store.__triggerChange('card', {});
 
     // Try again
     const result = subject.getSuggestions('');
     expect(result.initialResult).toEqual(['R3', 'R2', 'R1']);
     const asyncResult = await result.asyncResult;
     expect(asyncResult).toEqual(['R3', 'R2', 'R1', 'F1', 'F2', 'F3']);
-  });
-
-  it('rejects any in-progress lookups when resetting', async () => {
-    const result = subject.getSuggestions('');
-    subject.reset();
-    await expect(result.asyncResult).rejects.toThrow('AbortError');
   });
 });

@@ -10,6 +10,7 @@ interface TagSuggestionsOptions {
   maxSessionTags?: number;
   maxSuggestions?: number;
 }
+
 // Result of a call to SuggestionResult.
 //
 // At least one of |initialResult| or |asyncResult| must be set.
@@ -68,6 +69,12 @@ export class TagSuggestions {
 
     this.sessionTags = new LRUMap(this.maxSessionTags);
     this.lookupCache = new LRUMap(LOOKUP_CACHE_SIZE);
+
+    // Whenever there is change to the cards, our cached tag lookups might be
+    // wrong so drop them.
+    this.store.changes.on('card', () => {
+      this.lookupCache.clear();
+    });
   }
 
   recordAddedTag(tag: string) {
@@ -174,13 +181,6 @@ export class TagSuggestions {
     });
 
     return result;
-  }
-
-  // Resets this for use on a different card but does *not* clear session tags.
-  // To clear those (e.g. when switching subjects) just make a new object.
-  reset() {
-    this.lookupCache.clear();
-    this.currentInput = undefined;
   }
 }
 
