@@ -413,8 +413,13 @@ export class CardStore {
     const queryOptions: PouchDB.Query.Options<any, any> = {
       limit: Math.max(minRecords, limit),
       group: true,
-      // XXX Filter on prefixes here with startkey / endkey
     };
+
+    if (prefix !== '') {
+      queryOptions.startkey = prefix;
+      queryOptions.endkey = prefix + '\ufff0';
+    }
+
     const result = await this.db.query<TagAndFrequency>('tags', queryOptions);
 
     const compareTagEntries = (

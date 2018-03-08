@@ -63,9 +63,16 @@ describe('CardStore:tags', () => {
     expect(tags).toEqual(['AAA', 'ABC', 'DEF', 'GHI', 'JKL']);
   });
 
-  // XXX Performs substring matches
-  //    -- In descending order
+  it('performs substring matches', async () => {
+    await putNewCardWithTags(['AAA', 'ABC', 'ABD', 'AB', 'XYZ'], subject);
+
+    const tags = await subject.getTags('AB', 5);
+
+    expect(tags).toEqual(['AB', 'ABC', 'ABD']);
+  });
+
   // XXX Sorts exact matches first
+  // XXX Sorts by frequency next
   // XXX Sorts shorter strings before longer strings with same frequency
   // XXX Sorts strings with the same frequency and length by locale
 });
