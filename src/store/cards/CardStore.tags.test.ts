@@ -104,4 +104,13 @@ describe('CardStore:tags', () => {
 
     expect(tags).toEqual(['AAA', 'BBB', 'CCC']);
   });
+
+  it('performs ASCII case-insensitive lookup', async () => {
+    await putNewCardWithTags(['ABC', 'Abc', 'abc'], subject);
+    await putNewCardWithTags(['abc', 'Abcd'], subject);
+
+    const tags = await subject.getTags('Abc', 5);
+
+    expect(tags).toEqual(['Abc', 'abc', 'ABC', 'Abcd']);
+  });
 });

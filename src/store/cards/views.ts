@@ -88,6 +88,6 @@ export const tagMapFunction = `function(doc) {
     }
 
     for (const tag of doc.tags) {
-      emit(tag, 1);
+      emit([tag.toLowerCase(), tag], 1);
     }
   }`;

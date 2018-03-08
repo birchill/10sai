@@ -74,7 +74,7 @@ interface ViewPromises {
 
 interface TagAndFrequency {
   value: number;
-  key: string;
+  key: string[2];
 }
 
 let prevTimeStamp = 0;
@@ -422,11 +422,12 @@ export class CardStore {
     const queryOptions: PouchDB.Query.Options<any, any> = {
       limit: Math.max(minRecords, limit),
       group: true,
+      group_level: 2,
     };
 
     if (prefix !== '') {
-      queryOptions.startkey = prefix;
-      queryOptions.endkey = prefix + '\ufff0';
+      queryOptions.startkey = [prefix.toLowerCase()];
+      queryOptions.endkey = [prefix.toLowerCase() + '\ufff0', {}];
     }
 
     const result = await this.db.query<TagAndFrequency>('tags', queryOptions);
@@ -435,11 +436,14 @@ export class CardStore {
       a: TagAndFrequency,
       b: TagAndFrequency
     ): number => {
+      const tagA = a.key[1];
+      const tagB = b.key[1];
+
       // Sort exact matches first
-      if (a.key === prefix) {
+      if (tagA === prefix) {
         return -1;
       }
-      if (b.key === prefix) {
+      if (tagB === prefix) {
         return 1;
       }
 
@@ -448,16 +452,16 @@ export class CardStore {
         return b.value - a.value;
       }
       // Within the set of equal frequency strings sort by length
-      if (a.key.length !== b.key.length) {
-        return a.key.length - b.key.length;
+      if (tagA.length !== tagB.length) {
+        return tagA.length - tagB.length;
       }
       // Finally sort by string value
-      return a.key.localeCompare(b.key);
+      return tagA.localeCompare(tagB);
     };
 
     return result.rows
       .sort(compareTagEntries)
-      .map(entry => entry.key)
+      .map(entry => entry.key[1])
       .slice(0, limit);
   }
 
