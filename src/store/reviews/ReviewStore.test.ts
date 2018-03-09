@@ -17,6 +17,8 @@ const waitForMs = ms =>
     setTimeout(resolve, ms);
   });
 
+// Note: Using numbers other than 1 for 'num' might be unsafe since, if the
+// changes are to the same document they might get batched together.
 const waitForNumReviewChanges = (db, num) => {
   let resolver;
   const promise = new Promise(resolve => {
@@ -96,17 +98,15 @@ describe('ReviewStore', () => {
     // Setup a remote so we can read back the review record
     await dataStore.setSyncServer(testRemote);
 
-    // Set up a promise to track changes
-    const changesPromise = waitForNumReviewChanges(testRemote, 2);
-
     // Put records twice
     await subject.putReview(typicalReview);
+    await waitForNumReviewChanges(testRemote, 1);
+
     // But wait a few milliseconds between to ensure they have different IDs
     await waitForMs(2);
     await subject.putReview({ ...typicalReview, completed: 2 });
+    await waitForNumReviewChanges(testRemote, 1);
 
-    // Wait for the record(s) to sync
-    await changesPromise;
     const reviews = await testRemote.allDocs<ReviewRecord>({
       startkey: 'review-',
       endkey: 'review-\ufff0',
