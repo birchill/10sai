@@ -550,10 +550,13 @@ export class TokenList extends React.Component<Props> {
           tabIndex={-1}
         >
           {suggestion.split(wordBreakCharacters).map((substring, i) => {
-            if (textToMatch.length && substring.startsWith(textToMatch)) {
+            if (
+              textToMatch.length &&
+              substring.toLowerCase().startsWith(textToMatch.toLowerCase())
+            ) {
               return (
                 <React.Fragment key={i}>
-                  <mark>{textToMatch}</mark>
+                  <mark>{substring.substring(0, textToMatch.length)}</mark>
                   {substring.substring(textToMatch.length)}
                 </React.Fragment>
               );

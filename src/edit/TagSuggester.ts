@@ -159,7 +159,7 @@ export class TagSuggester {
         }
 
         result.initialResult = substringResult.filter(tag =>
-          tag.startsWith(input)
+          tag.toLowerCase().startsWith(input.toLowerCase())
         );
         // (We *could* store this result in our lookup cache but it's not
         // necessary since we can deduce it from our map.)
