@@ -1,4 +1,4 @@
-import TagSuggestions from './TagSuggestions';
+import TagSuggester from './TagSuggester';
 import DataStore from '../store/DataStore';
 import EventEmitter from 'event-emitter';
 import { waitForEvents } from '../../test/testcommon';
@@ -44,13 +44,13 @@ class MockDataStore {
   }
 }
 
-describe('TagSuggestions', () => {
+describe('TagSuggester', () => {
   let store: MockDataStore;
-  let subject: TagSuggestions;
+  let subject: TagSuggester;
 
   beforeEach(() => {
     store = new MockDataStore();
-    subject = new TagSuggestions(store as any, {
+    subject = new TagSuggester(store as any, {
       maxSessionTags: 3,
       maxSuggestions: 6,
     });

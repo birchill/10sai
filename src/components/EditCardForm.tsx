@@ -3,20 +3,31 @@ import PropTypes from 'prop-types';
 
 import CardFaceInput from './CardFaceInput';
 import TokenList from './TokenList';
+
 import { Card } from '../model';
+import TagSuggester from '../edit/TagSuggester';
 
 interface Props {
   card: Card;
+  tagSuggester: TagSuggester;
   onChange?: (topic: string, value: string | string[]) => void;
 }
 
+interface State {
+  tagSuggestions: string[];
+}
+
 export class EditCardForm extends React.Component<Props> {
+  state: State = {
+    tagSuggestions: [],
+  };
   questionTextBox?: CardFaceInput;
 
   static get propTypes() {
     return {
       // eslint-disable-next-line react/forbid-prop-types
       card: PropTypes.object.isRequired,
+      tagSuggester: PropTypes.object.isRequired,
       onChange: PropTypes.func,
     };
   }
@@ -26,8 +37,27 @@ export class EditCardForm extends React.Component<Props> {
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
-    this.handleTagChange = this.handleTagChange.bind(this);
+    this.handleTagsChange = this.handleTagsChange.bind(this);
+    this.handleTagTextChange = this.handleTagTextChange.bind(this);
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
+  }
+
+  componentDidMount() {
+    const result = this.props.tagSuggester.getSuggestions('');
+    if (result.initialResult) {
+      this.setState({ tagSuggestions: result.initialResult });
+    }
+    if (result.asyncResult) {
+      // XXX Display spinner
+      result.asyncResult
+        .then(suggestions => {
+          // XXX Check if we are mounted or not here
+          this.setState({ tagSuggestions: suggestions });
+        })
+        .catch(() => {
+          /* Ignore, request was canceled. */
+        });
+    }
   }
 
   handlePromptChange(value: string) {
@@ -42,15 +72,45 @@ export class EditCardForm extends React.Component<Props> {
     }
   }
 
-  handleTagChange(tags: string[]) {
+  handleTagsChange(tags: string[], addedTags: string[]) {
+    if (this.props.onChange) {
+      this.props.onChange('tags', tags);
+    }
+
+    for (const tag of addedTags) {
+      this.props.tagSuggester.recordAddedTag(tag);
+    }
+  }
+
+  handleTagRemoved(tag: string, tags: string[]) {
     if (this.props.onChange) {
       this.props.onChange('tags', tags);
     }
   }
 
-  handleKeywordsChange(tags: string[]) {
+  handleTagTextChange(text: string) {
+    // XXX Debounce this
+    const result = this.props.tagSuggester.getSuggestions(text);
+    if (result.initialResult) {
+      this.setState({ tagSuggestions: result.initialResult });
+    } else {
+      // XXX Mark tag suggestions on component as disabled
+    }
+    if (result.asyncResult) {
+      // XXX Display spinner
+      result.asyncResult
+        .then(suggestions => {
+          this.setState({ tagSuggestions: suggestions });
+        })
+        .catch(() => {
+          /* Ignore, request was canceled. */
+        });
+    }
+  }
+
+  handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
     if (this.props.onChange) {
-      this.props.onChange('keywords', tags);
+      this.props.onChange('keywords', keywords);
     }
   }
 
@@ -79,7 +139,7 @@ export class EditCardForm extends React.Component<Props> {
             className="tokens -yellow -seamless"
             tokens={this.props.card.keywords || []}
             placeholder="Keywords"
-            onChange={this.handleKeywordsChange}
+            onTokensChange={this.handleKeywordsChange}
             suggestions={['漢字', '漢', '字']}
           />
         </div>
@@ -89,8 +149,9 @@ export class EditCardForm extends React.Component<Props> {
             className="tokens -seamless"
             tokens={this.props.card.tags || []}
             placeholder="Tags"
-            onChange={this.handleTagChange}
-            suggestions={['N1', 'N2', 'N3']}
+            onTokensChange={this.handleTagsChange}
+            onTextChange={this.handleTagTextChange}
+            suggestions={this.state.tagSuggestions}
           />
         </div>
       </form>

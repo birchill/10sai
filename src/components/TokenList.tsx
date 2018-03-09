@@ -5,7 +5,8 @@ interface Props {
   className?: string;
   tokens?: string[];
   placeholder?: string;
-  onChange?: (tokens: string[]) => void;
+  onTokensChange?: (tokens: string[], addedTokens: string[]) => void;
+  onTextChange?: (text: string) => void;
   suggestions?: string[];
 }
 
@@ -37,7 +38,8 @@ export class TokenList extends React.Component<Props> {
       className: PropTypes.string,
       tokens: PropTypes.arrayOf(PropTypes.string),
       placeholder: PropTypes.string,
-      onChange: PropTypes.func,
+      onTokensChange: PropTypes.func,
+      onTextChange: PropTypes.func,
       suggestions: PropTypes.arrayOf(PropTypes.string),
     };
   }
@@ -260,7 +262,8 @@ export class TokenList extends React.Component<Props> {
     const tokens = value.split(/[,、]/);
 
     // Make the new text the last tag, if any.
-    this.setState({ text: tokens[tokens.length - 1] });
+    const text = tokens[tokens.length - 1];
+    this.setState({ text });
 
     // Add any extra non-empty tokens
     const addedTokens = tokens
@@ -272,9 +275,13 @@ export class TokenList extends React.Component<Props> {
       // Since we're only adding tokens, the existing focus should be fine.
       this.setState({ tokens });
 
-      if (this.props.onChange) {
-        this.props.onChange(tokens);
+      if (this.props.onTokensChange) {
+        this.props.onTokensChange(tokens, addedTokens);
       }
+    }
+
+    if (this.props.onTextChange) {
+      this.props.onTextChange(text);
     }
   }
 
@@ -301,7 +308,8 @@ export class TokenList extends React.Component<Props> {
       return;
     }
 
-    const tokens = this.state.tokens.concat(this.state.text);
+    const addedToken = this.state.text;
+    const tokens = this.state.tokens.concat(addedToken);
     // Presumably we are currently focussed on the text input so we don't need
     // to update focus here.
     this.setState({
@@ -309,8 +317,11 @@ export class TokenList extends React.Component<Props> {
       tokens,
     });
 
-    if (this.props.onChange) {
-      this.props.onChange(tokens);
+    if (this.props.onTokensChange) {
+      this.props.onTokensChange(tokens, [addedToken]);
+    }
+    if (this.props.onTextChange) {
+      this.props.onTextChange('');
     }
   }
 
@@ -333,13 +344,14 @@ export class TokenList extends React.Component<Props> {
       return;
     }
 
+    const removedToken = this.state.tokens[index];
     const tokens = this.state.tokens.slice();
     tokens.splice(index, 1);
 
     this.setState({ tokens });
 
-    if (this.props.onChange) {
-      this.props.onChange(tokens);
+    if (this.props.onTokensChange) {
+      this.props.onTokensChange(tokens, []);
     }
 
     // If we deleted the last tag in the list, focus on the text field.
@@ -381,8 +393,11 @@ export class TokenList extends React.Component<Props> {
       () => this.updateFocus()
     );
 
-    if (this.props.onChange) {
-      this.props.onChange(tokens);
+    if (this.props.onTokensChange) {
+      this.props.onTokensChange(tokens, [suggestion]);
+    }
+    if (this.props.onTextChange) {
+      this.props.onTextChange('');
     }
   }
 

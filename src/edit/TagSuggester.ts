@@ -6,7 +6,7 @@ const MAX_SUGGESTIONS = 6;
 
 const LOOKUP_CACHE_SIZE = 15;
 
-interface TagSuggestionsOptions {
+interface TagSuggesterOptions {
   maxSessionTags?: number;
   maxSuggestions?: number;
 }
@@ -34,7 +34,7 @@ interface SuggestionResult {
 // -- If we have an undefined initialResult, make any current entries disabled
 //    while we wait
 
-export class TagSuggestions {
+export class TagSuggester {
   store: DataStore;
 
   // Tags that have been *entered* (i.e. added to cards) this session.
@@ -53,7 +53,7 @@ export class TagSuggestions {
   // The total maximum number of suggestions to return.
   maxSuggestions: number;
 
-  constructor(store: DataStore, options?: TagSuggestionsOptions) {
+  constructor(store: DataStore, options?: TagSuggesterOptions) {
     this.store = store;
 
     this.maxSessionTags =
@@ -184,4 +184,4 @@ export class TagSuggestions {
   }
 }
 
-export default TagSuggestions;
+export default TagSuggester;

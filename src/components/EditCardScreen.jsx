@@ -8,10 +8,12 @@ import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit/states';
 import * as editActions from '../edit/actions';
 import * as routeActions from '../route/actions';
+import TagSuggester from '../edit/TagSuggester.ts';
 
 export class EditCardScreen extends React.PureComponent {
   static get propTypes() {
     return {
+      tagSuggester: PropTypes.instanceOf(TagSuggester).isRequired,
       forms: PropTypes.shape({
         active: PropTypes.shape({
           formId: PropTypes.any,
@@ -73,6 +75,7 @@ export class EditCardScreen extends React.PureComponent {
         />
         {this.props.forms.active.editState !== EditState.NOT_FOUND ? (
           <EditCardForm
+            tagSuggester={this.props.tagSuggester}
             onChange={this.handleFormChange}
             {...this.props.forms.active}
             ref={activeForm => {

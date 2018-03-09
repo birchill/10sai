@@ -6,6 +6,7 @@ import DocumentTitle from 'react-document-title';
 import { URLFromRoute } from '../route/router';
 import { getReviewProgress } from '../review/selectors';
 import CardList from '../CardList';
+import TagSuggester from '../edit/TagSuggester.ts';
 
 import EditCardScreen from './EditCardScreen.jsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
@@ -53,6 +54,7 @@ class App extends React.PureComponent {
     super(props);
     this.closePopup = this.closePopup.bind(this);
     this.cardList = new CardList(props.dataStore);
+    this.tagSuggester = new TagSuggester(props.dataStore);
   }
 
   getChildContext() {
@@ -129,6 +131,7 @@ class App extends React.PureComponent {
               hidden={this.props.route.screen !== 'edit-card'}
             >
               <EditCardScreen
+                tagSuggester={this.tagSuggester}
                 active={this.props.route.screen === 'edit-card'}
                 card={this.props.route.card}
               />
