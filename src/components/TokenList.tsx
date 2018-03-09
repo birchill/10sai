@@ -32,6 +32,7 @@ export class TokenList extends React.Component<Props> {
   };
   rootElem?: HTMLDivElement;
   textInput?: HTMLInputElement;
+  composing: boolean = false;
 
   static get propTypes() {
     return {
@@ -50,6 +51,10 @@ export class TokenList extends React.Component<Props> {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
     this.handleTextChange = this.handleTextChange.bind(this);
+    this.handleTextCompositionStart = this.handleTextCompositionStart.bind(
+      this
+    );
+    this.handleTextCompositionEnd = this.handleTextCompositionEnd.bind(this);
     this.handleTextKeyPress = this.handleTextKeyPress.bind(this);
     this.handleTextKeyDown = this.handleTextKeyDown.bind(this);
     this.handleTokenClick = this.handleTokenClick.bind(this);
@@ -61,6 +66,10 @@ export class TokenList extends React.Component<Props> {
 
   componentWillMount() {
     this.setState({ tokens: this.props.tokens || [] });
+  }
+
+  componentWillUnmount() {
+    this.composing = false;
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -280,8 +289,22 @@ export class TokenList extends React.Component<Props> {
       }
     }
 
-    if (this.props.onTextChange) {
+    // We defer telling our owner until we finish composing since we don't
+    // really want to suggestions to update while we're composing.
+    if (!this.composing && this.props.onTextChange) {
       this.props.onTextChange(text);
+    }
+  }
+
+  handleTextCompositionStart(e: React.CompositionEvent<HTMLInputElement>) {
+    this.composing = true;
+  }
+
+  handleTextCompositionEnd(e: React.CompositionEvent<HTMLInputElement>) {
+    this.composing = false;
+
+    if (this.props.onTextChange) {
+      this.props.onTextChange(this.state.text);
     }
   }
 
@@ -492,6 +515,8 @@ export class TokenList extends React.Component<Props> {
             value={this.state.text}
             placeholder={placeholder}
             onChange={this.handleTextChange}
+            onCompositionStart={this.handleTextCompositionStart}
+            onCompositionEnd={this.handleTextCompositionEnd}
             onKeyPress={this.handleTextKeyPress}
             onKeyDown={this.handleTextKeyDown}
             tabIndex={this.state.focusRegion === FocusRegion.TextInput ? 0 : -1}
