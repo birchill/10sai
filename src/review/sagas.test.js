@@ -5,7 +5,7 @@ import { expectSaga } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
 
 import {
-  syncReview as syncReviewSaga,
+  loadReview as loadReviewSaga,
   updateHeap as updateHeapSaga,
   updateProgress as updateProgressSaga,
 } from './sagas';
@@ -393,7 +393,7 @@ describe('sagas:review updateProgress', () => {
   });
 });
 
-describe('sagas:review syncReview', () => {
+describe('sagas:review loadReview', () => {
   const dataStore = {
     reviewTime: new Date(),
     getCards: () => {},
@@ -456,7 +456,7 @@ describe('sagas:review syncReview', () => {
       { _id: 'd', question: 'Question D', answer: 'Answer D' },
     ];
 
-    const action = reviewActions.syncReview({
+    const action = reviewActions.loadReview({
       maxCards: 6,
       maxNewCards: 2,
       completed: 2,
@@ -468,7 +468,7 @@ describe('sagas:review syncReview', () => {
     });
     state = reducer(state, action);
 
-    return expectSaga(syncReviewSaga, dataStore, action)
+    return expectSaga(loadReviewSaga, dataStore, action)
       .provide(getDataStoreProvider(cards))
       .withState(state)
       .put.like({

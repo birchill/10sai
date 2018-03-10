@@ -107,14 +107,14 @@ function sync(store, stateStore) {
     }
 
     if (!deepEqual(currentState, review)) {
-      stateStore.dispatch(reviewActions.syncReview(review));
+      stateStore.dispatch(reviewActions.loadReview(review));
     }
   });
 
   // Do initial sync
   store.getReview().then(review => {
     if (review) {
-      stateStore.dispatch(reviewActions.syncReview(review));
+      stateStore.dispatch(reviewActions.loadInitialReview(review));
     }
   });
 }

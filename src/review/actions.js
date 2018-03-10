@@ -21,6 +21,21 @@ export function setReviewTime(reviewTime) {
   };
 }
 
+export function loadReview(review) {
+  return {
+    type: 'LOAD_REVIEW',
+    review,
+  };
+}
+
+export function loadInitialReview(review) {
+  return {
+    type: 'LOAD_REVIEW',
+    review,
+    initialReview: true,
+  };
+}
+
 // How much to weight seeds towards zero.
 const WEIGHT_FACTOR = 1.4;
 
@@ -28,7 +43,8 @@ export function reviewLoaded(
   cards,
   history,
   failedCardsLevel1,
-  failedCardsLevel2
+  failedCardsLevel2,
+  initialReview = false
 ) {
   return {
     type: 'REVIEW_LOADED',
@@ -36,6 +52,7 @@ export function reviewLoaded(
     history,
     failedCardsLevel1,
     failedCardsLevel2,
+    initialReview,
 
     // The way we avoid caring about if these two overlap is that we assign the
     // current card and then remove it from the corresponding list. That way
@@ -99,13 +116,6 @@ export function deleteReviewCard(id) {
     type: 'DELETE_REVIEW_CARD',
     id,
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
-  };
-}
-
-export function syncReview(review) {
-  return {
-    type: 'SYNC_REVIEW',
-    review,
   };
 }
 

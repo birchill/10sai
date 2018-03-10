@@ -159,6 +159,15 @@ export default function review(state = initialState, action) {
         updatedState.reviewState = ReviewState.QUESTION;
       }
 
+      // If we are complete but this is the initial load, then it makes more
+      // sense to show the user the idle state.
+      if (
+        updatedState.reviewState === ReviewState.COMPLETE &&
+        action.initialReview
+      ) {
+        updatedState.reviewState = ReviewState.IDLE;
+      }
+
       return updatedState;
     }
 
@@ -450,7 +459,7 @@ export default function review(state = initialState, action) {
       };
     }
 
-    case 'SYNC_REVIEW': {
+    case 'LOAD_REVIEW': {
       return {
         ...state,
         reviewState: ReviewState.LOADING,

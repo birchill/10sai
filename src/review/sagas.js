@@ -140,7 +140,7 @@ export function* queryAvailableCards(dataStore) {
   yield put(reviewActions.updateAvailableCards(availableCards));
 }
 
-export function* syncReview(dataStore, action) {
+export function* loadReview(dataStore, action) {
   // Load cards from history
   const history = yield call(
     [dataStore, 'getCardsById'],
@@ -184,7 +184,8 @@ export function* syncReview(dataStore, action) {
       heap,
       history,
       failedCardsLevel1,
-      failedCardsLevel2
+      failedCardsLevel2,
+      !!action.initialReview
     )
   );
 }
@@ -204,7 +205,7 @@ function* reviewSagas(dataStore) {
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, dataStore),
     takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, dataStore),
-    takeLatest(['SYNC_REVIEW'], syncReview, dataStore),
+    takeLatest(['LOAD_REVIEW'], loadReview, dataStore),
     takeLatest(['CANCEL_REVIEW'], cancelReview, dataStore),
   ];
 }

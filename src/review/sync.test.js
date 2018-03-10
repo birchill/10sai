@@ -469,7 +469,7 @@ describe('review:sync', () => {
 
       dataStore.__triggerChange('review', review);
       expect(store.actions).toContainEqual(
-        expect.objectContaining({ type: 'SYNC_REVIEW', review })
+        expect.objectContaining({ type: 'LOAD_REVIEW', review })
       );
     });
 
@@ -486,7 +486,7 @@ describe('review:sync', () => {
 
       dataStore.__triggerChange('review', reviewSummary);
       expect(store.actions).not.toContainEqual(
-        expect.objectContaining({ type: 'SYNC_REVIEW', review: reviewSummary })
+        expect.objectContaining({ type: 'LOAD_REVIEW', review: reviewSummary })
       );
     });
 

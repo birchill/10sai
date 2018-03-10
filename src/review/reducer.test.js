@@ -599,7 +599,7 @@ describe('reducer:review', () => {
     expect(updatedState).toEqual(resetState);
   });
 
-  it('should integrate changes to the review state on SYNC_REVIEW', () => {
+  it('should integrate changes to the review state on LOAD_REVIEW', () => {
     const [initialState, cards] = newReview(1, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
@@ -607,7 +607,7 @@ describe('reducer:review', () => {
     reviewSummary.completed = 1;
     reviewSummary.newCardsCompleted = 1;
     reviewSummary.heap = [cards[0]._id];
-    updatedState = subject(updatedState, actions.syncReview(reviewSummary));
+    updatedState = subject(updatedState, actions.loadReview(reviewSummary));
 
     expect(updatedState).toMatchObject({
       reviewState: ReviewState.LOADING,
