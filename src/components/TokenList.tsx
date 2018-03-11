@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import LoadingIndicator from './LoadingIndicator.jsx';
+import LoadingIndicator from './LoadingIndicator';
 
 interface Props {
   className?: string;

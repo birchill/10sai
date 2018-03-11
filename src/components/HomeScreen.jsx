@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import CardGrid from './CardGrid.jsx';
 import Link from './Link.jsx';
-import LoadingIndicator from './LoadingIndicator.jsx';
+import LoadingIndicator from './LoadingIndicator.tsx';
 import Navbar from './Navbar.jsx';
 import SyncState from '../sync/states';
 

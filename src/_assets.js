@@ -5,7 +5,7 @@ import 'main.scss'; // eslint-disable-line
 
 import CardPreview from './components/CardPreview.jsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
-import LoadingIndicator from './components/LoadingIndicator.jsx';
+import LoadingIndicator from './components/LoadingIndicator.tsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
 import TextRegion from './components/TextRegion.jsx';
