@@ -11,6 +11,18 @@
   // suggestions as needed.
   height: auto;
 
+  --text-color: $text-color;
+  --chip-fgcolor: $highlight;
+  --chip-bgcolor: lighten($highlight, 50%);
+  --suggestion-label-color: $standard-grey;
+  --suggestion-fgcolor: $highlight;
+  --suggestion-bgcolor: lighten($highlight, 50%);
+  --mark-bgcolor: yellow;
+  --mark-fgcolor: $text-color;
+  --loading-fgcolor: $standard-grey;
+  --loading-bgcolor: $really-light-grey;
+  --indicator-color: $light-grey;
+
   > .input {
     display: flex;
     align-content: flex-start;
@@ -38,11 +50,11 @@
       vertical-align: middle;
       cursor: default;
 
-      border: $border-width solid $highlight;
+      border: $border-width solid var(--chip-fgcolor);
       border-radius: .3em;
-      color: $highlight;
+      color: var(--chip-fgcolor);
 
-      background: lighten($highlight, 50%);
+      background: var(--chip-bgcolor);
 
       &:hover, &:focus-within {
         filter: brightness(1.2);
@@ -53,6 +65,7 @@
       }
 
       > .clear {
+        color: var(--chip-fgcolor);
         background: none;
         border: 0;
         padding: .3em .4em;
@@ -76,6 +89,8 @@
 
       // See above
       margin-bottom: .4rem;
+
+      color: var(--text-color);
     }
   }
 
@@ -90,7 +105,7 @@
       vertical-align: middle;
 
       font-style: italic;
-      opacity: 0.6;
+      color: var(--suggestion-label-color);
     }
 
     > .suggestion-list {
@@ -101,12 +116,12 @@
 
       > .item {
         display: inline-block;
-
         margin: 0 .4em .4em 0;
 
         // This is cheating a little but we push the padding into the child link
         // since it makes the hit region larger.
         > a {
+          color: var(--suggestion-fgcolor);
           display: inline-block;
           padding: .2em .4em;
 
@@ -120,11 +135,10 @@
 
         border: $border-width dashed transparent;
         border-radius: .3em;
-        color: $highlight;
 
-        background: lighten($highlight, 50%);
+        background-color: var(--suggestion-bgcolor);
         // Make these a bit more feint so it's clear they're not locked-in yet
-        opacity: 0.6;
+        opacity: 0.7;
 
         &:hover, &:focus-within {
           filter: brightness(1.2);
@@ -132,10 +146,33 @@
         }
 
         &:focus-within {
-          border-color: $highlight;
+          border-color: var(--suggestion-fgcolor);
           & a {
             outline: none;
           }
+        }
+
+        mark {
+          background: var(--mark-bgcolor);
+          color: var(--mark-fgcolor);
+        }
+      }
+    }
+
+    > .loading-indicator {
+      display: inline-block;
+      width: 50px;
+    }
+
+    &.-loading {
+      > .suggestion-list > .item {
+        background-color: var(--loading-bgcolor);
+        > a {
+          color: var(--loading-fgcolor);
+        }
+        &:hover, &:focus-within {
+          filter: none;
+          opacity: 0.7;
         }
       }
     }
@@ -150,23 +187,31 @@
   }
 
   &.-yellow {
+    --text-color: $keyword-yellow-dark;
+    --chip-fgcolor: $keyword-yellow-dark;
+    --chip-bgcolor: lighten($keyword-yellow, 5%);
+    --suggestion-label-color: $keyword-yellow-dark;
+    --suggestion-fgcolor: $keyword-yellow-dark;
+    --suggestion-bgcolor: lighten($keyword-yellow, 5%);
+    --mark-bgcolor: white;
+    --mark-fgcolor: $text-color;
+    --loading-fgcolor: desaturate($keyword-yellow-dark, 80%);
+    --loading-bgcolor: rgba(255, 255, 255, 0.7);
+    --indicator-color: $keyword-yellow-dark;
+
     background-color: $keyword-yellow;
+    border-color: $keyword-yellow-dark;
 
     > .input {
       > .textentry {
         background-color: $keyword-yellow;
-        color: $keyword-yellow-dark;
+        &::placeholder {
+          color: $keyword-yellow-dark;
+          opacity: 0.8;
+        }
       }
 
       > .chip {
-        border-color: $keyword-yellow-dark;
-        color: $keyword-yellow-dark;
-        background-color: lighten($keyword-yellow, 5%);
-
-        > .clear {
-          color: $keyword-yellow-dark;
-        }
-
         &:hover, &:focus-within {
           // The brightness we use for the normal style washes this out
           filter: brightness(1.06);
@@ -175,29 +220,10 @@
     }
 
     > .suggestions {
-      background: $keyword-yellow;
-
-      > .label {
-        color: $keyword-yellow-dark;
-      }
-
       > .suggestion-list > .item {
-        color: $keyword-yellow;
-        background-color: lighten($keyword-yellow, 5%);
-
         &:hover, &:focus-within {
+          // Again, the brightness we use for the normal style washes this out
           filter: brightness(1.06);
-        }
-
-        &:focus-within {
-          border-color: $keyword-yellow-dark;
-        }
-
-        > a {
-          color: $keyword-yellow-dark;
-        }
-        mark {
-          background: white;
         }
       }
     }

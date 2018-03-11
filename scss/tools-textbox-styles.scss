@@ -17,4 +17,9 @@
     border-color: $highlight;
     box-shadow: 0 0 0 .2rem lighten($highlight, 50%);
   }
+
+  &::placeholder {
+    color: $standard-grey;
+    opacity: 1;
+  }
 }

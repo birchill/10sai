@@ -25,9 +25,11 @@
 
   > .tags, > .keywords {
     display: flex;
+    opacity: 0.8;
     border-top: 1px dotted transparent;
 
     &:hover, &:focus-within {
+      opacity: 1;
       border-top: 1px dotted $dark-grey;
     }
 

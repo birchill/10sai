@@ -15,11 +15,13 @@ interface Props {
 
 interface State {
   tagSuggestions: string[];
+  loadingTagSuggestions: boolean;
 }
 
 export class EditCardForm extends React.Component<Props> {
   state: State = {
     tagSuggestions: [],
+    loadingTagSuggestions: false,
   };
   questionTextBox?: CardFaceInput;
 
@@ -44,15 +46,22 @@ export class EditCardForm extends React.Component<Props> {
 
   componentDidMount() {
     const result = this.props.tagSuggester.getSuggestions('');
+
+    const updatedState: Partial<State> = {};
     if (result.initialResult) {
-      this.setState({ tagSuggestions: result.initialResult });
+      updatedState.tagSuggestions = result.initialResult;
     }
+    updatedState.loadingTagSuggestions = !!result.asyncResult;
+    this.setState(updatedState);
+
     if (result.asyncResult) {
-      // XXX Display spinner
       result.asyncResult
         .then(suggestions => {
           // XXX Check if we are mounted or not here
-          this.setState({ tagSuggestions: suggestions });
+          this.setState({
+            tagSuggestions: suggestions,
+            loadingTagSuggestions: false,
+          });
         })
         .catch(() => {
           /* Ignore, request was canceled. */
@@ -91,16 +100,22 @@ export class EditCardForm extends React.Component<Props> {
   handleTagTextChange(text: string) {
     // XXX Debounce this
     const result = this.props.tagSuggester.getSuggestions(text);
+
+    const updatedState: Partial<State> = {};
     if (result.initialResult) {
-      this.setState({ tagSuggestions: result.initialResult });
-    } else {
-      // XXX Mark tag suggestions on component as disabled
+      updatedState.tagSuggestions = result.initialResult;
     }
+    updatedState.loadingTagSuggestions = !!result.asyncResult;
+    this.setState(updatedState);
+
     if (result.asyncResult) {
-      // XXX Display spinner
       result.asyncResult
         .then(suggestions => {
-          this.setState({ tagSuggestions: suggestions });
+          // XXX Check if we are mounted or not here
+          this.setState({
+            tagSuggestions: suggestions,
+            loadingTagSuggestions: false,
+          });
         })
         .catch(() => {
           /* Ignore, request was canceled. */
@@ -152,6 +167,7 @@ export class EditCardForm extends React.Component<Props> {
             onTokensChange={this.handleTagsChange}
             onTextChange={this.handleTagTextChange}
             suggestions={this.state.tagSuggestions}
+            loadingSuggestions={this.state.loadingTagSuggestions}
           />
         </div>
       </form>

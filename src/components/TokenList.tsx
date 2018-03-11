@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import LoadingIndicator from './LoadingIndicator.jsx';
+
 interface Props {
   className?: string;
   tokens?: string[];
@@ -8,6 +10,7 @@ interface Props {
   onTokensChange?: (tokens: string[], addedTokens: string[]) => void;
   onTextChange?: (text: string) => void;
   suggestions?: string[];
+  loadingSuggestions?: boolean;
 }
 
 enum FocusRegion {
@@ -42,6 +45,7 @@ export class TokenList extends React.Component<Props> {
       onTokensChange: PropTypes.func,
       onTextChange: PropTypes.func,
       suggestions: PropTypes.arrayOf(PropTypes.string),
+      loadingSuggestions: PropTypes.bool,
     };
   }
 
@@ -525,14 +529,21 @@ export class TokenList extends React.Component<Props> {
             }}
           />
         </div>
-        {suggestions.length ? (
-          <div className="suggestions">
-            <label className="label">e.g.</label>
+        <div
+          className={
+            'suggestions' + (this.props.loadingSuggestions ? ' -loading' : '')
+          }
+        >
+          <label className="label">
+            {suggestions.length ? 'e.g.' : '(No suggestions)'}
+          </label>
+          {suggestions.length ? (
             <ul className="suggestion-list" hidden={!suggestions.length}>
               {suggestions.map(this.renderSuggestion)}
             </ul>
-          </div>
-        ) : null}
+          ) : null}
+          {this.props.loadingSuggestions ? <LoadingIndicator /> : ''}
+        </div>
       </div>
     );
   }

@@ -96,8 +96,6 @@
       </div>
     </div>
 
-    <div id=token-list-container></div>
-
     <div class=token-list>
       <div class="input">
         <span class=chip>
@@ -120,13 +118,32 @@
           And another one
           <button class=clear aria-label="Delete">&#x2715;</button>
         </span>
-        <input class=textentry type=text>
+        <input class=textentry type=text value="Loading example">
+      </div>
+      <div class="suggestions -loading">
+        <label class=label>e.g.</label>
+        <ul class=suggestion-list>
+          <li class=item>
+            <a href="#"><mark>N</mark>2</a>
+          </li>
+          <li class=item>
+            <a href="#"><mark>N</mark>3</a>
+          </li>
+        </ul>
+        <svg class=loading-indicator viewBox="0 0 100 30">
+          <circle class=dot cx="20" cy="15" r="15" />
+          <circle class=dot cx="50" cy="15" r="15" />
+          <circle class=dot cx="80" cy="15" r="15" />
+        </svg>
       </div>
     </div>
 
     <div class="token-list">
       <div class="input">
-        <input class=textentry type=text placeholder="Empty tags">
+        <input class=textentry type=text placeholder="Tags (empty state example)">
+      </div>
+      <div class=suggestions>
+        <label class=label>(No suggestions)</label>
       </div>
     </div>
 
@@ -140,7 +157,7 @@
           Variant
           <button class=clear aria-label="Delete">&#x2715;</button>
         </span>
-        <input class=textentry type=text placeholder="Yellow tags">
+        <input class=textentry type=text placeholder="Tags (yellow example)">
       </div>
       <div class=suggestions>
         <label class=label>e.g.</label>
@@ -154,6 +171,26 @@
         </ul>
       </div>
     </div>
+
+    <div id=yellow-token-list-loading class="token-list -yellow">
+      <div class="input">
+        <input class=textentry type=text placeholder="Tags (yellow loading example)">
+      </div>
+      <div class="suggestions -loading">
+        <label class=label>e.g.</label>
+        <ul class=suggestion-list>
+          <li class=item><a href="#"><mark>N</mark>2</a></li><li
+            class=item><a href="#"><mark>N</mark>3</a></li>
+        </ul>
+        <svg class=loading-indicator viewBox="0 0 100 30">
+          <circle class=dot cx="20" cy="15" r="15" />
+          <circle class=dot cx="50" cy="15" r="15" />
+          <circle class=dot cx="80" cy="15" r="15" />
+        </svg>
+      </div>
+    </div>
+
+    <div id=token-list-container></div>
 
     <h3>Throbbers</h3>
     <div

@@ -33,7 +33,11 @@ ReactDOM.render(
   };
 
   ReactDOM.render(
-    <TokenList tokens={tokens} placeholder="Tags" onChange={onChange} />,
+    <TokenList
+      tokens={tokens}
+      placeholder="Tags (live example)"
+      onChange={onChange}
+    />,
     document.getElementById('token-list-container')
   );
 })([]);

@@ -16,11 +16,11 @@
     }
 
     > .public-DraftEditorPlaceholder-root {
-      color: $light-grey;
+      color: lighten($standard-grey, 20%);
     }
 
     &:hover > .public-DraftEditorPlaceholder-root {
-      color: $dark-grey;
+      color: $standard-grey;
     }
 
     > .public-DraftEditorPlaceholder-hasFocus {
