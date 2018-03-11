@@ -148,7 +148,10 @@ export class EditCardForm extends React.Component<Props> {
           placeholder="Answer"
           onChange={this.handleAnswerChange}
         />
-        <div className="keywords -yellow">
+        <div
+          className="keywords -yellow"
+          title="Add words here to cross-reference with notes and other resources. For example, if this card is about &ldquo;running&rdquo;, adding &ldquo;run&rdquo; as a keyword will make it easy to find related notes, pictures, and dictionary entries."
+        >
           <span className="icon -key" />
           <TokenList
             className="tokens -yellow -seamless"
@@ -158,7 +161,10 @@ export class EditCardForm extends React.Component<Props> {
             suggestions={['漢字', '漢', '字']}
           />
         </div>
-        <div className="tags">
+        <div
+          className="tags"
+          title="Add labels here to help organize your cards such as &ldquo;vocabulary&rdquo;, &ldquo;Intermediate French Conversation&rdquo;, &ldquo;Needs picture&rdquo; etc."
+        >
           <span className="icon -tag -grey" />
           <TokenList
             className="tokens -seamless"
