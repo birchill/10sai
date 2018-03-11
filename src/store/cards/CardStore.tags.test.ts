@@ -9,16 +9,17 @@ import { Card } from '../../model';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
+const getRandomString = (len: number): string =>
+  (
+    Array(len).join('0') +
+    Math.floor(Math.random() * Math.pow(36, len)).toString(36)
+  ).slice(-len);
+
 // Helper function to generate random cards and put them
 const putNewCardWithTags = (
   tags: string[],
   cardStore: CardStore
 ): Promise<Card> => {
-  const getRandomString = (len: number): string =>
-    (
-      Array(len).join('0') +
-      Math.floor(Math.random() * Math.pow(36, len)).toString(36)
-    ).slice(-len);
   return cardStore.putCard({
     question: getRandomString(5),
     answer: getRandomString(5),
@@ -113,5 +114,48 @@ describe('CardStore:tags', () => {
     const tags = await subject.getTags('Abc', 5);
 
     expect(tags).toEqual(['Abc', 'abc', 'ABC', 'Abcd']);
+  });
+});
+
+// Helper function to generate random cards and put them
+const putNewCardWithKeywords = (
+  keywords: string[],
+  cardStore: CardStore
+): Promise<Card> => {
+  return cardStore.putCard({
+    question: getRandomString(5),
+    answer: getRandomString(5),
+    keywords,
+    tags: [],
+    starred: false,
+  });
+};
+
+describe('CardStore:keywords', () => {
+  let dataStore: DataStore;
+  let subject: CardStore;
+
+  beforeEach(() => {
+    dataStore = new DataStore({
+      pouch: { adapter: 'memory' },
+      prefetchViews: false,
+    });
+    subject = dataStore.cardStore;
+  });
+
+  afterEach(() => dataStore.destroy());
+
+  //
+  // The following tests are fairly naive since we just assume that most of the
+  // code for dealing with keywords and tags is similar.
+  //
+
+  it('returns the most frequently used keywords', async () => {
+    await putNewCardWithKeywords(['ABC', 'DEF', 'GHI'], subject);
+    await putNewCardWithKeywords(['DEF'], subject);
+
+    const keywords = await subject.getKeywords('', 5);
+
+    expect(keywords).toEqual(['DEF', 'ABC', 'GHI']);
   });
 });

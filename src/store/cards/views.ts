@@ -78,6 +78,21 @@ export const getOverduenessFunction = (reviewTime: Date) =>
     });
   }`;
 
+// TODO: Make this search notes too once we introduce them
+export const keywordMapFunction = `function(doc) {
+    if (!doc._id.startsWith('${CARD_PREFIX}')) {
+      return;
+    }
+
+    if (!Array.isArray(doc.keywords) || !doc.keywords.length) {
+      return;
+    }
+
+    for (const keyword of doc.keywords) {
+      emit([keyword.toLowerCase(), keyword], 1);
+    }
+  }`;
+
 export const tagMapFunction = `function(doc) {
     if (!doc._id.startsWith('${CARD_PREFIX}')) {
       return;

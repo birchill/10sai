@@ -69,10 +69,11 @@ interface LazyPromise {
 interface ViewPromises {
   cards: LazyPromise;
   review: LazyPromise;
+  keywords: LazyPromise;
   tags: LazyPromise;
 }
 
-interface TagAndFrequency {
+interface StringsAndFrequency {
   value: number;
   key: string[2];
 }
@@ -105,6 +106,7 @@ export class CardStore {
     this.viewPromises = {
       cards: getLazyPromise(),
       review: getLazyPromise(),
+      keywords: getLazyPromise(),
       tags: getLazyPromise(),
     };
   }
@@ -403,20 +405,35 @@ export class CardStore {
     await stubbornDelete(PROGRESS_PREFIX + id, this.db);
   }
 
+  async getKeywords(prefix: string, limit: number): Promise<string[]> {
+    await this.viewPromises.keywords.promise;
+
+    return this.getKeywordsOrTags('keywords', prefix, limit);
+  }
+
   async getTags(prefix: string, limit: number): Promise<string[]> {
     await this.viewPromises.tags.promise;
 
+    return this.getKeywordsOrTags('tags', prefix, limit);
+  }
+
+  async getKeywordsOrTags(
+    view: string,
+    prefix: string,
+    limit: number
+  ): Promise<string[]> {
     // We fetch a lot more records than requested since we want to return the
-    // highest frequency records, not just the first that |limit| tags that
+    // highest frequency records, not just the first |limit| keywords/tags that
     // match.
     //
-    // For the prefix === '' case we should ideally look at *all* the tags
-    // but I couldn't find an easy and efficient way to sort the tags view
-    // by frequency AND by key so we can do the substring lookup short of
-    // making two views so we just take the first 200 tags and return the
-    // highest frequency ones amongst them. If the user has more than 200 unique
-    // tags then (a) they can probably cope with not having the absolute optimal
-    // initial suggestions, and (b) they're probably doing it wrong anyway.
+    // For the prefix === '' case we should ideally look at *all* the
+    // keywords/tags but I couldn't find an easy and efficient way to sort the
+    // keywords/tags view by frequency AND by key so we can do the substring
+    // lookup short of making two views so we just take the first 200
+    // keywords/tags and return the highest frequency ones amongst them. If the
+    // user has more than 200 unique keywords/tags then (a) they can probably
+    // cope with not having the absolute optimal initial suggestions, and (b)
+    // they're probably doing it wrong anyway.
     const minRecords = prefix === '' ? 200 : 40;
 
     const queryOptions: PouchDB.Query.Options<any, any> = {
@@ -430,20 +447,25 @@ export class CardStore {
       queryOptions.endkey = [prefix.toLowerCase() + '\ufff0', {}];
     }
 
-    const result = await this.db.query<TagAndFrequency>('tags', queryOptions);
+    const result = await this.db.query<StringsAndFrequency>(view, queryOptions);
 
-    const compareTagEntries = (
-      a: TagAndFrequency,
-      b: TagAndFrequency
-    ): number => {
-      const tagA = a.key[1];
-      const tagB = b.key[1];
+    const comparator = CardStore.getKeywordsOrTagsComparator(prefix);
+    return result.rows
+      .sort(comparator)
+      .map(entry => entry.key[1])
+      .slice(0, limit);
+  }
+
+  static getKeywordsOrTagsComparator(prefix: string) {
+    return (a: StringsAndFrequency, b: StringsAndFrequency): number => {
+      const valueA = a.key[1];
+      const valueB = b.key[1];
 
       // Sort exact matches first
-      if (tagA === prefix) {
+      if (valueA === prefix) {
         return -1;
       }
-      if (tagB === prefix) {
+      if (valueB === prefix) {
         return 1;
       }
 
@@ -452,17 +474,12 @@ export class CardStore {
         return b.value - a.value;
       }
       // Within the set of equal frequency strings sort by length
-      if (tagA.length !== tagB.length) {
-        return tagA.length - tagB.length;
+      if (valueA.length !== valueB.length) {
+        return valueA.length - valueB.length;
       }
       // Finally sort by string value
-      return tagA.localeCompare(tagB);
+      return valueA.localeCompare(valueB);
     };
-
-    return result.rows
-      .sort(compareTagEntries)
-      .map(entry => entry.key[1])
-      .slice(0, limit);
   }
 
   static generateCardId() {
@@ -506,6 +523,12 @@ export class CardStore {
       this.viewPromises.review.resolve();
     }
 
+    await this.updateKeywordsView();
+    if (!this.viewPromises.keywords.resolved) {
+      this.viewPromises.keywords.resolved = true;
+      this.viewPromises.keywords.resolve();
+    }
+
     await this.updateTagsView();
     if (!this.viewPromises.tags.resolved) {
       this.viewPromises.tags.resolved = true;
@@ -519,6 +542,10 @@ export class CardStore {
 
   async updateNewCardsView() {
     return this._updateMapView('new_cards', views.newCardMapFunction);
+  }
+
+  async updateKeywordsView() {
+    return this._updateMapView('keywords', views.keywordMapFunction, '_sum');
   }
 
   async updateTagsView() {
