@@ -62,6 +62,7 @@ export class TokenList extends React.Component<Props> {
     this.handleTextKeyPress = this.handleTextKeyPress.bind(this);
     this.handleTextKeyDown = this.handleTextKeyDown.bind(this);
     this.handleTokenClick = this.handleTokenClick.bind(this);
+    this.handleTokenKeyDown = this.handleTokenKeyDown.bind(this);
     this.handleTokenKeyUp = this.handleTokenKeyUp.bind(this);
     this.handleSuggestionClick = this.handleSuggestionClick.bind(this);
 
@@ -358,9 +359,16 @@ export class TokenList extends React.Component<Props> {
     this.deleteToken(index);
   }
 
-  handleTokenKeyUp(e: React.KeyboardEvent<HTMLButtonElement>) {
-    if (e.key === 'Delete') {
+  handleTokenKeyDown(e: React.KeyboardEvent<HTMLButtonElement>) {
+    if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
+      // We do the actual handling of these in keyup because we don't want
+      // auto-repeat behavior for these.
+    }
+  }
+
+  handleTokenKeyUp(e: React.KeyboardEvent<HTMLButtonElement>) {
+    if (e.key === 'Delete' || e.key === 'Backspace') {
       const index = parseInt((e.target as HTMLButtonElement).dataset.index!);
       this.deleteToken(index);
     }
@@ -505,6 +513,7 @@ export class TokenList extends React.Component<Props> {
                 className="clear"
                 aria-label="Delete"
                 onClick={this.handleTokenClick}
+                onKeyDown={this.handleTokenKeyDown}
                 onKeyUp={this.handleTokenKeyUp}
                 tabIndex={-1}
                 data-index={i}
