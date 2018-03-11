@@ -26,6 +26,10 @@ export class EditCardForm extends React.Component<Props> {
   };
   questionTextBox?: CardFaceInput;
   debouncedUpdateSuggestions: (text: string) => void;
+  // I know this is an anti-pattern but the amount of code needed to be able to
+  // cancel both the debounced functions and lookup promises is much more than
+  // is justified for the sake of placating the purists.
+  mounted: boolean = false;
 
   static get propTypes() {
     return {
@@ -48,10 +52,19 @@ export class EditCardForm extends React.Component<Props> {
   }
 
   componentDidMount() {
+    this.mounted = true;
     this.updateSuggestions('');
   }
 
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
   updateSuggestions(text: string) {
+    if (!this.mounted) {
+      return;
+    }
+
     const result = this.props.tagSuggester.getSuggestions(text);
 
     const updatedState: Partial<State> = {};
@@ -64,7 +77,10 @@ export class EditCardForm extends React.Component<Props> {
     if (result.asyncResult) {
       result.asyncResult
         .then(suggestions => {
-          // XXX Check if we are mounted or not here
+          if (!this.mounted) {
+            return;
+          }
+
           this.setState({
             tagSuggestions: suggestions,
             loadingTagSuggestions: false,
