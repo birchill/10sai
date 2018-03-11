@@ -8,7 +8,7 @@ import { Card } from '../model';
 import TagSuggester from '../edit/TagSuggester';
 
 interface Props {
-  card: Card;
+  card: Partial<Card>;
   tagSuggester: TagSuggester;
   onChange?: (topic: string, value: string | string[]) => void;
 }

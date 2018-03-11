@@ -1,16 +1,38 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { Dispatch, connect } from 'react-redux';
 
+import { Card } from '../model';
 import EditCardToolbar from './EditCardToolbar.jsx';
-import EditCardForm from './EditCardForm.tsx';
+import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit/states';
 import * as editActions from '../edit/actions';
 import * as routeActions from '../route/actions';
-import TagSuggester from '../edit/TagSuggester.ts';
+import TagSuggester from '../edit/TagSuggester';
 
-export class EditCardScreen extends React.PureComponent {
+type FormId = number | string;
+
+interface Form {
+  formId: FormId;
+  editState: Symbol;
+  card: Partial<Card>;
+  deleted?: boolean;
+}
+
+interface Props {
+  tagSuggester: TagSuggester;
+  forms: {
+    active: Form;
+  };
+  active: boolean;
+  onEdit: (id: FormId, change: Partial<Card>) => void;
+  onDelete: (id: FormId) => void;
+}
+
+export class EditCardScreen extends React.PureComponent<Props> {
+  activeForm?: EditCardForm;
+
   static get propTypes() {
     return {
       tagSuggester: PropTypes.instanceOf(TagSuggester).isRequired,
@@ -19,7 +41,7 @@ export class EditCardScreen extends React.PureComponent {
           formId: PropTypes.any,
           editState: PropTypes.symbol.isRequired,
           // eslint-disable-next-line react/forbid-prop-types
-          card: PropTypes.object,
+          card: PropTypes.object.isRequired,
           deleted: PropTypes.bool,
         }).isRequired,
       }),
@@ -29,7 +51,7 @@ export class EditCardScreen extends React.PureComponent {
     };
   }
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
 
     this.handleFormChange = this.handleFormChange.bind(this);
@@ -42,7 +64,7 @@ export class EditCardScreen extends React.PureComponent {
     }
   }
 
-  componentDidUpdate(previousProps) {
+  componentDidUpdate(previousProps: Props) {
     if (this.props.active && previousProps.active !== this.props.active) {
       this.activate();
     }
@@ -58,7 +80,7 @@ export class EditCardScreen extends React.PureComponent {
     }
   }
 
-  handleFormChange(field, value) {
+  handleFormChange<K extends keyof Card>(field: K, value: Card[K]) {
     this.props.onEdit(this.props.forms.active.formId, { [field]: value });
   }
 
@@ -79,7 +101,7 @@ export class EditCardScreen extends React.PureComponent {
             onChange={this.handleFormChange}
             {...this.props.forms.active}
             ref={activeForm => {
-              this.activeForm = activeForm;
+              this.activeForm = activeForm || undefined;
             }}
           />
         ) : (
@@ -90,14 +112,15 @@ export class EditCardScreen extends React.PureComponent {
   }
 }
 
-const mapStateToProps = state => ({
+// XXX Use some sort of EditState type here once we convert the reducer to TS
+const mapStateToProps = (state: any) => ({
   forms: state.edit.forms,
 });
-const mapDispatchToProps = dispatch => ({
-  onEdit: (formId, card) => {
+const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
+  onEdit: (formId: FormId, card: Partial<Card>) => {
     dispatch(editActions.editCard(formId, card));
   },
-  onDelete: formId => {
+  onDelete: (formId: FormId) => {
     dispatch(editActions.deleteEditCard(formId));
     dispatch(routeActions.followLink('/'));
   },

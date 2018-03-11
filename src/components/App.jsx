@@ -8,7 +8,7 @@ import { getReviewProgress } from '../review/selectors';
 import CardList from '../CardList';
 import TagSuggester from '../edit/TagSuggester.ts';
 
-import EditCardScreen from './EditCardScreen.jsx';
+import EditCardScreen from './EditCardScreen.tsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
 import LookupScreen from './LookupScreen.jsx';
 import MainTabBlock from './MainTabBlock.tsx';
