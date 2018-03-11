@@ -1,6 +1,6 @@
 import { call, takeEvery, takeLatest, put, select } from 'redux-saga/effects';
 import { delay } from 'redux-saga';
-import { waitForDocLoad } from '../utils';
+import { waitForDocLoad } from '../utils.ts';
 
 // Selector wrappers
 

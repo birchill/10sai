@@ -8,10 +8,31 @@ export function waitForDocLoad() {
   });
 }
 
+type IdleRequestCallback = (deadline: IdleDeadline) => void;
+
+interface IdleRequestOptions {
+  timeout: number;
+}
+
+declare global {
+  interface IdleDeadline {
+    timeRemaining: () => number;
+    readonly didTimeout: boolean;
+  }
+
+  interface Window {
+    requestIdleCallback: (
+      callback: IdleRequestCallback,
+      options?: IdleRequestCallback
+    ) => number;
+    cancelIdleCallback: (handle: number) => void;
+  }
+}
+
 export function waitForIdle() {
   return new Promise(resolve => {
     if (window.requestIdleCallback) {
-      requestIdleCallback(resolve);
+      window.requestIdleCallback(resolve);
     } else {
       // I'm pretty sure by the time this app ever gets released all target
       // browsers will implemented requestIdleCallback. For now, though, just
