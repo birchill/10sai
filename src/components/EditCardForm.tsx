@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import CardFaceInput from './CardFaceInput';
 import TokenList from './TokenList';
 
+import { debounce } from '../utils';
 import { Card } from '../model';
 import TagSuggester from '../edit/TagSuggester';
 
@@ -24,6 +25,7 @@ export class EditCardForm extends React.Component<Props> {
     loadingTagSuggestions: false,
   };
   questionTextBox?: CardFaceInput;
+  debouncedUpdateSuggestions: (text: string) => void;
 
   static get propTypes() {
     return {
@@ -42,10 +44,15 @@ export class EditCardForm extends React.Component<Props> {
     this.handleTagsChange = this.handleTagsChange.bind(this);
     this.handleTagTextChange = this.handleTagTextChange.bind(this);
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
+    this.debouncedUpdateSuggestions = debounce(this.updateSuggestions, 200);
   }
 
   componentDidMount() {
-    const result = this.props.tagSuggester.getSuggestions('');
+    this.updateSuggestions('');
+  }
+
+  updateSuggestions(text: string) {
+    const result = this.props.tagSuggester.getSuggestions(text);
 
     const updatedState: Partial<State> = {};
     if (result.initialResult) {
@@ -98,29 +105,7 @@ export class EditCardForm extends React.Component<Props> {
   }
 
   handleTagTextChange(text: string) {
-    // XXX Debounce this
-    const result = this.props.tagSuggester.getSuggestions(text);
-
-    const updatedState: Partial<State> = {};
-    if (result.initialResult) {
-      updatedState.tagSuggestions = result.initialResult;
-    }
-    updatedState.loadingTagSuggestions = !!result.asyncResult;
-    this.setState(updatedState);
-
-    if (result.asyncResult) {
-      result.asyncResult
-        .then(suggestions => {
-          // XXX Check if we are mounted or not here
-          this.setState({
-            tagSuggestions: suggestions,
-            loadingTagSuggestions: false,
-          });
-        })
-        .catch(() => {
-          /* Ignore, request was canceled. */
-        });
-    }
+    this.debouncedUpdateSuggestions(text);
   }
 
   handleKeywordsChange(keywords: string[], addedKeywords: string[]) {

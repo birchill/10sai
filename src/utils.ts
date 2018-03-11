@@ -41,3 +41,17 @@ export function waitForIdle() {
     }
   });
 }
+
+// Ported and simplified from underscore.js
+export function debounce(func: Function, wait: number) {
+  let timeout: number | null;
+  return function() {
+    const context = this;
+    const args = arguments;
+    clearTimeout(timeout as number);
+    timeout = setTimeout(() => {
+      timeout = null;
+      func.apply(context, args);
+    }, wait);
+  };
+}
