@@ -1,38 +1,15 @@
 import DataStore from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
+import { SuggestionResult } from './SuggestionResult';
 
 const MAX_SESSION_TAGS = 3;
 const MAX_SUGGESTIONS = 6;
-
 const LOOKUP_CACHE_SIZE = 15;
 
 interface TagSuggesterOptions {
   maxSessionTags?: number;
   maxSuggestions?: number;
 }
-
-// Result of a call to SuggestionResult.
-//
-// At least one of |initialResult| or |asyncResult| must be set.
-interface SuggestionResult {
-  // If set, provides the result that could be determined synchronously.
-  // If |asyncResult| is also set, the value of |asyncResult| is guaranteed to
-  // be an extension of |initialResult|, i.e. elements are only appended to
-  // |initialResult|.
-  initialResult?: string[];
-
-  // If set, indicates that an asynchronous lookup is being performed. Once
-  // complete, the result of the asynchronous lookup is returned.
-  // If a subsequent call to getSuggestions is made while the lookup is in
-  // progress, the Promise will be rejected.
-  asyncResult?: Promise<string[]>;
-}
-
-// Note to self: From a UI point of view what we're hoping for here is:
-// -- If we have any kind of initialResult, show it
-// -- If "asyncResult" is set, display a spinner
-// -- If we have an undefined initialResult, make any current entries disabled
-//    while we wait
 
 export class TagSuggester {
   store: DataStore;

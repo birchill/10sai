@@ -122,6 +122,9 @@ class DataStore {
   getTags(prefix: string, limit: number): Promise<string[]> {
     return this.cardStore.getTags(prefix, limit);
   }
+  getKeywords(prefix: string, limit: number): Promise<string[]> {
+    return this.cardStore.getKeywords(prefix, limit);
+  }
 
   // Review API
   getReview(): Promise<Review | null> {
