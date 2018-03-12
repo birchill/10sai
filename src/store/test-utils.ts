@@ -13,11 +13,9 @@ export const syncWithWaitableRemote = async (
     },
   });
 
-  const waitForIdle = () => {
+  return () => {
     return new Promise(resolve => {
       pauseAction = resolve;
     });
   };
-
-  return waitForIdle;
 };
