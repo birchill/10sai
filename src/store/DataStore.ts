@@ -64,7 +64,7 @@ class StoreError extends Error {
 const VIEW_CLEANUP_DELAY = 5000; // 5s
 
 class DataStore {
-  db: PouchDB.Database;
+  db?: PouchDB.Database;
   cardStore: CardStore;
   reviewStore: ReviewStore;
 
@@ -146,7 +146,7 @@ class DataStore {
     // use that instead.
     this.changesEmitter = EventEmitter(null);
 
-    const dbChanges = this.db.changes({
+    const dbChanges = this.db!.changes({
       since: 'now',
       live: true,
       include_docs: true,
@@ -241,7 +241,10 @@ class DataStore {
       }
     }
 
-    await this.initDone;
+    // We use to wait on this.initDone here but for some reason that would cause
+    // tests to fail because we'd assume we were idle before we really were.
+    // It's weird. I don't get it. But I also couldn't figure out why we were
+    // waiting on initDone in the first place, so, now we don't. Oh well.
 
     if (this.remoteSync) {
       this.remoteSync.cancel();
@@ -276,7 +279,7 @@ class DataStore {
     let localUpdateSeq: number | undefined;
     let remoteUpdateSeq: number | undefined;
     try {
-      const localInfo = await this.db.info();
+      const localInfo = await this.db!.info();
       // parseInt will stringify its first argument so it doesn't matter than
       // update_seq can sometimes be a number.
       localUpdateSeq = parseInt(<string>localInfo.update_seq, 10);
@@ -311,7 +314,7 @@ class DataStore {
         return !doc._id.startsWith('_design/');
       },
     };
-    this.remoteSync = this.db.sync<RecordTypes>(this.remoteDb!, {
+    this.remoteSync = this.db!.sync<RecordTypes>(this.remoteDb!, {
       live: true,
       retry: true,
       pull: pushPullOpts,
@@ -461,14 +464,16 @@ class DataStore {
     this.viewCleanupScheduled = true;
     setTimeout(() => {
       this.viewCleanupScheduled = false;
-      this.db.viewCleanup();
+      if (this.db) {
+        this.db.viewCleanup();
+      }
     }, VIEW_CLEANUP_DELAY);
   }
 
   // Maintenance methods
 
   async getUnrecognizedDocs() {
-    const records = await this.db.allDocs({ include_docs: true });
+    const records = await this.db!.allDocs({ include_docs: true });
 
     const unrecognized = [];
 
@@ -498,8 +503,8 @@ class DataStore {
       }
     }
 
-    const result = await this.db.allDocs({ keys: ids });
-    await this.db.bulkDocs(
+    const result = await this.db!.allDocs({ keys: ids });
+    await this.db!.bulkDocs(
       result.rows.map(row => ({
         _id: row.id,
         _rev: row.value.rev,
@@ -511,7 +516,12 @@ class DataStore {
   // Intended for unit testing only
 
   destroy() {
-    return this.db.destroy();
+    if (!this.db) {
+      return;
+    }
+    const db = this.db;
+    this.db = undefined;
+    return db.destroy();
   }
   getSyncServer() {
     return this.remoteDb;
