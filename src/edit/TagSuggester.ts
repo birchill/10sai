@@ -1,6 +1,7 @@
 import DataStore from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
 import { SuggestionResult } from './SuggestionResult';
+import { findSubstringMatch } from './suggestion-utils';
 
 const MAX_SESSION_TAGS = 3;
 const MAX_SUGGESTIONS = 6;
@@ -118,31 +119,15 @@ export class TagSuggester {
       return result;
     }
 
-    // If we have a direct hit on the cache, return synchronously.
-    let substringKey = input;
-    while (substringKey.length) {
-      if (this.lookupCache.has(substringKey)) {
-        const substringResult = this.lookupCache.get(substringKey)!;
-
-        // If we are looking up a substring and our cached result includes the
-        // maximum possible number of results then it's possible there are more
-        // matches in the database that we truncated when we fetched the
-        // substring so we should do the async lookup.
-        if (
-          substringKey.length < input.length &&
-          substringResult.length >= this.maxSuggestions
-        ) {
-          break;
-        }
-
-        result.initialResult = substringResult.filter(tag =>
-          tag.toLowerCase().startsWith(input.toLowerCase())
-        );
-        // (We *could* store this result in our lookup cache but it's not
-        // necessary since we can deduce it from our map.)
-        return result;
-      }
-      substringKey = substringKey.substr(0, substringKey.length - 1);
+    // If we have a hit on the cache, return synchronously.
+    const substringMatch = findSubstringMatch(
+      input,
+      this.lookupCache,
+      this.maxSuggestions
+    );
+    if (substringMatch) {
+      result.initialResult = substringMatch;
+      return result;
     }
 
     result.asyncResult = new Promise<string[]>((resolve, reject) => {
