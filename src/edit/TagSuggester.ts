@@ -1,7 +1,10 @@
 import DataStore from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
 import { SuggestionResult } from './SuggestionResult';
-import { findSubstringMatch } from './suggestion-utils';
+import {
+  findSubstringMatch,
+  mergeAndTrimSuggestions,
+} from './suggestion-utils';
 
 const MAX_SESSION_TAGS = 3;
 const MAX_SUGGESTIONS = 6;
@@ -70,29 +73,15 @@ export class TagSuggester {
     // frequently used tags, but also tags that have been used recently in this
     // session (e.g. for when you're adding the same tag to a bunch of cards).
     if (input === '') {
-      // Utility function to de-dupe session tags and tags we looked up in the
-      // database whilst maintaining existing order of suggestions and trim
-      // to the maximum number of suggestions.
-      //
-      // (ES6 Sets maintain insertion order including when dupes are added
-      // which is very convenient for us.)
-      const mergeLookupTagsWithSessionTags = (
-        sessionTags: string[],
-        lookupTags: string[]
-      ): string[] =>
-        [...new Set(sessionTags.concat(lookupTags))].slice(
-          0,
-          this.maxSuggestions
-        );
-
       // Add as many session tags as we have
       const sessionTags: string[] = [...this.sessionTags.keys()].reverse();
 
       // If we have a cached result, return straight away
       if (this.lookupCache.has(input)) {
-        result.initialResult = mergeLookupTagsWithSessionTags(
+        result.initialResult = mergeAndTrimSuggestions(
           sessionTags,
-          this.lookupCache.get(input)!
+          this.lookupCache.get(input)!,
+          this.maxSuggestions
         );
         return result;
       }
@@ -112,7 +101,9 @@ export class TagSuggester {
             reject(new Error('AbortError'));
           }
 
-          resolve(mergeLookupTagsWithSessionTags(sessionTags, tags));
+          resolve(
+            mergeAndTrimSuggestions(sessionTags, tags, this.maxSuggestions)
+          );
         });
       });
 

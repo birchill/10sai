@@ -2,6 +2,17 @@ import { LRUMap } from '../utils/lru';
 
 // KeywordSuggester and TagSuggester common functionality.
 
+// Combine and de-dupe two arrays of suggestions preserving their order and
+// trimming as necessary.
+export function mergeAndTrimSuggestions(
+  a: string[],
+  b: string[],
+  maxLength: number
+): string[] {
+  return [...new Set(a.concat(b))].slice(0, maxLength);
+}
+
+// Look in |cache| for records that match some part of |input|.
 export function findSubstringMatch(
   input: string,
   cache: LRUMap<string, string[]>,

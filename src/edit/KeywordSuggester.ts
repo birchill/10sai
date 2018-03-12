@@ -1,6 +1,10 @@
 import DataStore from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
 import { SuggestionResult } from './SuggestionResult';
+import {
+  findSubstringMatch,
+  mergeAndTrimSuggestions,
+} from './suggestion-utils';
 
 const MAX_SESSION_KEYWORDS = 3;
 const MAX_SUGGESTIONS = 6;
@@ -75,15 +79,6 @@ export class KeywordSuggester {
     // keywords that have been used recently in this session (e.g. for when
     // you're adding a number of cards around the same word).
     if (input === '') {
-      const mergeGuessedAndSessionKeywords = (
-        guessedKeywords: string[],
-        sessionKeywords: string[]
-      ): string[] =>
-        [...new Set(guessedKeywords.concat(sessionKeywords))].slice(
-          0,
-          this.maxSuggestions
-        );
-
       // TODO: Guess keywords here
       const guessedKeywords: string[] = [];
 
@@ -92,9 +87,10 @@ export class KeywordSuggester {
         ...this.sessionKeywords.keys(),
       ].reverse();
 
-      result.initialResult = mergeGuessedAndSessionKeywords(
+      result.initialResult = mergeAndTrimSuggestions(
         sessionKeywords,
-        this.lookupCache.get(input)!
+        this.lookupCache.get(input)!,
+        this.maxSuggestions
       );
       return result;
     }
