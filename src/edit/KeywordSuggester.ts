@@ -5,6 +5,7 @@ import {
   findSubstringMatch,
   mergeAndTrimSuggestions,
 } from './suggestion-utils';
+import { Card } from '../model';
 
 const MAX_SESSION_KEYWORDS = 3;
 const MAX_SUGGESTIONS = 6;
@@ -21,8 +22,8 @@ export class KeywordSuggester {
   // Keywords that have been *entered* (i.e. added to cards) this session.
   sessionKeywords: LRUMap<string, undefined>;
 
-  // The current string we may be doing a lookup for.
-  currentInput?: string;
+  // The string we may be doing a lookup for or the Card we are guessing from.
+  currentInput?: Partial<Card> | string;
 
   // Cache of keywords we have looked up.
   lookupCache: LRUMap<string, string[]>;
@@ -68,17 +69,15 @@ export class KeywordSuggester {
     this.sessionKeywords.set(keyword, undefined);
   }
 
-  getSuggestions(input: string): SuggestionResult {
+  getSuggestions(input: Partial<Card> | string): SuggestionResult {
     const result: SuggestionResult = {};
 
     this.currentInput = input;
 
-    // Initial suggestions case:
-    //
     // When there is no input we return keywords based on the content and also
     // keywords that have been used recently in this session (e.g. for when
     // you're adding a number of cards around the same word).
-    if (input === '') {
+    if (typeof input === 'object') {
       // TODO: Guess keywords here
       const guessedKeywords: string[] = [];
 
@@ -88,8 +87,8 @@ export class KeywordSuggester {
       ].reverse();
 
       result.initialResult = mergeAndTrimSuggestions(
+        guessedKeywords,
         sessionKeywords,
-        this.lookupCache.get(input)!,
         this.maxSuggestions
       );
       return result;

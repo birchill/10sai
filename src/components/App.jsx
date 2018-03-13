@@ -6,6 +6,7 @@ import DocumentTitle from 'react-document-title';
 import { URLFromRoute } from '../route/router';
 import { getReviewProgress } from '../review/selectors';
 import CardList from '../CardList';
+import KeywordSuggester from '../edit/KeywordSuggester.ts';
 import TagSuggester from '../edit/TagSuggester.ts';
 
 import EditCardScreen from './EditCardScreen.tsx';
@@ -54,6 +55,7 @@ class App extends React.PureComponent {
     super(props);
     this.closePopup = this.closePopup.bind(this);
     this.cardList = new CardList(props.dataStore);
+    this.keywordSuggester = new KeywordSuggester(props.dataStore);
     this.tagSuggester = new TagSuggester(props.dataStore);
   }
 
@@ -131,6 +133,7 @@ class App extends React.PureComponent {
               hidden={this.props.route.screen !== 'edit-card'}
             >
               <EditCardScreen
+                keywordSuggester={this.keywordSuggester}
                 tagSuggester={this.tagSuggester}
                 active={this.props.route.screen === 'edit-card'}
                 card={this.props.route.card}

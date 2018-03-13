@@ -9,6 +9,7 @@ import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit/states';
 import * as editActions from '../edit/actions';
 import * as routeActions from '../route/actions';
+import KeywordSuggester from '../edit/KeywordSuggester';
 import TagSuggester from '../edit/TagSuggester';
 
 type FormId = number | string;
@@ -21,6 +22,7 @@ interface Form {
 }
 
 interface Props {
+  keywordSuggester: KeywordSuggester;
   tagSuggester: TagSuggester;
   forms: {
     active: Form;
@@ -35,6 +37,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
   static get propTypes() {
     return {
+      keywordSuggester: PropTypes.instanceOf(KeywordSuggester).isRequired,
       tagSuggester: PropTypes.instanceOf(TagSuggester).isRequired,
       forms: PropTypes.shape({
         active: PropTypes.shape({
@@ -97,6 +100,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
         />
         {this.props.forms.active.editState !== EditState.NOT_FOUND ? (
           <EditCardForm
+            keywordSuggester={this.props.keywordSuggester}
             tagSuggester={this.props.tagSuggester}
             onChange={this.handleFormChange}
             {...this.props.forms.active}

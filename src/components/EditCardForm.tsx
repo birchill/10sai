@@ -6,26 +6,37 @@ import TokenList from './TokenList';
 
 import { debounce } from '../utils';
 import { Card } from '../model';
+import KeywordSuggester from '../edit/KeywordSuggester';
 import TagSuggester from '../edit/TagSuggester';
+import { SuggestionResult } from '../edit/SuggestionResult';
 
 interface Props {
   card: Partial<Card>;
+  keywordSuggester: KeywordSuggester;
   tagSuggester: TagSuggester;
   onChange?: (topic: string, value: string | string[]) => void;
 }
 
-interface State {
-  tagSuggestions: string[];
-  loadingTagSuggestions: boolean;
+interface SuggestionState {
+  suggestions: string[];
+  loading: boolean;
 }
 
-export class EditCardForm extends React.Component<Props> {
+interface State {
+  keywords: SuggestionState;
+  tags: SuggestionState;
+}
+
+export class EditCardForm extends React.Component<Props, State> {
   state: State = {
-    tagSuggestions: [],
-    loadingTagSuggestions: false,
+    keywords: { suggestions: [], loading: false },
+    tags: { suggestions: [], loading: false },
   };
   questionTextBox?: CardFaceInput;
-  debouncedUpdateSuggestions: (text: string) => void;
+  debouncedUpdateSuggestions: {
+    keywords: (text: string) => void;
+    tags: (text: string) => void;
+  };
   // I know this is an anti-pattern but the amount of code needed to be able to
   // cancel both the debounced functions and lookup promises is much more than
   // is justified for the sake of placating the purists.
@@ -35,6 +46,7 @@ export class EditCardForm extends React.Component<Props> {
     return {
       // eslint-disable-next-line react/forbid-prop-types
       card: PropTypes.object.isRequired,
+      keywordSuggester: PropTypes.object.isRequired,
       tagSuggester: PropTypes.object.isRequired,
       onChange: PropTypes.func,
     };
@@ -45,34 +57,36 @@ export class EditCardForm extends React.Component<Props> {
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
+
+    // Token lists
     this.handleTagsChange = this.handleTagsChange.bind(this);
-    this.handleTagTextChange = this.handleTagTextChange.bind(this);
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
-    this.debouncedUpdateSuggestions = debounce(this.updateSuggestions, 200);
+
+    this.debouncedUpdateSuggestions = {
+      keywords: debounce(this.updateKeywordSuggestions, 200).bind(this),
+      tags: debounce(this.updateTagSuggestions, 200).bind(this),
+    };
   }
 
   componentDidMount() {
     this.mounted = true;
-    this.updateSuggestions('');
+    this.updateKeywordSuggestions('');
+    this.updateTagSuggestions('');
   }
 
   componentWillUnmount() {
     this.mounted = false;
   }
 
-  updateSuggestions(text: string) {
-    if (!this.mounted) {
-      return;
-    }
-
-    const result = this.props.tagSuggester.getSuggestions(text);
-
+  updateTokenSuggestions(result: SuggestionResult, list: keyof State) {
     const updatedState: Partial<State> = {};
+    updatedState[list] = this.state[list];
     if (result.initialResult) {
-      updatedState.tagSuggestions = result.initialResult;
+      updatedState[list]!.suggestions = result.initialResult;
     }
-    updatedState.loadingTagSuggestions = !!result.asyncResult;
-    this.setState(updatedState);
+    updatedState[list]!.loading = !!result.asyncResult;
+    // The typings for setState are just messed up.
+    this.setState(updatedState as any);
 
     if (result.asyncResult) {
       result.asyncResult
@@ -81,15 +95,35 @@ export class EditCardForm extends React.Component<Props> {
             return;
           }
 
+          // Again, setState typings
           this.setState({
-            tagSuggestions: suggestions,
-            loadingTagSuggestions: false,
-          });
+            [list]: { suggestions, loading: false },
+          } as any);
         })
         .catch(() => {
           /* Ignore, request was canceled. */
         });
     }
+  }
+
+  updateKeywordSuggestions(text: string) {
+    if (!this.mounted) {
+      return;
+    }
+
+    const result = this.props.keywordSuggester.getSuggestions(
+      text || this.props.card
+    );
+    this.updateTokenSuggestions(result, 'keywords');
+  }
+
+  updateTagSuggestions(text: string) {
+    if (!this.mounted) {
+      return;
+    }
+
+    const result = this.props.tagSuggester.getSuggestions(text);
+    this.updateTokenSuggestions(result, 'tags');
   }
 
   handlePromptChange(value: string) {
@@ -104,6 +138,16 @@ export class EditCardForm extends React.Component<Props> {
     }
   }
 
+  handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
+    if (this.props.onChange) {
+      this.props.onChange('keywords', keywords);
+    }
+
+    for (const keyword of addedKeywords) {
+      this.props.keywordSuggester.recordAddedKeyword(keyword);
+    }
+  }
+
   handleTagsChange(tags: string[], addedTags: string[]) {
     if (this.props.onChange) {
       this.props.onChange('tags', tags);
@@ -111,22 +155,6 @@ export class EditCardForm extends React.Component<Props> {
 
     for (const tag of addedTags) {
       this.props.tagSuggester.recordAddedTag(tag);
-    }
-  }
-
-  handleTagRemoved(tag: string, tags: string[]) {
-    if (this.props.onChange) {
-      this.props.onChange('tags', tags);
-    }
-  }
-
-  handleTagTextChange(text: string) {
-    this.debouncedUpdateSuggestions(text);
-  }
-
-  handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
-    if (this.props.onChange) {
-      this.props.onChange('keywords', keywords);
     }
   }
 
@@ -159,7 +187,9 @@ export class EditCardForm extends React.Component<Props> {
             tokens={this.props.card.keywords || []}
             placeholder="Keywords"
             onTokensChange={this.handleKeywordsChange}
-            suggestions={['漢字', '漢', '字']}
+            onTextChange={this.debouncedUpdateSuggestions.keywords}
+            suggestions={this.state.keywords.suggestions}
+            loadingSuggestions={this.state.keywords.loading}
           />
         </div>
         <div
@@ -172,9 +202,9 @@ export class EditCardForm extends React.Component<Props> {
             tokens={this.props.card.tags || []}
             placeholder="Tags"
             onTokensChange={this.handleTagsChange}
-            onTextChange={this.handleTagTextChange}
-            suggestions={this.state.tagSuggestions}
-            loadingSuggestions={this.state.loadingTagSuggestions}
+            onTextChange={this.debouncedUpdateSuggestions.tags}
+            suggestions={this.state.tags.suggestions}
+            loadingSuggestions={this.state.tags.loading}
           />
         </div>
       </form>
