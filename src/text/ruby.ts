@@ -94,7 +94,7 @@
 //     e.g. "Det har været en virkelig hyggelig aften [Need to check spelling
 //     here]" won't be recognized as ruby.
 //   * We don't need Anki's special handling of '>' (presumably to avoid turning
-//     <i>[Citation needed]</i> into ruby) since we don't expect to mix HTML
+//     "<i>[Citation needed]</i>" into ruby) since we don't expect to mix HTML
 //     markup with our text.
 //
 // Or should we just go with でんでんマークダウン? Plus maybe the extra
