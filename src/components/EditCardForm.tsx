@@ -6,9 +6,9 @@ import TokenList from './TokenList';
 
 import { debounce } from '../utils';
 import { Card } from '../model';
-import KeywordSuggester from '../edit/KeywordSuggester';
-import TagSuggester from '../edit/TagSuggester';
-import { SuggestionResult } from '../edit/SuggestionResult';
+import KeywordSuggester from '../suggestions/KeywordSuggester';
+import TagSuggester from '../suggestions/TagSuggester';
+import { SuggestionResult } from '../suggestions/SuggestionResult';
 
 interface Props {
   card: Partial<Card>;

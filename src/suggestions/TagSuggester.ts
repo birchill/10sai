@@ -1,10 +1,7 @@
 import DataStore from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
 import { SuggestionResult } from './SuggestionResult';
-import {
-  findSubstringMatch,
-  mergeAndTrimSuggestions,
-} from './suggestion-utils';
+import { findSubstringMatch, mergeAndTrimSuggestions } from './utils';
 
 const MAX_SESSION_TAGS = 3;
 const MAX_SUGGESTIONS = 6;

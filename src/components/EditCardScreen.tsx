@@ -9,8 +9,8 @@ import EditCardNotFound from './EditCardNotFound.jsx';
 import EditState from '../edit/states';
 import * as editActions from '../edit/actions';
 import * as routeActions from '../route/actions';
-import KeywordSuggester from '../edit/KeywordSuggester';
-import TagSuggester from '../edit/TagSuggester';
+import KeywordSuggester from '../suggestions/KeywordSuggester';
+import TagSuggester from '../suggestions/TagSuggester';
 
 type FormId = number | string;
 

@@ -6,8 +6,8 @@ import DocumentTitle from 'react-document-title';
 import { URLFromRoute } from '../route/router';
 import { getReviewProgress } from '../review/selectors';
 import CardList from '../CardList';
-import KeywordSuggester from '../edit/KeywordSuggester.ts';
-import TagSuggester from '../edit/TagSuggester.ts';
+import KeywordSuggester from '../suggestions/KeywordSuggester.ts';
+import TagSuggester from '../suggestions/TagSuggester.ts';
 
 import EditCardScreen from './EditCardScreen.tsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';

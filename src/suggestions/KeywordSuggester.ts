@@ -1,10 +1,7 @@
 import DataStore from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
 import { SuggestionResult } from './SuggestionResult';
-import {
-  findSubstringMatch,
-  mergeAndTrimSuggestions,
-} from './suggestion-utils';
+import { findSubstringMatch, mergeAndTrimSuggestions } from './utils';
 import { Card } from '../model';
 
 const MAX_SESSION_KEYWORDS = 3;
