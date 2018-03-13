@@ -104,17 +104,19 @@
 //
 // Group ruby:
 //
-//  Anki:      奥[おく] 行[ゆ]きの 錯覚[さっかく]を 創[つく]り 出[だ]す
-//  でんでん:  {奥|おく}{行|ゆ}きの{錯覚|さっかく}を{創|つく}り{出|だ}す
-//  New thing: 奥[おく]行[ゆ]きの錯覚[さっかく]を創[つく]り出[だ]す
+//  Anki:       奥行[おくゆ]きの 錯覚[さっかく]を 創[つく]り 出[だ]す
+//  でんでん:  {奥行|おくゆ}きの{錯覚|さっかく}を{創|つく}り{出|だ}す
+//  New thing: 奥行[おくゆ]きの錯覚[さっかく]を創[つく]り出[だ]す
 //
 // Multi ruby:
 //
-//  Anki:      奥[おく] 行[ゆ]きの 錯[さっ] 覚[かく]を 創[つく]り 出[だ]す
-//  でんでん:  {奥|おく}{行|ゆ}きの{錯覚|さっ|かく}を{創|つく}り{出|だ}す
-//  New thing: 奥[おく]行[ゆ]きの錯覚[さっ.かく]を 創り出す[つく.り.だ.す]
-//      -or-   奥[おく]行[ゆ]きの錯覚[さっ.かく]を創[つく]り出[だ]す
+//  Anki:       奥[おく] 行[ゆ]きの 錯[さっ] 覚[かく]を 創[つく]り 出[だ]す
+//  でんでん:  {奥行|おく|ゆ}きの{錯覚|さっ|かく}を{創|つく}り{出|だ}す
+//  New thing: 奥行き[おく.ゆ.き]の錯覚[さっ.かく]を 創り出す[つく.り.だ.す]
+//      -or-   奥行[おく.ゆ]きの錯覚[さっ.かく]を創[つく]り出[だ]す
 //
+// (Looking at the above, I wonder if the overlapping feature is really useful.
+// It makes it easier to input, but harder, or at least longer, to read.)
 
 export function stripRuby(text: string) {
   // TODO: Rather than stripping the ruby, we should actually parse it and then
