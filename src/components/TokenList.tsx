@@ -241,20 +241,35 @@ export class TokenList extends React.Component<Props> {
         {
           // If the user presses backspace while focussed on the suggestions we
           // should just apply it to the text region.
-          //
-          // Ideally we'd do this for all keys corresponding to printable keys
-          // too but I'm not sure how easy that is to do. Can we just check the
-          // 'char' member of the event and if it's set append it?
-          //
-          // For now though backspace seems to be particularly common and the
-          // consequences of not handling--navigating backwards--are
-          // particularly destructive so we handle it.
           if (this.state.focusRegion === FocusRegion.Suggestions) {
             this.setState(
               {
                 focusRegion: FocusRegion.TextInput,
                 focusIndex: 0,
                 text: this.state.text.substr(0, this.state.text.length - 1),
+              },
+              () => this.updateFocus()
+            );
+            e.preventDefault();
+            return;
+          }
+        }
+        break;
+
+      default:
+        {
+          // With this one weird trick we can detect any printable characters
+          // (so we can redirect them to the text entry where they were likely
+          // intended to go).
+          if (
+            e.key.length === 1 &&
+            this.state.focusRegion === FocusRegion.Suggestions
+          ) {
+            this.setState(
+              {
+                focusRegion: FocusRegion.TextInput,
+                focusIndex: 0,
+                text: this.state.text + e.key,
               },
               () => this.updateFocus()
             );
