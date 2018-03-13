@@ -246,11 +246,15 @@ export class TokenList extends React.Component<Props> {
               {
                 focusRegion: FocusRegion.TextInput,
                 focusIndex: 0,
-                text: this.state.text.substr(0, this.state.text.length - 1),
               },
               () => this.updateFocus()
             );
             e.preventDefault();
+
+            // Calling updateText rather than simply setting the state above
+            // ensures we will update suggestions, if needed.
+            const text = this.state.text.substr(0, this.state.text.length - 1);
+            this.updateText(text);
             return;
           }
         }
@@ -269,11 +273,15 @@ export class TokenList extends React.Component<Props> {
               {
                 focusRegion: FocusRegion.TextInput,
                 focusIndex: 0,
-                text: this.state.text + e.key,
               },
               () => this.updateFocus()
             );
             e.preventDefault();
+
+            // As above, calling updateText rather than simply setting the state
+            // above ensures we will update suggestions, if needed.
+            const text = this.state.text + e.key;
+            this.updateText(text);
             return;
           }
         }
@@ -314,7 +322,10 @@ export class TokenList extends React.Component<Props> {
   }
 
   handleTextChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
+    this.updateText(e.target.value);
+  }
+
+  updateText(value: string) {
     const tokens = value.split(/[,、]/);
 
     // Make the new text the last tag, if any.
