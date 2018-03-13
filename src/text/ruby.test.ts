@@ -1,6 +1,13 @@
-import { stripRuby } from './ruby';
+import { parseRuby, stripRuby } from './ruby';
 
 describe('stripRuby', () => {
+  // Helper to make expressing ruby results more compact.
+  const ruby = (base: string, ruby: string) => ({ base, ruby });
+
+  it('parses ruby', () => {
+    expect(parseRuby('仙台[せんだい]')).toEqual([ruby('仙台', 'せんだい')]);
+  });
+
   it('strips ruby', () => {
     /*
     expect(stripRuby('仙台[せんだい]')).toEqual('仙台');

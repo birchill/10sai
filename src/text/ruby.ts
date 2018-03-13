@@ -75,15 +75,17 @@
 //     components as base characters or else it gets treated as group ruby
 //   * if the reading component matches the base text it is dropped
 //     e.g. 創り出す[つく.り.だ.す] will only show ruby above the two kanji
-//     characters
-//   * If the contents of [] begins or ends with . it is not treated as ruby
+//     characters [needed?]
+//   * If the contents of [] begins with . it is not treated as ruby
 //     to avoid confusion with clozes
 //   * If the [ or ] is escaped with a \ it is not treated as ruby (as per
 //     でんでんマークダウン)
+//   * If the . is preceded by \ it is not treated as a multi-ruby text
+//     separator
 //   * The start of the base text is defined as the closest of:
 //     - the start of the string
-//     - a half-width space
-//     - a full-width space
+//     - a separator: half-width space, full-width space, punctuation (full or
+//       half width), ]
 //     - if the character preceding the [ is in one of the kanji ranges, the
 //       first character before that which is not in that range.
 //     e.g. "漢字[かんじ]" is accepted
@@ -113,12 +115,29 @@
 //  Anki:       奥[おく] 行[ゆ]きの 錯[さっ] 覚[かく]を 創[つく]り 出[だ]す
 //  でんでん:  {奥行|おく|ゆ}きの{錯覚|さっ|かく}を{創|つく}り{出|だ}す
 //  New thing: 奥行き[おく.ゆ.き]の錯覚[さっ.かく]を 創り出す[つく.り.だ.す]
+//      -or-   奥行き[おく.ゆ.]の錯覚[さっ.かく]を 創り出す[つく..だ.]
 //      -or-   奥行[おく.ゆ]きの錯覚[さっ.かく]を創[つく]り出[だ]す
 //
 // (Looking at the above, I wonder if the overlapping feature is really useful.
 // It makes it easier to input, but harder, or at least longer, to read.)
 
-export function stripRuby(text: string) {
+interface RubyText {
+  base: string;
+  ruby: string;
+}
+
+type ParsedRuby = (RubyText | string)[];
+
+export function parseRuby(text: string): ParsedRuby {
+  const matches = text.match(/([^\s\]]+)\[([^\]]+)\]/);
+  if (!matches) {
+    return [text];
+  }
+
+  return [{ base: matches[1], ruby: matches[2] }];
+}
+
+export function stripRuby(text: string): string {
   // TODO: Rather than stripping the ruby, we should actually parse it and then
   // just collect together the base text and un-annotated text runs.
   return text;
