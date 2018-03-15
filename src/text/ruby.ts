@@ -127,8 +127,6 @@ interface RubyText {
 type ParsedRuby = (RubyText | string)[];
 
 export function parseRuby(text: string): ParsedRuby {
-  const stripEscapes = text => text.replace('\\[', '[').replace('\\]', ']');
-
   const result = [];
 
   let remainder = text;
@@ -156,21 +154,31 @@ export function parseRuby(text: string): ParsedRuby {
     }
 
     if (leadingText.length) {
-      result.push(stripEscapes(leadingText));
+      result.push(leadingText);
     }
     result.push({
-      base: stripEscapes(matches[1]),
-      ruby: stripEscapes(matches[2]),
+      base: matches[1],
+      ruby: matches[2],
     });
 
     remainder = remainder.substr(matches.index! + matches[0].length);
   }
 
   if (remainder.length) {
-    result.push(stripEscapes(remainder));
+    result.push(remainder);
   }
 
-  return result;
+  // Strip any escape sequences from brackets
+  const stripEscapes = (text: string) =>
+    text.replace('\\[', '[').replace('\\]', ']');
+
+  return result.map(piece => {
+    if (typeof piece === 'string') {
+      return stripEscapes(piece);
+    } else {
+      return { base: stripEscapes(piece.base), ruby: stripEscapes(piece.ruby) };
+    }
+  });
 }
 
 export function stripRuby(text: string): string {

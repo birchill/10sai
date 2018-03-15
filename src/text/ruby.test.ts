@@ -100,7 +100,6 @@ describe('stripRuby', () => {
     expect(parseRuby('🌊[うみ]')).toEqual([ruby('🌊', 'うみ')]);
 
     // Kanji boundary detection
-    // Punctuation as separator
     // Multi-ruby
     // Multi-ruby with mismatched number of groups
     // Escaped multi-ruby
