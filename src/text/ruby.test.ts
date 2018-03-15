@@ -59,7 +59,28 @@ describe('stripRuby', () => {
       '仙台[..I want to live..]',
     ]);
 
-    // Preceding whitespace / punctuation
+    // Preceding punctuation
+    expect(parseRuby('行こうよ。仙台[せんだい]に')).toEqual([
+      '行こうよ。',
+      ruby('仙台', 'せんだい'),
+      'に',
+    ]);
+    expect(parseRuby('行こうよ。 仙台[せんだい]に')).toEqual([
+      '行こうよ。',
+      ruby('仙台', 'せんだい'),
+      'に',
+    ]);
+    expect(parseRuby('行こうよ。  仙台[せんだい]に')).toEqual([
+      '行こうよ。 ',
+      ruby('仙台', 'せんだい'),
+      'に',
+    ]);
+    expect(parseRuby('ね、仙台[せんだい]に行こうよ')).toEqual([
+      'ね、',
+      ruby('仙台', 'せんだい'),
+      'に行こうよ',
+    ]);
+
     // Malformed content
     // Escaped brackets
     // Non-BMP codepoints

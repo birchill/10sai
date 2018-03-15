@@ -133,9 +133,22 @@ export function parseRuby(text: string): ParsedRuby {
   let matches;
   while (
     remainder.length &&
-    (matches = remainder.match(/([^\s\]]+)\[([^.\]][^\]]*)\]/))
+    // For the punctuation we could try and match all the possible punctuation
+    // characters, e.g.
+    // https://www.fileformat.info/info/unicode/category/Po/list.htm
+    // but that's likely to give some false positives. It's better to be
+    // conservative. If we fail to match on something, the user can always add
+    // a space to separate the base text. Furthermore, we primarily expect ruby
+    // text to be used with CJK text so we only really need to worry about
+    // punctuation used in those scripts.
+    (matches = remainder.match(
+      /([^\s\]。、！？；：・.,!?;:\/]+)\[([^.\]][^\]]*)\]/
+    ))
   ) {
     let leadingText = remainder.substr(0, matches.index!);
+
+    // Drop any leading space (full- or half-width) used to separate the base
+    // text.
     if (leadingText.endsWith(' ') || leadingText.endsWith('　')) {
       leadingText = leadingText.substr(0, leadingText.length - 1);
     }
