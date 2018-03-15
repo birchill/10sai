@@ -97,10 +97,8 @@
 //     here]" won't be recognized as ruby.
 //   * We don't need Anki's special handling of '>' (presumably to avoid turning
 //     "<i>[Citation needed]</i>" into ruby) since we don't expect to mix HTML
-//     markup with our text.
-//
-// Or should we just go with でんでんマークダウン? Plus maybe the extra
-// overlapping reading + base rule?
+//     markup with our text although we might need some additional handling when
+//     rich text formatting is involved.
 //
 // Comparing the options:
 //
@@ -135,7 +133,7 @@ export function parseRuby(text: string): ParsedRuby {
   let matches;
   while (
     remainder.length &&
-    (matches = remainder.match(/([^\s\]]+)\[([^\]]+)\]/))
+    (matches = remainder.match(/([^\s\]]+)\[([^.\]][^\]]*)\]/))
   ) {
     let leadingText = remainder.substr(0, matches.index!);
     if (leadingText.endsWith(' ') || leadingText.endsWith('　')) {
