@@ -82,6 +82,11 @@ describe('stripRuby', () => {
     ]);
 
     // Malformed content
+    expect(parseRuby('仙台[せんだい')).toEqual(['仙台[せんだい']);
+    // (We don't allow a [ within the [] since that would suggest we need to
+    // correctly handle nested braces--which we definitely don't.)
+    expect(parseRuby('仙台[せんだい[]')).toEqual(['仙台[せんだい[]']);
+
     // Escaped brackets
     // Non-BMP codepoints
     // Kanji boundary detection

@@ -142,7 +142,7 @@ export function parseRuby(text: string): ParsedRuby {
     // text to be used with CJK text so we only really need to worry about
     // punctuation used in those scripts.
     (matches = remainder.match(
-      /([^\s\]。、！？；：・.,!?;:\/]+)\[([^.\]][^\]]*)\]/
+      /([^\s\]。、！？；：・.,!?;:\/]+)\[([^.\[\]][^\[\]]*)\]/
     ))
   ) {
     let leadingText = remainder.substr(0, matches.index!);
