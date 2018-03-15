@@ -83,12 +83,22 @@ describe('stripRuby', () => {
 
     // Malformed content
     expect(parseRuby('仙台[せんだい')).toEqual(['仙台[せんだい']);
-    // (We don't allow a [ within the [] since that would suggest we need to
-    // correctly handle nested braces--which we definitely don't.)
-    expect(parseRuby('仙台[せんだい[]')).toEqual(['仙台[せんだい[]']);
 
     // Escaped brackets
+    expect(parseRuby('仙台\\[せんだい]')).toEqual(['仙台[せんだい]']);
+    expect(parseRuby('仙台[せんだい\\]')).toEqual(['仙台[せんだい]']);
+    expect(parseRuby('仙台[せん\\[だい\\]]')).toEqual([
+      ruby('仙台', 'せん[だい]'),
+    ]);
+    expect(parseRuby('仙台\\[]')).toEqual(['仙台[]']);
+    expect(parseRuby('仙台[\\]')).toEqual(['仙台[]']);
+    expect(parseRuby('仙台\\[\\]')).toEqual(['仙台[]']);
+    expect(parseRuby('仙台[.]')).toEqual(['仙台[.]']);
+    expect(parseRuby('仙台[]')).toEqual(['仙台[]']);
+
     // Non-BMP codepoints
+    expect(parseRuby('🌊[うみ]')).toEqual([ruby('🌊', 'うみ')]);
+
     // Kanji boundary detection
     // Punctuation as separator
     // Multi-ruby

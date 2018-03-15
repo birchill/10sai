@@ -127,9 +127,11 @@ interface RubyText {
 type ParsedRuby = (RubyText | string)[];
 
 export function parseRuby(text: string): ParsedRuby {
-  const result = [];
-  let remainder = text;
+  const stripEscapes = text => text.replace('\\[', '[').replace('\\]', ']');
 
+  const result = [];
+
+  let remainder = text;
   let matches;
   while (
     remainder.length &&
@@ -142,7 +144,7 @@ export function parseRuby(text: string): ParsedRuby {
     // text to be used with CJK text so we only really need to worry about
     // punctuation used in those scripts.
     (matches = remainder.match(
-      /([^\s\]。、！？；：・.,!?;:\/]+)\[([^.\[\]][^\[\]]*)\]/
+      /([^\s\]。、！？；：・.,!?;:\/\\]+)\[((?:[^.].*?[^\\])|[^.\\])\]/
     ))
   ) {
     let leadingText = remainder.substr(0, matches.index!);
@@ -154,15 +156,18 @@ export function parseRuby(text: string): ParsedRuby {
     }
 
     if (leadingText.length) {
-      result.push(leadingText);
+      result.push(stripEscapes(leadingText));
     }
-    result.push({ base: matches[1], ruby: matches[2] });
+    result.push({
+      base: stripEscapes(matches[1]),
+      ruby: stripEscapes(matches[2]),
+    });
 
     remainder = remainder.substr(matches.index! + matches[0].length);
   }
 
   if (remainder.length) {
-    result.push(remainder);
+    result.push(stripEscapes(remainder));
   }
 
   return result;
