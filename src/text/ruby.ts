@@ -129,12 +129,32 @@ interface RubyText {
 type ParsedRuby = (RubyText | string)[];
 
 export function parseRuby(text: string): ParsedRuby {
-  const matches = text.match(/([^\s\]]+)\[([^\]]+)\]/);
-  if (!matches) {
-    return [text];
+  const result = [];
+  let remainder = text;
+
+  let matches;
+  while (
+    remainder.length &&
+    (matches = remainder.match(/([^\s\]]+)\[([^\]]+)\]/))
+  ) {
+    let leadingText = remainder.substr(0, matches.index!);
+    if (leadingText.endsWith(' ') || leadingText.endsWith('　')) {
+      leadingText = leadingText.substr(0, leadingText.length - 1);
+    }
+
+    if (leadingText.length) {
+      result.push(leadingText);
+    }
+    result.push({ base: matches[1], ruby: matches[2] });
+
+    remainder = remainder.substr(matches.index! + matches[0].length);
   }
 
-  return [{ base: matches[1], ruby: matches[2] }];
+  if (remainder.length) {
+    result.push(remainder);
+  }
+
+  return result;
 }
 
 export function stripRuby(text: string): string {

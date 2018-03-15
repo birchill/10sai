@@ -5,7 +5,52 @@ describe('stripRuby', () => {
   const ruby = (base: string, ruby: string) => ({ base, ruby });
 
   it('parses ruby', () => {
+    expect(parseRuby('仙台')).toEqual(['仙台']);
+    expect(parseRuby(' 仙台')).toEqual([' 仙台']);
+    expect(parseRuby('　仙台')).toEqual(['　仙台']);
+    expect(parseRuby('仙台 ')).toEqual(['仙台 ']);
     expect(parseRuby('仙台[せんだい]')).toEqual([ruby('仙台', 'せんだい')]);
+    expect(parseRuby(' 仙台[せんだい]')).toEqual([ruby('仙台', 'せんだい')]);
+    expect(parseRuby('　仙台[せんだい]')).toEqual([ruby('仙台', 'せんだい')]);
+    expect(parseRuby('  仙台[せんだい]')).toEqual([
+      ' ',
+      ruby('仙台', 'せんだい'),
+    ]);
+    expect(parseRuby('　　仙台[せんだい]')).toEqual([
+      '　',
+      ruby('仙台', 'せんだい'),
+    ]);
+    expect(parseRuby('　 仙台[せんだい]')).toEqual([
+      '　',
+      ruby('仙台', 'せんだい'),
+    ]);
+    expect(parseRuby('テスト 仙台[せんだい]')).toEqual([
+      'テスト',
+      ruby('仙台', 'せんだい'),
+    ]);
+    expect(parseRuby('テスト  仙台[せんだい]')).toEqual([
+      'テスト ',
+      ruby('仙台', 'せんだい'),
+    ]);
+    expect(parseRuby('テスト　仙台[せんだい]')).toEqual([
+      'テスト',
+      ruby('仙台', 'せんだい'),
+    ]);
+    expect(parseRuby('仙台[せんだい] ')).toEqual([
+      ruby('仙台', 'せんだい'),
+      ' ',
+    ]);
+    expect(parseRuby('テスト 仙台[せんだい]テスト')).toEqual([
+      'テスト',
+      ruby('仙台', 'せんだい'),
+      'テスト',
+    ]);
+    expect(parseRuby('仙台[せんだい]に 住[す]みたい')).toEqual([
+      ruby('仙台', 'せんだい'),
+      'に',
+      ruby('住', 'す'),
+      'みたい',
+    ]);
   });
 
   it('strips ruby', () => {
