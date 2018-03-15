@@ -182,7 +182,7 @@ export function parseRuby(text: string): ParsedRuby {
 }
 
 export function stripRuby(text: string): string {
-  // TODO: Rather than stripping the ruby, we should actually parse it and then
-  // just collect together the base text and un-annotated text runs.
-  return text;
+  return parseRuby(text)
+    .map(piece => (typeof piece === 'string' ? piece : piece.base))
+    .join('');
 }
