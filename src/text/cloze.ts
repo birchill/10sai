@@ -44,6 +44,10 @@ export function extractKeywordsFromCloze(
       continue;
     }
 
+    if (matchStart === matchEnd) {
+      continue;
+    }
+
     result.push(answer.substring(matchStart, matchEnd));
     answer = answer.substr(matchEnd);
   }

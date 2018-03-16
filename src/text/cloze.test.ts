@@ -12,6 +12,16 @@ describe('extractKeywordsFromCloze', () => {
         '仙台',
         '住みたい',
       ],
+      ['[..capital of Miyage..]', '仙台', '仙台'],
+      // Error cases
+      ['仙台[..want to live..]', '仙台'],
+      ['仙台に[..want to live..]', '仙台で生活したい'],
+      // Partial-error case
+      [
+        '[..capital of Miyage..]に[..want to live..]。',
+        '仙台に住みたい',
+        '仙台',
+      ],
     ];
 
     for (const test of tests) {
