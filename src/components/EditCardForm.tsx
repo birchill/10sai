@@ -32,6 +32,7 @@ export class EditCardForm extends React.Component<Props, State> {
     keywords: { suggestions: [], loading: false },
     tags: { suggestions: [], loading: false },
   };
+  keywordText: string;
   questionTextBox?: CardFaceInput;
   debouncedUpdateSuggestions: {
     keywords: (text: string) => void;
@@ -59,8 +60,9 @@ export class EditCardForm extends React.Component<Props, State> {
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
 
     // Token lists
-    this.handleTagsChange = this.handleTagsChange.bind(this);
+    this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
+    this.handleTagsChange = this.handleTagsChange.bind(this);
 
     this.debouncedUpdateSuggestions = {
       keywords: debounce(this.updateKeywordSuggestions, 200).bind(this),
@@ -70,7 +72,7 @@ export class EditCardForm extends React.Component<Props, State> {
 
   componentDidMount() {
     this.mounted = true;
-    this.updateKeywordSuggestions('');
+    this.updateKeywordSuggestions(this.props.card || this.keywordText);
     this.updateTagSuggestions('');
   }
 
@@ -78,7 +80,19 @@ export class EditCardForm extends React.Component<Props, State> {
     this.mounted = false;
   }
 
-  updateTokenSuggestions(result: SuggestionResult, list: keyof State) {
+  componentWillReceiveProps(nextProps: Props) {
+    // If we have (or will have) card data, but there's no current text in
+    // the keywords box, make sure we update the suggestions in case the card
+    // data has changed.
+    if (
+      !this.keywordText &&
+      (nextProps.card.question || nextProps.card.answer)
+    ) {
+      this.updateKeywordSuggestions(nextProps.card);
+    }
+  }
+
+  updateTokenSuggestions(result: SuggestionResult, list: 'keywords' | 'tags') {
     const updatedState: Partial<State> = {};
     updatedState[list] = this.state[list];
     if (result.initialResult) {
@@ -106,14 +120,12 @@ export class EditCardForm extends React.Component<Props, State> {
     }
   }
 
-  updateKeywordSuggestions(text: string) {
+  updateKeywordSuggestions(input: string | Partial<Card>) {
     if (!this.mounted) {
       return;
     }
 
-    const result = this.props.keywordSuggester.getSuggestions(
-      text || this.props.card
-    );
+    const result = this.props.keywordSuggester.getSuggestions(input);
     this.updateTokenSuggestions(result, 'keywords');
   }
 
@@ -135,6 +147,16 @@ export class EditCardForm extends React.Component<Props, State> {
   handleAnswerChange(value: string) {
     if (this.props.onChange) {
       this.props.onChange('answer', value);
+    }
+  }
+
+  handleKeywordsTextChange(text: string) {
+    this.keywordText = text;
+    // We only need to debounce when doing text lookups
+    if (text) {
+      this.debouncedUpdateSuggestions.keywords(text);
+    } else {
+      this.updateKeywordSuggestions(this.props.card);
     }
   }
 
@@ -187,7 +209,7 @@ export class EditCardForm extends React.Component<Props, State> {
             tokens={this.props.card.keywords || []}
             placeholder="Keywords"
             onTokensChange={this.handleKeywordsChange}
-            onTextChange={this.debouncedUpdateSuggestions.keywords}
+            onTextChange={this.handleKeywordsTextChange}
             suggestions={this.state.keywords.suggestions}
             loadingSuggestions={this.state.keywords.loading}
           />

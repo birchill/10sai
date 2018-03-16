@@ -3,6 +3,8 @@ import { LRUMap } from '../utils/lru';
 import { SuggestionResult } from './SuggestionResult';
 import { findSubstringMatch, mergeAndTrimSuggestions } from './utils';
 import { Card } from '../model';
+import { stripRuby } from '../text/ruby';
+import { extractKeywordsFromCloze } from '../text/cloze';
 
 const MAX_SESSION_KEYWORDS = 3;
 const MAX_SUGGESTIONS = 6;
@@ -75,8 +77,14 @@ export class KeywordSuggester {
     // keywords that have been used recently in this session (e.g. for when
     // you're adding a number of cards around the same word).
     if (typeof input === 'object') {
-      // TODO: Guess keywords here
       const guessedKeywords: string[] = [];
+
+      // Try looking for a cloze
+      if (input.question && input.answer) {
+        const prompt = stripRuby(input.question);
+        const answer = stripRuby(input.answer);
+        guessedKeywords.push(...extractKeywordsFromCloze(prompt, answer));
+      }
 
       // Add as many session keywords as we have
       const sessionKeywords: string[] = [
