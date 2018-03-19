@@ -53,6 +53,19 @@ describe('stripRuby', () => {
       ruby('住', 'す'),
       'みたい',
     ]);
+    expect(
+      parseRuby('奥[おく] 行[ゆ]きの 錯覚[さっかく]を 創[つく]り 出[だ]す')
+    ).toEqual([
+      ruby('奥', 'おく'),
+      ruby('行', 'ゆ'),
+      'きの',
+      ruby('錯覚', 'さっかく'),
+      'を',
+      ruby('創', 'つく'),
+      'り',
+      ruby('出', 'だ'),
+      'す',
+    ]);
 
     // Cloze contents
     expect(parseRuby('仙台[..I want to live..]')).toEqual([
@@ -89,6 +102,9 @@ describe('stripRuby', () => {
     expect(parseRuby('仙台[せんだい\\]')).toEqual(['仙台[せんだい]']);
     expect(parseRuby('仙台[せん\\[だい\\]]')).toEqual([
       ruby('仙台', 'せん[だい]'),
+    ]);
+    expect(parseRuby('仙台[せん\\[だ\\]い]')).toEqual([
+      ruby('仙台', 'せん[だ]い'),
     ]);
     expect(parseRuby('仙台\\[]')).toEqual(['仙台[]']);
     expect(parseRuby('仙台[\\]')).toEqual(['仙台[]']);

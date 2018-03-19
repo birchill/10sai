@@ -142,9 +142,21 @@ export function parseRuby(text: string): ParsedRuby {
     // text to be used with CJK text so we only really need to worry about
     // punctuation used in those scripts.
     (matches = remainder.match(
-      /([^\s\]。、！？；：・.,!?;:\/\\]+)\[((?:[^.].*?[^\\])|[^.\\])\]/
+      /([^\s\]。、！？；：・.,!?;:\/\\]+)\[((?:(?:\\\]|\\[^\]]|[^\\\]])+)|[^\\])\]/
     ))
   ) {
+    // Skip any ruby-like things where the ruby text begins with '.' since it is
+    // likely a cloze.
+    if (matches[2].startsWith('.')) {
+      const end = matches.index! + matches[0].length;
+      // (To handle this case properly, each time we push a string, we should
+      // check if the last thing in the list is a string, and, if it is
+      // concatenate onto that. But, that's probably not necessary just yet.)
+      result.push(remainder.substr(0, end));
+      remainder = remainder.substr(end);
+      continue;
+    }
+
     let leadingText = remainder.substr(0, matches.index!);
 
     // Drop any leading space (full- or half-width) used to separate the base
