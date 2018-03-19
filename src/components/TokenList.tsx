@@ -381,6 +381,26 @@ export class TokenList extends React.Component<Props> {
       this.state.tokens.length
     ) {
       this.deleteToken(this.state.tokens.length - 1);
+
+      const tokens = this.state.tokens.slice();
+      const lastToken = tokens.pop();
+
+      this.setState({ tokens, text: lastToken });
+
+      if (this.props.onTokensChange) {
+        this.props.onTokensChange(tokens, []);
+      }
+      if (this.props.onTextChange) {
+        this.props.onTextChange(lastToken!);
+      }
+      // By *not* calling e.preventDefault() here we'll end up actually doing
+      // the backspace on the restored text.
+      //
+      // (I'm a bit unsure if that's the behaviour we want or not but I *think*
+      // it is. You can't freely edit other items in the list, and generally you
+      // only want to correct the _end_ of an auto-suggested item since we match
+      // from the _start_. So, this behaviour might change, but for now I think
+      // it's right.)
     }
   }
 
