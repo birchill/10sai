@@ -192,7 +192,7 @@
     --chip-bgcolor: lighten($keyword-yellow, 5%);
     --suggestion-label-color: $keyword-yellow-dark;
     --suggestion-fgcolor: $keyword-yellow-dark;
-    --suggestion-bgcolor: lighten($keyword-yellow, 5%);
+    --suggestion-bgcolor: lighten($keyword-yellow, 10%); // white, but, oh well
     --mark-bgcolor: white;
     --mark-fgcolor: $text-color;
     --loading-fgcolor: desaturate($keyword-yellow-dark, 80%);
