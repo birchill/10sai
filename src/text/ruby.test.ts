@@ -65,6 +65,23 @@ describe('stripRuby', () => {
     expect(parseRuby('仙台[せんだい')).toEqual(['仙台[せんだい']);
     expect(parseRuby('{仙台|せん{だい}')).toEqual(['{仙台|せん{だい}']);
 
+    // Non-BMP codepoints
+    expect(parseRuby('{🌊|うみ}')).toEqual([ruby('🌊', 'うみ')]);
+
+    // Multi-ruby
+    expect(parseRuby('{仙台|せん|だい}')).toEqual([
+      ruby('仙', 'せん'),
+      ruby('台', 'だい'),
+    ]);
+    // (Non-BMP base character)
+    expect(parseRuby('{𠀡才|てん|さい}')).toEqual([
+      ruby('𠀡', 'てん'),
+      ruby('才', 'さい'),
+    ]);
+
+    // Multi-ruby with mismatched number of groups
+    expect(parseRuby('{仙台|せん|だ|い}')).toEqual([ruby('仙台', 'せんだい')]);
+
     // Escaped brackets
     expect(parseRuby('\\{仙台|せんだい}')).toEqual(['{仙台|せんだい}']);
     expect(parseRuby('{仙台|せんだい\\}')).toEqual(['{仙台|せんだい}']);
@@ -93,12 +110,6 @@ describe('stripRuby', () => {
     // Escaped pipe
     expect(parseRuby('{仙台\\|せんだい}')).toEqual(['{仙台|せんだい}']);
     // TODO: More escaping here once we do multi-ruby
-
-    // Non-BMP codepoints
-    expect(parseRuby('{🌊|うみ}')).toEqual([ruby('🌊', 'うみ')]);
-
-    // Multi-ruby
-    // Multi-ruby with mismatched number of groups
   });
 
   it('strips ruby', () => {

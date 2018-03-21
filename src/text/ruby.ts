@@ -140,10 +140,25 @@ export function parseRuby(text: string): ParsedRuby {
       result.push(leadingText);
     }
 
-    result.push({
-      base: matches[2],
-      ruby: matches[3],
-    });
+    // Look for multi-ruby
+    const rubyParts = matches[3].match(/(\\.|[^|])+/g);
+    // Converting to an array of code points will mean we should correctly
+    // handle non-BMP characters (but not all possible ligatures / composed
+    // emoji etc.).
+    const baseParts = [...matches[2]];
+    if (rubyParts.length > 1 && baseParts.length === rubyParts.length) {
+      for (let i = 0; i < baseParts.length; i++) {
+        result.push({
+          base: baseParts[i],
+          ruby: rubyParts[i],
+        });
+      }
+    } else {
+      result.push({
+        base: matches[2],
+        ruby: rubyParts.join(''), // Drop any unescaped | we found
+      });
+    }
 
     remainder = remainder.substr(matches.index! + matches[0].length);
   }
