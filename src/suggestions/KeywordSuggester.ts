@@ -9,6 +9,7 @@ import {
   isKana,
   matchesCharacterClasses,
   CharacterClass,
+  extractKanji,
 } from '../text/japanese';
 
 const MAX_SESSION_KEYWORDS = 3;
@@ -102,9 +103,10 @@ export class KeywordSuggester {
           ) &&
           isKana(answer.split('\n')[0])
         ) {
-          // TODO: Strip non-kanji parts of question so that, e.g.
-          // 駐屯する becomes 駐屯
-          guessedKeywords.push(question);
+          const kanjiQuestion = extractKanji(question);
+          if (kanjiQuestion.length) {
+            guessedKeywords.push(kanjiQuestion);
+          }
         }
       }
 

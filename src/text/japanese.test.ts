@@ -2,6 +2,7 @@ import {
   isHiragana,
   isKatakana,
   isKanji,
+  extractKanji,
   matchesCharacterClasses,
   CharacterClass,
 } from './japanese';
@@ -61,5 +62,12 @@ describe('character class checks', () => {
         CharacterClass.Kanji | CharacterClass.Katakana
       )
     ).toEqual(false);
+  });
+});
+
+describe('character class extraction', () => {
+  it('extracts kanji', () => {
+    expect(extractKanji('漢字だけほしい。')).toEqual('漢字');
+    expect(extractKanji('漢+字')).toEqual('漢字');
   });
 });

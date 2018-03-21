@@ -74,3 +74,15 @@ export function isKana(text: string): boolean {
 export function isKanji(text: string): boolean {
   return matchesCharacterClasses(text, CharacterClass.Kanji);
 }
+
+export function extractCharacterClasses(text: string, flags: number): string {
+  if (flags < 0 || flags >= CharacterClass._Max) {
+    throw new Error('Invalid character class');
+  }
+
+  return [...text].filter(c => matchesCharacterClasses(c, flags)).join('');
+}
+
+export function extractKanji(text: string): string {
+  return extractCharacterClasses(text, CharacterClass.Kanji);
+}
