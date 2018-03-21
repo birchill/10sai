@@ -83,32 +83,8 @@ export class KeywordSuggester {
     // keywords that have been used recently in this session (e.g. for when
     // you're adding a number of cards around the same word).
     if (typeof input === 'object') {
-      const guessedKeywords: string[] = [];
-
       // Try guessing from the card contents
-      if (input.question && input.answer) {
-        const question = stripRuby(input.question);
-        const answer = stripRuby(input.answer);
-        guessedKeywords.push(...extractKeywordsFromCloze(question, answer));
-
-        // Some Japanese-specific checks:
-        //
-        // (1) If the question is kanji + kana and the first line of the
-        //     answer is kana it's probably a card testing the kanji reading so
-        //     use the question.
-        if (
-          matchesCharacterClasses(
-            question,
-            CharacterClass.Kanji | CharacterClass.Kana
-          ) &&
-          isKana(answer.split('\n')[0])
-        ) {
-          const kanjiQuestion = extractKanji(question);
-          if (kanjiQuestion.length) {
-            guessedKeywords.push(kanjiQuestion);
-          }
-        }
-      }
+      const guessedKeywords: string[] = this.getSuggestionsFromCard(input);
 
       // Add as many session keywords as we have
       const sessionKeywords: string[] = [
@@ -145,6 +121,54 @@ export class KeywordSuggester {
         resolve(keywords);
       });
     });
+
+    return result;
+  }
+
+  getSuggestionsFromCard(card: Partial<Card>): string[] {
+    if (!card.question || !card.answer) {
+      return [];
+    }
+
+    const question = stripRuby(card.question);
+    const answer = stripRuby(card.answer);
+
+    // Look for a cloze -- if we find some stop there.
+    const clozeKeywords = extractKeywordsFromCloze(question, answer);
+    if (clozeKeywords.length) {
+      return clozeKeywords;
+    }
+
+    const result = [];
+    const answerFirstLine = answer.split('\n')[0];
+
+    // Japanese-specific check #1:
+    //
+    // If the question is kanji + kana and the first line of the
+    // answer is kana it's probably a card testing the kanji reading so
+    // use the question.
+    if (
+      matchesCharacterClasses(
+        question,
+        CharacterClass.Kanji | CharacterClass.Kana
+      ) &&
+      isKana(answerFirstLine)
+    ) {
+      // TODO: Actually we don't always want to extract kanji here.
+      // e.g. 眼差し should keep the okurigana
+      const kanjiQuestion = extractKanji(question);
+      if (kanjiQuestion.length) {
+        result.push(kanjiQuestion);
+      }
+      // TODO: Add kanji components here
+      return result;
+    }
+
+    // If the first line of the answer is a single, shortish word then treat
+    // that as the answer.
+    if (answerFirstLine.length < 20 && !/\s/.test(answerFirstLine)) {
+      result.push(answerFirstLine);
+    }
 
     return result;
   }
