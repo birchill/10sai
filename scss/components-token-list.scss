@@ -221,6 +221,7 @@
 
     > .suggestions {
       > .suggestion-list > .item {
+        opacity: 0.84;
         &:hover, &:focus-within {
           // Again, the brightness we use for the normal style washes this out
           filter: brightness(1.06);
