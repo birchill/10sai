@@ -65,8 +65,7 @@
 //   - Not specified as a markup format per-se. No definition of how to mark off
 //     the base text, etc.
 //
-// * A backwards-compatible extension of Anki to make it less ambiguous and
-//   support group ruby?
+// * Anki markup++
 //
 //   e.g.  漢字[かん.じ]
 //
@@ -75,7 +74,7 @@
 //     components as base characters or else it gets treated as group ruby
 //   * if the reading component matches the base text it is dropped
 //     e.g. 創り出す[つく.り.だ.す] will only show ruby above the two kanji
-//     characters [needed?]
+//     characters [possibly not needed]
 //   * If the contents of [] begins with . it is not treated as ruby
 //     to avoid confusion with clozes
 //   * If the [ or ] is escaped with a \ it is not treated as ruby (as per
@@ -95,10 +94,6 @@
 //     recognized as ruby.
 //     e.g. "Det har været en virkelig hyggelig aften [Need to check spelling
 //     here]" won't be recognized as ruby.
-//   * We don't need Anki's special handling of '>' (presumably to avoid turning
-//     "<i>[Citation needed]</i>" into ruby) since we don't expect to mix HTML
-//     markup with our text although we might need some additional handling when
-//     rich text formatting is involved.
 //
 // Comparing the options:
 //
@@ -106,18 +101,21 @@
 //
 //  Anki:       奥行[おくゆ]きの 錯覚[さっかく]を 創[つく]り 出[だ]す
 //  でんでん:  {奥行|おくゆ}きの{錯覚|さっかく}を{創|つく}り{出|だ}す
-//  New thing: 奥行[おくゆ]きの錯覚[さっかく]を創[つく]り出[だ]す
+//  Anki++:    奥行[おくゆ]きの錯覚[さっかく]を創[つく]り出[だ]す
 //
 // Multi ruby:
 //
 //  Anki:       奥[おく] 行[ゆ]きの 錯[さっ] 覚[かく]を 創[つく]り 出[だ]す
 //  でんでん:  {奥行|おく|ゆ}きの{錯覚|さっ|かく}を{創|つく}り{出|だ}す
-//  New thing: 奥行き[おく.ゆ.き]の錯覚[さっ.かく]を 創り出す[つく.り.だ.す]
-//      -or-   奥行き[おく.ゆ.]の錯覚[さっ.かく]を 創り出す[つく..だ.]
-//      -or-   奥行[おく.ゆ]きの錯覚[さっ.かく]を創[つく]り出[だ]す
+//  Anki++:    奥行き[おく.ゆ.き]の錯覚[さっ.かく]を 創り出す[つく.り.だ.す]
+//   -or-      奥行き[おく.ゆ.]の錯覚[さっ.かく]を 創り出す[つく..だ.]
+//   -or-      奥行[おく.ゆ]きの錯覚[さっ.かく]を創[つく]り出[だ]す
 //
-// (Looking at the above, I wonder if the overlapping feature is really useful.
-// It makes it easier to input, but harder, or at least longer, to read.)
+// After (mostly) implementing Anki++ I abandoned it because:
+//
+// - there was too much magic
+// - there were too often conflicts with clozes that would confuse users (myself
+//   included!)
 
 interface RubyText {
   base: string;
@@ -133,44 +131,18 @@ export function parseRuby(text: string): ParsedRuby {
   let matches;
   while (
     remainder.length &&
-    // For the punctuation we could try and match all the possible punctuation
-    // characters, e.g.
-    // https://www.fileformat.info/info/unicode/category/Po/list.htm
-    // but that's likely to give some false positives. It's better to be
-    // conservative. If we fail to match on something, the user can always add
-    // a space to separate the base text. Furthermore, we primarily expect ruby
-    // text to be used with CJK text so we only really need to worry about
-    // punctuation used in those scripts.
     (matches = remainder.match(
-      /([^\s\]。、！？；：・.,!?;:\/\\]+)\[((?:(?:\\\]|\\[^\]]|[^\\\]])+)|[^\\])\]/
+      /(^|[^\\]){((?:\\.|[^\\{}|])+?)\|((?:\\.|[^{}])*?[^\\])}/
     ))
   ) {
-    // Skip any ruby-like things where the ruby text begins with '.' since it is
-    // likely a cloze.
-    if (matches[2].startsWith('.')) {
-      const end = matches.index! + matches[0].length;
-      // (To handle this case properly, each time we push a string, we should
-      // check if the last thing in the list is a string, and, if it is
-      // concatenate onto that. But, that's probably not necessary just yet.)
-      result.push(remainder.substr(0, end));
-      remainder = remainder.substr(end);
-      continue;
-    }
-
-    let leadingText = remainder.substr(0, matches.index!);
-
-    // Drop any leading space (full- or half-width) used to separate the base
-    // text.
-    if (leadingText.endsWith(' ') || leadingText.endsWith('　')) {
-      leadingText = leadingText.substr(0, leadingText.length - 1);
-    }
-
+    let leadingText = remainder.substr(0, matches.index!) + matches[1];
     if (leadingText.length) {
       result.push(leadingText);
     }
+
     result.push({
-      base: matches[1],
-      ruby: matches[2],
+      base: matches[2],
+      ruby: matches[3],
     });
 
     remainder = remainder.substr(matches.index! + matches[0].length);
@@ -182,7 +154,10 @@ export function parseRuby(text: string): ParsedRuby {
 
   // Strip any escape sequences from brackets
   const stripEscapes = (text: string) =>
-    text.replace('\\[', '[').replace('\\]', ']');
+    text
+      .replace('\\{', '{')
+      .replace('\\}', '}')
+      .replace('\\|', '|');
 
   return result.map(piece => {
     if (typeof piece === 'string') {
