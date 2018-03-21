@@ -26,7 +26,7 @@ interface State {
   focusIndex: number;
 }
 
-export class TokenList extends React.Component<Props> {
+export class TokenList extends React.PureComponent<Props> {
   state: State = {
     text: '',
     tokens: [],
