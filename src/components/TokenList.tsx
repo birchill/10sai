@@ -150,9 +150,11 @@ export class TokenList extends React.Component<Props> {
             if (this.state.focusIndex === 0) {
               return;
             }
+            const suggestionIndex = this.state.focusIndex - 1;
             this.setState(
               {
-                focusIndex: this.state.focusIndex - 1,
+                focusIndex: suggestionIndex,
+                text: this.suggestionsToDisplay()[suggestionIndex],
               },
               () => this.updateFocus()
             );
@@ -188,12 +190,17 @@ export class TokenList extends React.Component<Props> {
 
           if (this.state.focusRegion === FocusRegion.Suggestions) {
             const suggestions = this.suggestionsToDisplay();
-            if (this.state.focusIndex + 1 >= suggestions.length) {
+            const suggestionIndex = this.state.focusIndex + 1;
+            if (suggestionIndex >= suggestions.length) {
               return;
             }
 
-            this.setState({ focusIndex: this.state.focusIndex + 1 }, () =>
-              this.updateFocus()
+            this.setState(
+              {
+                focusIndex: suggestionIndex,
+                text: suggestions[suggestionIndex],
+              },
+              () => this.updateFocus()
             );
             e.preventDefault();
             return;
@@ -203,15 +210,17 @@ export class TokenList extends React.Component<Props> {
 
       case 'ArrowDown':
         {
+          const suggestions = this.suggestionsToDisplay();
           if (
             (this.state.focusRegion === FocusRegion.TextInput ||
               this.state.focusRegion === FocusRegion.Tokens) &&
-            this.suggestionsToDisplay().length
+            suggestions.length
           ) {
             this.setState(
               {
                 focusRegion: FocusRegion.Suggestions,
                 focusIndex: 0,
+                text: suggestions[0],
               },
               () => this.updateFocus()
             );
