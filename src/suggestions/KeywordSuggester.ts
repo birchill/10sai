@@ -5,6 +5,11 @@ import { findSubstringMatch, mergeAndTrimSuggestions } from './utils';
 import { Card } from '../model';
 import { stripRuby } from '../text/ruby';
 import { extractKeywordsFromCloze } from '../text/cloze';
+import {
+  isKana,
+  matchesCharacterClasses,
+  CharacterClass,
+} from '../text/japanese';
 
 const MAX_SESSION_KEYWORDS = 3;
 const MAX_SUGGESTIONS = 6;
@@ -79,11 +84,28 @@ export class KeywordSuggester {
     if (typeof input === 'object') {
       const guessedKeywords: string[] = [];
 
-      // Try looking for a cloze
+      // Try guessing from the card contents
       if (input.question && input.answer) {
-        const prompt = stripRuby(input.question);
+        const question = stripRuby(input.question);
         const answer = stripRuby(input.answer);
-        guessedKeywords.push(...extractKeywordsFromCloze(prompt, answer));
+        guessedKeywords.push(...extractKeywordsFromCloze(question, answer));
+
+        // Some Japanese-specific checks:
+        //
+        // (1) If the question is kanji + kana and the first line of the
+        //     answer is kana it's probably a card testing the kanji reading so
+        //     use the question.
+        if (
+          matchesCharacterClasses(
+            question,
+            CharacterClass.Kanji | CharacterClass.Kana
+          ) &&
+          isKana(answer.split('\n')[0])
+        ) {
+          // TODO: Strip non-kanji parts of question so that, e.g.
+          // 駐屯する becomes 駐屯
+          guessedKeywords.push(question);
+        }
       }
 
       // Add as many session keywords as we have
