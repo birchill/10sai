@@ -35,7 +35,7 @@ export class EditCardForm extends React.Component<Props, State> {
   keywordText: string;
   questionTextBox?: CardFaceInput;
   debouncedUpdateSuggestions: {
-    keywords: (text: string) => void;
+    keywords: (input: string | Partial<Card>) => void;
     tags: (text: string) => void;
   };
   // I know this is an anti-pattern but the amount of code needed to be able to
@@ -152,12 +152,11 @@ export class EditCardForm extends React.Component<Props, State> {
 
   handleKeywordsTextChange(text: string) {
     this.keywordText = text;
-    // We only need to debounce when doing text lookups
-    if (text) {
-      this.debouncedUpdateSuggestions.keywords(text);
-    } else {
-      this.updateKeywordSuggestions(this.props.card);
-    }
+    // We only need to debounce when doing a text-lookup but we call the
+    // debounced version in both cases since otherwise we can end up with the
+    // non-debounced version racing with the debounced version (unless we
+    // actually cancel the debounced one when doing a non-text lookup).
+    this.debouncedUpdateSuggestions.keywords(text || this.props.card);
   }
 
   handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
