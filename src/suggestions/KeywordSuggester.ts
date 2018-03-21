@@ -9,7 +9,6 @@ import {
   isKana,
   matchesCharacterClasses,
   CharacterClass,
-  extractKanji,
 } from '../text/japanese';
 
 const MAX_SESSION_KEYWORDS = 3;
@@ -159,10 +158,7 @@ export class KeywordSuggester {
       // the kana parts (e.g. we want the trailing し in 眼差し).
       //
       // In future we should probably use a dictionary lookup to improve this.
-      const kanjiQuestion = extractKanji(question);
-      if (kanjiQuestion.length) {
-        result.push(question);
-      }
+      result.push(question);
       // TODO: Add kanji components here
       return result;
     }
