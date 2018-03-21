@@ -60,4 +60,13 @@ describe('KeywordSuggester', () => {
     });
     expect(result.initialResult[0]).toEqual('前者');
   });
+
+  it('returns the individual kanji characters as suggestions', () => {
+    const result = subject.getSuggestions({
+      question: '眼差し',
+      answer: 'まなざし',
+    });
+    expect(result.initialResult[1]).toEqual('眼');
+    expect(result.initialResult[2]).toEqual('差');
+  });
 });

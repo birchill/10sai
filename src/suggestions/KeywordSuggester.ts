@@ -7,6 +7,8 @@ import { stripRuby } from '../text/ruby';
 import { extractKeywordsFromCloze } from '../text/cloze';
 import {
   isKana,
+  isKanji,
+  extractKanji,
   matchesCharacterClasses,
   CharacterClass,
 } from '../text/japanese';
@@ -159,14 +161,27 @@ export class KeywordSuggester {
       //
       // In future we should probably use a dictionary lookup to improve this.
       result.push(question);
-      // TODO: Add kanji components here
-      return result;
+      // If the first line of the answer is a single, shortish word then treat
+      // that as the answer.
+    } else if (answerFirstLine.length < 20 && !/\s/.test(answerFirstLine)) {
+      result.push(answerFirstLine);
     }
 
-    // If the first line of the answer is a single, shortish word then treat
-    // that as the answer.
-    if (answerFirstLine.length < 20 && !/\s/.test(answerFirstLine)) {
-      result.push(answerFirstLine);
+    // Japanese-specific check #2:
+    //
+    // By this point we will have at most one result. If it starts with kanji
+    // then we might be studying kanji in the context of a word so we should
+    // suggest each of the kanji characters as individual characters so we can
+    // link to any cards we have on those particular characters.
+    if (result.length === 1) {
+      // Extract into an array so we test Unicode codepoints instead of UTF-16
+      // code units.
+      const chars = [...result[0]];
+      // We don't want to add suggestions if the current suggestion is already
+      // only one character or if it doesn't start with kanji.
+      if (chars.length > 1 && isKanji(chars[0])) {
+        result.push(...extractKanji(result[0]));
+      }
     }
 
     return result;
