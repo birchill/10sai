@@ -641,7 +641,6 @@ export class TokenList extends React.PureComponent<Props> {
 
   renderSuggestion(suggestion: string, i: number) {
     const textToMatch = this.state.text;
-    const wordBreakCharacters = /([\s!"#$%&'()*+,\-./\\:;<=>?@[\]^_`{|}~\uff01-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65\uffe0-\uffee\u3000-\u303f])/;
 
     return (
       <li className="item" key={i}>
@@ -651,21 +650,15 @@ export class TokenList extends React.PureComponent<Props> {
           onClick={this.handleSuggestionClick}
           tabIndex={-1}
         >
-          {suggestion.split(wordBreakCharacters).map((substring, i) => {
-            if (
-              textToMatch.length &&
-              substring.toLowerCase().startsWith(textToMatch.toLowerCase())
-            ) {
-              return (
-                <React.Fragment key={i}>
-                  <mark>{substring.substring(0, textToMatch.length)}</mark>
-                  {substring.substring(textToMatch.length)}
-                </React.Fragment>
-              );
-            } else {
-              return substring;
-            }
-          })}
+          {textToMatch.length &&
+          suggestion.toLowerCase().startsWith(textToMatch.toLowerCase()) ? (
+            <React.Fragment key={i}>
+              <mark>{suggestion.substring(0, textToMatch.length)}</mark>
+              {suggestion.substring(textToMatch.length)}
+            </React.Fragment>
+          ) : (
+            suggestion
+          )}
         </a>
       </li>
     );
