@@ -154,11 +154,14 @@ export class KeywordSuggester {
       ) &&
       isKana(answerFirstLine)
     ) {
-      // TODO: Actually we don't always want to extract kanji here.
-      // e.g. 眼差し should keep the okurigana
+      // We could try to extract the kanji parts of the answer (e.g. so that if
+      // we have 駐屯する we suggest only 駐屯) but sometimes we actually want
+      // the kana parts (e.g. we want the trailing し in 眼差し).
+      //
+      // In future we should probably use a dictionary lookup to improve this.
       const kanjiQuestion = extractKanji(question);
       if (kanjiQuestion.length) {
-        result.push(kanjiQuestion);
+        result.push(question);
       }
       // TODO: Add kanji components here
       return result;
