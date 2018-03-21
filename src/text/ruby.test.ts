@@ -6,6 +6,12 @@ describe('stripRuby', () => {
 
   it('parses ruby', () => {
     // The basics
+    expect(parseRuby('')).toEqual([]);
+    expect(parseRuby('|')).toEqual(['|']);
+    expect(parseRuby('{')).toEqual(['{']);
+    expect(parseRuby('}')).toEqual(['}']);
+    expect(parseRuby('{}')).toEqual(['{}']);
+    expect(parseRuby('{|}')).toEqual(['{|}']);
     expect(parseRuby('仙台')).toEqual(['仙台']);
     expect(parseRuby('{仙台|せんだい}')).toEqual([ruby('仙台', 'せんだい')]);
     expect(parseRuby(' {仙台|せんだい}')).toEqual([
