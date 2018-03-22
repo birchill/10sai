@@ -57,7 +57,7 @@
       background: var(--chip-bgcolor);
 
       &:hover, &:focus-within {
-        filter: brightness(1.2);
+        filter: brightness(1.03);
       }
 
       &:focus-within {
@@ -141,7 +141,7 @@
         opacity: 0.7;
 
         &:hover, &:focus-within {
-          filter: brightness(1.2);
+          filter: brightness(1.03);
           opacity: 1;
         }
 
