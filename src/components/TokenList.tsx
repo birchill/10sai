@@ -54,6 +54,7 @@ export class TokenList extends React.PureComponent<Props> {
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
+    this.handleClick = this.handleClick.bind(this);
     this.handleTextChange = this.handleTextChange.bind(this);
     this.handleTextCompositionStart = this.handleTextCompositionStart.bind(
       this
@@ -330,6 +331,13 @@ export class TokenList extends React.PureComponent<Props> {
     this.commitText();
   }
 
+  handleClick(e: React.MouseEvent<HTMLElement>) {
+    // Clicking any of the dead areas in the widget should focus the text box
+    if (this.textInput) {
+      this.textInput.focus();
+    }
+  }
+
   handleTextChange(e: React.ChangeEvent<HTMLInputElement>) {
     this.updateText(e.target.value);
   }
@@ -437,6 +445,7 @@ export class TokenList extends React.PureComponent<Props> {
 
   handleTokenClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
+    e.stopPropagation();
     const index = parseInt((e.target as HTMLButtonElement).dataset.index!);
     this.deleteToken(index);
   }
@@ -488,6 +497,7 @@ export class TokenList extends React.PureComponent<Props> {
 
   handleSuggestionClick(e: React.MouseEvent<HTMLAnchorElement>) {
     e.preventDefault();
+    e.stopPropagation();
     const suggestion = (e.target as HTMLAnchorElement).dataset.suggestion!;
     const tokens = this.state.tokens.concat(suggestion);
     this.setState(
@@ -583,6 +593,7 @@ export class TokenList extends React.PureComponent<Props> {
         className={classes.join(' ')}
         onKeyDown={this.handleKeyDown}
         onBlur={this.handleBlur}
+        onClick={this.handleClick}
         ref={elem => {
           this.rootElem = elem || undefined;
         }}

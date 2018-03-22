@@ -1,5 +1,6 @@
 .token-list {
   @include textbox-styles;
+  cursor: text;
 
   // Textboxes have uneven vertical and horizonal padding so we make the
   // vertical padding equal here.
