@@ -264,8 +264,8 @@
     <!-- Future: Horizontal ... -->
     <!-- Future: Vertical ... -->
   </g>
-  <use y="100" href="#icons" color="#333"/>
-  <use y="200" href="#icons" color="#AAA"/>
+  <use y="100" href="#icons" color="#323335"/>
+  <use y="200" href="#icons" color="#AAABAD"/>
   <use y="300" href="#icons" color="#2690BA"/>
   <!-- Remove this comment to see the white icon row
   <rect y="400" width="100%" height="100" fill="#2690BA"/>
@@ -276,7 +276,7 @@
        paths -->
   <!-- Sync -->
   <g transform="translate(200 500)">
-    <path fill="white" stroke="#AAA" stroke-width="4"
+    <path fill="white" stroke="#AAABAD" stroke-width="4"
       d="M87.6 34.7C81.3 20.2 67 10.9 51.2 10.9c-17.7 0-32.7 11.5-37.8
       27.3l-1.9-3.6c-1.1-2-3.7-2.8-5.7-1.7S3 36.6 4.1 38.6l7.5 13.8c.6 1.1 1.7
       1.9 3 2.1h.7c.8 0 1.6-.3 2.3-.7.6-.3 1.1-.8 1.5-1.3l11.9-11c1.7-1.6
@@ -290,7 +290,7 @@
   </g>
   <!-- Cog -->
   <g transform="translate(1400 500)">
-    <path fill="white" stroke="#AAA" stroke-width="4"
+    <path fill="white" stroke="#AAABAD" stroke-width="4"
       d="M25.94,85.93c-2.81,2.72-7.31,2.69-10.08-0.08l-1.71-1.71
          c-2.76-2.76-2.79-7.27-0.07-10.08l0.69-0.71
          c2.04-2.1,2.78-5.99,1.65-8.72l-0.51-1.23c-1.12-2.71-4.41-4.95-7.32-5
@@ -321,7 +321,7 @@
   </g>
   <!-- Dot dot dot -->
   <g transform="translate(1500 500)"
-    fill="white" stroke="#AAA" stroke-width="4">
+    fill="white" stroke="#AAABAD" stroke-width="4">
     <circle cx="50.1" cy="50.4" r="8.1"/>
     <circle cx="50.1" cy="25.4" r="8.1"/>
     <circle cx="50.1" cy="75.4" r="8.1"/>
