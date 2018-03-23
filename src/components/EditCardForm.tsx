@@ -32,8 +32,10 @@ export class EditCardForm extends React.Component<Props, State> {
     keywords: { suggestions: [], loading: false },
     tags: { suggestions: [], loading: false },
   };
-  keywordText: string;
   questionTextBox?: CardFaceInput;
+  keywordText: string;
+  keywordsTokenList?: TokenList;
+  tagsTokenList?: TokenList;
   debouncedUpdateSuggestions: {
     keywords: (input: string | Partial<Card>) => void;
     tags: (text: string) => void;
@@ -60,8 +62,10 @@ export class EditCardForm extends React.Component<Props, State> {
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
 
     // Token lists
+    this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
+    this.handleTagsClick = this.handleTagsClick.bind(this);
     this.handleTagsChange = this.handleTagsChange.bind(this);
 
     this.debouncedUpdateSuggestions = {
@@ -150,6 +154,12 @@ export class EditCardForm extends React.Component<Props, State> {
     }
   }
 
+  handleKeywordsClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (!e.defaultPrevented && this.keywordsTokenList) {
+      this.keywordsTokenList.focus();
+    }
+  }
+
   handleKeywordsTextChange(text: string) {
     this.keywordText = text;
     // We only need to debounce when doing a text-lookup but we call the
@@ -166,6 +176,12 @@ export class EditCardForm extends React.Component<Props, State> {
 
     for (const keyword of addedKeywords) {
       this.props.keywordSuggester.recordAddedKeyword(keyword);
+    }
+  }
+
+  handleTagsClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (!e.defaultPrevented && this.tagsTokenList) {
+      this.tagsTokenList.focus();
     }
   }
 
@@ -200,6 +216,7 @@ export class EditCardForm extends React.Component<Props, State> {
         />
         <div
           className="keywords -yellow"
+          onClick={this.handleKeywordsClick}
           title="Add words here to cross-reference with notes and other resources. For example, if this card is about &ldquo;running&rdquo;, adding &ldquo;run&rdquo; as a keyword will make it easy to find related notes, pictures, and dictionary entries."
         >
           <span className="icon -key" />
@@ -211,10 +228,14 @@ export class EditCardForm extends React.Component<Props, State> {
             onTextChange={this.handleKeywordsTextChange}
             suggestions={this.state.keywords.suggestions}
             loadingSuggestions={this.state.keywords.loading}
+            ref={e => {
+              this.keywordsTokenList = e || undefined;
+            }}
           />
         </div>
         <div
           className="tags"
+          onClick={this.handleTagsClick}
           title="Add labels here to help organize your cards such as &ldquo;vocabulary&rdquo;, &ldquo;Intermediate French Conversation&rdquo;, &ldquo;Needs picture&rdquo; etc."
         >
           <span className="icon -tag -grey" />
@@ -226,6 +247,9 @@ export class EditCardForm extends React.Component<Props, State> {
             onTextChange={this.debouncedUpdateSuggestions.tags}
             suggestions={this.state.tags.suggestions}
             loadingSuggestions={this.state.tags.loading}
+            ref={e => {
+              this.tagsTokenList = e || undefined;
+            }}
           />
         </div>
       </form>

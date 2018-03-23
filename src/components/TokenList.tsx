@@ -332,10 +332,23 @@ export class TokenList extends React.PureComponent<Props> {
   }
 
   handleClick(e: React.MouseEvent<HTMLElement>) {
-    // Clicking any of the dead areas in the widget should focus the text box
-    if (this.textInput) {
-      this.textInput.focus();
+    // We could call stopPropagation in each of the places where we handle click
+    // events (so that we don't *also* handle them here) but that seems like
+    // a layering violation in that ancestors should be able to detect if this
+    // component was clicked by listening for click events.
+    if (e.defaultPrevented) {
+      return;
     }
+    e.preventDefault();
+
+    // Clicking any of the dead areas in the widget should focus the text box
+    this.setState(
+      {
+        focusRegion: FocusRegion.TextInput,
+        focusIndex: 0,
+      },
+      () => this.updateFocus()
+    );
   }
 
   handleTextChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -445,7 +458,6 @@ export class TokenList extends React.PureComponent<Props> {
 
   handleTokenClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    e.stopPropagation();
     const index = parseInt((e.target as HTMLButtonElement).dataset.index!);
     this.deleteToken(index);
   }
@@ -492,12 +504,16 @@ export class TokenList extends React.PureComponent<Props> {
         },
         () => this.updateFocus()
       );
+    } else if (this.state.focusRegion === FocusRegion.TextInput) {
+      // If we got called from a mouse click on a button we might have updated
+      // the DOM focus without updating our state yet so we should force the
+      // focus back to the text region.
+      this.updateFocus();
     }
   }
 
   handleSuggestionClick(e: React.MouseEvent<HTMLAnchorElement>) {
     e.preventDefault();
-    e.stopPropagation();
     const suggestion = (e.target as HTMLAnchorElement).dataset.suggestion!;
     const tokens = this.state.tokens.concat(suggestion);
     this.setState(
@@ -581,6 +597,16 @@ export class TokenList extends React.PureComponent<Props> {
     return [
       ...new Set([...uniqueSuggestions].filter(x => !tokensInUse.has(x))),
     ];
+  }
+
+  focus() {
+    this.setState(
+      {
+        focusRegion: FocusRegion.TextInput,
+        focusIndex: 0,
+      },
+      () => this.updateFocus()
+    );
   }
 
   render() {
