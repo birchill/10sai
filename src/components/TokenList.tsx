@@ -661,6 +661,8 @@ export class TokenList extends React.PureComponent<Props> {
           className={
             'suggestions' + (this.props.loadingSuggestions ? ' -loading' : '')
           }
+          aria-live="assertive"
+          aria-atomic="true"
         >
           <label className="label">
             {suggestions.length ? 'e.g.' : '(No suggestions)'}
