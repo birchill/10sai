@@ -185,6 +185,13 @@ async function listUnrecognizedDocs() {
   );
 }
 
+function watchForDeletion() {
+  document.getElementById('delete-db').addEventListener('click', () => {
+    dataStore.destroy();
+  });
+}
+
 listOrphans();
 listOrphanedProgress();
 listUnrecognizedDocs();
+watchForDeletion();

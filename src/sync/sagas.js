@@ -62,7 +62,27 @@ function* startReplication(dataStore, server, dispatch) {
   }
 
   try {
-    yield dataStore.setSyncServer(syncServer, options);
+    // You probably want to look away here. Basically, Cloudant got bought out
+    // by IBM and they started making ridiculously long URLs for Cloudant
+    // databases--not something you can expect to type, and especially not on
+    // a mobile device. So, let's add a redirect. Not so fast. You can't
+    // redirect a CORS request (yet, anyway). So, basically we need either
+    //
+    // (a) Do a pre-fetch with a simple request and get the redirect end point
+    //     and then use that, or
+    // (b) Right some sort of intermediary -- either a simple reverse proxy or
+    //     a some more sophisticated thing that also does the sharding etc.
+    //
+    // Eventually we'll need to do (b) so for now we just hardcode the redirect
+    // here.
+    const redirectedServer =
+      typeof syncServer === 'string'
+        ? syncServer.replace(
+            'sync.10sai.io',
+            'b62bf565-d36c-45ce-a12d-fc3bd31a256b-bluemix.cloudant.com'
+          )
+        : syncServer;
+    yield dataStore.setSyncServer(redirectedServer, options);
   } catch (e) {
     // Ignore errors from setSyncServer since we deal with them in the onError
     // callback.
