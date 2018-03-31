@@ -48,8 +48,8 @@ function* startReplication(dataStore, server, dispatch) {
         progress: undefined,
       }),
     onError: details => dispatch({ type: 'NOTIFY_SYNC_ERROR', details }),
-    username: server.username,
-    password: server.username ? server.password : undefined,
+    username: server ? server.username : undefined,
+    password: server && server.username ? server.password : undefined,
   };
 
   // Wait until the doc is fully loaded first since otherwise the browser
