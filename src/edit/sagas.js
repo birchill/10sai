@@ -14,7 +14,7 @@ import {
   URLFromRoute,
   routesEqual,
 } from '../route/router';
-import * as editActions from './actions';
+import * as editActions from './actions.ts';
 import * as routeActions from '../route/actions';
 import EditState from './states';
 

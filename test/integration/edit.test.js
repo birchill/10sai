@@ -4,7 +4,7 @@
 import { expectSaga } from 'redux-saga-test-plan';
 import reducer from '../../src/reducer';
 import editSagas from '../../src/edit/sagas';
-import * as editActions from '../../src/edit/actions';
+import * as editActions from '../../src/edit/actions.ts';
 // XXX Re-enable the following
 // import * as routeActions from '../../src/route/actions';
 import EditState from '../../src/edit/states';
