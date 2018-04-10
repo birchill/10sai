@@ -2,21 +2,21 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Link from './Link.jsx';
-import EditState from '../edit/states';
+import EditorState from '../edit/EditorState.ts';
 
 export class EditCardToolbar extends React.PureComponent {
   static get propTypes() {
     return {
-      editState: PropTypes.symbol.isRequired,
+      editorState: PropTypes.symbol.isRequired,
       onDelete: PropTypes.func.isRequired,
     };
   }
 
   render() {
     const disabled =
-      this.props.editState === EditState.EMPTY ||
-      this.props.editState === EditState.LOADING ||
-      this.props.editState === EditState.NOT_FOUND;
+      this.props.editorState === EditorState.EMPTY ||
+      this.props.editorState === EditorState.LOADING ||
+      this.props.editorState === EditorState.NOT_FOUND;
     return (
       <nav className="buttons tool-bar editcard-toolbar">
         <div>

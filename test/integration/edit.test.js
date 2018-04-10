@@ -7,7 +7,7 @@ import editSagas from '../../src/edit/sagas';
 import * as editActions from '../../src/edit/actions.ts';
 // XXX Re-enable the following
 // import * as routeActions from '../../src/route/actions';
-import EditState from '../../src/edit/states';
+import EditorState from '../../src/edit/EditorState.ts';
 
 describe('integration:edit', () => {
   it('should allow creating and saving a new card', () => {
@@ -45,7 +45,7 @@ describe('integration:edit', () => {
             forms: {
               active: {
                 formId: 'abc',
-                editState: EditState.OK,
+                editorState: EditorState.OK,
                 card: {
                   _id: 'abc',
                   prompt: 'Prompt',
@@ -85,7 +85,7 @@ describe('integration:edit', () => {
           forms: {
             active: {
               formId: '123',
-              editState: EditState.OK,
+              editorState: EditorState.OK,
               card: {
                 _id: '123',
                 prompt: 'Updated prompt',

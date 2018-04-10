@@ -17,7 +17,7 @@ import {
   followLink as followLinkSaga,
   beforeScreenChange as beforeScreenChangeSaga,
 } from './sagas';
-import EditState from '../edit/states';
+import EditorState from '../edit/EditorState';
 import * as routeActions from './actions';
 import * as editActions from '../edit/actions';
 
@@ -215,7 +215,7 @@ describe('sagas:route beforeScreenChange', () => {
   it('returns false if the screen-specific action does', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+      edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
       route: {
         index: 0,
         history: [{ screen: 'edit-card' }],
@@ -237,7 +237,7 @@ describe('sagas:route beforeScreenChange', () => {
     () => {
       const formId = 'abc';
       const state = {
-        edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+        edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
         route: {
           index: 0,
           history: [{ screen: 'edit-card' }],

@@ -16,7 +16,7 @@ import {
 } from '../route/router';
 import * as editActions from './actions.ts';
 import * as routeActions from '../route/actions';
-import EditState from './states';
+import EditorState from './EditorState.ts';
 
 const SAVE_DELAY = 2000;
 
@@ -149,7 +149,7 @@ export function* watchCardEdits(dataStore) {
       cardHasNonEmptyField('answer');
     const shouldSave =
       action.type === 'DELETE_EDIT_CARD' ||
-      (activeRecord.editState === EditState.DIRTY && hasDataWorthSaving());
+      (activeRecord.editorState === EditorState.DIRTY && hasDataWorthSaving());
     if (!shouldSave) {
       // If we are responding to a save action, put the finish action anyway
       // in case someone is waiting on either a finished or fail to indicate
@@ -217,7 +217,7 @@ export function* editSagas(dataStore) {
 
 export function* beforeEditScreenChange() {
   const activeRecord = yield select(getActiveRecord);
-  if (activeRecord.editState !== EditState.DIRTY) {
+  if (activeRecord.editorState !== EditorState.DIRTY) {
     return true;
   }
 

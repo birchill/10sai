@@ -1,4 +1,4 @@
-export const EditState = {
+export const EditorState = {
   // Form is empty
   EMPTY: Symbol('EMPTY'),
 
@@ -18,4 +18,4 @@ export const EditState = {
   NOT_FOUND: Symbol('NOT_FOUND'),
 };
 
-export default EditState;
+export default EditorState;

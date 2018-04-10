@@ -1,53 +1,62 @@
 /* global describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
-import subject from './reducer';
-import EditState from './states';
+import { edit as subject, EditState } from './reducer';
+import EditorState from './EditorState';
 import * as actions from './actions';
+import { Card } from '../model';
+import { CardChange } from '../store/cards/CardStore';
 
-const emptyState = formId => ({
+const emptyState = (formId: actions.FormId): EditState => ({
   forms: {
     active: {
       formId,
-      editState: EditState.EMPTY,
+      editorState: EditorState.EMPTY,
       card: {},
     },
   },
 });
 
-const okState = (card, dirtyFields) => {
-  const result = {
+const okState = (
+  card: Partial<Card>,
+  dirtyFields?: Array<keyof Card>
+): EditState => {
+  const result: EditState = {
     forms: {
       active: {
         formId: card._id,
-        editState: EditState.OK,
+        editorState: EditorState.OK,
         card,
       },
     },
   };
 
   if (dirtyFields) {
-    result.dirtyFields = dirtyFields;
+    result.forms.active.dirtyFields = dirtyFields;
   }
 
   return result;
 };
 
-const loadingState = formId => ({
+const loadingState = (formId: actions.FormId): EditState => ({
   forms: {
     active: {
       formId,
-      editState: EditState.LOADING,
+      editorState: EditorState.LOADING,
       card: {},
     },
   },
 });
 
-const dirtyState = (formId, card, dirtyFields) => ({
+const dirtyState = (
+  formId: actions.FormId,
+  card: Partial<Card>,
+  dirtyFields: Array<keyof Card>
+): EditState => ({
   forms: {
     active: {
       formId,
-      editState: EditState.DIRTY,
+      editorState: EditorState.DIRTY,
       card,
       dirtyFields,
     },
@@ -58,18 +67,36 @@ const notFoundState = (formId, deleted) => ({
   forms: {
     active: {
       formId,
-      editState: EditState.NOT_FOUND,
+      editorState: EditorState.NOT_FOUND,
       card: {},
       deleted,
     },
   },
 });
 
-const withSaveError = (state, saveError) => ({ ...state, saveError });
+const withSaveError = (state: EditState, saveError: string): EditState => ({
+  ...state,
+  saveError,
+});
+
+const getCard = (_id: string): Card => ({
+  _id,
+  question: 'Question',
+  answer: 'Answer',
+  keywords: [],
+  tags: [],
+  starred: false,
+  created: Date.now(),
+  modified: Date.now(),
+  progress: {
+    level: 1,
+    reviewed: new Date(Date.now()),
+  },
+});
 
 describe('reducer:edit', () => {
   it('should return the initial state', () => {
-    const updatedState = subject(undefined, {});
+    const updatedState = subject(undefined, {} as any);
 
     expect(updatedState).toEqual(emptyState(0));
   });
@@ -81,10 +108,7 @@ describe('reducer:edit', () => {
   });
 
   it('should clear fields on NEW_CARD', () => {
-    const initialState = okState({ _id: 'abc', prompt: 'yer' }, [
-      'prompt',
-      'answer',
-    ]);
+    const initialState = okState(getCard('abc'), ['question', 'answer']);
 
     const updatedState = subject(initialState, actions.newCard(2));
 
@@ -98,10 +122,7 @@ describe('reducer:edit', () => {
   });
 
   it('should clear other state on LOAD_CARD', () => {
-    const initialState = okState({ _id: 'abc', prompt: 'yer' }, [
-      'prompt',
-      'answer',
-    ]);
+    const initialState = okState(getCard('abc'), ['question', 'answer']);
 
     const updatedState = subject(initialState, actions.loadCard('def'));
 
@@ -110,11 +131,7 @@ describe('reducer:edit', () => {
 
   it('should update card info and state on FINISH_LOAD_CARD', () => {
     const initialState = loadingState('abc');
-    const card = {
-      _id: 'abc',
-      prompt: 'Prompt',
-      answer: 'Answer',
-    };
+    const card = getCard('abc');
 
     const updatedState = subject(
       initialState,
@@ -129,11 +146,7 @@ describe('reducer:edit', () => {
       ' differ',
     () => {
       const initialState = loadingState('abc');
-      const card = {
-        _id: 'def',
-        prompt: 'Prompt',
-        answer: 'Answer',
-      };
+      const card = getCard('def');
 
       const updatedState = subject(
         initialState,
@@ -147,7 +160,10 @@ describe('reducer:edit', () => {
   it('should update state on FAIL_LOAD_CARD', () => {
     const initialState = loadingState('abc');
 
-    const updatedState = subject(initialState, actions.failLoadCard('abc'));
+    const updatedState = subject(
+      initialState,
+      actions.failLoadCard('abc', 'Error')
+    );
 
     expect(updatedState).toEqual(notFoundState('abc', false));
   });
@@ -155,7 +171,10 @@ describe('reducer:edit', () => {
   it('should NOT update state on FAIL_LOAD_CARD if formIds differ', () => {
     const initialState = loadingState('abc');
 
-    const updatedState = subject(initialState, actions.failLoadCard('def'));
+    const updatedState = subject(
+      initialState,
+      actions.failLoadCard('def', 'Error')
+    );
 
     expect(updatedState).toEqual(initialState);
   });
@@ -175,12 +194,12 @@ describe('reducer:edit', () => {
   it('should update card and dirty fields and state on EDIT_CARD', () => {
     const initialState = okState({
       _id: 'abc',
-      prompt: 'Prompt',
+      question: 'Question',
       answer: 'Answer',
     });
     const change = {
       _id: 'abc',
-      prompt: 'Updated prompt',
+      question: 'Updated question',
       answer: 'Answer',
     };
 
@@ -189,8 +208,8 @@ describe('reducer:edit', () => {
     expect(updatedState).toEqual(
       dirtyState(
         'abc',
-        { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
-        ['prompt']
+        { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+        ['question']
       )
     );
   });
@@ -201,17 +220,18 @@ describe('reducer:edit', () => {
     () => {
       const initialState = emptyState(7);
       const change = {
-        prompt: 'Updated prompt',
+        question: 'Updated question',
         answer: 'Updated answer',
       };
 
       const updatedState = subject(initialState, actions.editCard(7, change));
 
       expect(updatedState).toEqual(
-        dirtyState(7, { prompt: 'Updated prompt', answer: 'Updated answer' }, [
-          'prompt',
-          'answer',
-        ])
+        dirtyState(
+          7,
+          { question: 'Updated question', answer: 'Updated answer' },
+          ['question', 'answer']
+        )
       );
     }
   );
@@ -222,13 +242,13 @@ describe('reducer:edit', () => {
     () => {
       const initialState = okState({
         _id: 'abc',
-        prompt: 'Prompt',
+        question: 'Question',
         answer: 'Answer',
       });
 
       const change = {
         _id: 'def',
-        prompt: 'Updated prompt',
+        question: 'Updated question',
         answer: 'Answer',
       };
       const updatedState = subject(
@@ -243,8 +263,8 @@ describe('reducer:edit', () => {
   it('should append set of dirty fields on subsequent on EDIT_CARD', () => {
     const initialState = dirtyState(
       'abc',
-      { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
-      ['prompt']
+      { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+      ['question']
     );
     const change = { answer: 'Updated answer' };
 
@@ -253,8 +273,8 @@ describe('reducer:edit', () => {
     expect(updatedState).toEqual(
       dirtyState(
         'abc',
-        { _id: 'abc', prompt: 'Updated prompt', answer: 'Updated answer' },
-        ['prompt', 'answer']
+        { _id: 'abc', question: 'Updated question', answer: 'Updated answer' },
+        ['question', 'answer']
       )
     );
   });
@@ -262,12 +282,12 @@ describe('reducer:edit', () => {
   it('should update state on FINISH_SAVE_CARD', () => {
     const initialState = dirtyState(
       'abc',
-      { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
-      ['prompt']
+      { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+      ['question']
     );
     const card = {
       _id: 'abc',
-      prompt: 'Updated prompt',
+      question: 'Updated question',
       answer: 'Answer',
     };
 
@@ -277,7 +297,7 @@ describe('reducer:edit', () => {
     );
 
     expect(updatedState).toEqual(
-      okState({ _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' })
+      okState({ _id: 'abc', question: 'Updated question', answer: 'Answer' })
     );
   });
 
@@ -287,12 +307,12 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         'abc',
-        { _id: 'abc', prompt: 'Updated #2', answer: 'Updated answer' },
-        ['prompt', 'answer']
+        { _id: 'abc', question: 'Updated #2', answer: 'Updated answer' },
+        ['question', 'answer']
       );
       const card = {
         _id: 'abc',
-        prompt: 'Updated #1',
+        question: 'Updated #1',
         answer: 'Updated answer',
       };
 
@@ -304,8 +324,8 @@ describe('reducer:edit', () => {
       expect(updatedState).toEqual(
         dirtyState(
           'abc',
-          { _id: 'abc', prompt: 'Updated #2', answer: 'Updated answer' },
-          ['prompt']
+          { _id: 'abc', question: 'Updated #2', answer: 'Updated answer' },
+          ['question']
         )
       );
     }
@@ -314,12 +334,12 @@ describe('reducer:edit', () => {
   it('should NOT update state on FINISH_SAVE_CARD if formIds differ', () => {
     const initialState = dirtyState(
       'abc',
-      { _id: 'abc', prompt: 'Updated prompt', answer: 'Answer' },
-      ['prompt']
+      { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+      ['question']
     );
     const card = {
       _id: 'def',
-      prompt: 'Updated prompt',
+      question: 'Updated question',
       answer: 'Answer',
     };
 
@@ -334,12 +354,12 @@ describe('reducer:edit', () => {
   it('should update state on FINISH_SAVE_CARD with new card', () => {
     const initialState = dirtyState(
       12,
-      { prompt: 'Prompt', answer: 'Answer' },
-      ['prompt', 'answer']
+      { question: 'Question', answer: 'Answer' },
+      ['question', 'answer']
     );
     const card = {
       _id: 'abc',
-      prompt: 'Prompt',
+      question: 'Question',
       answer: 'Answer',
     };
 
@@ -349,7 +369,7 @@ describe('reducer:edit', () => {
     );
 
     expect(updatedState).toEqual(
-      okState({ _id: 'abc', prompt: 'Prompt', answer: 'Answer' })
+      okState({ _id: 'abc', question: 'Question', answer: 'Answer' })
     );
   });
 
@@ -359,12 +379,12 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         17,
-        { prompt: 'Updated #1', answer: 'Updated #2' },
-        ['prompt', 'answer']
+        { question: 'Updated #1', answer: 'Updated #2' },
+        ['question', 'answer']
       );
       const card = {
         _id: 'abc',
-        prompt: 'Updated #1',
+        question: 'Updated #1',
         answer: 'Updated #1',
       };
 
@@ -376,7 +396,7 @@ describe('reducer:edit', () => {
       expect(updatedState).toEqual(
         dirtyState(
           'abc',
-          { _id: 'abc', prompt: 'Updated #1', answer: 'Updated #2' },
+          { _id: 'abc', question: 'Updated #1', answer: 'Updated #2' },
           ['answer']
         )
       );
@@ -389,12 +409,12 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         12,
-        { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
-        ['prompt']
+        { _id: 'abc', question: 'Question', answer: 'Answer' },
+        ['question']
       );
       const card = {
         _id: 'def',
-        prompt: 'Prompt',
+        question: 'Question',
         answer: 'Answer',
       };
 
@@ -414,7 +434,7 @@ describe('reducer:edit', () => {
     const initialState = notFoundState('abc', true);
     const card = {
       _id: 'abc',
-      prompt: 'Prompt',
+      question: 'Question',
       answer: 'Answer',
     };
 
@@ -429,8 +449,8 @@ describe('reducer:edit', () => {
   it('should update save error message on FAIL_SAVE_CARD', () => {
     const initialState = dirtyState(
       'abc',
-      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
-      ['prompt']
+      { _id: 'abc', question: 'Question', answer: 'Answer' },
+      ['question']
     );
 
     const updatedState = subject(
@@ -440,9 +460,11 @@ describe('reducer:edit', () => {
 
     expect(updatedState).toEqual(
       withSaveError(
-        dirtyState('abc', { _id: 'abc', prompt: 'Prompt', answer: 'Answer' }, [
-          'prompt',
-        ]),
+        dirtyState(
+          'abc',
+          { _id: 'abc', question: 'Question', answer: 'Answer' },
+          ['question']
+        ),
         'Bad bad bad'
       )
     );
@@ -454,8 +476,8 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         'abc',
-        { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
-        ['prompt']
+        { _id: 'abc', question: 'Question', answer: 'Answer' },
+        ['question']
       );
 
       const updatedState = subject(
@@ -481,39 +503,35 @@ describe('reducer:edit', () => {
   it('should update non-dirty fields on SYNC_CARD', () => {
     const initialState = dirtyState(
       'abc',
-      { _id: 'abc', prompt: 'Prompt A', answer: 'Answer' },
-      ['prompt']
+      { _id: 'abc', question: 'Question A', answer: 'Answer' },
+      ['question']
     );
-    const card = {
-      _id: 'abc',
-      prompt: 'Prompt B',
+    const change = {
+      ...getCard('abc'),
+      question: 'Question B',
       answer: 'Answer B',
     };
 
-    const updatedState = subject(initialState, actions.syncEditCard(card));
+    const updatedState = subject(initialState, actions.syncEditCard(change));
 
     expect(updatedState).toEqual(
-      dirtyState(
-        'abc',
-        { _id: 'abc', prompt: 'Prompt A', answer: 'Answer B' },
-        ['prompt']
-      )
+      dirtyState('abc', { ...change, question: 'Question A' }, ['question'])
     );
   });
 
   it('should NOT update fields on SYNC_CARD when card IDs differ', () => {
     const initialState = dirtyState(
       'abc',
-      { _id: 'abc', prompt: 'Prompt A', answer: 'Answer' },
-      ['prompt']
+      { _id: 'abc', question: 'Question A', answer: 'Answer' },
+      ['question']
     );
-    const card = {
-      _id: 'def',
-      prompt: 'Prompt B',
+    const change = {
+      ...getCard('def'),
+      question: 'Question B',
       answer: 'Answer B',
     };
 
-    const updatedState = subject(initialState, actions.syncEditCard(card));
+    const updatedState = subject(initialState, actions.syncEditCard(change));
 
     expect(updatedState).toEqual(initialState);
   });
@@ -524,15 +542,15 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         'abc',
-        { _id: 'abc', prompt: 'Prompt A', answer: 'Answer' },
-        ['prompt']
+        { _id: 'abc', question: 'Question A', answer: 'Answer' },
+        ['question']
       );
-      const card = {
-        _id: 'abc',
+      const change: CardChange = {
+        ...getCard('abc'),
         _deleted: true,
       };
 
-      const updatedState = subject(initialState, actions.syncEditCard(card));
+      const updatedState = subject(initialState, actions.syncEditCard(change));
 
       expect(updatedState).toEqual(notFoundState('abc', true));
     }
@@ -541,8 +559,8 @@ describe('reducer:edit', () => {
   it('should update to NOT_FOUND (deleted) state on DELETE_EDIT_CARD', () => {
     const initialState = dirtyState(
       'abc',
-      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
-      ['prompt']
+      { _id: 'abc', question: 'Question', answer: 'Answer' },
+      ['question']
     );
 
     const updatedState = subject(initialState, actions.deleteEditCard('abc'));
@@ -553,8 +571,8 @@ describe('reducer:edit', () => {
   it('should update to EMPTY state on DELETE_EDIT_CARD for unsaved card', () => {
     const initialState = dirtyState(
       89,
-      { prompt: 'Prompt', answer: 'Answer' },
-      ['prompt']
+      { question: 'Question', answer: 'Answer' },
+      ['question']
     );
 
     const updatedState = subject(initialState, actions.deleteEditCard(89));
@@ -565,8 +583,8 @@ describe('reducer:edit', () => {
   it('should do nothing on DELETE_EDIT_CARD if formId does nothing', () => {
     const initialState = dirtyState(
       'abc',
-      { _id: 'abc', prompt: 'Prompt', answer: 'Answer' },
-      ['prompt']
+      { _id: 'abc', question: 'Question', answer: 'Answer' },
+      ['question']
     );
 
     const updatedState = subject(initialState, actions.deleteEditCard('def'));

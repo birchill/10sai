@@ -1,8 +1,9 @@
 import { Card } from '../model';
+import { CardChange } from '../store/cards/CardStore';
 
 let id = 0;
 
-type FormId = string | number;
+export type FormId = string | number;
 
 // Generate a unique sequence number for each new card. This is used to track
 // new cards when performing async actions that occur before they are saved
@@ -12,19 +13,30 @@ function newCardId(): number {
   return ++id;
 }
 
-interface NewCardAction {
+export type EditAction =
+  | NewCardAction
+  | LoadCardAction
+  | FinishLoadCardAction
+  | FailLoadCardAction
+  | EditCardAction
+  | FinishSaveCardAction
+  | FailSaveCardAction
+  | SyncEditCardAction
+  | DeleteEditCardAction;
+
+export interface NewCardAction {
   type: 'NEW_CARD';
   id: FormId;
 }
 
-export function newCard(id?: string): NewCardAction {
+export function newCard(id?: FormId): NewCardAction {
   return {
     type: 'NEW_CARD',
     id: typeof id === 'undefined' ? newCardId() : id,
   };
 }
 
-interface LoadCardAction {
+export interface LoadCardAction {
   type: 'LOAD_CARD';
   id: string;
 }
@@ -36,7 +48,7 @@ export function loadCard(id: string): LoadCardAction {
   };
 }
 
-interface FinishLoadCardAction {
+export interface FinishLoadCardAction {
   type: 'FINISH_LOAD_CARD';
   formId: FormId;
   card: Card;
@@ -53,15 +65,15 @@ export function finishLoadCard(
   };
 }
 
-interface FailLoadCardAction {
+export interface FailLoadCardAction {
   type: 'FAIL_LOAD_CARD';
   formId: FormId;
-  error: string;
+  error: string | { reason: string };
 }
 
 export function failLoadCard(
   formId: FormId,
-  error: string
+  error: string | { reason: string }
 ): FailLoadCardAction {
   return {
     type: 'FAIL_LOAD_CARD',
@@ -70,7 +82,7 @@ export function failLoadCard(
   };
 }
 
-interface EditCardAction {
+export interface EditCardAction {
   type: 'EDIT_CARD';
   formId: FormId;
   card: Partial<Card>;
@@ -85,25 +97,28 @@ export function editCard(formId: FormId, card: Partial<Card>): EditCardAction {
   };
 }
 
-interface SaveEditCard {
+export interface SaveEditCardAction {
   type: 'SAVE_EDIT_CARD';
   formId: FormId;
 }
 
-export function saveEditCard(formId: FormId): SaveEditCard {
+export function saveEditCard(formId: FormId): SaveEditCardAction {
   return {
     type: 'SAVE_EDIT_CARD',
     formId,
   };
 }
 
-interface FinishSaveCard {
+export interface FinishSaveCardAction {
   type: 'FINISH_SAVE_CARD';
   formId: FormId;
-  card: Card;
+  card: Partial<Card>;
 }
 
-export function finishSaveCard(formId: FormId, card: Card): FinishSaveCard {
+export function finishSaveCard(
+  formId: FormId,
+  card: Partial<Card>
+): FinishSaveCardAction {
   return {
     type: 'FINISH_SAVE_CARD',
     formId,
@@ -111,7 +126,7 @@ export function finishSaveCard(formId: FormId, card: Card): FinishSaveCard {
   };
 }
 
-interface FailSaveCardAction {
+export interface FailSaveCardAction {
   type: 'FAIL_SAVE_CARD';
   formId: FormId;
   error: string;
@@ -128,24 +143,25 @@ export function failSaveCard(
   };
 }
 
-interface SyncEditCard {
+export interface SyncEditCardAction {
   type: 'SYNC_EDIT_CARD';
-  card: Card;
+  // XXX Rename this to change
+  card: CardChange;
 }
 
-export function syncEditCard(card: Card): SyncEditCard {
+export function syncEditCard(card: CardChange): SyncEditCardAction {
   return {
     type: 'SYNC_EDIT_CARD',
     card,
   };
 }
 
-interface DeleteEditCard {
+export interface DeleteEditCardAction {
   type: 'DELETE_EDIT_CARD';
   formId: FormId;
 }
 
-export function deleteEditCard(formId: FormId): DeleteEditCard {
+export function deleteEditCard(formId: FormId): DeleteEditCardAction {
   return {
     type: 'DELETE_EDIT_CARD',
     formId,

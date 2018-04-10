@@ -1,13 +1,16 @@
+// XXX Are there bindings for this?
 import deepEqual from 'deep-equal';
-import EditState from './states';
+import EditorState from './EditorState';
+import { Card } from '../model';
+import * as actions from './actions';
 
-// Editing state shape:
+// (Eventual) Editing state shape:
 //
 // {
 //   forms: {
 //     active: {
 //       formId: card ID or a sequence number (for yet-to-be-saved cards),
-//       editState: EditState,
+//       editorState: EditorState,
 //       card: { _id: ..., question: ..., ... },
 //       dirtyFields: [ 'question', 'question' etc. ]
 //     }
@@ -17,22 +20,45 @@ import EditState from './states';
 //   [ saveError ]
 // }
 
-const initialState = {
+export interface EditFormState {
+  formId: string | number;
+  // XXX Convert EditorState into an enum type?
+  editorState: symbol;
+  card: Partial<Card>;
+  dirtyFields?: Array<keyof Card>;
+  deleted?: boolean;
+}
+
+export interface EditState {
+  forms: {
+    active: EditFormState;
+  };
+  saveError?: string;
+}
+
+const initialState: EditState = {
   forms: {
     active: {
       formId: 0,
-      editState: EditState.EMPTY,
+      editorState: EditorState.EMPTY,
       card: {},
     },
   },
 };
 
-export default function edit(state = initialState, action) {
+export function edit(
+  state = initialState,
+  action: actions.EditAction
+): EditState {
   switch (action.type) {
     case 'NEW_CARD': {
       return {
         forms: {
-          active: { formId: action.id, editState: EditState.EMPTY, card: {} },
+          active: {
+            formId: action.id,
+            editorState: EditorState.EMPTY,
+            card: {},
+          },
         },
       };
     }
@@ -40,7 +66,11 @@ export default function edit(state = initialState, action) {
     case 'LOAD_CARD': {
       return {
         forms: {
-          active: { formId: action.id, editState: EditState.LOADING, card: {} },
+          active: {
+            formId: action.id,
+            editorState: EditorState.LOADING,
+            card: {},
+          },
         },
       };
     }
@@ -54,7 +84,7 @@ export default function edit(state = initialState, action) {
         forms: {
           active: {
             formId: action.card._id,
-            editState: EditState.OK,
+            editorState: EditorState.OK,
             card: action.card,
           },
         },
@@ -67,13 +97,15 @@ export default function edit(state = initialState, action) {
       }
 
       const deleted = Boolean(
-        action.error && action.error.reason && action.error.reason === 'deleted'
+        action.error &&
+          typeof action.error === 'object' &&
+          action.error.reason === 'deleted'
       );
       return {
         forms: {
           active: {
             formId: action.formId,
-            editState: EditState.NOT_FOUND,
+            editorState: EditorState.NOT_FOUND,
             card: {},
             deleted,
           },
@@ -96,7 +128,7 @@ export default function edit(state = initialState, action) {
 
       const dirtyFields = state.forms.active.dirtyFields || [];
       dirtyFields.push(
-        ...Object.keys(action.card).filter(
+        ...(Object.keys(action.card) as Array<keyof Card>).filter(
           field =>
             field !== '_id' &&
             !deepEqual(action.card[field], state.forms.active.card[field]) &&
@@ -110,7 +142,7 @@ export default function edit(state = initialState, action) {
         forms: {
           active: {
             formId: action.formId,
-            editState: EditState.DIRTY,
+            editorState: EditorState.DIRTY,
             card: { ...state.forms.active.card, ...action.card },
             dirtyFields,
           },
@@ -126,18 +158,22 @@ export default function edit(state = initialState, action) {
         return state;
       }
 
-      const dirtyFields = Object.keys(action.card).filter(
+      const dirtyFields = (Object.keys(action.card) as Array<
+        keyof Card
+      >).filter(
         field =>
           field !== '_id' &&
           !deepEqual(action.card[field], state.forms.active.card[field])
       );
-      const editState = dirtyFields.length ? EditState.DIRTY : EditState.OK;
+      const editorState = dirtyFields.length
+        ? EditorState.DIRTY
+        : EditorState.OK;
 
-      const result = {
+      const result: EditState = {
         forms: {
           active: {
-            formId: action.card._id,
-            editState,
+            formId: action.card._id!,
+            editorState,
             card: { ...action.card, ...state.forms.active.card },
           },
         },
@@ -165,12 +201,13 @@ export default function edit(state = initialState, action) {
         return state;
       }
 
+      // XXX Does sync return an augmented type?
       if (action.card._deleted) {
         return {
           forms: {
             active: {
               formId: state.forms.active.formId,
-              editState: EditState.NOT_FOUND,
+              editorState: EditorState.NOT_FOUND,
               card: {},
               deleted: true,
             },
@@ -178,14 +215,15 @@ export default function edit(state = initialState, action) {
         };
       }
 
-      const card = {};
+      const card: Partial<Card> = {};
+      // XXX Work out how to annotate field as keyof Card so we can drop all the type assertions below
       for (const field in action.card) {
         if (action.card.hasOwnProperty(field)) {
-          card[field] =
+          card[field as keyof Card] =
             state.forms.active.dirtyFields &&
-            state.forms.active.dirtyFields.includes(field)
-              ? state.forms.active.card[field]
-              : action.card[field];
+            state.forms.active.dirtyFields.includes(field as keyof Card)
+              ? state.forms.active.card[field as keyof Card]
+              : action.card[field as keyof Card];
         }
       }
 
@@ -206,7 +244,7 @@ export default function edit(state = initialState, action) {
           forms: {
             active: {
               formId: action.formId,
-              editState: EditState.EMPTY,
+              editorState: EditorState.EMPTY,
               card: {},
             },
           },
@@ -217,7 +255,7 @@ export default function edit(state = initialState, action) {
         forms: {
           active: {
             formId: action.formId,
-            editState: EditState.NOT_FOUND,
+            editorState: EditorState.NOT_FOUND,
             card: {},
             deleted: true,
           },
@@ -229,3 +267,5 @@ export default function edit(state = initialState, action) {
       return state;
   }
 }
+
+export default edit;

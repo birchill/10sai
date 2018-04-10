@@ -52,7 +52,8 @@ export interface GetCardsOptions {
   skipFailedCards?: boolean;
 }
 
-type CardChange = MakeOptional<Card, 'progress'> & PouchDB.Core.ChangesMeta;
+export type CardChange = MakeOptional<Card, 'progress'> &
+  PouchDB.Core.ChangesMeta;
 
 type EmitFunction = (type: string, ...args: any[]) => void;
 

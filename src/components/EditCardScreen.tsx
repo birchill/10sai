@@ -6,30 +6,22 @@ import { Card } from '../model';
 import EditCardToolbar from './EditCardToolbar.jsx';
 import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound.jsx';
-import EditState from '../edit/states';
+import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
+import { EditState, EditFormState } from '../edit/reducer';
 import * as routeActions from '../route/actions';
 import KeywordSuggester from '../suggestions/KeywordSuggester';
 import TagSuggester from '../suggestions/TagSuggester';
-
-type FormId = number | string;
-
-interface Form {
-  formId: FormId;
-  editState: Symbol;
-  card: Partial<Card>;
-  deleted?: boolean;
-}
 
 interface Props {
   keywordSuggester: KeywordSuggester;
   tagSuggester: TagSuggester;
   forms: {
-    active: Form;
+    active: EditFormState;
   };
   active: boolean;
-  onEdit: (id: FormId, change: Partial<Card>) => void;
-  onDelete: (id: FormId) => void;
+  onEdit: (id: editActions.FormId, change: Partial<Card>) => void;
+  onDelete: (id: editActions.FormId) => void;
 }
 
 export class EditCardScreen extends React.PureComponent<Props> {
@@ -42,7 +34,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
       forms: PropTypes.shape({
         active: PropTypes.shape({
           formId: PropTypes.any,
-          editState: PropTypes.symbol.isRequired,
+          editorState: PropTypes.symbol.isRequired,
           // eslint-disable-next-line react/forbid-prop-types
           card: PropTypes.object.isRequired,
           deleted: PropTypes.bool,
@@ -75,7 +67,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
   activate() {
     if (
-      this.props.forms.active.editState === EditState.EMPTY &&
+      this.props.forms.active.editorState === EditorState.EMPTY &&
       this.activeForm &&
       this.activeForm.questionTextBox
     ) {
@@ -95,10 +87,10 @@ export class EditCardScreen extends React.PureComponent<Props> {
     return (
       <section className="edit-screen" aria-hidden={!this.props.active}>
         <EditCardToolbar
-          editState={this.props.forms.active.editState}
+          editorState={this.props.forms.active.editorState}
           onDelete={this.handleDelete}
         />
-        {this.props.forms.active.editState !== EditState.NOT_FOUND ? (
+        {this.props.forms.active.editorState !== EditorState.NOT_FOUND ? (
           <EditCardForm
             keywordSuggester={this.props.keywordSuggester}
             tagSuggester={this.props.tagSuggester}
@@ -116,15 +108,15 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 }
 
-// XXX Use some sort of EditState type here once we convert the reducer to TS
+// XXX Convert to State once we've converted all reducers to TS
 const mapStateToProps = (state: any) => ({
-  forms: state.edit.forms,
+  forms: (state.edit as EditState).forms,
 });
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
-  onEdit: (formId: FormId, card: Partial<Card>) => {
+  onEdit: (formId: editActions.FormId, card: Partial<Card>) => {
     dispatch(editActions.editCard(formId, card));
   },
-  onDelete: (formId: FormId) => {
+  onDelete: (formId: editActions.FormId) => {
     dispatch(editActions.deleteEditCard(formId));
     dispatch(routeActions.followLink('/'));
   },

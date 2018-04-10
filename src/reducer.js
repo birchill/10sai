@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import edit from './edit/reducer';
+import edit from './edit/reducer.ts';
 import review from './review/reducer';
 import route from './route/reducer';
 import selection from './selection/reducer';

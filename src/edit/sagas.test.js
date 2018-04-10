@@ -15,7 +15,7 @@ import {
   beforeEditScreenChange as beforeEditScreenChangeSaga,
 } from './sagas';
 import reducer from '../reducer';
-import EditState from './states';
+import EditorState from './EditorState';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
 
@@ -24,7 +24,7 @@ const loadingState = formId => ({
     forms: {
       active: {
         formId,
-        editState: EditState.LOADING,
+        editorState: EditorState.LOADING,
         card: {},
       },
     },
@@ -39,7 +39,7 @@ const dirtyState = (formId, cardToUse) => {
       forms: {
         active: {
           formId,
-          editState: EditState.DIRTY,
+          editorState: EditorState.DIRTY,
           card,
           dirtyFields: ['prompt'],
         },
@@ -153,7 +153,7 @@ const okState = (formId, cardToUse) => {
       forms: {
         active: {
           formId,
-          editState: EditState.OK,
+          editorState: EditorState.OK,
           card,
         },
       },
@@ -166,7 +166,7 @@ const emptyState = formId => ({
     forms: {
       active: {
         formId,
-        editState: EditState.EMPTY,
+        editorState: EditorState.EMPTY,
         card: {},
       },
     },
@@ -178,7 +178,7 @@ const notFoundState = (formId, deleted) => ({
     forms: {
       active: {
         formId,
-        editState: EditState.NOT_FOUND,
+        editorState: EditorState.NOT_FOUND,
         card: {},
         deleted,
       },
@@ -396,7 +396,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('dispatches SAVE_EDIT_CARD if the card is dirty', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+      edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
     };
 
     return expectSaga(beforeEditScreenChangeSaga)
@@ -410,7 +410,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('does nothing if the card is not dirty', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editState: EditState.OK } } },
+      edit: { forms: { active: { formId, editorState: EditorState.OK } } },
     };
 
     return expectSaga(beforeEditScreenChangeSaga)
@@ -423,7 +423,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('returns false if the card fails to save', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editState: EditState.DIRTY } } },
+      edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
     };
     const error = { message: 'too bad' };
 
