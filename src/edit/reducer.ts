@@ -3,6 +3,7 @@ import deepEqual from 'deep-equal';
 import EditorState from './EditorState';
 import { Card } from '../model';
 import * as actions from './actions';
+import { StoreError } from '../store/DataStore';
 
 // (Eventual) Editing state shape:
 //
@@ -33,7 +34,7 @@ export interface EditState {
   forms: {
     active: EditFormState;
   };
-  saveError?: string;
+  saveError?: StoreError;
 }
 
 const initialState: EditState = {

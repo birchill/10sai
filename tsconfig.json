@@ -4,6 +4,7 @@
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
     "jsx": "react",
+    "moduleResolution": "node",
     "noImplicitAny": true,
     "outDir": "./src/",
     "pretty": true,

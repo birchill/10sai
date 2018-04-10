@@ -1,5 +1,6 @@
 import { Card } from '../model';
 import { CardChange } from '../store/cards/CardStore';
+import { StoreError } from '../store/DataStore';
 
 let id = 0;
 
@@ -26,10 +27,10 @@ export type EditAction =
 
 export interface NewCardAction {
   type: 'NEW_CARD';
-  id: FormId;
+  id: number;
 }
 
-export function newCard(id?: FormId): NewCardAction {
+export function newCard(id?: number): NewCardAction {
   return {
     type: 'NEW_CARD',
     id: typeof id === 'undefined' ? newCardId() : id,
@@ -68,12 +69,12 @@ export function finishLoadCard(
 export interface FailLoadCardAction {
   type: 'FAIL_LOAD_CARD';
   formId: FormId;
-  error: string | { reason: string };
+  error: StoreError;
 }
 
 export function failLoadCard(
   formId: FormId,
-  error: string | { reason: string }
+  error: StoreError
 ): FailLoadCardAction {
   return {
     type: 'FAIL_LOAD_CARD',
@@ -129,12 +130,12 @@ export function finishSaveCard(
 export interface FailSaveCardAction {
   type: 'FAIL_SAVE_CARD';
   formId: FormId;
-  error: string;
+  error: StoreError;
 }
 
 export function failSaveCard(
   formId: FormId,
-  error: string
+  error: StoreError
 ): FailSaveCardAction {
   return {
     type: 'FAIL_SAVE_CARD',

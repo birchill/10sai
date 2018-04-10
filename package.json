@@ -13,7 +13,7 @@
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
     "start": "cross-env NODE_ENV=development webpack-dev-server --define process.env.NODE_ENV=development --config webpack.dev.js --progress --colors --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server --define process.env.NODE_ENV=production --config webpack.prod.js --progress --colors --history-api-fallback --content-base public/",
-    "lint": "eslint src/**/.jsx? test/**",
+    "lint": "eslint src/**/.jsx? test/**/.jsx?",
     "precommit": "lint-staged && npm run lint -q",
     "test": "jest"
   },
@@ -52,6 +52,7 @@
     "@babel/register": "^7.0.0-beta.38",
     "@types/jest": "^22.1.3",
     "@types/pouchdb": "^6.3.2",
+    "@types/prop-types": "^15.5.2",
     "@types/react": "^16.0.36",
     "@types/react-dom": "^16.0.3",
     "@types/react-redux": "^5.0.15",

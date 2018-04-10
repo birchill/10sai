@@ -44,7 +44,10 @@ interface SyncOptions {
   batchSize?: number;
 }
 
-interface StoreError {
+// This interface should be compatible with PouchDB.Core.Error for all our
+// purposes so we can use the same type for handling errors returned by getCard
+// etc.
+export interface StoreError {
   status?: number;
   name: string;
   message: string;
@@ -52,9 +55,10 @@ interface StoreError {
   error?: string | boolean;
 }
 
-class StoreError extends Error {
+export class StoreError extends Error {
   constructor(status: number, error: string, reason: string) {
     super(reason);
+    this.status = status;
     this.name = error;
     this.message = reason;
     this.error = true;
@@ -63,7 +67,7 @@ class StoreError extends Error {
 
 const VIEW_CLEANUP_DELAY = 5000; // 5s
 
-class DataStore {
+export class DataStore {
   db?: PouchDB.Database;
   cardStore: CardStore;
   reviewStore: ReviewStore;

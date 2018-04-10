@@ -6,6 +6,8 @@ import EditorState from './EditorState';
 import * as actions from './actions';
 import { Card } from '../model';
 import { CardChange } from '../store/cards/CardStore';
+import { StoreError } from '../store/DataStore';
+import { generateCard } from '../../test/testcommon';
 
 const emptyState = (formId: actions.FormId): EditState => ({
   forms: {
@@ -74,24 +76,9 @@ const notFoundState = (formId, deleted) => ({
   },
 });
 
-const withSaveError = (state: EditState, saveError: string): EditState => ({
+const withSaveError = (state: EditState, saveError: StoreError): EditState => ({
   ...state,
   saveError,
-});
-
-const getCard = (_id: string): Card => ({
-  _id,
-  question: 'Question',
-  answer: 'Answer',
-  keywords: [],
-  tags: [],
-  starred: false,
-  created: Date.now(),
-  modified: Date.now(),
-  progress: {
-    level: 1,
-    reviewed: new Date(Date.now()),
-  },
 });
 
 describe('reducer:edit', () => {
@@ -108,7 +95,7 @@ describe('reducer:edit', () => {
   });
 
   it('should clear fields on NEW_CARD', () => {
-    const initialState = okState(getCard('abc'), ['question', 'answer']);
+    const initialState = okState(generateCard('abc'), ['question', 'answer']);
 
     const updatedState = subject(initialState, actions.newCard(2));
 
@@ -122,7 +109,7 @@ describe('reducer:edit', () => {
   });
 
   it('should clear other state on LOAD_CARD', () => {
-    const initialState = okState(getCard('abc'), ['question', 'answer']);
+    const initialState = okState(generateCard('abc'), ['question', 'answer']);
 
     const updatedState = subject(initialState, actions.loadCard('def'));
 
@@ -131,7 +118,7 @@ describe('reducer:edit', () => {
 
   it('should update card info and state on FINISH_LOAD_CARD', () => {
     const initialState = loadingState('abc');
-    const card = getCard('abc');
+    const card = generateCard('abc');
 
     const updatedState = subject(
       initialState,
@@ -146,7 +133,7 @@ describe('reducer:edit', () => {
       ' differ',
     () => {
       const initialState = loadingState('abc');
-      const card = getCard('def');
+      const card = generateCard('def');
 
       const updatedState = subject(
         initialState,
@@ -162,7 +149,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.failLoadCard('abc', 'Error')
+      actions.failLoadCard('abc', { name: 'Error', message: 'Error' })
     );
 
     expect(updatedState).toEqual(notFoundState('abc', false));
@@ -173,7 +160,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.failLoadCard('def', 'Error')
+      actions.failLoadCard('def', { name: 'Error', message: 'Error' })
     );
 
     expect(updatedState).toEqual(initialState);
@@ -181,7 +168,7 @@ describe('reducer:edit', () => {
 
   it('should update to NOT_FOUND (deleted) state on FAIL_LOAD_CARD (deleted)', () => {
     const initialState = loadingState('abc');
-    const error = { reason: 'deleted' };
+    const error = { name: 'Error', message: 'Error', reason: 'deleted' };
 
     const updatedState = subject(
       initialState,
@@ -455,7 +442,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.failSaveCard('abc', 'Bad bad bad')
+      actions.failSaveCard('abc', { name: 'bad', message: 'Bad bad bad' })
     );
 
     expect(updatedState).toEqual(
@@ -465,7 +452,7 @@ describe('reducer:edit', () => {
           { _id: 'abc', question: 'Question', answer: 'Answer' },
           ['question']
         ),
-        'Bad bad bad'
+        { name: 'bad', message: 'Bad bad bad' }
       )
     );
   });
@@ -482,7 +469,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(
         initialState,
-        actions.failSaveCard('def', 'Bad bad bad')
+        actions.failSaveCard('def', { name: 'bad', message: 'Bad bad bad' })
       );
 
       expect(updatedState).toEqual(initialState);
@@ -494,7 +481,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.failSaveCard('abc', 'Uh oh')
+      actions.failSaveCard('abc', { name: 'uhoh', message: 'Uh oh' })
     );
 
     expect(updatedState).toEqual(initialState);
@@ -507,7 +494,7 @@ describe('reducer:edit', () => {
       ['question']
     );
     const change = {
-      ...getCard('abc'),
+      ...generateCard('abc'),
       question: 'Question B',
       answer: 'Answer B',
     };
@@ -526,7 +513,7 @@ describe('reducer:edit', () => {
       ['question']
     );
     const change = {
-      ...getCard('def'),
+      ...generateCard('def'),
       question: 'Question B',
       answer: 'Answer B',
     };
@@ -546,7 +533,7 @@ describe('reducer:edit', () => {
         ['question']
       );
       const change: CardChange = {
-        ...getCard('abc'),
+        ...generateCard('abc'),
         _deleted: true,
       };
 

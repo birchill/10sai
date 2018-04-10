@@ -8,25 +8,45 @@ import {
   takeEvery,
 } from 'redux-saga/effects';
 import { delay } from 'redux-saga';
+import { Store } from 'redux';
 import {
   routeFromURL,
   routeFromPath,
   URLFromRoute,
   routesEqual,
 } from '../route/router';
-import * as editActions from './actions.ts';
+import { EditState, EditFormState } from './reducer';
+import * as editActions from './actions';
 import * as routeActions from '../route/actions';
-import EditorState from './EditorState.ts';
+import EditorState from './EditorState';
+import { DataStore, StoreError } from '../store/DataStore';
+import { Card } from '../model';
 
 const SAVE_DELAY = 2000;
 
+// XXX Move this to root reducer once it gets converted to TS.
+interface State {
+  edit: EditState;
+}
+
 // Selectors
 
-const getActiveRecord = state => (state ? state.edit.forms.active : {});
+const getActiveRecord = (state: State): EditFormState =>
+  state.edit.forms.active;
 
 // Sagas
 
-export function* navigate(dataStore, action) {
+// XXX This should move to route/actions.ts once converted to TS
+interface NavigateAction {
+  url?: string;
+  path?: string;
+  search?: string;
+  fragment?: string;
+  source?: 'history';
+  replace?: boolean;
+}
+
+export function* navigate(dataStore: DataStore, action: NavigateAction) {
   // Look for navigation actions that should load a card
   const route = action.url
     ? routeFromURL(action.url)
@@ -49,14 +69,19 @@ export function* navigate(dataStore, action) {
     const card = yield call([dataStore, 'getCard'], route.card);
     yield put(editActions.finishLoadCard(formId, card));
   } catch (error) {
-    if (error && error.reason !== 'deleted') {
-      console.error(`Failed to load card: ${error}`);
+    const storeError: StoreError = error;
+    if (storeError.reason !== 'deleted') {
+      console.error(`Failed to load card: ${JSON.stringify(storeError)}`);
     }
-    yield put(editActions.failLoadCard(formId, error));
+    yield put(editActions.failLoadCard(formId, storeError));
   }
 }
 
-export function* save(dataStore, formId, card) {
+export function* save(
+  dataStore: DataStore,
+  formId: editActions.FormId,
+  card: Partial<Card>
+) {
   try {
     const savedCard = yield call([dataStore, 'putCard'], card);
 
@@ -87,14 +112,18 @@ export function* save(dataStore, formId, card) {
 
     return savedCard._id;
   } catch (error) {
-    console.error(`Failed to save: ${error}`);
+    console.error(`Failed to save: ${JSON.stringify(error)}`);
     yield put(editActions.failSaveCard(formId, error));
     // Re-throw error since when saving synchronously we want to know about it
     throw error;
   }
 }
 
-function* autoSave(dataStore, formId, card) {
+function* autoSave(
+  dataStore: DataStore,
+  formId: editActions.FormId,
+  card: Partial<Card>
+) {
   // Debounce -- we allow this part of the task to be cancelled
   // eslint-disable-next-line no-unused-vars
   const { wait, cancel } = yield race({
@@ -117,7 +146,7 @@ function* autoSave(dataStore, formId, card) {
   }
 }
 
-export function* watchCardEdits(dataStore) {
+export function* watchCardEdits(dataStore: DataStore) {
   let autoSaveTask;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -140,7 +169,7 @@ export function* watchCardEdits(dataStore) {
     // The complexity here is that we don't want to auto-save if the only data
     // in the card are keywords and tags. However, if we're modifying an
     // existing card then we *do* want to autosave in that case.
-    const cardHasNonEmptyField = field =>
+    const cardHasNonEmptyField = (field: keyof Card) =>
       typeof activeRecord.card[field] !== 'undefined' &&
       activeRecord.card[field].length;
     const hasDataWorthSaving = () =>
@@ -196,7 +225,7 @@ export function* watchCardEdits(dataStore) {
           try {
             yield call([dataStore, 'deleteCard'], id);
           } catch (error) {
-            console.error(`Failed to delete card: ${error}`);
+            console.error(`Failed to delete card: ${JSON.stringify(error)}`);
           }
         }
         break;
@@ -208,7 +237,7 @@ export function* watchCardEdits(dataStore) {
   }
 }
 
-export function* editSagas(dataStore) {
+export function* editSagas(dataStore: DataStore) {
   yield* [
     takeEvery(['NAVIGATE'], navigate, dataStore),
     watchCardEdits(dataStore),
@@ -228,11 +257,11 @@ export function* beforeEditScreenChange() {
   return action.type !== 'FAIL_SAVE_CARD';
 }
 
-export function syncEditChanges(dataStore, stateStore) {
+export function syncEditChanges(dataStore: DataStore, store: Store<State>) {
   dataStore.changes.on('card', change => {
-    const cardBeingEdited = getActiveRecord(stateStore.getState()).card;
+    const cardBeingEdited = getActiveRecord(store.getState()).card;
     if (cardBeingEdited && cardBeingEdited._id === change.id) {
-      stateStore.dispatch({ type: 'SYNC_EDIT_CARD', card: change.doc });
+      store.dispatch({ type: 'SYNC_EDIT_CARD', card: change.doc });
     }
   });
 }

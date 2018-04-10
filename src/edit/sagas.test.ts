@@ -18,6 +18,19 @@ import reducer from '../reducer';
 import EditorState from './EditorState';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
+import { generateCard } from '../../test/testcommon';
+
+declare global {
+  namespace NodeJS {
+    interface Global {
+      location: {
+        pathname?: string;
+        search?: string;
+        hash?: string;
+      };
+    }
+  }
+}
 
 const loadingState = formId => ({
   edit: {
@@ -48,6 +61,8 @@ const dirtyState = (formId, cardToUse) => {
   };
 };
 
+const initialState = reducer(undefined, { type: 'none' });
+
 describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
     const dataStore = { getCard: id => ({ _id: id }) };
@@ -57,6 +72,7 @@ describe('sagas:edit navigate', () => {
       dataStore,
       routeActions.navigate({ url: '/cards/123' })
     )
+      .withState(initialState)
       .put(editActions.loadCard('123'))
       .call([dataStore, 'getCard'], '123')
       .run();
@@ -70,6 +86,7 @@ describe('sagas:edit navigate', () => {
       dataStore,
       routeActions.navigate({ path: '/cards/123' })
     )
+      .withState(initialState)
       .put(editActions.loadCard('123'))
       .call([dataStore, 'getCard'], '123')
       .run();
@@ -110,7 +127,8 @@ describe('sagas:edit navigate', () => {
   });
 
   it('dispatches a finished action if the load successfully complete', () => {
-    const dataStore = { getCard: id => ({ _id: id }) };
+    const card = generateCard('123');
+    const dataStore = { getCard: id => ({ ...card, _id: id }) };
 
     return expectSaga(
       navigateSaga,
@@ -120,12 +138,12 @@ describe('sagas:edit navigate', () => {
       .put(editActions.loadCard('123'))
       .call([dataStore, 'getCard'], '123')
       .withState(loadingState('123'))
-      .put(editActions.finishLoadCard('123', { _id: '123' }))
+      .put(editActions.finishLoadCard('123', card))
       .run();
   });
 
   it('dispatches a failed action if the load failed to complete', () => {
-    const error = { status: 404, name: 'not_found' };
+    const error = { status: 404, name: 'not_found', message: 'Not found' };
     const dataStore = {
       getCard: () =>
         new Promise((resolve, reject) => {
@@ -229,7 +247,12 @@ describe('sagas:edit watchCardEdits', () => {
       .withState(emptyState(formId))
       .dispatch(editActions.saveEditCard(formId))
       .not.call([dataStore, 'putCard'], {})
-      .not.put(editActions.failSaveCard(formId, 'No card to save'))
+      .not.put(
+        editActions.failSaveCard(formId, {
+          name: 'no_card',
+          message: 'No card to save',
+        })
+      )
       .silentRun(100);
   });
 
@@ -298,7 +321,7 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('dispatches a failed action when the card cannot be saved', () => {
-    const error = { status: 404, name: 'not_found' };
+    const error = { status: 404, name: 'not_found', message: 'Not found' };
     const dataStore = {
       putCard: () =>
         new Promise((resolve, reject) => {
@@ -425,7 +448,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
     const state = {
       edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
     };
-    const error = { message: 'too bad' };
+    const error = { name: 'too_bad', message: 'too bad' };
 
     return expectSaga(beforeEditScreenChangeSaga)
       .withState(state)

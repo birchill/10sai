@@ -7,7 +7,7 @@ import { all } from 'redux-saga/effects';
 
 import reducer from './reducer';
 
-import { editSagas, syncEditChanges } from './edit/sagas';
+import { editSagas, syncEditChanges } from './edit/sagas.ts';
 import reviewSagas from './review/sagas';
 import routeSagas from './route/sagas';
 import syncSagas from './sync/sagas';

@@ -1,6 +1,6 @@
 import { takeEvery, call, put, race, select, take } from 'redux-saga/effects';
 import { routeFromURL, routesEqual } from './router';
-import { beforeEditScreenChange } from '../edit/sagas';
+import { beforeEditScreenChange } from '../edit/sagas.ts';
 import * as routeActions from './actions';
 
 // Selectors

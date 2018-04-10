@@ -1,3 +1,5 @@
+import { Card } from '../src/model';
+
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export function waitForEvents(cycles = 1) {
@@ -21,9 +23,9 @@ export function waitForEvents(cycles = 1) {
 // Non-new cards will have a review time 3 days before the passed-in
 // |reviewTime|.
 export function generateCards(
-  maxNewCards,
-  maxExistingCards,
-  reviewTime = new Date()
+  maxNewCards: number,
+  maxExistingCards: number,
+  reviewTime: number = Date.now()
 ) {
   const cards = new Array(Math.max(maxNewCards, maxExistingCards));
   for (let i = 0; i < cards.length; i++) {
@@ -39,4 +41,23 @@ export function generateCards(
     };
   }
   return cards;
+}
+
+// Generates a complete Card with _id |id| and all other members filled in with
+// dummy values.
+export function generateCard(id: string): Card {
+  return {
+    _id: id,
+    question: 'Question',
+    answer: 'Answer',
+    keywords: [],
+    tags: [],
+    starred: false,
+    created: Date.now(),
+    modified: Date.now(),
+    progress: {
+      level: 1,
+      reviewed: new Date(Date.now()),
+    },
+  };
 }
