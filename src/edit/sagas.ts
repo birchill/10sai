@@ -15,7 +15,7 @@ import {
   URLFromRoute,
   routesEqual,
 } from '../route/router';
-import { EditState, EditFormState } from './reducer';
+import { EditState, EditFormState, FormId } from './reducer';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
 import EditorState from './EditorState';
@@ -79,7 +79,7 @@ export function* navigate(dataStore: DataStore, action: NavigateAction) {
 
 export function* save(
   dataStore: DataStore,
-  formId: editActions.FormId,
+  formId: FormId,
   card: Partial<Card>
 ) {
   try {
@@ -119,11 +119,7 @@ export function* save(
   }
 }
 
-function* autoSave(
-  dataStore: DataStore,
-  formId: editActions.FormId,
-  card: Partial<Card>
-) {
+function* autoSave(dataStore: DataStore, formId: FormId, card: Partial<Card>) {
   // Debounce -- we allow this part of the task to be cancelled
   // eslint-disable-next-line no-unused-vars
   const { wait, cancel } = yield race({

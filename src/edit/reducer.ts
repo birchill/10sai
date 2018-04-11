@@ -21,6 +21,8 @@ import { StoreError } from '../store/DataStore';
 //   [ saveError ]
 // }
 
+export type FormId = string | number;
+
 export interface EditFormState {
   formId: string | number;
   // XXX Convert EditorState into an enum type?

@@ -8,7 +8,7 @@ import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound.jsx';
 import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
-import { EditState, EditFormState } from '../edit/reducer';
+import { EditState, EditFormState, FormId } from '../edit/reducer';
 import * as routeActions from '../route/actions';
 import KeywordSuggester from '../suggestions/KeywordSuggester';
 import TagSuggester from '../suggestions/TagSuggester';
@@ -20,8 +20,8 @@ interface Props {
     active: EditFormState;
   };
   active: boolean;
-  onEdit: (id: editActions.FormId, change: Partial<Card>) => void;
-  onDelete: (id: editActions.FormId) => void;
+  onEdit: (id: FormId, change: Partial<Card>) => void;
+  onDelete: (id: FormId) => void;
 }
 
 export class EditCardScreen extends React.PureComponent<Props> {
@@ -113,10 +113,10 @@ const mapStateToProps = (state: any) => ({
   forms: (state.edit as EditState).forms,
 });
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
-  onEdit: (formId: editActions.FormId, card: Partial<Card>) => {
+  onEdit: (formId: FormId, card: Partial<Card>) => {
     dispatch(editActions.editCard(formId, card));
   },
-  onDelete: (formId: editActions.FormId) => {
+  onDelete: (formId: FormId) => {
     dispatch(editActions.deleteEditCard(formId));
     dispatch(routeActions.followLink('/'));
   },

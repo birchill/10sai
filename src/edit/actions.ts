@@ -1,10 +1,9 @@
 import { Card } from '../model';
+import { FormId } from './reducer';
 import { CardChange } from '../store/cards/CardStore';
 import { StoreError } from '../store/DataStore';
 
 let id = 0;
-
-export type FormId = string | number;
 
 // Generate a unique sequence number for each new card. This is used to track
 // new cards when performing async actions that occur before they are saved
