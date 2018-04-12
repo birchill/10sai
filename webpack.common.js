@@ -44,6 +44,7 @@ module.exports = {
               loader: 'sass-loader',
               options: {
                 includePaths: [path.resolve(__dirname, './scss')],
+                sourceMap: true,
               },
             },
           ],
@@ -59,8 +60,11 @@ module.exports = {
     ],
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
+
   plugins: [
     new ExtractTextPlugin({ filename: '10sai.css', allChunks: true }),
+
+    // No idea if I actually need this anymore.
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
     }),

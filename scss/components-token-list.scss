@@ -12,17 +12,17 @@
   // suggestions as needed.
   height: auto;
 
-  --text-color: $text-color;
-  --chip-fgcolor: $highlight;
-  --chip-bgcolor: lighten($highlight, 50%);
-  --suggestion-label-color: $standard-grey;
-  --suggestion-fgcolor: $highlight;
-  --suggestion-bgcolor: lighten($highlight, 50%);
+  --text-color: #{$text-color};
+  --chip-fgcolor: #{$highlight};
+  --chip-bgcolor: #{lighten($highlight, 50%)};
+  --suggestion-label-color: #{$standard-grey};
+  --suggestion-fgcolor: #{$highlight};
+  --suggestion-bgcolor: #{lighten($highlight, 50%)};
   --mark-bgcolor: yellow;
-  --mark-fgcolor: $text-color;
-  --loading-fgcolor: $standard-grey;
-  --loading-bgcolor: $really-light-grey;
-  --indicator-color: $light-grey;
+  --mark-fgcolor: #{$text-color};
+  --loading-fgcolor: #{$standard-grey};
+  --loading-bgcolor: #{$really-light-grey};
+  --indicator-color: #{$light-grey};
 
   > .input {
     display: flex;
@@ -191,17 +191,17 @@
   }
 
   &.-yellow {
-    --text-color: $keyword-yellow-dark;
-    --chip-fgcolor: $keyword-yellow-dark;
-    --chip-bgcolor: lighten($keyword-yellow, 5%);
-    --suggestion-label-color: $keyword-yellow-dark;
-    --suggestion-fgcolor: $keyword-yellow-dark;
-    --suggestion-bgcolor: lighten($keyword-yellow, 10%); // white, but, oh well
+    --text-color: #{$keyword-yellow-dark};
+    --chip-fgcolor: #{$keyword-yellow-dark};
+    --chip-bgcolor: #{lighten($keyword-yellow, 5%)};
+    --suggestion-label-color: #{$keyword-yellow-dark};
+    --suggestion-fgcolor: #{$keyword-yellow-dark};
+    --suggestion-bgcolor: #{lighten($keyword-yellow, 10%)}; // white, but, oh well
     --mark-bgcolor: white;
-    --mark-fgcolor: $text-color;
-    --loading-fgcolor: desaturate($keyword-yellow-dark, 80%);
+    --mark-fgcolor: #{$text-color};
+    --loading-fgcolor: #{desaturate($keyword-yellow-dark, 80%)};
     --loading-bgcolor: rgba(255, 255, 255, 0.7);
-    --indicator-color: $keyword-yellow-dark;
+    --indicator-color: #{$keyword-yellow-dark};
 
     background-color: $keyword-yellow;
     border-color: $keyword-yellow-dark;
