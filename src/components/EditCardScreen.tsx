@@ -5,7 +5,7 @@ import { Dispatch, connect } from 'react-redux';
 import { Card } from '../model';
 import EditCardToolbar from './EditCardToolbar.jsx';
 import EditCardForm from './EditCardForm';
-import EditCardNotFound from './EditCardNotFound.jsx';
+import EditCardNotFound from './EditCardNotFound';
 import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
 import { EditState, EditFormState, FormId } from '../edit/reducer';
