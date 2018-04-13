@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import SyncState from '../sync/states';
-import Link from './Link.jsx';
+import Link from './Link.tsx';
 
 export class Navbar extends React.PureComponent {
   static get propTypes() {

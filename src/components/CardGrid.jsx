@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CardPreview from './CardPreview.jsx';
-import Link from './Link.jsx';
+import Link from './Link.tsx';
 import VirtualGrid from './VirtualGrid.jsx';
 
 export class CardGrid extends React.PureComponent {
@@ -10,17 +10,15 @@ export class CardGrid extends React.PureComponent {
   }
 
   static renderTemplateCard() {
-    return (
-      <CardPreview
-        _id="template"
-        question="Template" />);
+    return <CardPreview _id="template" question="Template" />;
   }
 
   static renderCard(item) {
     return (
       <Link href={`/cards/${item._id}`}>
         <CardPreview {...item} />
-      </Link>);
+      </Link>
+    );
   }
 
   constructor(props) {
@@ -52,7 +50,9 @@ export class CardGrid extends React.PureComponent {
         items={this.state.cards}
         className="card-grid"
         renderItem={CardGrid.renderCard}
-        renderTemplateItem={CardGrid.renderTemplateCard} />);
+        renderTemplateItem={CardGrid.renderTemplateCard}
+      />
+    );
   }
 }
 

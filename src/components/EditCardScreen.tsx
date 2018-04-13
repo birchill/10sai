@@ -101,7 +101,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
             }}
           />
         ) : (
-          <EditCardNotFound deleted={this.props.forms.active.deleted} />
+          <EditCardNotFound deleted={!!this.props.forms.active.deleted} />
         )}
       </section>
     );

@@ -1,13 +1,27 @@
-import React from 'react';
+import React, { AnchorHTMLAttributes } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { Dispatch, connect } from 'react-redux';
+import { Overwrite } from '../utils/type-helpers';
 import * as routeActions from '../route/actions';
 
 // This function is copied from react-router.
-const isModifiedEvent = evt =>
+const isModifiedEvent = (evt: React.MouseEvent<HTMLAnchorElement>) =>
   !!(evt.metaKey || evt.altKey || evt.ctrlKey || evt.shiftKey);
 
-class Link extends React.PureComponent {
+interface LocalProps {
+  href: string;
+  direction?: 'backwards' | 'replace' | 'forwards';
+  onClick?: (href: string) => void;
+  active?: boolean;
+}
+
+type Props = Overwrite<AnchorHTMLAttributes<HTMLAnchorElement>, LocalProps>;
+
+interface DefaultProps {
+  direction: 'forwards';
+}
+
+class Link extends React.PureComponent<Props> {
   static get propTypes() {
     return {
       href: PropTypes.string.isRequired,
@@ -18,18 +32,18 @@ class Link extends React.PureComponent {
     };
   }
 
-  static get defaultProps() {
+  static get defaultProps(): DefaultProps {
     return {
       direction: 'forwards',
     };
   }
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
     this.handleClick = this.handleClick.bind(this);
   }
 
-  handleClick(e) {
+  handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
     // Ignore the event if...
     if (
       e.button !== 0 || // ... it's a right-click
@@ -47,8 +61,7 @@ class Link extends React.PureComponent {
   }
 
   render() {
-    const { href, ...rest } = this.props;
-    delete rest.active;
+    const { href, active, ...rest } = this.props;
     return (
       <a href={href} {...rest} onClick={this.handleClick}>
         {this.props.children}
@@ -57,19 +70,37 @@ class Link extends React.PureComponent {
   }
 }
 
-const mapDispatchToProps = (dispatch, props) => ({
-  onClick: href => {
+interface DispatchProps {
+  onClick: (href: string) => void;
+}
+
+const mapDispatchToProps = (
+  dispatch: Dispatch<any>,
+  props: Props
+): DispatchProps => ({
+  onClick: (href: string) => {
     dispatch(routeActions.followLink(href, props.direction, props.active));
   },
 });
 
-const mergeProps = (stateProps, dispatchProps, ownProps) => {
+type ParentProps = Overwrite<
+  Props,
+  {
+    onClick?: (href: string, originalHandler: (href: string) => void) => void;
+  }
+>;
+
+const mergeProps = (
+  stateProps: never,
+  dispatchProps: DispatchProps,
+  ownProps: ParentProps
+): Props => {
   // If the component has its own 'onClick' prop, then use that and pass the
   // default implementation (from |dispatchProps|) as an argument to it.
   const onClickWrapper = ownProps.onClick
     ? {
-        onClick: href =>
-          ownProps.onClick(href, dispatchProps.onClick.bind(this, href)),
+        onClick: (href: string) =>
+          ownProps.onClick!(href, dispatchProps.onClick.bind(this, href)),
       }
     : undefined;
   return Object.assign({}, ownProps, stateProps, dispatchProps, onClickWrapper);

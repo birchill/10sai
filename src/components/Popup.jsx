@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import * as routeActions from '../route/actions';
-import Link from './Link.jsx';
+import Link from './Link.tsx';
 
 export class Popup extends React.PureComponent {
   static get propTypes() {

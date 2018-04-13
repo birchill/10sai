@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import CardGrid from './CardGrid.jsx';
-import Link from './Link.jsx';
+import Link from './Link.tsx';
 import LoadingIndicator from './LoadingIndicator.tsx';
 import Navbar from './Navbar.jsx';
 import SyncState from '../sync/states';

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import ReviewState from '../review/states';
 
-import Link from './Link.jsx';
+import Link from './Link.tsx';
 import LoadingIndicator from './LoadingIndicator.tsx';
 import ReviewPanelContainer from './ReviewPanelContainer.jsx';
 import TricolorProgress from './TricolorProgress.jsx';

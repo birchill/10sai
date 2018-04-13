@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Link from './Link.jsx';
+import Link from './Link';
 import TabBlock from './TabBlock.jsx';
 
 interface Props {

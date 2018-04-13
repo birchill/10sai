@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Link from './Link.jsx';
+import Link from './Link';
 import EditorState from '../edit/EditorState';
 
 interface Props {

@@ -1,11 +1,13 @@
 import React from 'react';
 
-import Link from './Link.jsx';
+import Link from './Link.tsx';
 
 class LookupToolbar extends React.PureComponent {
   constructor(props) {
     super(props);
-    this.assignSearchBox = elem => { this.searchBox = elem; };
+    this.assignSearchBox = elem => {
+      this.searchBox = elem;
+    };
   }
 
   focus() {
@@ -25,7 +27,8 @@ class LookupToolbar extends React.PureComponent {
             className="search -compact -rounded -icon -search"
             spellCheck="false"
             aria-label="Lookup"
-            ref={this.assignSearchBox} />
+            ref={this.assignSearchBox}
+          />
         </div>
         <Link href="/lookup/settings" className="settings-button -right">
           Settings
