@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Dispatch, connect } from 'react-redux';
 
 import { Card } from '../model';
-import EditCardToolbar from './EditCardToolbar.jsx';
+import EditCardToolbar from './EditCardToolbar';
 import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound';
 import EditorState from '../edit/EditorState';

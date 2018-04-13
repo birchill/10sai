@@ -2,9 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Link from './Link.jsx';
-import EditorState from '../edit/EditorState.ts';
+import EditorState from '../edit/EditorState';
 
-export class EditCardToolbar extends React.PureComponent {
+interface Props {
+  editorState: symbol;
+  onDelete: () => void;
+}
+
+export class EditCardToolbar extends React.PureComponent<Props> {
   static get propTypes() {
     return {
       editorState: PropTypes.symbol.isRequired,
