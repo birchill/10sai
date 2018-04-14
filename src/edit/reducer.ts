@@ -1,4 +1,3 @@
-// XXX Are there bindings for this?
 import deepEqual from 'deep-equal';
 import EditorState from './EditorState';
 import { Card } from '../model';
