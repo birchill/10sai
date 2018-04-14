@@ -134,6 +134,7 @@ export function edit(
         ...(Object.keys(action.card) as Array<keyof Card>).filter(
           field =>
             field !== '_id' &&
+            field !== 'modified' &&
             !deepEqual(action.card[field], state.forms.active.card[field]) &&
             // This use of indexOf is not awesome but generally dirtyFields will
             // be 0 ~ 1 items so it's probably ok.
@@ -166,6 +167,7 @@ export function edit(
       >).filter(
         field =>
           field !== '_id' &&
+          field !== 'modified' &&
           !deepEqual(action.card[field], state.forms.active.card[field])
       );
       const editorState = dirtyFields.length
@@ -219,7 +221,8 @@ export function edit(
       }
 
       const card: Partial<Card> = {};
-      // XXX Work out how to annotate field as keyof Card so we can drop all the type assertions below
+      // XXX Work out how to annotate field as keyof Card so we can drop all the
+      // type assertions below
       for (const field in action.card) {
         if (action.card.hasOwnProperty(field)) {
           card[field as keyof Card] =

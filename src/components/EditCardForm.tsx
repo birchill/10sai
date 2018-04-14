@@ -90,7 +90,10 @@ export class EditCardForm extends React.Component<Props, State> {
     // data has changed.
     if (
       !this.keywordText &&
-      (nextProps.card.question || nextProps.card.answer)
+      (nextProps.card.question ||
+        nextProps.card.answer ||
+        this.props.card.question ||
+        this.props.card.answer)
     ) {
       this.updateKeywordSuggestions(nextProps.card);
     }
