@@ -187,22 +187,20 @@ export default function review(state = initialState, action) {
       // Update failed queues
       let finished = true;
       let { failedCardsLevel1, failedCardsLevel2 } = state;
-      if (passedCard.progress.level === 0) {
-        let failedIndex = failedCardsLevel2.indexOf(passedCard);
+      let failedIndex = failedCardsLevel2.indexOf(passedCard);
+      if (failedIndex !== -1) {
+        // Move from queue two queue one
+        failedCardsLevel2 = failedCardsLevel2.slice();
+        failedCardsLevel2.splice(failedIndex, 1);
+        failedCardsLevel1 = failedCardsLevel1.slice();
+        failedCardsLevel1.push(updatedCard);
+        finished = false;
+      } else {
+        failedIndex = failedCardsLevel1.indexOf(passedCard);
         if (failedIndex !== -1) {
-          // Move from queue two queue one
-          failedCardsLevel2 = failedCardsLevel2.slice();
-          failedCardsLevel2.splice(failedIndex, 1);
+          // Drop from queue one
           failedCardsLevel1 = failedCardsLevel1.slice();
-          failedCardsLevel1.push(updatedCard);
-          finished = false;
-        } else {
-          failedIndex = failedCardsLevel1.indexOf(passedCard);
-          if (failedIndex !== -1) {
-            // Drop from queue one
-            failedCardsLevel1 = failedCardsLevel1.slice();
-            failedCardsLevel1.splice(failedIndex, 1);
-          }
+          failedCardsLevel1.splice(failedIndex, 1);
         }
       }
 
@@ -223,6 +221,13 @@ export default function review(state = initialState, action) {
           updatedCard.progress.level = 0.5;
         }
         updatedCard.progress.reviewed = state.reviewTime;
+      } else {
+        // Sometimes it seems like we can end up with a card in one of the
+        // failed queues without a progress of zero. It's not clear why this
+        // happens: a sync where the chosen review record and progress record
+        // don't match? In any case, to be sure, force the progress to zero
+        // here.
+        updatedCard.progress.level = 0;
       }
       const completed = finished ? state.completed + 1 : state.completed;
 

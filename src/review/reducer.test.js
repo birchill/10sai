@@ -218,6 +218,30 @@ describe('reducer:review', () => {
     expect(updatedState.failedCardsLevel2).toEqual([cards[1]]);
   });
 
+  it('should update the failed cards queues on PASS_CARD for a recently failed card with incorrect progress', () => {
+    const [initialState, cards] = newReview(1, 3);
+
+    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    expect(updatedState.currentCard).toEqual(cards[0]);
+
+    updatedState = subject(updatedState, failCard(0));
+    expect(updatedState.failedCardsLevel2).toEqual([cards[0]]);
+
+    // Make the progress incorrect. I'm not sure exactly how this
+    // happens--probably a messed-up sync--but it has been observed to happen
+    // at least once anyway.
+    updatedState.failedCardsLevel2[0].progress.level = 13;
+
+    updatedState = subject(updatedState, passCard(0));
+    expect(updatedState.currentCard).toEqual(cards[0]);
+
+    updatedState = subject(updatedState, passCard(0));
+
+    expect(updatedState.failedCardsLevel1).toEqual([cards[0]]);
+    expect(updatedState.failedCardsLevel1[0].progress.level).toEqual(0);
+    expect(updatedState.failedCardsLevel2).toEqual([]);
+  });
+
   it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
     const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 3; // 3 day span
