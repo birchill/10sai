@@ -11,8 +11,8 @@ import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 class TextRegion extends React.Component {
   static get propTypes() {
     return {
-      text: PropTypes.string.isRequired,
       className: PropTypes.string,
+      children: PropTypes.node,
     };
   }
 
@@ -106,7 +106,7 @@ class TextRegion extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.text !== nextProps.text) {
+    if (this.props.children !== nextProps.children) {
       this.needsSizeUpdate = true;
     }
   }
@@ -182,7 +182,7 @@ class TextRegion extends React.Component {
         data-size={this.state.size}
       >
         <div className="text" ref={this.assignTextElem}>
-          {this.props.text}
+          {this.props.children}
         </div>
       </div>
     );
