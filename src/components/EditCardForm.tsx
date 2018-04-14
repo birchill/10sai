@@ -85,9 +85,9 @@ export class EditCardForm extends React.Component<Props, State> {
   }
 
   componentWillReceiveProps(nextProps: Props) {
-    // If we have (or will have) card data, but there's no current text in
-    // the keywords box, make sure we update the suggestions in case the card
-    // data has changed.
+    // If we have (or will have, or did have) card data, but there's no current
+    // text in the keywords box, make sure we update the suggestions in case the
+    // card data has changed.
     if (
       !this.keywordText &&
       (nextProps.card.question ||
