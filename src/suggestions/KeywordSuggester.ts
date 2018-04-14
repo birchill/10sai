@@ -13,7 +13,7 @@ import {
   CharacterClass,
 } from '../text/japanese';
 
-const MAX_SESSION_KEYWORDS = 3;
+const MAX_SESSION_KEYWORDS = 6;
 const MAX_SUGGESTIONS = 6;
 const LOOKUP_CACHE_SIZE = 15;
 
