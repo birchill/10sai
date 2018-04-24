@@ -34,3 +34,14 @@ export interface Review {
   failedCardsLevel1: string[];
   failedCardsLevel2: string[];
 }
+
+/**
+ * A note.
+ */
+export interface Note {
+  id: string;
+  keywords: string[];
+  content: string;
+  created: number;
+  modified: number;
+}

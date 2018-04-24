@@ -5,9 +5,26 @@ import PouchDB from 'pouchdb';
 
 import DataStore from '../DataStore';
 import CardStore from './CardStore';
+import { generateUniqueTimestampId } from '../utils';
 import { waitForEvents } from '../../../test/testcommon';
+import { AtomicBlockUtils } from 'draft-js';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
+
+// Let tests override generateUniqueTimestampId;
+let mockGenerateUniqueTimestampId;
+jest.mock('../utils', () => {
+  const utils = require.requireActual('../utils');
+  const originalGenerateUniqueTimestampId = utils.generateUniqueTimestampId;
+  return {
+    ...utils,
+    generateUniqueTimestampId: () => {
+      return mockGenerateUniqueTimestampId
+        ? mockGenerateUniqueTimestampId()
+        : originalGenerateUniqueTimestampId();
+    },
+  };
+});
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -227,8 +244,7 @@ describe('CardStore progress reporting', () => {
   it('deletes the card when the corresponding progress record cannot be created', async () => {
     // Override ID generation so we can ensure there will be a conflicting
     // progress record.
-    const originalGenerateCardId = CardStore.generateCardId;
-    CardStore.generateCardId = () => 'abc';
+    mockGenerateUniqueTimestampId = () => 'abc';
 
     let testRemote;
     try {
@@ -263,7 +279,7 @@ describe('CardStore progress reporting', () => {
       if (testRemote) {
         testRemote.destroy();
       }
-      CardStore.generateCardId = originalGenerateCardId;
+      mockGenerateUniqueTimestampId = undefined;
     }
   });
 

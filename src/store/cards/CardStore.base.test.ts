@@ -5,6 +5,7 @@ import PouchDB from 'pouchdb';
 
 import DataStore from '../DataStore';
 import CardStore from './CardStore';
+import { generateUniqueTimestampId } from '../utils';
 import { waitForEvents } from '../../../test/testcommon';
 import { syncWithWaitableRemote } from '../test-utils';
 import { CardRecord } from './records';
@@ -111,7 +112,7 @@ describe('CardStore', () => {
   it('generates unique ascending IDs', () => {
     let prevId = '';
     for (let i = 0; i < 100; i++) {
-      const id = CardStore.generateCardId();
+      const id = generateUniqueTimestampId();
       expect(id > prevId).toBeTruthy();
       prevId = id;
     }

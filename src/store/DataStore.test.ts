@@ -2,6 +2,7 @@ import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
 import CardStore from './cards/CardStore';
+import { generateUniqueTimestampId } from './utils';
 import { Card } from '../model';
 import { waitForEvents } from '../../test/testcommon';
 
@@ -141,7 +142,7 @@ describe('DataStore remote sync', () => {
     const firstCard: Partial<Card> = {
       question: 'Question 1',
       answer: 'Answer 1',
-      _id: CardStore.generateCardId(),
+      _id: generateUniqueTimestampId(),
       created: now,
       modified: now,
       keywords: [],
@@ -151,7 +152,7 @@ describe('DataStore remote sync', () => {
     const secondCard: Partial<Card> = {
       question: 'Question 2',
       answer: 'Answer 2',
-      _id: CardStore.generateCardId(),
+      _id: generateUniqueTimestampId(),
       created: now,
       modified: now,
       keywords: [],
@@ -206,7 +207,7 @@ describe('DataStore remote sync', () => {
     const card = {
       question: 'Question',
       answer: 'Answer',
-      _id: CardStore.generateCardId(),
+      _id: generateUniqueTimestampId(),
       created: JSON.parse(JSON.stringify(new Date())),
     };
 
@@ -274,7 +275,7 @@ describe('DataStore remote sync', () => {
     testRemote.put({
       question: 'Question',
       answer: 'Answer',
-      _id: 'card-' + CardStore.generateCardId(),
+      _id: 'card-' + generateUniqueTimestampId(),
     });
   });
 
@@ -296,7 +297,7 @@ describe('DataStore remote sync', () => {
       docs.push({
         question: `Question ${i + 1}`,
         answer: `Answer ${i + 1}`,
-        _id: CardStore.generateCardId(),
+        _id: generateUniqueTimestampId(),
       });
     }
 
@@ -383,7 +384,7 @@ describe('DataStore remote sync', () => {
       remoteDocs.push({
         question: `Remote question ${i + 1}`,
         answer: `Remote answer ${i + 1}`,
-        _id: CardStore.generateCardId(),
+        _id: generateUniqueTimestampId(),
       });
     }
 
@@ -418,7 +419,7 @@ describe('DataStore remote sync', () => {
       docs.push({
         question: `Question ${i + 1}`,
         answer: `Answer ${i + 1}`,
-        _id: CardStore.generateCardId(),
+        _id: generateUniqueTimestampId(),
       });
     }
 

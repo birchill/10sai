@@ -1,3 +1,35 @@
+let prevTimeStamp = 0;
+
+/**
+ * Generates a unique ID that should at least roughly reflect the current
+ * timestamp such that subsequent calls to this produce IDs that are in
+ * ascending order.
+ */
+export const generateUniqueTimestampId = (): string => {
+  // Start off with the number of milliseconds since 1 Jan 2016.
+  let timestamp = Date.now() - Date.UTC(2016, 0, 1);
+
+  // We need to make sure we don't overlap with previous records however.
+  // If we do, we just keep incrementing the timestamp---that might mean the
+  // sorting results are slightly off if, for example, we do a bulk import of
+  // 10,000 cards while simultaneously adding cards on another device, but
+  // it's good enough.
+  if (timestamp <= prevTimeStamp) {
+    timestamp = ++prevTimeStamp;
+  }
+  prevTimeStamp = timestamp;
+
+  const id =
+    // We take the timestamp, converted to base 36, and zero-pad it so it
+    // collates correctly for at least 50 years...
+    `0${timestamp.toString(36)}`.slice(-8) +
+    // ...then add a random 3-digit sequence to the end in case we
+    // simultaneously add a card on another device at precisely the same
+    // millisecond.
+    `00${Math.floor(Math.random() * 46656).toString(36)}`.slice(-3);
+  return id;
+};
+
 /**
  * Keep trying to delete a document if conflicts are encountered.
  */

@@ -4,7 +4,7 @@ import { Card, Progress } from '../../model';
 import { CARD_PREFIX, PROGRESS_PREFIX } from './records';
 import { CardRecord, ProgressRecord } from './records';
 import { DeepPartial, MakeOptional, Omit } from '../../utils/type-helpers';
-import { stubbornDelete } from '../utils';
+import { generateUniqueTimestampId, stubbornDelete } from '../utils';
 
 const stripCardPrefix = (id: string) => id.substr(CARD_PREFIX.length);
 const stripProgressPrefix = (id: string) => id.substr(PROGRESS_PREFIX.length);
@@ -78,8 +78,6 @@ interface StringsAndFrequency {
   value: number;
   key: string[2];
 }
-
-let prevTimeStamp = 0;
 
 export class CardStore {
   db: PouchDB.Database;
@@ -254,7 +252,7 @@ export class CardStore {
         }
         // If we put the card and there was a conflict, it must mean we
         // chose an overlapping ID. Just keep trying until it succeeds.
-        return tryPutNewCard(card, progress, db, CardStore.generateCardId());
+        return tryPutNewCard(card, progress, db, generateUniqueTimestampId());
       }
 
       const newCard: CardRecord = {
@@ -285,7 +283,7 @@ export class CardStore {
       <Omit<CardRecord, '_id'>>cardToPut,
       progressToPut,
       this.db,
-      CardStore.generateCardId()
+      generateUniqueTimestampId()
     );
   }
 
@@ -481,31 +479,6 @@ export class CardStore {
       // Finally sort by string value
       return valueA.localeCompare(valueB);
     };
-  }
-
-  static generateCardId() {
-    // Start off with the number of milliseconds since 1 Jan 2016.
-    let timestamp = Date.now() - Date.UTC(2016, 0, 1);
-
-    // We need to make sure we don't overlap with previous records however.
-    // If we do, we just keep incrementing the timestamp---that might mean the
-    // sorting results are slightly off if, for example, we do a bulk import of
-    // 10,000 cards while simultaneously adding cards on another device, but
-    // it's good enough.
-    if (timestamp <= prevTimeStamp) {
-      timestamp = ++prevTimeStamp;
-    }
-    prevTimeStamp = timestamp;
-
-    const id =
-      // We take the timestamp, converted to base 36, and zero-pad it so it
-      // collates correctly for at least 50 years...
-      `0${timestamp.toString(36)}`.slice(-8) +
-      // ...then add a random 3-digit sequence to the end in case we
-      // simultaneously add a card on another device at precisely the same
-      // millisecond.
-      `00${Math.floor(Math.random() * 46656).toString(36)}`.slice(-3);
-    return id;
   }
 
   async updateViews(reviewTime: Date) {

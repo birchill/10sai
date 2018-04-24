@@ -1,7 +1,7 @@
 import PouchDB from 'pouchdb';
 import EventEmitter from 'event-emitter';
 
-import { Card, Review } from '../model';
+import { Card, Note, Review } from '../model';
 import { DatabaseWithName } from './utils';
 import {
   CardRecord,
@@ -11,6 +11,7 @@ import {
 } from './cards/records';
 import { ReviewRecord } from './reviews/records';
 import { CardStore, GetCardsOptions } from './cards/CardStore';
+import NoteStore from './notes/NoteStore';
 import ReviewStore from './reviews/ReviewStore';
 import { REVIEW_PREFIX } from './reviews/records';
 
@@ -70,6 +71,7 @@ const VIEW_CLEANUP_DELAY = 5000; // 5s
 export class DataStore {
   db?: PouchDB.Database;
   cardStore: CardStore;
+  noteStore: NoteStore;
   reviewStore: ReviewStore;
 
   reviewTime: Date;
@@ -94,6 +96,7 @@ export class DataStore {
     this.cardStore = new CardStore(this.db, {
       prefetchViews: options && options.prefetchViews,
     });
+    this.noteStore = new NoteStore(this.db);
     this.reviewStore = new ReviewStore(this.db);
 
     this.viewCleanupScheduled = false;
@@ -128,6 +131,11 @@ export class DataStore {
   }
   getKeywords(prefix: string, limit: number): Promise<string[]> {
     return this.cardStore.getKeywords(prefix, limit);
+  }
+
+  // Note API
+  getNote(id: string): Promise<Note> {
+    return this.noteStore.getNote(id);
   }
 
   // Review API
