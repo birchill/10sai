@@ -5,8 +5,10 @@ import PouchDB from 'pouchdb';
 
 import DataStore from '../DataStore';
 import NoteStore from './NoteStore';
-import { NoteRecord } from './records';
+import { NOTE_PREFIX, NoteRecord } from './records';
 import { Note } from '../../model';
+import { syncWithWaitableRemote } from '../test-utils';
+import { stripFields } from '../../utils/type-helpers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
@@ -84,7 +86,39 @@ describe('NoteStore', () => {
     await expect(subject.deleteNote('abc')).resolves.toBeUndefined();
   });
 
-  it('resolves conflicts by choosing the most recently modified note', async () => {});
+  it('resolves conflicts by choosing the most recently modified note', async () => {
+    // Create a new note and get the ID
+    const localNote = await subject.putNote({
+      ...typicalNewNote,
+      content: 'Local',
+    });
+
+    // Create a new note with the same ID on the remote but with an older
+    // created/modified value.
+    await testRemote.put<NoteRecord>({
+      ...stripFields(typicalNewNote, ['id']),
+      _id: NOTE_PREFIX + localNote.id,
+      content: 'Remote',
+      created: localNote.created - 1,
+      modified: localNote.modified - 1,
+    });
+
+    // Now connect the two and let chaos ensue
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
+    await waitForIdle();
+
+    // Check that the conflict is gone...
+    const result = await testRemote.get<NoteRecord>(
+      NOTE_PREFIX + localNote.id,
+      {
+        conflicts: true,
+      }
+    );
+    expect(result._conflicts).toBeUndefined();
+    // ... and that we chose the right note
+    expect(result.content).toBe('Local');
+    expect(result.modified).toBe(localNote.modified);
+  });
 
   it('reports added notes', async () => {});
 

@@ -139,12 +139,13 @@ class NoteStore {
       return;
     }
 
-    /*
     await this.db.resolveConflicts(result, (a, b) => {
-      // XXX Compare the modified fields
-      // return completeness(a) >= completeness(b) ? a : b;
+      if (a.created > b.created) {
+        return a;
+      }
+
+      return a.modified >= b.created ? a : b;
     });
-    */
   }
 }
 

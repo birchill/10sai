@@ -13,6 +13,7 @@ import { ReviewRecord } from './reviews/records';
 import { CardStore, GetCardsOptions } from './cards/CardStore';
 import NoteStore from './notes/NoteStore';
 import ReviewStore from './reviews/ReviewStore';
+import { NOTE_PREFIX } from './notes/records';
 import { REVIEW_PREFIX } from './reviews/records';
 
 PouchDB.plugin(require('pouchdb-upsert'));
@@ -459,8 +460,11 @@ export class DataStore {
 
   async onSyncChange(docs: PouchDB.Core.ExistingDocument<RecordTypes>[]) {
     for (const doc of docs) {
-      if (doc._id.startsWith(REVIEW_PREFIX)) {
-        // eslint-disable-next-line no-await-in-loop
+      if (doc._id.startsWith(NOTE_PREFIX)) {
+        await this.noteStore.onSyncChange(<PouchDB.Core.ExistingDocument<
+          NoteRecord & PouchDB.Core.ChangesMeta
+        >>doc);
+      } else if (doc._id.startsWith(REVIEW_PREFIX)) {
         await this.reviewStore.onSyncChange(<PouchDB.Core.ExistingDocument<
           ReviewRecord & PouchDB.Core.ChangesMeta
         >>doc);
