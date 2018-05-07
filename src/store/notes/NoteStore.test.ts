@@ -37,7 +37,9 @@ describe('NoteStore', () => {
 
   it('returns a newly-added note', async () => {
     const putNote = await subject.putNote(typicalNewNote);
+
     const gotNote = await subject.getNote(putNote.id);
+
     expect(gotNote).toEqual(putNote);
   });
 
@@ -51,17 +53,36 @@ describe('NoteStore', () => {
   });
 
   it('updates a note', async () => {
-    /*
     const putNote = await subject.putNote(typicalNewNote);
-    const updatedNote = await subject.putNote({ content: 'Updated content' });
+
+    const updatedNote = await subject.putNote({
+      id: putNote.id,
+      content: 'Updated content',
+    });
+
     const gotNote = await subject.getNote(putNote.id);
-    expect(gotNote).toEqual({ ...putNote, content: 'Updated content' });
-     */
+    expect(gotNote).toEqual({
+      ...putNote,
+      content: 'Updated content',
+      modified: updatedNote.modified,
+    });
   });
 
-  it('does not return a deleted note', async () => {});
+  it('does not return a deleted note', async () => {
+    const putNote = await subject.putNote(typicalNewNote);
+    await subject.deleteNote(putNote.id);
 
-  it('fails silently when the note to be deleted cannot be found', async () => {});
+    await expect(subject.getNote(putNote.id)).rejects.toMatchObject({
+      status: 404,
+      name: 'not_found',
+      message: 'missing',
+      reason: 'deleted',
+    });
+  });
+
+  it('fails silently when the note to be deleted cannot be found', async () => {
+    await expect(subject.deleteNote('abc')).resolves.toBeUndefined();
+  });
 
   it('resolves conflicts by choosing the most recently modified note', async () => {});
 
