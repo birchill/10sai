@@ -9,17 +9,16 @@ import {
   CARD_PREFIX,
   PROGRESS_PREFIX,
 } from './cards/records';
-import { ReviewRecord } from './reviews/records';
+import { REVIEW_PREFIX, ReviewRecord } from './reviews/records';
 import { CardStore, GetCardsOptions } from './cards/CardStore';
 import NoteStore from './notes/NoteStore';
 import ReviewStore from './reviews/ReviewStore';
-import { NOTE_PREFIX } from './notes/records';
-import { REVIEW_PREFIX } from './reviews/records';
+import { NOTE_PREFIX, NoteRecord } from './notes/records';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
 
-type RecordTypes = CardRecord | ProgressRecord | ReviewRecord;
+type RecordTypes = CardRecord | ProgressRecord | ReviewRecord | NoteRecord;
 
 // The way the typings for PouchDB-adapter-idb are set up, if you want to
 // specify 'storage' you also must specify adapter: 'pouchdb' but we don't want
