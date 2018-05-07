@@ -151,6 +151,7 @@ export class DataStore {
 
   // Topics include:
   // - card
+  // - note
   // - review
   get changes() {
     if (this.changesEmitter) {

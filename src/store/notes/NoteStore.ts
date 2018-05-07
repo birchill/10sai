@@ -121,7 +121,7 @@ class NoteStore {
       return;
     }
 
-    emit('note', parseNote(change.doc));
+    emit('note', parseNote(<NoteRecord>change.doc));
   }
 
   async onSyncChange(

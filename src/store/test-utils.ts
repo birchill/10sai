@@ -20,11 +20,15 @@ export const syncWithWaitableRemote = async (
   };
 };
 
-export const waitForChangeEvents = (dataStore, type, num) => {
-  const events = [];
+export const waitForChangeEvents = (
+  dataStore: DataStore,
+  type: string,
+  num: number
+) => {
+  const events: PouchDB.Core.ChangesResponseChange<{}>[] = [];
 
-  let resolver;
-  const promise = new Promise(resolve => {
+  let resolver: (e: typeof events) => void;
+  const promise = new Promise<typeof events>(resolve => {
     resolver = resolve;
   });
 
