@@ -7,57 +7,8 @@ import DataStore from '../DataStore';
 import NoteStore from './NoteStore';
 import { NoteRecord } from './records';
 import { Note } from '../../model';
-// import { waitForEvents } from '../../../test/testcommon';
-// import { syncWithWaitableRemote } from '../test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
-
-/*
-const waitForMs = ms =>
-  new Promise(resolve => {
-    setTimeout(resolve, ms);
-  });
-
-// Note: Using numbers other than 1 for 'num' might be unsafe since, if the
-// changes are to the same document they might get batched together.
-const waitForNumReviewChanges = (db, num) => {
-  let resolver;
-  const promise = new Promise(resolve => {
-    resolver = resolve;
-  });
-
-  let recordedChanges = 0;
-  db.changes({ since: 'now', live: true }).on('change', change => {
-    if (!change.id.startsWith('review-')) {
-      return;
-    }
-    if (++recordedChanges === num) {
-      resolver();
-    }
-  });
-
-  return promise;
-};
-
-const waitForNumReviewEvents = (dataStore, num) => {
-  const events = [];
-
-  let resolver;
-  const promise = new Promise(resolve => {
-    resolver = resolve;
-  });
-
-  let recordedChanges = 0;
-  dataStore.changes.on('review', change => {
-    events.push(change);
-    if (++recordedChanges === num) {
-      resolver(events);
-    }
-  });
-
-  return promise;
-};
- */
 
 describe('NoteStore', () => {
   let dataStore: DataStore;
@@ -89,4 +40,34 @@ describe('NoteStore', () => {
     const gotNote = await subject.getNote(putNote.id);
     expect(gotNote).toEqual(putNote);
   });
+
+  it('does not return a non-existent note', async () => {
+    await expect(subject.getNote('abc')).rejects.toMatchObject({
+      status: 404,
+      name: 'not_found',
+      message: 'missing',
+      reason: 'missing',
+    });
+  });
+
+  it('updates a note', async () => {
+    /*
+    const putNote = await subject.putNote(typicalNewNote);
+    const updatedNote = await subject.putNote({ content: 'Updated content' });
+    const gotNote = await subject.getNote(putNote.id);
+    expect(gotNote).toEqual({ ...putNote, content: 'Updated content' });
+     */
+  });
+
+  it('does not return a deleted note', async () => {});
+
+  it('fails silently when the note to be deleted cannot be found', async () => {});
+
+  it('resolves conflicts by choosing the most recently modified note', async () => {});
+
+  it('reports added notes', async () => {});
+
+  it('reports deleted notes', async () => {});
+
+  it('reports changes to notes', async () => {});
 });

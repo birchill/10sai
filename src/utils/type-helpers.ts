@@ -18,3 +18,17 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
  * A variant on Partial that applies to nested members too.
  */
 export type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
+
+/**
+ * A helper to strip certain fields from an object.
+ */
+export function stripFields<T extends object, K extends keyof T>(
+  o: T,
+  fields: K[]
+): Omit<T, K> {
+  const result: Partial<T> = { ...(<object>o) };
+  for (const field of fields) {
+    delete result[field];
+  }
+  return <Omit<T, K>>result;
+}

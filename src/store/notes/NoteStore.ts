@@ -1,19 +1,7 @@
 import { Note } from '../../model';
 import { NOTE_PREFIX, NoteRecord } from './records';
 import { generateUniqueTimestampId, stubbornDelete } from '../utils';
-import { Omit } from '../../utils/type-helpers';
-
-// XXX Move this somewhere
-function stripFields<T extends object, K extends keyof T>(
-  o: T,
-  fields: K[]
-): Omit<T, K> {
-  const result: Partial<T> = { ...(<object>o) };
-  for (const field of fields) {
-    delete result[field];
-  }
-  return <Omit<T, K>>result;
-}
+import { Omit, stripFields } from '../../utils/type-helpers';
 
 const parseNote = (note: NoteRecord): Note => {
   const result: Note = {

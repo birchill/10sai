@@ -74,25 +74,12 @@ describe('CardStore', () => {
   });
 
   it('does not return non-existent cards', async () => {
-    // TODO: We should be able to write this as:
-    //
-    // await expect(subject.getCard('abc')).rejects.toMatchObject({
-    //   status: 404,
-    //   name: 'not_found',
-    //   message: 'missing',
-    //   reason: 'missing',
-    // });
-    //
-    // But https://github.com/facebook/jest/issues/5359 :(
-    try {
-      await subject.getCard('abc');
-      expect(false).toBe(true);
-    } catch (err) {
-      expect(err.status).toBe(404);
-      expect(err.name).toBe('not_found');
-      expect(err.message).toBe('missing');
-      expect(err.reason).toBe('missing');
-    }
+    await expect(subject.getCard('abc')).rejects.toMatchObject({
+      status: 404,
+      name: 'not_found',
+      message: 'missing',
+      reason: 'missing',
+    });
   });
 
   it('does not return non-existent cards when fetching by id', async () => {
@@ -201,23 +188,12 @@ describe('CardStore', () => {
     const id = card._id;
     await subject.deleteCard(card._id);
 
-    // TODO: As before we should be able to write this as
-    //
-    // await expect(subject.getCard(id)).rejects.toMatchObject({
-    //   status: 404,
-    //   name: 'not_found',
-    //   message: 'missing',
-    //   reason: 'deleted',
-    // });
-    try {
-      await subject.getCard(id);
-      expect(false).toBe(true);
-    } catch (err) {
-      expect(err.status).toBe(404);
-      expect(err.name).toBe('not_found');
-      expect(err.message).toBe('missing');
-      expect(err.reason).toBe('deleted');
-    }
+    await expect(subject.getCard(id)).rejects.toMatchObject({
+      status: 404,
+      name: 'not_found',
+      message: 'missing',
+      reason: 'deleted',
+    });
   });
 
   it('does not return deleted cards when fetching by id', async () => {
@@ -331,21 +307,13 @@ describe('CardStore', () => {
   });
 
   it('returns an error when trying to update a missing card', async () => {
-    // TODO: As before we should be able to write this as
-    //
-    // await expect(subject.putCard(...)).rejects.toMatchObject({
-    //   status: 404,
-    //   name: 'not_found',
-    //   message: 'missing',
-    // });
-    try {
-      await subject.putCard({ _id: 'abc', question: 'Question' });
-      expect(false).toBe(true);
-    } catch (err) {
-      expect(err.status).toBe(404);
-      expect(err.name).toBe('not_found');
-      expect(err.message).toBe('missing');
-    }
+    await expect(
+      subject.putCard({ _id: 'abc', question: 'Question' })
+    ).rejects.toMatchObject({
+      status: 404,
+      name: 'not_found',
+      message: 'missing',
+    });
   });
 
   it('returns an error when trying to update a deleted card', async () => {
@@ -355,21 +323,13 @@ describe('CardStore', () => {
     });
     await subject.deleteCard(card._id);
 
-    // TODO: As before we should be able to write this as
-    //
-    // await expect(subject.putCard(...)).rejects.toMatchObject({
-    //   status: 404,
-    //   name: 'not_found',
-    //   message: 'missing',
-    // });
-    try {
-      await subject.putCard({ _id: card._id, question: 'Updated question' });
-      expect(false).toBe(true);
-    } catch (err) {
-      expect(err.status).toBe(404);
-      expect(err.name).toBe('not_found');
-      expect(err.message).toBe('missing');
-    }
+    await expect(
+      subject.putCard({ _id: card._id, question: 'Question' })
+    ).rejects.toMatchObject({
+      status: 404,
+      name: 'not_found',
+      message: 'missing',
+    });
   });
 
   it('stores the created date when adding a new card', async () => {
