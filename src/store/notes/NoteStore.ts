@@ -121,8 +121,7 @@ class NoteStore {
       return;
     }
 
-    // XXX Parse the full thing then call
-    // emit('note', parseNote(note));
+    emit('note', parseNote(change.doc));
   }
 
   async onSyncChange(

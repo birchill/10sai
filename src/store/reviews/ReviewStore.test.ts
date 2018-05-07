@@ -8,7 +8,7 @@ import ReviewStore from './ReviewStore';
 import { ReviewRecord } from './records';
 import { Review } from '../../model';
 import { waitForEvents } from '../../../test/testcommon';
-import { syncWithWaitableRemote } from '../test-utils';
+import { syncWithWaitableRemote, waitForChangeEvents } from '../test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
@@ -32,25 +32,6 @@ const waitForNumReviewChanges = (db, num) => {
     }
     if (++recordedChanges === num) {
       resolver();
-    }
-  });
-
-  return promise;
-};
-
-const waitForNumReviewEvents = (dataStore, num) => {
-  const events = [];
-
-  let resolver;
-  const promise = new Promise(resolve => {
-    resolver = resolve;
-  });
-
-  let recordedChanges = 0;
-  dataStore.changes.on('review', change => {
-    events.push(change);
-    if (++recordedChanges === num) {
-      resolver(events);
     }
   });
 
@@ -206,7 +187,7 @@ describe('ReviewStore', () => {
   });
 
   it('reports new review docs', async () => {
-    const changesPromise = waitForNumReviewEvents(dataStore, 1);
+    const changesPromise = waitForChangeEvents(dataStore, 'review', 1);
     await subject.putReview({ ...typicalReview, completed: 7 });
     const changes = await changesPromise;
     expect(changes[0]).toMatchObject({
@@ -216,7 +197,7 @@ describe('ReviewStore', () => {
 
   it('reports deleted review docs', async () => {
     await subject.putReview(typicalReview);
-    const changesPromise = waitForNumReviewEvents(dataStore, 1);
+    const changesPromise = waitForChangeEvents(dataStore, 'review', 1);
     await subject.deleteReview();
     const changes = await changesPromise;
     expect(changes[0]).toBeNull();
@@ -224,7 +205,7 @@ describe('ReviewStore', () => {
 
   it('does not report new review docs older than current', async () => {
     // Create regular review and wait for it to be reported
-    const changesPromise = waitForNumReviewEvents(dataStore, 1);
+    const changesPromise = waitForChangeEvents(dataStore, 'review', 1);
     await subject.putReview(typicalReview);
     await changesPromise;
 

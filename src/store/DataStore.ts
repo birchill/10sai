@@ -172,6 +172,7 @@ export class DataStore {
 
       const emit = this.changesEmitter!.emit.bind(this.changesEmitter!);
       await this.cardStore.onChange(change, emit);
+      await this.noteStore.onChange(change, emit);
       await this.reviewStore.onChange(change, emit);
     });
 

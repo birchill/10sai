@@ -7,7 +7,7 @@ import DataStore from '../DataStore';
 import NoteStore from './NoteStore';
 import { NOTE_PREFIX, NoteRecord } from './records';
 import { Note } from '../../model';
-import { syncWithWaitableRemote } from '../test-utils';
+import { syncWithWaitableRemote, waitForChangeEvents } from '../test-utils';
 import { stripFields } from '../../utils/type-helpers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -120,7 +120,12 @@ describe('NoteStore', () => {
     expect(result.modified).toBe(localNote.modified);
   });
 
-  it('reports added notes', async () => {});
+  it('reports added notes', async () => {
+    const changesPromise = waitForChangeEvents(dataStore, 'note', 1);
+    const putNote = await subject.putNote(typicalNewNote);
+    const changes = await changesPromise;
+    expect(changes[0]).toMatchObject(putNote);
+  });
 
   it('reports deleted notes', async () => {});
 

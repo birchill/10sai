@@ -19,3 +19,22 @@ export const syncWithWaitableRemote = async (
     });
   };
 };
+
+export const waitForChangeEvents = (dataStore, type, num) => {
+  const events = [];
+
+  let resolver;
+  const promise = new Promise(resolve => {
+    resolver = resolve;
+  });
+
+  let recordedChanges = 0;
+  dataStore.changes.on(type, change => {
+    events.push(change);
+    if (++recordedChanges === num) {
+      resolver(events);
+    }
+  });
+
+  return promise;
+};
