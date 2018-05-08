@@ -1,7 +1,9 @@
 import { Note } from '../../model';
-import { NOTE_PREFIX, NoteRecord } from './records';
+import { NOTE_PREFIX, NoteContent } from './records';
 import { generateUniqueTimestampId, stubbornDelete } from '../utils';
 import { Omit, stripFields } from '../../utils/type-helpers';
+
+type NoteRecord = PouchDB.Core.ExistingDocument<NoteContent>;
 
 const parseNote = (note: NoteRecord): Note => {
   const result: Note = {
@@ -23,7 +25,7 @@ class NoteStore {
   }
 
   async getNote(id: string): Promise<Note> {
-    return parseNote(await this.db.get<NoteRecord>(NOTE_PREFIX + id));
+    return parseNote(await this.db.get<NoteContent>(NOTE_PREFIX + id));
   }
 
   async putNote(note: Partial<Note>): Promise<Note> {
@@ -114,24 +116,32 @@ class NoteStore {
   }
 
   async onChange(
-    change: PouchDB.Core.ChangesResponseChange<{}>,
+    change: PouchDB.Core.ChangesResponseChange<NoteContent>,
     emit: EmitFunction
   ) {
+    type EventType = Partial<Note> & { deleted?: boolean };
+
     if (!change.doc || !change.doc._id.startsWith(NOTE_PREFIX)) {
       return;
     }
 
-    emit('note', parseNote(<NoteRecord>change.doc));
+    const event: EventType = parseNote(change.doc);
+    if (change.doc._deleted) {
+      delete (event as any)._deleted;
+      event.deleted = true;
+    }
+
+    emit('note', event);
   }
 
   async onSyncChange(
-    doc: PouchDB.Core.ExistingDocument<NoteRecord & PouchDB.Core.ChangesMeta>
+    doc: PouchDB.Core.ExistingDocument<NoteContent & PouchDB.Core.ChangesMeta>
   ) {
     if (doc._deleted) {
       return;
     }
 
-    const result = await this.db.get<NoteRecord>(doc._id, {
+    const result = await this.db.get<NoteContent>(doc._id, {
       conflicts: true,
     });
     if (!result._conflicts) {

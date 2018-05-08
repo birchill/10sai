@@ -13,12 +13,16 @@ import { REVIEW_PREFIX, ReviewRecord } from './reviews/records';
 import { CardStore, GetCardsOptions } from './cards/CardStore';
 import NoteStore from './notes/NoteStore';
 import ReviewStore from './reviews/ReviewStore';
-import { NOTE_PREFIX, NoteRecord } from './notes/records';
+import { NOTE_PREFIX, NoteContent } from './notes/records';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
 
-type RecordTypes = CardRecord | ProgressRecord | ReviewRecord | NoteRecord;
+type RecordTypes =
+  | CardRecord
+  | ProgressRecord
+  | ReviewRecord
+  | PouchDB.Core.ExistingDocument<NoteContent>;
 
 // The way the typings for PouchDB-adapter-idb are set up, if you want to
 // specify 'storage' you also must specify adapter: 'pouchdb' but we don't want
@@ -173,7 +177,10 @@ export class DataStore {
 
       const emit = this.changesEmitter!.emit.bind(this.changesEmitter!);
       await this.cardStore.onChange(change, emit);
-      await this.noteStore.onChange(change, emit);
+      await this.noteStore.onChange(
+        change as PouchDB.Core.ChangesResponseChange<NoteContent>,
+        emit
+      );
       await this.reviewStore.onChange(change, emit);
     });
 
@@ -463,7 +470,7 @@ export class DataStore {
     for (const doc of docs) {
       if (doc._id.startsWith(NOTE_PREFIX)) {
         await this.noteStore.onSyncChange(<PouchDB.Core.ExistingDocument<
-          NoteRecord & PouchDB.Core.ChangesMeta
+          NoteContent & PouchDB.Core.ChangesMeta
         >>doc);
       } else if (doc._id.startsWith(REVIEW_PREFIX)) {
         await this.reviewStore.onSyncChange(<PouchDB.Core.ExistingDocument<

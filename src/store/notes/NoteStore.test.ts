@@ -5,7 +5,7 @@ import PouchDB from 'pouchdb';
 
 import DataStore from '../DataStore';
 import NoteStore from './NoteStore';
-import { NOTE_PREFIX, NoteRecord } from './records';
+import { NOTE_PREFIX, NoteContent } from './records';
 import { Note } from '../../model';
 import { syncWithWaitableRemote, waitForChangeEvents } from '../test-utils';
 import { stripFields } from '../../utils/type-helpers';
@@ -95,7 +95,7 @@ describe('NoteStore', () => {
 
     // Create a new note with the same ID on the remote but with an older
     // created/modified value.
-    await testRemote.put<NoteRecord>({
+    await testRemote.put<NoteContent>({
       ...stripFields(typicalNewNote, ['id']),
       _id: NOTE_PREFIX + localNote.id,
       content: 'Remote',
@@ -108,7 +108,7 @@ describe('NoteStore', () => {
     await waitForIdle();
 
     // Check that the conflict is gone...
-    const result = await testRemote.get<NoteRecord>(
+    const result = await testRemote.get<NoteContent>(
       NOTE_PREFIX + localNote.id,
       {
         conflicts: true,
@@ -121,13 +121,20 @@ describe('NoteStore', () => {
   });
 
   it('reports added notes', async () => {
-    const changesPromise = waitForChangeEvents(dataStore, 'note', 1);
+    const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 1);
     const putNote = await subject.putNote(typicalNewNote);
     const changes = await changesPromise;
     expect(changes[0]).toMatchObject(putNote);
   });
 
-  it('reports deleted notes', async () => {});
+  it('reports deleted notes', async () => {
+    const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 2);
+    const putNote = await subject.putNote(typicalNewNote);
+    await subject.deleteNote(putNote.id);
+    const changes = await changesPromise;
+    expect(changes[1].id).toBe(putNote.id);
+    expect(changes[1].deleted).toBeTruthy();
+  });
 
   it('reports changes to notes', async () => {});
 });
