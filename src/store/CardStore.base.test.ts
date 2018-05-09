@@ -3,13 +3,13 @@
 
 import PouchDB from 'pouchdb';
 
-import DataStore from '../DataStore';
+import DataStore from './DataStore';
 import CardStore from './CardStore';
-import { generateUniqueTimestampId } from '../utils';
-import { waitForEvents } from '../../../test/testcommon';
-import { syncWithWaitableRemote } from '../test-utils';
-import { CardRecord } from './records';
-import '../../../jest/customMatchers';
+import { generateUniqueTimestampId } from './utils';
+import { waitForEvents } from '../../test/testcommon';
+import { syncWithWaitableRemote } from './test-utils';
+import { CardRecord } from './content';
+import '../../jest/customMatchers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 

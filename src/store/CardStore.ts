@@ -1,10 +1,10 @@
 import * as views from './views';
 
-import { Card, Progress } from '../../model';
-import { CARD_PREFIX, PROGRESS_PREFIX } from './records';
-import { CardRecord, ProgressRecord } from './records';
-import { DeepPartial, MakeOptional, Omit } from '../../utils/type-helpers';
-import { generateUniqueTimestampId, stubbornDelete } from '../utils';
+import { Card, Progress } from '../model';
+import { CARD_PREFIX, PROGRESS_PREFIX } from './content';
+import { CardRecord, ProgressRecord } from './content';
+import { DeepPartial, MakeOptional, Omit } from '../utils/type-helpers';
+import { generateUniqueTimestampId, stubbornDelete } from './utils';
 
 const stripCardPrefix = (id: string) => id.substr(CARD_PREFIX.length);
 const stripProgressPrefix = (id: string) => id.substr(PROGRESS_PREFIX.length);

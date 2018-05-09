@@ -1,6 +1,6 @@
 import { Card } from '../model';
 import { FormId } from './reducer';
-import { CardChange } from '../store/cards/CardStore';
+import { CardChange } from '../store/CardStore';
 import { StoreError } from '../store/DataStore';
 
 let id = 0;

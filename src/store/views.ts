@@ -1,4 +1,4 @@
-import { CARD_PREFIX, PROGRESS_PREFIX } from './records';
+import { CARD_PREFIX, PROGRESS_PREFIX } from './content';
 
 export const cardMapFunction = `function(doc) {
     if (!doc._id.startsWith('${PROGRESS_PREFIX}')) {

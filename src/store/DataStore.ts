@@ -3,17 +3,21 @@ import EventEmitter from 'event-emitter';
 
 import { Card, Note, Review } from '../model';
 import { DatabaseWithName } from './utils';
-import {
-  CardRecord,
-  ProgressRecord,
-  CARD_PREFIX,
-  PROGRESS_PREFIX,
-} from './cards/records';
-import { CardStore, GetCardsOptions } from './cards/CardStore';
+import { CardStore, GetCardsOptions } from './CardStore';
 import NoteStore from './NoteStore';
 import ReviewStore from './ReviewStore';
-import { REVIEW_PREFIX, NOTE_PREFIX } from './content';
-import { NoteContent, ReviewRecord } from './content';
+import {
+  CARD_PREFIX,
+  NOTE_PREFIX,
+  PROGRESS_PREFIX,
+  REVIEW_PREFIX,
+} from './content';
+import {
+  CardRecord,
+  NoteContent,
+  ProgressRecord,
+  ReviewRecord,
+} from './content';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));

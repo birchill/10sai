@@ -3,18 +3,18 @@
 
 import PouchDB from 'pouchdb';
 
-import DataStore from '../DataStore';
+import DataStore from './DataStore';
 import CardStore from './CardStore';
-import { generateUniqueTimestampId } from '../utils';
-import { waitForEvents } from '../../../test/testcommon';
+import { generateUniqueTimestampId } from './utils';
+import { waitForEvents } from '../../test/testcommon';
 import { AtomicBlockUtils } from 'draft-js';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 // Let tests override generateUniqueTimestampId;
 let mockGenerateUniqueTimestampId;
-jest.mock('../utils', () => {
-  const utils = require.requireActual('../utils');
+jest.mock('./utils', () => {
+  const utils = require.requireActual('./utils');
   const originalGenerateUniqueTimestampId = utils.generateUniqueTimestampId;
   return {
     ...utils,
