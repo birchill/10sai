@@ -6,7 +6,7 @@
     "jsx": "react",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "outDir": "./src/",
+    "outDir": "./public/",
     "pretty": true,
     "sourceMap": true,
     "strictNullChecks": true,
