@@ -9,11 +9,11 @@ import {
   CARD_PREFIX,
   PROGRESS_PREFIX,
 } from './cards/records';
-import { REVIEW_PREFIX, ReviewRecord } from './reviews/records';
 import { CardStore, GetCardsOptions } from './cards/CardStore';
 import NoteStore from './NoteStore';
-import ReviewStore from './reviews/ReviewStore';
-import { NOTE_PREFIX, NoteContent } from './content';
+import ReviewStore from './ReviewStore';
+import { REVIEW_PREFIX, NOTE_PREFIX } from './content';
+import { NoteContent, ReviewRecord } from './content';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));

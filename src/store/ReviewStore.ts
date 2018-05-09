@@ -1,5 +1,5 @@
-import { Review } from '../../model';
-import { REVIEW_PREFIX, ReviewRecord } from './records';
+import { Review } from '../model';
+import { REVIEW_PREFIX, ReviewRecord } from './content';
 
 const parseReview = (review: ReviewRecord): Review => {
   const result = {

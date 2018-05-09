@@ -3,12 +3,12 @@
 
 import PouchDB from 'pouchdb';
 
-import DataStore from '../DataStore';
+import DataStore from './DataStore';
 import ReviewStore from './ReviewStore';
-import { ReviewRecord } from './records';
-import { Review } from '../../model';
-import { waitForEvents } from '../../../test/testcommon';
-import { syncWithWaitableRemote, waitForChangeEvents } from '../test-utils';
+import { ReviewRecord } from './content';
+import { Review } from '../model';
+import { waitForEvents } from '../../test/testcommon';
+import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
