@@ -69,4 +69,8 @@ module.exports = {
       'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
     }),
   ],
+  externals: {
+    react: 'React',
+    'react-dom': 'ReactDOM',
+  },
 };
