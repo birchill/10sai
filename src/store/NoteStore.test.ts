@@ -3,12 +3,12 @@
 
 import PouchDB from 'pouchdb';
 
-import DataStore from '../DataStore';
+import DataStore from './DataStore';
 import NoteStore from './NoteStore';
-import { NOTE_PREFIX, NoteContent } from './records';
-import { Note } from '../../model';
-import { syncWithWaitableRemote, waitForChangeEvents } from '../test-utils';
-import { stripFields } from '../../utils/type-helpers';
+import { NOTE_PREFIX, NoteContent } from './content';
+import { Note } from '../model';
+import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
+import { stripFields } from '../utils/type-helpers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 

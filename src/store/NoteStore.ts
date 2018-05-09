@@ -1,7 +1,7 @@
-import { Note } from '../../model';
-import { NOTE_PREFIX, NoteContent } from './records';
-import { generateUniqueTimestampId, stubbornDelete } from '../utils';
-import { Omit, stripFields } from '../../utils/type-helpers';
+import { Note } from '../model';
+import { NOTE_PREFIX, NoteContent } from './content';
+import { generateUniqueTimestampId, stubbornDelete } from './utils';
+import { Omit, stripFields } from '../utils/type-helpers';
 
 type NoteRecord = PouchDB.Core.ExistingDocument<NoteContent>;
 
