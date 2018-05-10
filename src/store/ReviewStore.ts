@@ -1,5 +1,7 @@
 import { Review } from '../model';
-import { REVIEW_PREFIX, ReviewRecord } from './content';
+import { REVIEW_PREFIX, ReviewContent } from './content';
+
+type ReviewRecord = PouchDB.Core.ExistingDocument<ReviewContent>;
 
 const parseReview = (review: ReviewRecord): Review => {
   const result = {
@@ -27,7 +29,7 @@ class ReviewStore {
   }
 
   async _getReview(): Promise<ReviewRecord | null> {
-    const reviews = await this.db.allDocs<ReviewRecord>({
+    const reviews = await this.db.allDocs<ReviewContent>({
       include_docs: true,
       descending: true,
       limit: 1,
@@ -57,14 +59,14 @@ class ReviewStore {
       reviewId = existingReview._id;
     }
 
-    const reviewToPut: ReviewRecord = {
+    const reviewToPut: PouchDB.Core.Document<ReviewContent> = {
       ...review,
       _id: reviewId,
       reviewTime: review.reviewTime.getTime(),
     };
 
     // Copy passed-in review object so upsert doesn't mutate it
-    await this.db.upsert<ReviewRecord>(reviewId, () => reviewToPut);
+    await this.db.upsert<ReviewContent>(reviewId, () => reviewToPut);
   }
 
   async deleteReview(): Promise<void> {
@@ -125,7 +127,7 @@ class ReviewStore {
   }
 
   async onSyncChange(
-    doc: PouchDB.Core.ExistingDocument<ReviewRecord & PouchDB.Core.ChangesMeta>
+    doc: PouchDB.Core.ExistingDocument<ReviewContent & PouchDB.Core.ChangesMeta>
   ) {
     if (doc._deleted) {
       return;
@@ -134,14 +136,14 @@ class ReviewStore {
     // We could (and we used to) check for old review docs and delete them but
     // in the interests of keeping things simple we just wait until the next
     // call to deleteReview() to delete them.
-    const result = await this.db.get<ReviewRecord>(doc._id, {
+    const result = await this.db.get<ReviewContent>(doc._id, {
       conflicts: true,
     });
     if (!result._conflicts) {
       return;
     }
 
-    const completeness = (review: ReviewRecord) => {
+    const completeness = (review: ReviewContent) => {
       return (
         review.completed -
         review.failedCardsLevel2.length * 2 -

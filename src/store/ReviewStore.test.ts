@@ -5,7 +5,7 @@ import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
 import ReviewStore from './ReviewStore';
-import { ReviewRecord } from './content';
+import { ReviewContent } from './content';
 import { Review } from '../model';
 import { waitForEvents } from '../../test/testcommon';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
@@ -88,7 +88,7 @@ describe('ReviewStore', () => {
     await subject.putReview({ ...typicalReview, completed: 2 });
     await waitForNumReviewChanges(testRemote, 1);
 
-    const reviews = await testRemote.allDocs<ReviewRecord>({
+    const reviews = await testRemote.allDocs<ReviewContent>({
       startkey: 'review-',
       endkey: 'review-\ufff0',
       include_docs: true,
@@ -178,7 +178,7 @@ describe('ReviewStore', () => {
     await waitForIdle();
 
     // Check that the conflict is gone...
-    const result = await testRemote.get<ReviewRecord>(localReview._id, {
+    const result = await testRemote.get<ReviewContent>(localReview._id, {
       conflicts: true,
     });
     expect(result._conflicts).toBeUndefined();

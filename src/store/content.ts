@@ -29,9 +29,7 @@ export interface NoteContent {
   modified: number;
 }
 
-export interface ReviewRecord {
-  _id: string;
-  _rev?: string;
+export interface ReviewContent {
   reviewTime: number;
   maxCards: number;
   maxNewCards: number;

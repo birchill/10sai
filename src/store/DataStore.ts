@@ -16,7 +16,7 @@ import {
   CardRecord,
   NoteContent,
   ProgressRecord,
-  ReviewRecord,
+  ReviewContent,
 } from './content';
 
 PouchDB.plugin(require('pouchdb-upsert'));
@@ -25,7 +25,7 @@ PouchDB.plugin(require('pouch-resolve-conflicts'));
 type RecordTypes =
   | CardRecord
   | ProgressRecord
-  | ReviewRecord
+  | PouchDB.Core.ExistingDocument<ReviewContent>
   | PouchDB.Core.ExistingDocument<NoteContent>;
 
 // The way the typings for PouchDB-adapter-idb are set up, if you want to
@@ -478,7 +478,7 @@ export class DataStore {
         >>doc);
       } else if (doc._id.startsWith(REVIEW_PREFIX)) {
         await this.reviewStore.onSyncChange(<PouchDB.Core.ExistingDocument<
-          ReviewRecord & PouchDB.Core.ChangesMeta
+          ReviewContent & PouchDB.Core.ChangesMeta
         >>doc);
       }
 
