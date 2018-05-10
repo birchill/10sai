@@ -8,6 +8,7 @@ import NoteStore from './NoteStore';
 import { NOTE_PREFIX, NoteContent } from './content';
 import { Note } from '../model';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
+import { waitForEvents } from '../../test/testcommon';
 import { stripFields } from '../utils/type-helpers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -68,6 +69,22 @@ describe('NoteStore', () => {
       content: 'Updated content',
       modified: updatedNote.modified,
     });
+  });
+
+  it('ignores a redundant update to a note', async () => {
+    const putNote = await subject.putNote(typicalNewNote);
+
+    const updatedNote = await subject.putNote({
+      id: putNote.id,
+      content: putNote.content,
+    });
+
+    // Check the result returned
+    expect(updatedNote.modified).toEqual(putNote.modified);
+
+    // Check the result returned from the DB
+    const gotNote = await subject.getNote(putNote.id);
+    expect(gotNote.modified).toEqual(putNote.modified);
   });
 
   it('does not return a deleted note', async () => {
@@ -148,5 +165,21 @@ describe('NoteStore', () => {
 
     const changes = await changesPromise;
     expect(changes[1].content).toBe('Updated');
+  });
+
+  it('does not report redundant changes', async () => {
+    const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 1);
+    const putNote = await subject.putNote(typicalNewNote);
+    await changesPromise;
+
+    let gotChange = false;
+    dataStore.changes.on('note', () => {
+      gotChange = true;
+    });
+
+    await subject.putNote({ ...putNote, content: typicalNewNote.content });
+    await waitForEvents(5);
+
+    expect(gotChange).toBeFalsy();
   });
 });

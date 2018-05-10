@@ -15,6 +15,23 @@ const parseNote = (note: NoteRecord): Note => {
   return result;
 };
 
+const hasChange = <T extends object, K extends keyof T>(
+  update: Partial<T>,
+  master: Partial<T>,
+  ignore: K[]
+): boolean => {
+  for (const key of Object.keys(update)) {
+    if (ignore.includes(key as K)) {
+      continue;
+    }
+    if (JSON.stringify(update[key as K]) !== JSON.stringify(master[key as K])) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 type EmitFunction = (type: string, ...args: any[]) => void;
 
 class NoteStore {
@@ -71,7 +88,6 @@ class NoteStore {
     } else {
       const noteUpdate: Partial<NoteRecord> = {
         ...stripFields(note, ['id', 'created']),
-        modified: now,
       };
 
       await this.db.upsert<NoteRecord>(NOTE_PREFIX + note.id, doc => {
@@ -86,11 +102,18 @@ class NoteStore {
           ...noteUpdate,
         };
 
+        // Check we actually have something to update.
         // We need to do this after filling-in noteRecord.
-        if (Object.keys(noteUpdate).length < 2) {
+        if (!Object.keys(noteUpdate).length) {
           return false;
         }
-        // XXX Check for redundant changes.
+
+        // Check for redundant changes.
+        if (!hasChange(noteUpdate, doc, ['modified'])) {
+          return false;
+        }
+
+        noteRecord.modified = now;
 
         // Drop empty optional fields.
         if (noteRecord.keywords && !noteRecord.keywords.length) {
