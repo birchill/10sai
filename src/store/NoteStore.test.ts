@@ -122,7 +122,9 @@ describe('NoteStore', () => {
 
   it('reports added notes', async () => {
     const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 1);
+
     const putNote = await subject.putNote(typicalNewNote);
+
     const changes = await changesPromise;
     expect(changes[0]).toMatchObject(putNote);
   });
@@ -130,11 +132,21 @@ describe('NoteStore', () => {
   it('reports deleted notes', async () => {
     const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 2);
     const putNote = await subject.putNote(typicalNewNote);
+
     await subject.deleteNote(putNote.id);
+
     const changes = await changesPromise;
     expect(changes[1].id).toBe(putNote.id);
     expect(changes[1].deleted).toBeTruthy();
   });
 
-  it('reports changes to notes', async () => {});
+  it('reports changes to notes', async () => {
+    const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 2);
+    const putNote = await subject.putNote(typicalNewNote);
+
+    await subject.putNote({ ...putNote, content: 'Updated' });
+
+    const changes = await changesPromise;
+    expect(changes[1].content).toBe('Updated');
+  });
 });
