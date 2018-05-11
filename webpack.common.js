@@ -60,7 +60,6 @@ module.exports = {
     ],
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
-
   plugins: [
     new ExtractTextPlugin({ filename: '10sai.css', allChunks: true }),
 
@@ -69,8 +68,4 @@ module.exports = {
       'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
     }),
   ],
-  externals: {
-    react: 'React',
-    'react-dom': 'ReactDOM',
-  },
 };
