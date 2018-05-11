@@ -78,7 +78,7 @@ function* startReplication(dataStore, server, dispatch) {
     const redirectedServer =
       typeof syncServer === 'string'
         ? syncServer.replace(
-            'sync.10sai.io',
+            'sync.10sai.app',
             'b62bf565-d36c-45ce-a12d-fc3bd31a256b-bluemix.cloudant.com'
           )
         : syncServer;
