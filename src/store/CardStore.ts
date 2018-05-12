@@ -2,16 +2,36 @@ import * as views from './views';
 
 import { Card, Progress } from '../model';
 import { CARD_PREFIX, PROGRESS_PREFIX } from './content';
-import { CardRecord, ProgressRecord } from './content';
-import { DeepPartial, MakeOptional, Omit } from '../utils/type-helpers';
+import { CardContent, ProgressContent } from './content';
+import {
+  DeepPartial,
+  MakeOptional,
+  Omit,
+  stripFields,
+} from '../utils/type-helpers';
 import { generateUniqueTimestampId, stubbornDelete } from './utils';
+
+export interface GetCardsOptions {
+  limit?: number;
+  type?: 'new' | 'overdue';
+  skipFailedCards?: boolean;
+}
+
+export type CardChange = MakeOptional<Card, 'progress'> &
+  PouchDB.Core.ChangesMeta;
+
+type ExistingCardDoc = PouchDB.Core.ExistingDocument<CardContent>;
+type CardDoc = PouchDB.Core.Document<CardContent>;
+
+type ExistingProgressDoc = PouchDB.Core.ExistingDocument<ProgressContent>;
+type ProgressDoc = PouchDB.Core.Document<ProgressContent>;
 
 const stripCardPrefix = (id: string) => id.substr(CARD_PREFIX.length);
 const stripProgressPrefix = (id: string) => id.substr(PROGRESS_PREFIX.length);
 
 // Take a card from the DB and turn it into a more appropriate form for
 // client consumption
-const parseCard = (card: CardRecord): Omit<Card, 'progress'> => {
+const parseCard = (card: ExistingCardDoc | CardDoc): Omit<Card, 'progress'> => {
   const result = {
     ...card,
     _id: stripCardPrefix(card._id),
@@ -22,22 +42,27 @@ const parseCard = (card: CardRecord): Omit<Card, 'progress'> => {
     // Date objects since they're currently not used in the app and so
     // speculatively parsing them would be a waste.
   };
-  delete result._rev;
+  delete (result as ExistingCardDoc)._rev;
   return result;
 };
 
-const parseProgress = (progress: ProgressRecord): Progress => {
+const parseProgress = (
+  progress: ProgressDoc | ExistingProgressDoc
+): Progress => {
   const result = {
     ...progress,
     reviewed: progress.reviewed ? new Date(progress.reviewed) : null,
   };
   delete result._id;
-  delete result._rev;
+  delete (result as ExistingProgressDoc)._rev;
 
   return result;
 };
 
-const mergeRecords = (card: CardRecord, progress: ProgressRecord): Card => {
+const mergeDocs = (
+  card: CardDoc | ExistingCardDoc,
+  progress: ProgressDoc | ExistingProgressDoc
+): Card => {
   const result = {
     ...parseCard(card),
     progress: parseProgress(progress),
@@ -45,15 +70,6 @@ const mergeRecords = (card: CardRecord, progress: ProgressRecord): Card => {
 
   return result;
 };
-
-export interface GetCardsOptions {
-  limit?: number;
-  type?: 'new' | 'overdue';
-  skipFailedCards?: boolean;
-}
-
-export type CardChange = MakeOptional<Card, 'progress'> &
-  PouchDB.Core.ChangesMeta;
 
 type EmitFunction = (type: string, ...args: any[]) => void;
 
@@ -143,7 +159,7 @@ export class CardStore {
       await this.viewPromises.review.promise;
     }
 
-    const result = await this.db.query<CardRecord>(view, queryOptions);
+    const result = await this.db.query<CardContent>(view, queryOptions);
     return result.rows.filter(row => row.doc).map(row => ({
       ...parseCard(row.doc!),
       progress: parseProgress(row.value.progress),
@@ -157,7 +173,7 @@ export class CardStore {
       keys: ids.map(id => PROGRESS_PREFIX + id),
       include_docs: true,
     };
-    const result = await this.db.query<CardRecord>('cards', options);
+    const result = await this.db.query<CardContent>('cards', options);
 
     return result.rows.filter(row => row.doc).map(row => ({
       ...parseCard(row.doc!),
@@ -189,20 +205,18 @@ export class CardStore {
     const cardUpdate = { ...card };
     delete cardUpdate.progress;
     delete cardUpdate._id;
-    const cardRecord = await this._updateCard(card._id, <Partial<
-      Card
-    >>cardUpdate);
+    const cardDoc = await this._updateCard(card._id, <Partial<Card>>cardUpdate);
 
     const progressUpdate = { ...card.progress };
-    const progressRecord = await this._updateProgress(card._id, progressUpdate);
+    const progressDoc = await this._updateProgress(card._id, progressUpdate);
 
-    return mergeRecords(cardRecord, progressRecord);
+    return mergeDocs(cardDoc, progressDoc);
   }
 
   async _putNewCard(card: DeepPartial<Card>): Promise<Card> {
     const now = new Date().getTime();
-    const cardToPut = {
-      ...card,
+    const cardContent: CardContent = {
+      ...stripFields(card, ['_id', 'progress']),
       // Fill-in mandatory fields
       question: card.question || '',
       answer: card.answer || '',
@@ -212,21 +226,17 @@ export class CardStore {
     };
 
     // Drop empty optional fields
-    if (cardToPut.keywords && !cardToPut.keywords.length) {
-      delete cardToPut.keywords;
+    if (cardContent.keywords && !cardContent.keywords.length) {
+      delete cardContent.keywords;
     }
-    if (cardToPut.tags && !cardToPut.tags.length) {
-      delete cardToPut.tags;
+    if (cardContent.tags && !cardContent.tags.length) {
+      delete cardContent.tags;
     }
-    if (typeof cardToPut.starred !== 'undefined' && !cardToPut.starred) {
-      delete cardToPut.starred;
-    }
-
-    if ('progress' in cardToPut) {
-      delete cardToPut.progress;
+    if (typeof cardContent.starred !== 'undefined' && !cardContent.starred) {
+      delete cardContent.starred;
     }
 
-    const progressToPut: Omit<ProgressRecord, '_id' | '_rev'> = {
+    const progressContent: ProgressContent = {
       reviewed:
         card.progress && card.progress.reviewed instanceof Date
           ? card.progress.reviewed.getTime()
@@ -238,14 +248,17 @@ export class CardStore {
     };
 
     return (async function tryPutNewCard(
-      card,
-      progress,
+      card: CardContent,
+      progress: ProgressContent,
       db,
       id
     ): Promise<Card> {
-      let putCardResult;
+      let putCardResponse;
       try {
-        putCardResult = await db.put({ ...card, _id: CARD_PREFIX + id });
+        putCardResponse = await db.put<CardContent>({
+          ...card,
+          _id: CARD_PREFIX + id,
+        });
       } catch (err) {
         if (err.status !== 409) {
           throw err;
@@ -255,10 +268,10 @@ export class CardStore {
         return tryPutNewCard(card, progress, db, generateUniqueTimestampId());
       }
 
-      const newCard: CardRecord = {
+      const newCard: ExistingCardDoc = {
         ...card,
         _id: CARD_PREFIX + id,
-        _rev: putCardResult.rev,
+        _rev: putCardResponse.rev,
       };
 
       // Succeeded in putting the card. Now to add a corresponding progress
@@ -271,30 +284,25 @@ export class CardStore {
         _id: PROGRESS_PREFIX + id,
       };
       try {
-        await db.put(progressToPut);
+        await db.put<ProgressContent>(progressToPut);
       } catch (err) {
         console.error(`Unexpected error putting progress record: ${err}`);
-        await db.remove({ _id: CARD_PREFIX + id, _rev: putCardResult.rev });
+        await db.remove({ _id: CARD_PREFIX + id, _rev: putCardResponse.rev });
         throw err;
       }
 
-      return mergeRecords(newCard, progressToPut);
-    })(
-      <Omit<CardRecord, '_id'>>cardToPut,
-      progressToPut,
-      this.db,
-      generateUniqueTimestampId()
-    );
+      return mergeDocs(newCard, progressToPut);
+    })(cardContent, progressContent, this.db, generateUniqueTimestampId());
   }
 
   async _updateCard(
     id: string,
     update: Partial<Omit<Card, 'progress'>>
-  ): Promise<CardRecord> {
-    let card: CardRecord | undefined;
+  ): Promise<CardDoc> {
+    let card: CardDoc | undefined;
     let missing = false;
 
-    await this.db.upsert<CardRecord>(CARD_PREFIX + id, doc => {
+    await this.db.upsert<CardContent>(CARD_PREFIX + id, doc => {
       // Doc was not found -- must have been deleted
       if (!doc.hasOwnProperty('_id')) {
         missing = true;
@@ -305,7 +313,7 @@ export class CardStore {
       // in parseCard, then we'll need special handling here to make sure we
       // write and return the correct formats.
       card = {
-        ...(<CardRecord>doc),
+        ...(doc as CardDoc),
         ...update,
         _id: CARD_PREFIX + id,
       };
@@ -342,18 +350,18 @@ export class CardStore {
   async _updateProgress(
     id: string,
     update: Partial<Progress>
-  ): Promise<ProgressRecord> {
-    let progress: ProgressRecord | undefined;
+  ): Promise<ProgressDoc> {
+    let progress: ProgressDoc | undefined;
     let missing = false;
 
-    await this.db.upsert<ProgressRecord>(PROGRESS_PREFIX + id, doc => {
+    await this.db.upsert<ProgressContent>(PROGRESS_PREFIX + id, doc => {
       // Doc was not found -- must have been deleted
       if (!doc.hasOwnProperty('_id')) {
         missing = true;
         return false;
       }
 
-      progress = <ProgressRecord>doc;
+      progress = doc as ProgressDoc;
 
       let hasChange = false;
       if (
@@ -392,11 +400,9 @@ export class CardStore {
   }
 
   async getCard(id: string): Promise<Card> {
-    const card = await (<Promise<CardRecord>>this.db.get(CARD_PREFIX + id));
-    const progress = await (<Promise<ProgressRecord>>this.db.get(
-      PROGRESS_PREFIX + id
-    ));
-    return mergeRecords(card, progress);
+    const card = await this.db.get<CardContent>(CARD_PREFIX + id);
+    const progress = await this.db.get<ProgressContent>(PROGRESS_PREFIX + id);
+    return mergeDocs(card, progress);
   }
 
   async deleteCard(id: string) {
@@ -599,7 +605,7 @@ export class CardStore {
   }
 
   async onChange(
-    change: PouchDB.Core.ChangesResponseChange<{}>,
+    change: PouchDB.Core.ChangesResponseChange<CardContent | ProgressContent>,
     emit: EmitFunction
   ) {
     if (!change.doc) {
@@ -619,18 +625,19 @@ export class CardStore {
     //
     // To mediate that, we maintain a map of all the card/progress revisions we
     // have returned so we can avoid returning the same thing twice.
-    const alreadyReturnedCard = (record: CardRecord | ProgressRecord) => {
-      if (record._id.startsWith(CARD_PREFIX)) {
-        const id = stripCardPrefix(record._id);
+    const alreadyReturnedCard = (
+      doc: ExistingCardDoc | ExistingProgressDoc
+    ) => {
+      if (doc._id.startsWith(CARD_PREFIX)) {
+        const id = stripCardPrefix(doc._id);
         return (
-          this.returnedCards[id] &&
-          this.returnedCards[id].cardRev === record._rev
+          this.returnedCards[id] && this.returnedCards[id].cardRev === doc._rev
         );
-      } else if (record._id.startsWith(PROGRESS_PREFIX)) {
-        const id = stripProgressPrefix(record._id);
+      } else if (doc._id.startsWith(PROGRESS_PREFIX)) {
+        const id = stripProgressPrefix(doc._id);
         return (
           this.returnedCards[id] &&
-          this.returnedCards[id].progressRev === record._rev
+          this.returnedCards[id].progressRev === doc._rev
         );
       }
       return false;
@@ -641,7 +648,7 @@ export class CardStore {
       let progress;
       if (!change.doc._deleted) {
         try {
-          progress = await this.db.get<ProgressRecord>(PROGRESS_PREFIX + id);
+          progress = await this.db.get<ProgressContent>(PROGRESS_PREFIX + id);
         } catch (e) {
           if (e.status === 404) {
             // If we can't find the progress record there are two
@@ -663,7 +670,7 @@ export class CardStore {
       }
       // We have to check this after the async call above since while
       // fetching the progress record, it might be reported here.
-      if (alreadyReturnedCard(<CardRecord>change.doc)) {
+      if (alreadyReturnedCard(<ExistingCardDoc>change.doc)) {
         return undefined;
       }
       this.returnedCards[id] = {
@@ -671,8 +678,8 @@ export class CardStore {
         progressRev: progress && progress._rev ? progress._rev : null,
       };
       const changeDoc: CardChange = progress
-        ? mergeRecords(<CardRecord>change.doc, progress)
-        : parseCard(<CardRecord>change.doc);
+        ? mergeDocs(<ExistingCardDoc>change.doc, progress)
+        : parseCard(<ExistingCardDoc>change.doc);
       emit('card', { ...change, id, doc: changeDoc });
     } else if (change.doc._id.startsWith(PROGRESS_PREFIX)) {
       // If the progress has been deleted, we'll report the deletion when
@@ -683,7 +690,7 @@ export class CardStore {
       const id = stripProgressPrefix(change.doc._id);
       let card;
       try {
-        card = await this.db.get<CardRecord>(CARD_PREFIX + id);
+        card = await this.db.get<CardContent>(CARD_PREFIX + id);
       } catch (e) {
         // If the card was deleted, just ignore. We'll report when we get
         // the corresponding change for the card.
@@ -692,7 +699,7 @@ export class CardStore {
         }
         throw e;
       }
-      if (alreadyReturnedCard(<ProgressRecord>change.doc)) {
+      if (alreadyReturnedCard(<ExistingProgressDoc>change.doc)) {
         return undefined;
       }
       this.returnedCards[id] = {
@@ -702,7 +709,7 @@ export class CardStore {
       emit('card', {
         ...change,
         id,
-        doc: mergeRecords(card, <ProgressRecord>change.doc),
+        doc: mergeDocs(card, <ExistingProgressDoc>change.doc),
       });
     }
 

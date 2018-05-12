@@ -13,9 +13,9 @@ import {
   REVIEW_PREFIX,
 } from './content';
 import {
-  CardRecord,
+  CardContent,
   NoteContent,
-  ProgressRecord,
+  ProgressContent,
   ReviewContent,
 } from './content';
 
@@ -23,8 +23,8 @@ PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
 
 type RecordTypes =
-  | CardRecord
-  | ProgressRecord
+  | PouchDB.Core.ExistingDocument<CardContent>
+  | PouchDB.Core.ExistingDocument<ProgressContent>
   | PouchDB.Core.ExistingDocument<ReviewContent>
   | PouchDB.Core.ExistingDocument<NoteContent>;
 
@@ -180,7 +180,13 @@ export class DataStore {
       console.assert(change.changes && change.doc, 'Unexpected changes event');
 
       const emit = this.changesEmitter!.emit.bind(this.changesEmitter!);
-      await this.cardStore.onChange(change, emit);
+      // XXX The following is wrong...  we should detect the type somewhere
+      await this.cardStore.onChange(
+        change as PouchDB.Core.ChangesResponseChange<
+          CardContent | ProgressContent
+        >,
+        emit
+      );
       await this.noteStore.onChange(
         change as PouchDB.Core.ChangesResponseChange<NoteContent>,
         emit

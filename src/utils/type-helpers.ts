@@ -17,7 +17,13 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
 /**
  * A variant on Partial that applies to nested members too.
  */
-export type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> };
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends Array<infer U>
+    ? Array<DeepPartial<U>>
+    : T[P] extends ReadonlyArray<infer U>
+      ? ReadonlyArray<DeepPartial<U>>
+      : DeepPartial<T[P]>
+};
 
 /**
  * A helper to strip certain fields from an object.

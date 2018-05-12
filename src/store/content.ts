@@ -3,9 +3,7 @@ export const NOTE_PREFIX = 'note-';
 export const PROGRESS_PREFIX = 'progress-';
 export const REVIEW_PREFIX = 'review-';
 
-export interface CardRecord {
-  _id: string;
-  _rev?: string;
+export interface CardContent {
   question: string;
   answer: string;
   keywords?: string[];
@@ -15,9 +13,7 @@ export interface CardRecord {
   modified: number;
 }
 
-export interface ProgressRecord {
-  _id: string;
-  _rev?: string;
+export interface ProgressContent {
   level: number;
   reviewed: number | null;
 }
