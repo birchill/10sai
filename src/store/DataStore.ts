@@ -483,19 +483,19 @@ export class DataStore {
   // Maintenance methods
 
   async getUnrecognizedDocs() {
-    const records = await this.db!.allDocs({ include_docs: true });
+    const docs = await this.db!.allDocs({ include_docs: true });
 
     const unrecognized = [];
 
-    for (const record of records.rows) {
+    for (const doc of docs.rows) {
       if (
-        !record.id.startsWith('_design') &&
-        !record.id.startsWith(CARD_PREFIX) &&
-        !record.id.startsWith(NOTE_PREFIX) &&
-        !record.id.startsWith(PROGRESS_PREFIX) &&
-        !record.id.startsWith(REVIEW_PREFIX)
+        !doc.id.startsWith('_design') &&
+        !doc.id.startsWith(CARD_PREFIX) &&
+        !doc.id.startsWith(NOTE_PREFIX) &&
+        !doc.id.startsWith(PROGRESS_PREFIX) &&
+        !doc.id.startsWith(REVIEW_PREFIX)
       ) {
-        unrecognized.push(record.doc);
+        unrecognized.push(doc.doc);
       }
     }
 

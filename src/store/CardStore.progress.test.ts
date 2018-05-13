@@ -261,7 +261,7 @@ describe('CardStore progress reporting', () => {
         onIdle: () => resolveIdle(),
       });
       await idlePromise;
-      expect(await subject.hasProgressRecord('abc')).toBe(true);
+      expect(await subject.hasProgressDocument('abc')).toBe(true);
 
       // Then try to create a card with an ID that will conflict
       await subject.putCard({ question: 'Question', answer: 'Answer' });
@@ -290,7 +290,7 @@ describe('CardStore progress reporting', () => {
     });
     await subject.deleteCard(card._id);
 
-    expect(await subject.hasProgressRecord(card._id)).toBe(false);
+    expect(await subject.hasProgressDocument(card._id)).toBe(false);
   });
 
   it('deletes the corresponding progress record when deleting a card by ID', async () => {
@@ -300,7 +300,7 @@ describe('CardStore progress reporting', () => {
     });
     await subject.deleteCard(card._id);
 
-    expect(await subject.hasProgressRecord(card._id)).toBe(false);
+    expect(await subject.hasProgressDocument(card._id)).toBe(false);
   });
 
   async function addCards(num) {

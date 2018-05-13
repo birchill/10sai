@@ -290,8 +290,8 @@ export class CardStore {
       };
 
       // Succeeded in putting the card. Now to add a corresponding progress
-      // record. We have a unique card ID so there can't be any overlapping
-      // progress record unless something is very wrong.
+      // document. We have a unique card ID so there can't be any overlapping
+      // progress document unless something is very wrong.
       const progressToPut = {
         reviewed: null,
         level: 0,
@@ -301,7 +301,7 @@ export class CardStore {
       try {
         await db.put<ProgressContent>(progressToPut);
       } catch (err) {
-        console.error(`Unexpected error putting progress record: ${err}`);
+        console.error(`Unexpected error putting progress document: ${err}`);
         await db.remove({ _id: CARD_PREFIX + id, _rev: putCardResponse.rev });
         throw err;
       }
@@ -442,9 +442,9 @@ export class CardStore {
     prefix: string,
     limit: number
   ): Promise<string[]> {
-    // We fetch a lot more records than requested since we want to return the
-    // highest frequency records, not just the first |limit| keywords/tags that
-    // match.
+    // We fetch a lot more documents than requested since we want to return the
+    // highest frequency documents, not just the first |limit| keywords/tags
+    // that match.
     //
     // For the prefix === '' case we should ideally look at *all* the
     // keywords/tags but I couldn't find an easy and efficient way to sort the
@@ -454,10 +454,10 @@ export class CardStore {
     // user has more than 200 unique keywords/tags then (a) they can probably
     // cope with not having the absolute optimal initial suggestions, and (b)
     // they're probably doing it wrong anyway.
-    const minRecords = prefix === '' ? 200 : 40;
+    const minDocs = prefix === '' ? 200 : 40;
 
     const queryOptions: PouchDB.Query.Options<any, any> = {
-      limit: Math.max(minRecords, limit),
+      limit: Math.max(minDocs, limit),
       group: true,
       group_level: 2,
     };
@@ -532,19 +532,33 @@ export class CardStore {
   }
 
   async updateCardsView() {
-    return this._updateMapView('cards', views.cardMapFunction);
+    return this._updateMapView(
+      'cards',
+      views.cardMapFunction(CARD_PREFIX, PROGRESS_PREFIX)
+    );
   }
 
   async updateNewCardsView() {
-    return this._updateMapView('new_cards', views.newCardMapFunction);
+    return this._updateMapView(
+      'new_cards',
+      views.newCardMapFunction(CARD_PREFIX, PROGRESS_PREFIX)
+    );
   }
 
   async updateKeywordsView() {
-    return this._updateMapView('keywords', views.keywordMapFunction, '_sum');
+    return this._updateMapView(
+      'keywords',
+      views.keywordMapFunction(CARD_PREFIX),
+      '_sum'
+    );
   }
 
   async updateTagsView() {
-    return this._updateMapView('tags', views.tagMapFunction, '_sum');
+    return this._updateMapView(
+      'tags',
+      views.tagMapFunction(CARD_PREFIX),
+      '_sum'
+    );
   }
 
   async _updateMapView(
@@ -597,7 +611,11 @@ export class CardStore {
         _id: '_design/overdueness',
         views: {
           overdueness: {
-            map: views.getOverduenessFunction(reviewTime),
+            map: views.getOverduenessFunction(
+              reviewTime,
+              CARD_PREFIX,
+              PROGRESS_PREFIX
+            ),
           },
         },
       }))
@@ -644,10 +662,10 @@ export class CardStore {
     };
 
     // When a new card is added we'll get a change callback for both the card
-    // record and the progress record but, since we lookup the other half before
-    // calling the callback, we'd end up calling the callback with the same
-    // document twice. Likewise for any change that touches both records at
-    // once.
+    // document and the progress document but, since we lookup the other half
+    // before calling the callback, we'd end up calling the callback with the
+    // same document twice. Likewise for any change that touches both documents
+    // at once.
     //
     // That's wasteful particularly if we are doing a big sync -- we'll end up
     // calling the callback twice as many times as we need to. Furthermore it's
@@ -682,7 +700,7 @@ export class CardStore {
           progress = await this.db.get<ProgressContent>(PROGRESS_PREFIX + id);
         } catch (e) {
           if (e.status === 404) {
-            // If we can't find the progress record there are two
+            // If we can't find the progress document there are two
             // possibilities we know about:
             //
             // (a) It has been deleted. This happens normally as part of the
@@ -700,7 +718,7 @@ export class CardStore {
         }
       }
       // We have to check this after the async call above since while
-      // fetching the progress record, it might be reported here.
+      // fetching the progress document, it might be reported here.
       if (alreadyReturnedCard(change.doc)) {
         return undefined;
       }
@@ -751,7 +769,7 @@ export class CardStore {
 
   async getOrphanedCards() {
     // I couldn't find any neat way of doing this in a reduce function so
-    // I guess we just need to fetch all card records and iterate them.
+    // I guess we just need to fetch all card documents and iterate them.
     // Fortunately we never use this in production code.
     const cards = await this.db.allDocs({
       include_docs: true,
@@ -773,7 +791,7 @@ export class CardStore {
     return orphans;
   }
 
-  async addProgressRecordForCard(cardId: string) {
+  async addProgressDocumentForCard(cardId: string) {
     const progressToPut = {
       _id: PROGRESS_PREFIX + stripCardPrefix(cardId),
       reviewed: null,
@@ -782,13 +800,13 @@ export class CardStore {
     try {
       await this.db.put(progressToPut);
     } catch (err) {
-      console.error(`Unexpected error putting progress record: ${err}`);
+      console.error(`Unexpected error putting progress document: ${err}`);
       throw err;
     }
   }
 
   async getOrphanedProgress() {
-    const records = await this.db.allDocs({
+    const docs = await this.db.allDocs({
       include_docs: true,
       startkey: PROGRESS_PREFIX,
       endkey: PROGRESS_PREFIX + '\ufff0',
@@ -796,7 +814,7 @@ export class CardStore {
 
     const orphans = [];
 
-    for (const progress of records.rows) {
+    for (const progress of docs.rows) {
       try {
         // eslint-disable-next-line no-await-in-loop
         await this.db.get(CARD_PREFIX + stripProgressPrefix(progress.id));
@@ -808,25 +826,25 @@ export class CardStore {
     return orphans;
   }
 
-  async deleteProgressRecord(progressId: string) {
+  async deleteProgressDocument(progressId: string) {
     let doc;
     try {
       doc = await this.db.get(progressId);
     } catch (err) {
-      console.error(`Unexpected error getting progress record: ${err}`);
+      console.error(`Unexpected error getting progress document: ${err}`);
       return;
     }
 
     try {
       await this.db.remove(doc);
     } catch (err) {
-      console.error(`Unexpected error deleting progress record: ${err}`);
+      console.error(`Unexpected error deleting progress document: ${err}`);
     }
   }
 
   // Intended for unit testing only
 
-  async hasProgressRecord(id: string) {
+  async hasProgressDocument(id: string) {
     try {
       await this.db.get(PROGRESS_PREFIX + id);
       return true;

@@ -1,12 +1,13 @@
-import { CARD_PREFIX, PROGRESS_PREFIX } from './content';
-
-export const cardMapFunction = `function(doc) {
-    if (!doc._id.startsWith('${PROGRESS_PREFIX}')) {
+export const cardMapFunction = (
+  cardPrefix: string,
+  progressPrefix: string
+) => `function(doc) {
+    if (!doc._id.startsWith('${progressPrefix}')) {
       return;
     }
 
     emit(doc._id, {
-      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+      _id: '${cardPrefix}' + doc._id.substr('${progressPrefix}'.length),
       progress: {
         level: doc.level,
         reviewed: doc.reviewed,
@@ -14,16 +15,19 @@ export const cardMapFunction = `function(doc) {
     });
   }`;
 
-export const newCardMapFunction = `function(doc) {
+export const newCardMapFunction = (
+  cardPrefix: string,
+  progressPrefix: string
+) => `function(doc) {
     if (
-      !doc._id.startsWith('${PROGRESS_PREFIX}') ||
+      !doc._id.startsWith('${progressPrefix}') ||
       doc.reviewed !== null
     ) {
       return;
     }
 
     emit(doc._id, {
-      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+      _id: '${cardPrefix}' + doc._id.substr('${progressPrefix}'.length),
       progress: {
         level: doc.level,
         reviewed: doc.reviewed,
@@ -42,10 +46,14 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 // is one day overdue.
 const EXP_FACTOR = 0.00225;
 
-export const getOverduenessFunction = (reviewTime: Date) =>
+export const getOverduenessFunction = (
+  reviewTime: Date,
+  cardPrefix: string,
+  progressPrefix: string
+) =>
   `function(doc) {
     if (
-      !doc._id.startsWith('${PROGRESS_PREFIX}') ||
+      !doc._id.startsWith('${progressPrefix}') ||
       typeof doc.level !== 'number' ||
       typeof doc.reviewed !== 'number'
     ) {
@@ -55,7 +63,7 @@ export const getOverduenessFunction = (reviewTime: Date) =>
     if (doc.level === 0) {
       // Unfortunately 'Infinity' doesn't seem to work here
       emit(Number.MAX_VALUE, {
-        _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+        _id: '${cardPrefix}' + doc._id.substr('${progressPrefix}'.length),
         progress: {
           level: 0,
           reviewed: doc.reviewed,
@@ -70,7 +78,7 @@ export const getOverduenessFunction = (reviewTime: Date) =>
     const expComponent = Math.exp(${EXP_FACTOR} * daysOverdue) - 1;
     const overdueValue = linearComponent + expComponent;
     emit(overdueValue, {
-      _id: '${CARD_PREFIX}' + doc._id.substr('${PROGRESS_PREFIX}'.length),
+      _id: '${cardPrefix}' + doc._id.substr('${progressPrefix}'.length),
       progress: {
         level: doc.level,
         reviewed: doc.reviewed,
@@ -79,8 +87,8 @@ export const getOverduenessFunction = (reviewTime: Date) =>
   }`;
 
 // TODO: Make this search notes too once we introduce them
-export const keywordMapFunction = `function(doc) {
-    if (!doc._id.startsWith('${CARD_PREFIX}')) {
+export const keywordMapFunction = cardPrefix => `function(doc) {
+    if (!doc._id.startsWith('${cardPrefix}')) {
       return;
     }
 
@@ -93,8 +101,8 @@ export const keywordMapFunction = `function(doc) {
     }
   }`;
 
-export const tagMapFunction = `function(doc) {
-    if (!doc._id.startsWith('${CARD_PREFIX}')) {
+export const tagMapFunction = cardPrefix => `function(doc) {
+    if (!doc._id.startsWith('${cardPrefix}')) {
       return;
     }
 

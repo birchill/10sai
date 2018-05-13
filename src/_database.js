@@ -52,7 +52,7 @@ async function listOrphans() {
       const putResults = [];
       for (const checkbox of checkedCards) {
         putResults.push(
-          dataStore.cardStore.addProgressRecordForCard(checkbox.value)
+          dataStore.cardStore.addProgressDocumentForCard(checkbox.value)
         );
       }
       try {
@@ -75,7 +75,7 @@ async function listOrphanedProgress() {
   }
 
   if (!orphans.length) {
-    container.textContent = 'No orphaned progress records found.';
+    container.textContent = 'No orphaned progress documents found.';
     return;
   }
 
@@ -115,7 +115,7 @@ async function listOrphanedProgress() {
       const deleteResults = [];
       for (const checkbox of checkedProgress) {
         deleteResults.push(
-          dataStore.cardStore.deleteProgressRecord(checkbox.value)
+          dataStore.cardStore.deleteProgressDocument(checkbox.value)
         );
       }
       try {
