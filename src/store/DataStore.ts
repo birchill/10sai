@@ -180,7 +180,6 @@ export class DataStore {
       console.assert(change.changes && change.doc, 'Unexpected changes event');
 
       const emit = this.changesEmitter!.emit.bind(this.changesEmitter!);
-      // XXX The following is wrong...  we should detect the type somewhere
       await this.cardStore.onChange(change, emit);
       await this.noteStore.onChange(change, emit);
       await this.reviewStore.onChange(change, emit);
