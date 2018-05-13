@@ -1,8 +1,5 @@
 import * as views from './views';
-
 import { Card, Progress } from '../model';
-import { CARD_PREFIX, PROGRESS_PREFIX } from './content';
-import { CardContent, ProgressContent } from './content';
 import {
   DeepPartial,
   MakeOptional,
@@ -20,11 +17,29 @@ export interface GetCardsOptions {
 export type CardChange = MakeOptional<Card, 'progress'> &
   PouchDB.Core.ChangesMeta;
 
+export interface CardContent {
+  question: string;
+  answer: string;
+  keywords?: string[];
+  tags?: string[];
+  starred?: boolean;
+  created: number;
+  modified: number;
+}
+
+export interface ProgressContent {
+  level: number;
+  reviewed: number | null;
+}
+
 type ExistingCardDoc = PouchDB.Core.ExistingDocument<CardContent>;
 type CardDoc = PouchDB.Core.Document<CardContent>;
 
 type ExistingProgressDoc = PouchDB.Core.ExistingDocument<ProgressContent>;
 type ProgressDoc = PouchDB.Core.Document<ProgressContent>;
+
+export const CARD_PREFIX = 'card-';
+export const PROGRESS_PREFIX = 'progress-';
 
 const stripCardPrefix = (id: string) => id.substr(CARD_PREFIX.length);
 const stripProgressPrefix = (id: string) => id.substr(PROGRESS_PREFIX.length);

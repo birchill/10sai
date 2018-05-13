@@ -3,10 +3,14 @@ import EventEmitter from 'event-emitter';
 
 import { Card, Note, Review } from '../model';
 import { DatabaseWithName } from './utils';
-import { CardStore, GetCardsOptions } from './CardStore';
+import {
+  CardStore,
+  GetCardsOptions,
+  CARD_PREFIX,
+  PROGRESS_PREFIX,
+} from './CardStore';
 import { NoteStore, NOTE_PREFIX } from './NoteStore';
 import { ReviewStore, REVIEW_PREFIX } from './ReviewStore';
-import { CARD_PREFIX, PROGRESS_PREFIX } from './content';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));

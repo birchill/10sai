@@ -4,11 +4,10 @@
 import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
-import CardStore from './CardStore';
+import { CardStore, CardContent } from './CardStore';
 import { generateUniqueTimestampId } from './utils';
 import { waitForEvents } from '../../test/testcommon';
 import { syncWithWaitableRemote } from './test-utils';
-import { CardRecord } from './content';
 import '../../jest/customMatchers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -377,7 +376,7 @@ describe('CardStore', () => {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();
 
-      const record = await testRemote.get<CardRecord>(`card-${card._id}`);
+      const record = await testRemote.get<CardContent>(`card-${card._id}`);
       expect(record.keywords).not.toBeDefined();
       expect(record.tags).not.toBeDefined();
       expect(record.starred).not.toBeDefined();
@@ -406,7 +405,7 @@ describe('CardStore', () => {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();
 
-      const record = await testRemote.get<CardRecord>(`card-${card._id}`);
+      const record = await testRemote.get<CardContent>(`card-${card._id}`);
       expect(record.keywords).not.toBeDefined();
       expect(record.tags).not.toBeDefined();
       expect(record.starred).not.toBeDefined();
