@@ -203,7 +203,7 @@ export class DataStore {
   // - onIdle
   // - onActive
   // - onError
-  // as well as the |batchSize| member for specifying the number of records
+  // as well as the |batchSize| member for specifying the number of documents
   // to include in a batch.
   async setSyncServer(
     syncServer?: string | PouchDB.Database | null | undefined,

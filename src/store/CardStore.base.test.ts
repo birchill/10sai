@@ -376,10 +376,10 @@ describe('CardStore', () => {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();
 
-      const record = await testRemote.get<CardContent>(`card-${card._id}`);
-      expect(record.keywords).not.toBeDefined();
-      expect(record.tags).not.toBeDefined();
-      expect(record.starred).not.toBeDefined();
+      const doc = await testRemote.get<CardContent>(`card-${card._id}`);
+      expect(doc.keywords).not.toBeDefined();
+      expect(doc.tags).not.toBeDefined();
+      expect(doc.starred).not.toBeDefined();
     } finally {
       testRemote.destroy();
     }
@@ -405,10 +405,10 @@ describe('CardStore', () => {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();
 
-      const record = await testRemote.get<CardContent>(`card-${card._id}`);
-      expect(record.keywords).not.toBeDefined();
-      expect(record.tags).not.toBeDefined();
-      expect(record.starred).not.toBeDefined();
+      const doc = await testRemote.get<CardContent>(`card-${card._id}`);
+      expect(doc.keywords).not.toBeDefined();
+      expect(doc.tags).not.toBeDefined();
+      expect(doc.starred).not.toBeDefined();
     } finally {
       testRemote.destroy();
     }
@@ -426,10 +426,10 @@ describe('CardStore', () => {
     });
     await subject.putCard({ ...card, question: 'Updated question' });
 
-    // Wait for a few rounds of events so the update records can happen
+    // Wait for a few rounds of events so the update events can happen
     await waitForEvents(5);
 
-    // Should get two change records: add, update
+    // Should get two change documents: add, update
     expect(updates).toHaveLength(2);
     expect(updates[1].doc.question).toBe('Updated question');
   });

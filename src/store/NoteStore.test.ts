@@ -30,8 +30,8 @@ describe('NoteStore', () => {
     });
     subject = dataStore.noteStore;
 
-    // A separate remote we use for reading back records directly, injecting
-    // conflicting records etc.
+    // A separate remote we use for reading back documents directly, injecting
+    // conflicting documents etc.
     testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
   });
 

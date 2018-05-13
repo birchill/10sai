@@ -87,7 +87,7 @@ export const getOverduenessFunction = (
   }`;
 
 // TODO: Make this search notes too once we introduce them
-export const keywordMapFunction = cardPrefix => `function(doc) {
+export const keywordMapFunction = (cardPrefix: string) => `function(doc) {
     if (!doc._id.startsWith('${cardPrefix}')) {
       return;
     }
@@ -101,7 +101,7 @@ export const keywordMapFunction = cardPrefix => `function(doc) {
     }
   }`;
 
-export const tagMapFunction = cardPrefix => `function(doc) {
+export const tagMapFunction = (cardPrefix: string) => `function(doc) {
     if (!doc._id.startsWith('${cardPrefix}')) {
       return;
     }

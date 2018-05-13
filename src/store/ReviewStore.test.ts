@@ -61,8 +61,8 @@ describe('ReviewStore', () => {
     });
     subject = dataStore.reviewStore;
 
-    // A separate remote we use for reading back records directly, injecting
-    // conflicting records etc.
+    // A separate remote we use for reading back documents directly, injecting
+    // conflicting documents etc.
     testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
   });
 
@@ -75,10 +75,10 @@ describe('ReviewStore', () => {
   });
 
   it('updates the latest review', async () => {
-    // Setup a remote so we can read back the review record
+    // Setup a remote so we can read back the review document
     await dataStore.setSyncServer(testRemote);
 
-    // Put records twice
+    // Put documents twice
     await subject.putReview(typicalReview);
     await waitForNumReviewChanges(testRemote, 1);
 
@@ -93,7 +93,7 @@ describe('ReviewStore', () => {
       include_docs: true,
     });
 
-    // We should have updated the one record
+    // We should have updated the one document
     expect(reviews.rows).toHaveLength(1);
     expect(reviews.rows[0].value.rev).toEqual(expect.stringMatching(/^2-/));
     expect(reviews.rows[0].doc.completed).toBe(2);

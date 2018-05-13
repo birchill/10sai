@@ -212,7 +212,7 @@ describe('CardStore progress reporting', () => {
       progress: { level: 1, reviewed: relativeTime(-3) },
     });
 
-    // Wait for a few rounds of events so the update records can happen
+    // Wait for a few rounds of events so the update events can happen
     await waitForEvents(8);
 
     expect(updates).toHaveLength(2);
@@ -230,7 +230,7 @@ describe('CardStore progress reporting', () => {
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
     await subject.deleteCard(card._id);
 
-    // Wait for a few rounds of events so the update records can happen
+    // Wait for a few rounds of events so the update events can happen
     await waitForEvents(8);
 
     expect(updates).toHaveLength(2);
@@ -241,14 +241,14 @@ describe('CardStore progress reporting', () => {
     expect(updates[1].doc.progress).toBe(undefined);
   });
 
-  it('deletes the card when the corresponding progress record cannot be created', async () => {
+  it('deletes the card when the corresponding progress document cannot be created', async () => {
     // Override ID generation so we can ensure there will be a conflicting
-    // progress record.
+    // progress document.
     mockGenerateUniqueTimestampId = () => 'abc';
 
     let testRemote;
     try {
-      // Create a remote with a progress record that will conflict
+      // Create a remote with a progress document that will conflict
       testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
       await testRemote.put({ _id: 'progress-abc' });
 
@@ -283,7 +283,7 @@ describe('CardStore progress reporting', () => {
     }
   });
 
-  it('deletes the corresponding progress record when deleting a card', async () => {
+  it('deletes the corresponding progress document when deleting a card', async () => {
     const card = await subject.putCard({
       question: 'Question',
       answer: 'Answer',
@@ -293,7 +293,7 @@ describe('CardStore progress reporting', () => {
     expect(await subject.hasProgressDocument(card._id)).toBe(false);
   });
 
-  it('deletes the corresponding progress record when deleting a card by ID', async () => {
+  it('deletes the corresponding progress document when deleting a card by ID', async () => {
     const card = await subject.putCard({
       question: 'Question',
       answer: 'Answer',
