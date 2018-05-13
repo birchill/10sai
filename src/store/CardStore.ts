@@ -605,7 +605,7 @@ export class CardStore {
   }
 
   async onChange(
-    change: PouchDB.Core.ChangesResponseChange<any>,
+    change: PouchDB.Core.ChangesResponseChange<{}>,
     emit: EmitFunction
   ) {
     if (!change.doc) {
@@ -613,7 +613,7 @@ export class CardStore {
     }
 
     const isCardChangeDoc = (
-      changeDoc: PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+      changeDoc: PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
     ): changeDoc is PouchDB.Core.ExistingDocument<
       CardContent & PouchDB.Core.ChangesMeta
     > => {
@@ -621,7 +621,7 @@ export class CardStore {
     };
 
     const isProgressChangeDoc = (
-      changeDoc: PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+      changeDoc: PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
     ): changeDoc is PouchDB.Core.ExistingDocument<
       ProgressContent & PouchDB.Core.ChangesMeta
     > => {

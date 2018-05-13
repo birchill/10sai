@@ -12,21 +12,9 @@ import {
   PROGRESS_PREFIX,
   REVIEW_PREFIX,
 } from './content';
-import {
-  CardContent,
-  NoteContent,
-  ProgressContent,
-  ReviewContent,
-} from './content';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
-
-type RecordTypes =
-  | PouchDB.Core.ExistingDocument<CardContent>
-  | PouchDB.Core.ExistingDocument<ProgressContent>
-  | PouchDB.Core.ExistingDocument<ReviewContent>
-  | PouchDB.Core.ExistingDocument<NoteContent>;
 
 // The way the typings for PouchDB-adapter-idb are set up, if you want to
 // specify 'storage' you also must specify adapter: 'pouchdb' but we don't want
@@ -86,7 +74,7 @@ export class DataStore {
   initDone: Promise<void>;
   changesEmitter?: EventEmitter.Emitter;
   remoteDb?: PouchDB.Database;
-  remoteSync?: PouchDB.Replication.Sync<RecordTypes>;
+  remoteSync?: PouchDB.Replication.Sync<{}>;
   viewCleanupScheduled: boolean;
 
   constructor(options?: StoreOptions) {
@@ -339,7 +327,7 @@ export class DataStore {
         return !doc._id.startsWith('_design/');
       },
     };
-    this.remoteSync = this.db!.sync<RecordTypes>(this.remoteDb!, {
+    this.remoteSync = this.db!.sync(this.remoteDb!, {
       live: true,
       retry: true,
       pull: pushPullOpts,
@@ -372,9 +360,7 @@ export class DataStore {
     // The change callback is special because we always want to set it
     // so that we can resolve conflicts. It also is where we do the (slightly
     // complicated) progress calculation.
-    const changeCallback = (
-      info: PouchDB.Replication.SyncResult<RecordTypes>
-    ) => {
+    const changeCallback = (info: PouchDB.Replication.SyncResult<{}>) => {
       // Skip events if they are from an old remote DB
       if (
         !this.remoteDb ||
@@ -467,17 +453,14 @@ export class DataStore {
     await this.remoteDb;
   }
 
-  async onSyncChange(docs: PouchDB.Core.ExistingDocument<RecordTypes>[]) {
+  async onSyncChange(docs: PouchDB.Core.ExistingDocument<{}>[]) {
     for (const doc of docs) {
-      if (doc._id.startsWith(NOTE_PREFIX)) {
-        await this.noteStore.onSyncChange(<PouchDB.Core.ExistingDocument<
-          NoteContent & PouchDB.Core.ChangesMeta
-        >>doc);
-      } else if (doc._id.startsWith(REVIEW_PREFIX)) {
-        await this.reviewStore.onSyncChange(<PouchDB.Core.ExistingDocument<
-          ReviewContent & PouchDB.Core.ChangesMeta
-        >>doc);
-      }
+      await this.noteStore.onSyncChange(<PouchDB.Core.ExistingDocument<
+        {} & PouchDB.Core.ChangesMeta
+      >>doc);
+      await this.reviewStore.onSyncChange(<PouchDB.Core.ExistingDocument<
+        {} & PouchDB.Core.ChangesMeta
+      >>doc);
 
       // NOTE: resolveConflicts will currently drop attachments on the floor.
       // Need to be careful once we start using them.

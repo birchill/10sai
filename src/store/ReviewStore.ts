@@ -14,6 +14,16 @@ const parseReview = (review: ReviewRecord): Review => {
   return result;
 };
 
+const isReviewChangeDoc = (
+  changeDoc:
+    | PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
+    | undefined
+): changeDoc is PouchDB.Core.ExistingDocument<
+  ReviewContent & PouchDB.Core.ChangesMeta
+> => {
+  return !!changeDoc && changeDoc._id.startsWith(REVIEW_PREFIX);
+};
+
 type EmitFunction = (type: string, ...args: any[]) => void;
 
 class ReviewStore {
@@ -105,19 +115,9 @@ class ReviewStore {
   }
 
   async onChange(
-    change: PouchDB.Core.ChangesResponseChange<any>,
+    change: PouchDB.Core.ChangesResponseChange<{}>,
     emit: EmitFunction
   ) {
-    const isReviewChangeDoc = (
-      changeDoc:
-        | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
-        | undefined
-    ): changeDoc is PouchDB.Core.ExistingDocument<
-      ReviewContent & PouchDB.Core.ChangesMeta
-    > => {
-      return changeDoc && changeDoc._id.startsWith(REVIEW_PREFIX);
-    };
-
     if (!isReviewChangeDoc(change.doc)) {
       return;
     }
@@ -137,8 +137,12 @@ class ReviewStore {
   }
 
   async onSyncChange(
-    doc: PouchDB.Core.ExistingDocument<ReviewContent & PouchDB.Core.ChangesMeta>
+    doc: PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
   ) {
+    if (!isReviewChangeDoc(doc)) {
+      return;
+    }
+
     if (doc._deleted) {
       return;
     }

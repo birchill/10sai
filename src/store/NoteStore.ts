@@ -32,6 +32,16 @@ const hasChange = <T extends object, K extends keyof T>(
   return false;
 };
 
+const isNoteChangeDoc = (
+  changeDoc:
+    | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+    | undefined
+): changeDoc is PouchDB.Core.ExistingDocument<
+  NoteContent & PouchDB.Core.ChangesMeta
+> => {
+  return changeDoc && changeDoc._id.startsWith(NOTE_PREFIX);
+};
+
 type EmitFunction = (type: string, ...args: any[]) => void;
 
 class NoteStore {
@@ -139,19 +149,9 @@ class NoteStore {
   }
 
   async onChange(
-    change: PouchDB.Core.ChangesResponseChange<any>,
+    change: PouchDB.Core.ChangesResponseChange<{}>,
     emit: EmitFunction
   ) {
-    const isNoteChangeDoc = (
-      changeDoc:
-        | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
-        | undefined
-    ): changeDoc is PouchDB.Core.ExistingDocument<
-      NoteContent & PouchDB.Core.ChangesMeta
-    > => {
-      return changeDoc && changeDoc._id.startsWith(NOTE_PREFIX);
-    };
-
     if (!isNoteChangeDoc(change.doc)) {
       return;
     }
@@ -168,8 +168,12 @@ class NoteStore {
   }
 
   async onSyncChange(
-    doc: PouchDB.Core.ExistingDocument<NoteContent & PouchDB.Core.ChangesMeta>
+    doc: PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
   ) {
+    if (!isNoteChangeDoc(doc)) {
+      return;
+    }
+
     if (doc._deleted) {
       return;
     }
