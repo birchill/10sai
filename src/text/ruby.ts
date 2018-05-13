@@ -141,7 +141,7 @@ export function parseRuby(text: string): ParsedRuby {
     }
 
     // Look for multi-ruby
-    const rubyParts = matches[3].match(/(\\.|[^|])+/g)!;
+    const rubyParts = matches[3].match(/(\\.|[^|])+/g) || [''];
     // Converting to an array of code points will mean we should correctly
     // handle non-BMP characters (but not all possible ligatures / composed
     // emoji etc.).

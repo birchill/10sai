@@ -62,6 +62,7 @@ describe('stripRuby', () => {
       ruby('出', 'だ'),
       'す',
     ]);
+    expect(parseRuby('{仙台||}')).toEqual([ruby('仙台', '')]);
 
     // Malformed content
     expect(parseRuby('{仙台}')).toEqual(['{仙台}']);
