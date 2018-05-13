@@ -1,15 +1,27 @@
 import { Review } from '../model';
-import { REVIEW_PREFIX, ReviewContent } from './content';
+import { stripFields } from '../utils/type-helpers';
 
-type ReviewRecord = PouchDB.Core.ExistingDocument<ReviewContent>;
+export interface ReviewContent {
+  reviewTime: number;
+  maxCards: number;
+  maxNewCards: number;
+  completed: number;
+  newCardsCompleted: number;
+  history: string[];
+  failedCardsLevel1: string[];
+  failedCardsLevel2: string[];
+}
 
-const parseReview = (review: ReviewRecord): Review => {
+type ExistingReviewDoc = PouchDB.Core.ExistingDocument<ReviewContent>;
+type ReviewDoc = PouchDB.Core.Document<ReviewContent>;
+
+export const REVIEW_PREFIX = 'review-';
+
+const parseReview = (review: ExistingReviewDoc | ReviewDoc): Review => {
   const result = {
-    ...review,
+    ...stripFields(review as ExistingReviewDoc, ['_id', '_rev']),
     reviewTime: new Date(review.reviewTime),
   };
-  delete result._id;
-  delete result._rev;
 
   return result;
 };
@@ -26,7 +38,7 @@ const isReviewChangeDoc = (
 
 type EmitFunction = (type: string, ...args: any[]) => void;
 
-class ReviewStore {
+export class ReviewStore {
   db: PouchDB.Database;
 
   constructor(db: PouchDB.Database) {
@@ -38,7 +50,7 @@ class ReviewStore {
     return review ? parseReview(review) : null;
   }
 
-  async _getReview(): Promise<ReviewRecord | null> {
+  async _getReview(): Promise<ExistingReviewDoc | null> {
     const reviews = await this.db.allDocs<ReviewContent>({
       include_docs: true,
       descending: true,
@@ -132,7 +144,7 @@ class ReviewStore {
       }
       // Only report changes if they are to the current review doc
     } else if (currentReviewDoc && change.doc._id === currentReviewDoc._id) {
-      emit('review', parseReview(<ReviewRecord>change.doc));
+      emit('review', parseReview(change.doc));
     }
   }
 

@@ -4,9 +4,9 @@ import EventEmitter from 'event-emitter';
 import { Card, Note, Review } from '../model';
 import { DatabaseWithName } from './utils';
 import { CardStore, GetCardsOptions } from './CardStore';
-import NoteStore from './NoteStore';
-import ReviewStore from './ReviewStore';
-import { CARD_PREFIX, PROGRESS_PREFIX, REVIEW_PREFIX } from './content';
+import { NoteStore, NOTE_PREFIX } from './NoteStore';
+import { ReviewStore, REVIEW_PREFIX } from './ReviewStore';
+import { CARD_PREFIX, PROGRESS_PREFIX } from './content';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
@@ -487,6 +487,7 @@ export class DataStore {
       if (
         !record.id.startsWith('_design') &&
         !record.id.startsWith(CARD_PREFIX) &&
+        !record.id.startsWith(NOTE_PREFIX) &&
         !record.id.startsWith(PROGRESS_PREFIX) &&
         !record.id.startsWith(REVIEW_PREFIX)
       ) {
@@ -502,6 +503,7 @@ export class DataStore {
       if (
         id.startsWith('_design') ||
         id.startsWith(CARD_PREFIX) ||
+        id.startsWith(NOTE_PREFIX) ||
         id.startsWith(PROGRESS_PREFIX) ||
         id.startsWith(REVIEW_PREFIX)
       ) {

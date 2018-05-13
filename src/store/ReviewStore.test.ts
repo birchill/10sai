@@ -5,7 +5,6 @@ import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
 import ReviewStore from './ReviewStore';
-import { ReviewContent } from './content';
 import { Review } from '../model';
 import { waitForEvents } from '../../test/testcommon';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
