@@ -4,8 +4,7 @@
 import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
-import NoteStore from './NoteStore';
-import { NOTE_PREFIX, NoteContent } from './content';
+import { NoteStore, NoteContent, NOTE_PREFIX } from './NoteStore';
 import { Note } from '../model';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 import { waitForEvents } from '../../test/testcommon';

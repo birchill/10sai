@@ -1,13 +1,22 @@
 import { Note } from '../model';
-import { NOTE_PREFIX, NoteContent } from './content';
 import { generateUniqueTimestampId, stubbornDelete } from './utils';
 import { Omit, stripFields } from '../utils/type-helpers';
 
-type NoteRecord = PouchDB.Core.ExistingDocument<NoteContent>;
+export interface NoteContent {
+  keywords?: string[];
+  content: string;
+  created: number;
+  modified: number;
+}
 
-const parseNote = (note: NoteRecord): Note => {
+type ExistingNoteDoc = PouchDB.Core.ExistingDocument<NoteContent>;
+type NoteDoc = PouchDB.Core.Document<NoteContent>;
+
+export const NOTE_PREFIX = 'note-';
+
+const parseNote = (note: ExistingNoteDoc | NoteDoc): Note => {
   const result: Note = {
-    ...stripFields(note, ['_id', '_rev']),
+    ...stripFields(note as ExistingNoteDoc, ['_id', '_rev']),
     id: note._id.substr(NOTE_PREFIX.length),
     keywords: note.keywords || [],
   };
@@ -44,7 +53,7 @@ const isNoteChangeDoc = (
 
 type EmitFunction = (type: string, ...args: any[]) => void;
 
-class NoteStore {
+export class NoteStore {
   db: PouchDB.Database;
 
   constructor(db: PouchDB.Database) {
@@ -56,12 +65,12 @@ class NoteStore {
   }
 
   async putNote(note: Partial<Note>): Promise<Note> {
-    let noteRecord: NoteRecord | undefined;
+    let noteRecord: ExistingNoteDoc | undefined;
     let missing = false;
     const now = new Date().getTime();
 
     if (!note.id) {
-      const noteToPut: Omit<NoteRecord, '_rev'> = {
+      const noteToPut: Omit<ExistingNoteDoc, '_rev'> = {
         ...(<Omit<Partial<Note>, 'id'>>note),
         // Fill-in mandatory fields
         _id: NOTE_PREFIX + generateUniqueTimestampId(),
@@ -78,7 +87,7 @@ class NoteStore {
       noteRecord = await (async function tryToPutNewNote(
         noteRecord,
         db
-      ): Promise<NoteRecord> {
+      ): Promise<ExistingNoteDoc> {
         let result;
         try {
           result = await db.put(noteRecord);
@@ -94,13 +103,13 @@ class NoteStore {
           ...noteToPut,
           _rev: result.rev,
         };
-      })(<Omit<NoteRecord, '_rev'>>noteToPut, this.db);
+      })(<Omit<ExistingNoteDoc, '_rev'>>noteToPut, this.db);
     } else {
-      const noteUpdate: Partial<NoteRecord> = {
+      const noteUpdate: Partial<ExistingNoteDoc> = {
         ...stripFields(note, ['id', 'created']),
       };
 
-      await this.db.upsert<NoteRecord>(NOTE_PREFIX + note.id, doc => {
+      await this.db.upsert<ExistingNoteDoc>(NOTE_PREFIX + note.id, doc => {
         // Doc was not found -- must have been deleted
         if (!doc.hasOwnProperty('_id')) {
           missing = true;
@@ -108,7 +117,7 @@ class NoteStore {
         }
 
         noteRecord = {
-          ...(doc as NoteRecord),
+          ...(doc as ExistingNoteDoc),
           ...noteUpdate,
         };
 

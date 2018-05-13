@@ -6,12 +6,7 @@ import { DatabaseWithName } from './utils';
 import { CardStore, GetCardsOptions } from './CardStore';
 import NoteStore from './NoteStore';
 import ReviewStore from './ReviewStore';
-import {
-  CARD_PREFIX,
-  NOTE_PREFIX,
-  PROGRESS_PREFIX,
-  REVIEW_PREFIX,
-} from './content';
+import { CARD_PREFIX, PROGRESS_PREFIX, REVIEW_PREFIX } from './content';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));

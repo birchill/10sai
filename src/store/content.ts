@@ -1,5 +1,4 @@
 export const CARD_PREFIX = 'card-';
-export const NOTE_PREFIX = 'note-';
 export const PROGRESS_PREFIX = 'progress-';
 export const REVIEW_PREFIX = 'review-';
 
@@ -16,13 +15,6 @@ export interface CardContent {
 export interface ProgressContent {
   level: number;
   reviewed: number | null;
-}
-
-export interface NoteContent {
-  keywords?: string[];
-  content: string;
-  created: number;
-  modified: number;
 }
 
 export interface ReviewContent {
