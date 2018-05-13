@@ -139,14 +139,24 @@ class NoteStore {
   }
 
   async onChange(
-    change: PouchDB.Core.ChangesResponseChange<NoteContent>,
+    change: PouchDB.Core.ChangesResponseChange<any>,
     emit: EmitFunction
   ) {
-    type EventType = Partial<Note> & { deleted?: boolean };
+    const isNoteChangeDoc = (
+      changeDoc:
+        | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+        | undefined
+    ): changeDoc is PouchDB.Core.ExistingDocument<
+      NoteContent & PouchDB.Core.ChangesMeta
+    > => {
+      return changeDoc && changeDoc._id.startsWith(NOTE_PREFIX);
+    };
 
-    if (!change.doc || !change.doc._id.startsWith(NOTE_PREFIX)) {
+    if (!isNoteChangeDoc(change.doc)) {
       return;
     }
+
+    type EventType = Partial<Note> & { deleted?: boolean };
 
     const event: EventType = parseNote(change.doc);
     if (change.doc._deleted) {

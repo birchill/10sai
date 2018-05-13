@@ -181,16 +181,8 @@ export class DataStore {
 
       const emit = this.changesEmitter!.emit.bind(this.changesEmitter!);
       // XXX The following is wrong...  we should detect the type somewhere
-      await this.cardStore.onChange(
-        change as PouchDB.Core.ChangesResponseChange<
-          CardContent | ProgressContent
-        >,
-        emit
-      );
-      await this.noteStore.onChange(
-        change as PouchDB.Core.ChangesResponseChange<NoteContent>,
-        emit
-      );
+      await this.cardStore.onChange(change, emit);
+      await this.noteStore.onChange(change, emit);
       await this.reviewStore.onChange(change, emit);
     });
 

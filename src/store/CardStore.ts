@@ -605,12 +605,28 @@ export class CardStore {
   }
 
   async onChange(
-    change: PouchDB.Core.ChangesResponseChange<CardContent | ProgressContent>,
+    change: PouchDB.Core.ChangesResponseChange<any>,
     emit: EmitFunction
   ) {
     if (!change.doc) {
       return;
     }
+
+    const isCardChangeDoc = (
+      changeDoc: PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+    ): changeDoc is PouchDB.Core.ExistingDocument<
+      CardContent & PouchDB.Core.ChangesMeta
+    > => {
+      return changeDoc._id.startsWith(CARD_PREFIX);
+    };
+
+    const isProgressChangeDoc = (
+      changeDoc: PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+    ): changeDoc is PouchDB.Core.ExistingDocument<
+      ProgressContent & PouchDB.Core.ChangesMeta
+    > => {
+      return changeDoc._id.startsWith(PROGRESS_PREFIX);
+    };
 
     // When a new card is added we'll get a change callback for both the card
     // record and the progress record but, since we lookup the other half before
@@ -643,7 +659,7 @@ export class CardStore {
       return false;
     };
 
-    if (change.doc._id.startsWith(CARD_PREFIX)) {
+    if (isCardChangeDoc(change.doc)) {
       const id = stripCardPrefix(change.doc._id);
       let progress;
       if (!change.doc._deleted) {
@@ -670,7 +686,7 @@ export class CardStore {
       }
       // We have to check this after the async call above since while
       // fetching the progress record, it might be reported here.
-      if (alreadyReturnedCard(<ExistingCardDoc>change.doc)) {
+      if (alreadyReturnedCard(change.doc)) {
         return undefined;
       }
       this.returnedCards[id] = {
@@ -678,10 +694,10 @@ export class CardStore {
         progressRev: progress && progress._rev ? progress._rev : null,
       };
       const changeDoc: CardChange = progress
-        ? mergeDocs(<ExistingCardDoc>change.doc, progress)
-        : parseCard(<ExistingCardDoc>change.doc);
+        ? mergeDocs(change.doc, progress)
+        : parseCard(change.doc);
       emit('card', { ...change, id, doc: changeDoc });
-    } else if (change.doc._id.startsWith(PROGRESS_PREFIX)) {
+    } else if (isProgressChangeDoc(change.doc)) {
       // If the progress has been deleted, we'll report the deletion when
       // the corresponding card is dropped.
       if (change.doc._deleted) {
@@ -699,7 +715,7 @@ export class CardStore {
         }
         throw e;
       }
-      if (alreadyReturnedCard(<ExistingProgressDoc>change.doc)) {
+      if (alreadyReturnedCard(change.doc)) {
         return undefined;
       }
       this.returnedCards[id] = {
@@ -709,7 +725,7 @@ export class CardStore {
       emit('card', {
         ...change,
         id,
-        doc: mergeDocs(card, <ExistingProgressDoc>change.doc),
+        doc: mergeDocs(card, change.doc),
       });
     }
 

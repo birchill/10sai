@@ -105,10 +105,20 @@ class ReviewStore {
   }
 
   async onChange(
-    change: PouchDB.Core.ChangesResponseChange<{}>,
+    change: PouchDB.Core.ChangesResponseChange<any>,
     emit: EmitFunction
   ) {
-    if (!change.doc || !change.doc._id.startsWith(REVIEW_PREFIX)) {
+    const isReviewChangeDoc = (
+      changeDoc:
+        | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+        | undefined
+    ): changeDoc is PouchDB.Core.ExistingDocument<
+      ReviewContent & PouchDB.Core.ChangesMeta
+    > => {
+      return changeDoc && changeDoc._id.startsWith(REVIEW_PREFIX);
+    };
+
+    if (!isReviewChangeDoc(change.doc)) {
       return;
     }
 
