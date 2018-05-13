@@ -65,13 +65,13 @@ export class NoteStore {
   }
 
   async putNote(note: Partial<Note>): Promise<Note> {
-    let noteRecord: ExistingNoteDoc | undefined;
+    let noteDoc: ExistingNoteDoc | undefined;
     let missing = false;
     const now = new Date().getTime();
 
     if (!note.id) {
-      const noteToPut: Omit<ExistingNoteDoc, '_rev'> = {
-        ...(<Omit<Partial<Note>, 'id'>>note),
+      const noteToPut: NoteDoc = {
+        ...stripFields(note, ['id']),
         // Fill-in mandatory fields
         _id: NOTE_PREFIX + generateUniqueTimestampId(),
         content: note.content || '',
@@ -84,45 +84,45 @@ export class NoteStore {
         delete noteToPut.keywords;
       }
 
-      noteRecord = await (async function tryToPutNewNote(
-        noteRecord,
+      noteDoc = await (async function tryToPutNewNote(
+        noteDoc,
         db
       ): Promise<ExistingNoteDoc> {
         let result;
         try {
-          result = await db.put(noteRecord);
+          result = await db.put(noteDoc);
         } catch (err) {
           if (err.status !== 409) {
             throw err;
           }
-          noteRecord._id = NOTE_PREFIX + generateUniqueTimestampId();
-          return tryToPutNewNote(noteRecord, db);
+          noteDoc._id = NOTE_PREFIX + generateUniqueTimestampId();
+          return tryToPutNewNote(noteDoc, db);
         }
 
         return {
           ...noteToPut,
           _rev: result.rev,
         };
-      })(<Omit<ExistingNoteDoc, '_rev'>>noteToPut, this.db);
+      })(noteToPut, this.db);
     } else {
       const noteUpdate: Partial<ExistingNoteDoc> = {
         ...stripFields(note, ['id', 'created']),
       };
 
-      await this.db.upsert<ExistingNoteDoc>(NOTE_PREFIX + note.id, doc => {
+      await this.db.upsert<NoteContent>(NOTE_PREFIX + note.id, doc => {
         // Doc was not found -- must have been deleted
         if (!doc.hasOwnProperty('_id')) {
           missing = true;
           return false;
         }
 
-        noteRecord = {
+        noteDoc = {
           ...(doc as ExistingNoteDoc),
           ...noteUpdate,
         };
 
         // Check we actually have something to update.
-        // We need to do this after filling-in noteRecord.
+        // We need to do this after filling-in noteDoc.
         if (!Object.keys(noteUpdate).length) {
           return false;
         }
@@ -132,25 +132,25 @@ export class NoteStore {
           return false;
         }
 
-        noteRecord.modified = now;
+        noteDoc.modified = now;
 
         // Drop empty optional fields.
-        if (noteRecord.keywords && !noteRecord.keywords.length) {
-          delete noteRecord.keywords;
+        if (noteDoc.keywords && !noteDoc.keywords.length) {
+          delete noteDoc.keywords;
         }
 
-        return noteRecord;
+        return noteDoc;
       });
     }
 
-    if (missing || !noteRecord) {
+    if (missing || !noteDoc) {
       const err: Error & { status?: number } = new Error('missing');
       err.status = 404;
       err.name = 'not_found';
       throw err;
     }
 
-    return parseNote(noteRecord);
+    return parseNote(noteDoc);
   }
 
   async deleteNote(id: string) {
