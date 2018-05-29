@@ -145,14 +145,13 @@ export function failSaveCard(
 
 export interface SyncEditCardAction {
   type: 'SYNC_EDIT_CARD';
-  // XXX Rename this to change
-  card: CardChange;
+  change: CardChange;
 }
 
-export function syncEditCard(card: CardChange): SyncEditCardAction {
+export function syncEditCard(change: CardChange): SyncEditCardAction {
   return {
     type: 'SYNC_EDIT_CARD',
-    card,
+    change,
   };
 }
 

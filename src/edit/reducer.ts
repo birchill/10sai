@@ -201,12 +201,12 @@ export function edit(
     }
 
     case 'SYNC_EDIT_CARD': {
-      if (action.card._id !== state.forms.active.card._id) {
+      if (action.change._id !== state.forms.active.card._id) {
         return state;
       }
 
       // XXX Does sync return an augmented type?
-      if (action.card._deleted) {
+      if (action.change._deleted) {
         return {
           forms: {
             active: {
@@ -222,13 +222,13 @@ export function edit(
       const card: Partial<Card> = {};
       // XXX Work out how to annotate field as keyof Card so we can drop all the
       // type assertions below
-      for (const field in action.card) {
-        if (action.card.hasOwnProperty(field)) {
+      for (const field in action.change) {
+        if (action.change.hasOwnProperty(field)) {
           card[field as keyof Card] =
             state.forms.active.dirtyFields &&
             state.forms.active.dirtyFields.includes(field as keyof Card)
               ? state.forms.active.card[field as keyof Card]
-              : action.card[field as keyof Card];
+              : action.change[field as keyof Card];
         }
       }
 
