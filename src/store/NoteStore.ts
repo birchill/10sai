@@ -165,15 +165,7 @@ export class NoteStore {
       return;
     }
 
-    type EventType = Partial<Note> & { deleted?: boolean };
-
-    const event: EventType = parseNote(change.doc);
-    if (change.doc._deleted) {
-      delete (event as any)._deleted;
-      event.deleted = true;
-    }
-
-    emit('note', event);
+    emit('note', parseNote(change.doc));
   }
 
   async onSyncChange(

@@ -153,7 +153,7 @@ describe('NoteStore', () => {
 
     const changes = await changesPromise;
     expect(changes[1].id).toBe(putNote.id);
-    expect(changes[1].deleted).toBeTruthy();
+    expect(changes[1]._deleted).toBeTruthy();
   });
 
   it('reports changes to notes', async () => {
