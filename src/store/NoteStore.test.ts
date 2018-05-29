@@ -233,6 +233,30 @@ describe('NoteStore', () => {
     expect(result).toEqual(['ABC', 'ABCD']);
   });
 
-  // XXX Add tests that we prioritize notes over cards
+  it('keyword search: prioritizes notes over cards', async () => {
+    await dataStore.putCard({
+      question: 'Question',
+      answer: 'Answer',
+      keywords: ['A1'],
+      tags: [],
+      starred: false,
+    });
+    await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['A2'],
+    });
+    await dataStore.putCard({
+      question: 'Question',
+      answer: 'Answer',
+      keywords: ['A3'],
+      tags: [],
+      starred: false,
+    });
+
+    const result = await dataStore.getKeywords('A', 5);
+
+    expect(result).toEqual(['A2', 'A1', 'A3']);
+  });
+
   // XXX Fetch actual notes exactly matching a keyword
 });
