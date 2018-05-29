@@ -47,17 +47,17 @@ class CardList {
 
     this.dataStore.changes.on('card', change => {
       const cards = this.cards.slice();
-      const [found, index] = findCard(change.id, cards);
+      const [found, index] = findCard(change._id, cards);
       if (found) {
-        if (change.deleted) {
+        if (change._deleted) {
           cards.splice(index, 1);
         } else {
-          cards[index] = change.doc;
+          cards[index] = change;
         }
         this.cards = cards;
         this.notifyListeners();
-      } else if (!change.deleted) {
-        cards.splice(index, 0, change.doc);
+      } else if (!change._deleted) {
+        cards.splice(index, 0, change);
         this.cards = cards;
         this.notifyListeners();
       }

@@ -132,6 +132,15 @@ export class DataStore {
   getNote(id: string): Promise<Note> {
     return this.noteStore.getNote(id);
   }
+  putNote(note: Partial<Note>): Promise<Note> {
+    return this.noteStore.putNote(note);
+  }
+  deleteNote(id: string): Promise<void> {
+    return this.noteStore.deleteNote(id);
+  }
+  getNotesForKeyword(keyword: string): Promise<Note[]> {
+    return this.noteStore.getNotesForKeyword(keyword);
+  }
 
   // Review API
   getReview(): Promise<Review | null> {

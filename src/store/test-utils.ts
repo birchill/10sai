@@ -25,7 +25,7 @@ export const waitForChangeEvents = <Type>(
   type: string,
   num: number
 ) => {
-  type EventType = Partial<Type> & { deleted?: boolean };
+  type EventType = Partial<Type> & { _deleted?: boolean };
   const events: EventType[] = [];
 
   let resolver: (e: typeof events) => void;

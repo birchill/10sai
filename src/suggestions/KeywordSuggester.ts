@@ -63,12 +63,9 @@ export class KeywordSuggester {
     this.store.changes.on('card', () => {
       this.lookupCache.clear();
     });
-    // XXX Uncomment this once we implement notes!
-    /*
     this.store.changes.on('note', () => {
       this.lookupCache.clear();
     });
-     */
   }
 
   recordAddedKeyword(keyword: string) {

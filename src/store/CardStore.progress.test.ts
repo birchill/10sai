@@ -7,6 +7,7 @@ import DataStore from './DataStore';
 import CardStore from './CardStore';
 import { generateUniqueTimestampId } from './utils';
 import { waitForEvents } from '../../test/testcommon';
+import { waitForChangeEvents } from './test-utils';
 import { AtomicBlockUtils } from 'draft-js';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -87,21 +88,15 @@ describe('CardStore progress reporting', () => {
   });
 
   it('returns the progress when reporting added cards', async () => {
-    let updateInfo;
-    dataStore.changes.on('card', info => {
-      updateInfo = info;
-    });
+    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 1);
 
     await subject.putCard({ question: 'Q1', answer: 'A1' });
-    // Wait for a few rounds of events so the update can take place
-    await waitForEvents(5);
 
-    expect(updateInfo).toMatchObject({
-      doc: {
-        progress: {
-          level: 0,
-          reviewed: null,
-        },
+    const changes = await changesPromise;
+    expect(changes[0]).toMatchObject({
+      progress: {
+        level: 0,
+        reviewed: null,
       },
     });
   });
@@ -201,10 +196,7 @@ describe('CardStore progress reporting', () => {
   });
 
   it('reports changes to the progress', async () => {
-    const updates = [];
-    dataStore.changes.on('card', info => {
-      updates.push(info);
-    });
+    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 2);
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
     await subject.putCard({
@@ -212,33 +204,27 @@ describe('CardStore progress reporting', () => {
       progress: { level: 1, reviewed: relativeTime(-3) },
     });
 
-    // Wait for a few rounds of events so the update events can happen
-    await waitForEvents(8);
+    const changes = await changesPromise;
 
-    expect(updates).toHaveLength(2);
-    expect(updates[1].doc.progress.level).toBe(1);
-    expect(updates[1].doc.progress.reviewed).toEqual(relativeTime(-3));
-    expect(updates[1].doc.question).toBe('Q1');
+    expect(changes[1].progress.level).toBe(1);
+    expect(changes[1].progress.reviewed).toEqual(relativeTime(-3));
+    expect(changes[1].question).toBe('Q1');
   });
 
   it('only reports once when a card and its progress are deleted', async () => {
-    const updates = [];
-    dataStore.changes.on('card', info => {
-      updates.push(info);
-    });
+    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 2);
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
     await subject.deleteCard(card._id);
 
-    // Wait for a few rounds of events so the update events can happen
-    await waitForEvents(8);
+    const changes = await changesPromise;
 
-    expect(updates).toHaveLength(2);
-    expect(updates[1].deleted).toBe(true);
+    expect(changes).toHaveLength(2);
+    expect(changes[1]._deleted).toBe(true);
 
     // Progress information won't be included because it's too difficult to look
     // up the latest revision and return it.
-    expect(updates[1].doc.progress).toBe(undefined);
+    expect(changes[1].progress).toBe(undefined);
   });
 
   it('deletes the card when the corresponding progress document cannot be created', async () => {

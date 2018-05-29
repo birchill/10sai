@@ -1,8 +1,9 @@
 import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
-import CardStore from './cards/CardStore';
+import CardStore from './CardStore';
 import { generateUniqueTimestampId } from './utils';
+import { waitForChangeEvents } from './test-utils';
 import { Card } from '../model';
 import { waitForEvents } from '../../test/testcommon';
 
@@ -137,7 +138,7 @@ describe('DataStore remote sync', () => {
     expect(subject.getSyncServer()).toBe(undefined);
   });
 
-  it('downloads existing cards on the remote server', done => {
+  it('downloads existing cards on the remote server', async () => {
     const now = JSON.parse(JSON.stringify(new Date()));
     const firstCard: Partial<Card> = {
       question: 'Question 1',
@@ -166,41 +167,27 @@ describe('DataStore remote sync', () => {
 
     const expectedCards = [firstCard, secondCard];
 
-    subject.changes.on(
-      'card',
-      wrapAssertingFunction(info => {
-        expect(info.doc).toEqual(expectedCards.shift());
-      })
-    );
+    const changesPromise = waitForChangeEvents<Card>(subject, 'card', 2);
 
-    testRemote
-      .put(cardForDirectPut(firstCard))
-      .then(() =>
-        testRemote.put({ _id: 'progress-' + firstCard._id, ...initialProgress })
-      )
-      .then(() => {
-        expectedCards[0].progress = initialProgress;
-      })
-      .then(() => testRemote.put(cardForDirectPut(secondCard)))
-      .then(() =>
-        testRemote.put({
-          _id: 'progress-' + secondCard._id,
-          ...initialProgress,
-        })
-      )
-      .then(() => {
-        expectedCards[1].progress = initialProgress;
-      })
-      .then(() => subject.setSyncServer(testRemote))
-      .then(() => {
-        (function waitForUpdates() {
-          if (expectedCards.length) {
-            setImmediate(waitForUpdates);
-          } else {
-            done();
-          }
-        })();
-      });
+    await testRemote.put(cardForDirectPut(firstCard));
+    await testRemote.put({
+      _id: 'progress-' + firstCard._id,
+      ...initialProgress,
+    });
+    expectedCards[0].progress = initialProgress;
+
+    await testRemote.put(cardForDirectPut(secondCard));
+    await testRemote.put({
+      _id: 'progress-' + secondCard._id,
+      ...initialProgress,
+    });
+    expectedCards[1].progress = initialProgress;
+
+    await subject.setSyncServer(testRemote);
+
+    const changes = await changesPromise;
+    expect(changes[0]).toEqual(expectedCards[0]);
+    expect(changes[1]).toEqual(expectedCards[1]);
   });
 
   it('disassociates from previous remote sync server when a new one is set', async () => {

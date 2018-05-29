@@ -6,7 +6,8 @@ import {
   Omit,
   stripFields,
 } from '../utils/type-helpers';
-import { generateUniqueTimestampId, stubbornDelete } from './utils';
+import { generateUniqueTimestampId, updateView, stubbornDelete } from './utils';
+import { NOTE_PREFIX } from './NoteStore';
 
 export interface GetCardsOptions {
   limit?: number;
@@ -503,134 +504,87 @@ export class CardStore {
   }
 
   async updateViews(reviewTime: Date) {
-    await this.updateCardsView();
-    // If this is the first time we created the view, resolve the appropriate
-    // promise.
-    if (!this.viewPromises.cards.resolved) {
-      this.viewPromises.cards.resolved = true;
-      this.viewPromises.cards.resolve();
-    }
+    this.updateCardsView().then(() => {
+      if (!this.viewPromises.cards.resolved) {
+        this.viewPromises.cards.resolved = true;
+        this.viewPromises.cards.resolve();
+      }
+    });
 
-    await this.updateNewCardsView();
-    await this.updateOverduenessView(reviewTime);
-    if (!this.viewPromises.review.resolved) {
-      this.viewPromises.review.resolved = true;
-      this.viewPromises.review.resolve();
-    }
+    Promise.all([
+      this.updateNewCardsView(),
+      this.updateOverduenessView(reviewTime),
+    ]).then(() => {
+      if (!this.viewPromises.review.resolved) {
+        this.viewPromises.review.resolved = true;
+        this.viewPromises.review.resolve();
+      }
+    });
 
-    await this.updateKeywordsView();
-    if (!this.viewPromises.keywords.resolved) {
-      this.viewPromises.keywords.resolved = true;
-      this.viewPromises.keywords.resolve();
-    }
+    this.updateKeywordsView().then(() => {
+      if (!this.viewPromises.keywords.resolved) {
+        this.viewPromises.keywords.resolved = true;
+        this.viewPromises.keywords.resolve();
+      }
+    });
 
-    await this.updateTagsView();
-    if (!this.viewPromises.tags.resolved) {
-      this.viewPromises.tags.resolved = true;
-      this.viewPromises.tags.resolve();
-    }
+    this.updateTagsView().then(() => {
+      if (!this.viewPromises.tags.resolved) {
+        this.viewPromises.tags.resolved = true;
+        this.viewPromises.tags.resolve();
+      }
+    });
   }
 
   async updateCardsView() {
-    return this._updateMapView(
-      'cards',
-      views.cardMapFunction(CARD_PREFIX, PROGRESS_PREFIX)
-    );
+    return updateView({
+      db: this.db,
+      view: 'cards',
+      mapFunction: views.cardMapFunction(CARD_PREFIX, PROGRESS_PREFIX),
+      prefetch: this.prefetchViews,
+    });
   }
 
   async updateNewCardsView() {
-    return this._updateMapView(
-      'new_cards',
-      views.newCardMapFunction(CARD_PREFIX, PROGRESS_PREFIX)
-    );
+    return updateView({
+      db: this.db,
+      view: 'new_cards',
+      mapFunction: views.newCardMapFunction(CARD_PREFIX, PROGRESS_PREFIX),
+      prefetch: this.prefetchViews,
+    });
   }
 
   async updateKeywordsView() {
-    return this._updateMapView(
-      'keywords',
-      views.keywordMapFunction(CARD_PREFIX),
-      '_sum'
-    );
+    return updateView({
+      db: this.db,
+      view: 'keywords',
+      mapFunction: views.keywordMapFunction(CARD_PREFIX, NOTE_PREFIX),
+      reduce: '_sum',
+      prefetch: this.prefetchViews,
+    });
   }
 
   async updateTagsView() {
-    return this._updateMapView(
-      'tags',
-      views.tagMapFunction(CARD_PREFIX),
-      '_sum'
-    );
-  }
-
-  async _updateMapView(
-    view: string,
-    mapFunction: string,
-    reduce: string | boolean = false
-  ) {
-    return this.db
-      .upsert(
-        `_design/${view}`,
-        (currentDoc: PouchDB.Core.PostDocument<any>) => {
-          const doc = {
-            _id: `_design/${view}`,
-            views: {
-              [view]: {
-                map: mapFunction,
-                reduce: reduce ? reduce : false,
-              },
-            },
-          };
-
-          if (
-            currentDoc &&
-            currentDoc.views &&
-            currentDoc.views[view] &&
-            currentDoc.views[view].map &&
-            currentDoc.views[view].map === doc.views[view].map
-          ) {
-            return false;
-          }
-
-          return doc;
-        }
-      )
-      .then(result => {
-        if (!result.updated || !this.prefetchViews) {
-          return;
-        }
-
-        this.db.query(view, { limit: 0 }).catch(() => {
-          // Ignore errors from this. We hit this often during unit tests where
-          // we destroy the database before the query gets a change to run.
-        });
-      });
+    return updateView({
+      db: this.db,
+      view: 'tags',
+      mapFunction: views.tagMapFunction(CARD_PREFIX),
+      reduce: '_sum',
+      prefetch: this.prefetchViews,
+    });
   }
 
   async updateOverduenessView(reviewTime: Date) {
-    return this.db
-      .upsert('_design/overdueness', () => ({
-        _id: '_design/overdueness',
-        views: {
-          overdueness: {
-            map: views.getOverduenessFunction(
-              reviewTime,
-              CARD_PREFIX,
-              PROGRESS_PREFIX
-            ),
-          },
-        },
-      }))
-      .then(() => {
-        if (!this.prefetchViews) {
-          return;
-        }
-
-        // Don't return the promise from this. Just trigger the query so it can
-        // run in the background.
-        this.db.query('overdueness', { limit: 0 }).catch(() => {
-          // Ignore errors from this. We hit this often during unit tests where
-          // we destroy the database before the query gets a change to run.
-        });
-      });
+    return updateView({
+      db: this.db,
+      view: 'overdueness',
+      mapFunction: views.getOverduenessFunction(
+        reviewTime,
+        CARD_PREFIX,
+        PROGRESS_PREFIX
+      ),
+      prefetch: this.prefetchViews,
+    });
   }
 
   async updateReviewTime(reviewTime: Date) {
@@ -729,7 +683,7 @@ export class CardStore {
       const changeDoc: CardChange = progress
         ? mergeDocs(change.doc, progress)
         : parseCard(change.doc);
-      emit('card', { ...change, id, doc: changeDoc });
+      emit('card', changeDoc);
     } else if (isProgressChangeDoc(change.doc)) {
       // If the progress has been deleted, we'll report the deletion when
       // the corresponding card is dropped.
@@ -755,11 +709,7 @@ export class CardStore {
         cardRev: card._rev,
         progressRev: change.doc._rev,
       };
-      emit('card', {
-        ...change,
-        id,
-        doc: mergeDocs(card, change.doc),
-      });
+      emit('card', mergeDocs(card, change.doc));
     }
 
     return undefined;

@@ -86,9 +86,13 @@ export const getOverduenessFunction = (
     });
   }`;
 
-// TODO: Make this search notes too once we introduce them
-export const keywordMapFunction = (cardPrefix: string) => `function(doc) {
-    if (!doc._id.startsWith('${cardPrefix}')) {
+export const keywordMapFunction = (
+  cardPrefix: string,
+  notePrefix: string
+) => `function(doc) {
+    const isNote = doc._id.startsWith('${notePrefix}');
+
+    if (!doc._id.startsWith('${cardPrefix}') && !isNote) {
       return;
     }
 
@@ -97,7 +101,7 @@ export const keywordMapFunction = (cardPrefix: string) => `function(doc) {
     }
 
     for (const keyword of doc.keywords) {
-      emit([keyword.toLowerCase(), keyword], 1);
+      emit([keyword.toLowerCase(), keyword], isNote ? 1000 : 1);
     }
   }`;
 
@@ -112,5 +116,15 @@ export const tagMapFunction = (cardPrefix: string) => `function(doc) {
 
     for (const tag of doc.tags) {
       emit([tag.toLowerCase(), tag], 1);
+    }
+  }`;
+
+export const keywordToNoteMapFunction = (notePrefix: string) => `function(doc) {
+    if (!doc._id.startsWith('${notePrefix}')) {
+      return;
+    }
+
+    for (const keyword of doc.keywords) {
+      emit([keyword.toLowerCase(), keyword], { _id: doc._id });
     }
   }`;

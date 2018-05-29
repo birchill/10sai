@@ -6,8 +6,7 @@ import PouchDB from 'pouchdb';
 import DataStore from './DataStore';
 import { CardStore, CardContent } from './CardStore';
 import { generateUniqueTimestampId } from './utils';
-import { waitForEvents } from '../../test/testcommon';
-import { syncWithWaitableRemote } from './test-utils';
+import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 import '../../jest/customMatchers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -155,16 +154,12 @@ describe('CardStore', () => {
   });
 
   it('reports added cards', async () => {
-    let updateInfo;
-    dataStore.changes.on('card', info => {
-      updateInfo = info;
-    });
+    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 1);
 
     const addedCard = await subject.putCard({ question: 'Q1', answer: 'A1' });
-    // Wait for a few rounds of events so the update can take place
-    await waitForEvents(5);
 
-    expect(updateInfo).toMatchObject({ id: addedCard._id });
+    const changes = await changesPromise;
+    expect(changes[0]).toMatchObject(addedCard);
   });
 
   it('does not return deleted cards', async () => {
@@ -249,20 +244,17 @@ describe('CardStore', () => {
   });
 
   it('reports deleted cards', async () => {
-    let updateInfo;
-    dataStore.changes.on('card', info => {
-      updateInfo = info;
-    });
+    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 2);
+
     const addedCard = await subject.putCard({
       question: 'Question',
       answer: 'Answer',
     });
-
     await subject.deleteCard(addedCard._id);
 
-    await waitForEvents(5);
-    expect(updateInfo.id).toBe(addedCard._id);
-    expect(updateInfo.deleted).toBeTruthy();
+    const changes = await changesPromise;
+    expect(changes[1]._id).toBe(addedCard._id);
+    expect(changes[1]._deleted).toBeTruthy();
   });
 
   it('updates the specified field of cards', async () => {
@@ -386,6 +378,9 @@ describe('CardStore', () => {
   });
 
   it('does not write empty optional fields when updating cards', async () => {
+    const testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
+
     const card = await subject.putCard({
       question: 'Question',
       answer: 'Answer',
@@ -400,9 +395,7 @@ describe('CardStore', () => {
       starred: false,
     });
 
-    const testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
     try {
-      const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();
 
       const doc = await testRemote.get<CardContent>(`card-${card._id}`);
@@ -415,10 +408,7 @@ describe('CardStore', () => {
   });
 
   it('reports changes to cards', async () => {
-    const updates = [];
-    dataStore.changes.on('card', info => {
-      updates.push(info);
-    });
+    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 2);
 
     const card = await subject.putCard({
       question: 'Question',
@@ -426,11 +416,7 @@ describe('CardStore', () => {
     });
     await subject.putCard({ ...card, question: 'Updated question' });
 
-    // Wait for a few rounds of events so the update events can happen
-    await waitForEvents(5);
-
-    // Should get two change documents: add, update
-    expect(updates).toHaveLength(2);
-    expect(updates[1].doc.question).toBe('Updated question');
+    const changes = await changesPromise;
+    expect(changes[1].question).toBe('Updated question');
   });
 });

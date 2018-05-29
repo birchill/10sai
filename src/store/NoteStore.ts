@@ -1,5 +1,6 @@
 import { Note } from '../model';
-import { generateUniqueTimestampId, stubbornDelete } from './utils';
+import * as views from './views';
+import { generateUniqueTimestampId, updateView, stubbornDelete } from './utils';
 import { Omit, stripFields } from '../utils/type-helpers';
 
 export interface NoteContent {
@@ -11,6 +12,9 @@ export interface NoteContent {
 
 type ExistingNoteDoc = PouchDB.Core.ExistingDocument<NoteContent>;
 type NoteDoc = PouchDB.Core.Document<NoteContent>;
+type ExistingNoteDocWithChanges = PouchDB.Core.ExistingDocument<
+  NoteContent & PouchDB.Core.ChangesMeta
+>;
 
 export const NOTE_PREFIX = 'note-';
 
@@ -45,9 +49,7 @@ const isNoteChangeDoc = (
   changeDoc:
     | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
     | undefined
-): changeDoc is PouchDB.Core.ExistingDocument<
-  NoteContent & PouchDB.Core.ChangesMeta
-> => {
+): changeDoc is ExistingNoteDocWithChanges => {
   return changeDoc && changeDoc._id.startsWith(NOTE_PREFIX);
 };
 
@@ -58,6 +60,7 @@ export class NoteStore {
 
   constructor(db: PouchDB.Database) {
     this.db = db;
+    // this.createKeywordsView();
   }
 
   async getNote(id: string): Promise<Note> {
@@ -153,7 +156,7 @@ export class NoteStore {
     return parseNote(noteDoc);
   }
 
-  async deleteNote(id: string) {
+  async deleteNote(id: string): Promise<void> {
     await stubbornDelete(NOTE_PREFIX + id, this.db);
   }
 
@@ -192,6 +195,32 @@ export class NoteStore {
       }
 
       return a.modified >= b.created ? a : b;
+    });
+  }
+
+  async getNotesForKeyword(keyword: string): Promise<Note[]> {
+    const queryOptions: PouchDB.Query.Options<NoteContent, ExistingNoteDoc> = {
+      startkey: [keyword.toLowerCase()],
+      endkey: [keyword.toLowerCase() + '\ufff0', {}],
+      stale: 'update_after',
+    };
+
+    const result = await this.db.query<NoteContent>(
+      'notes_by_keyword',
+      queryOptions
+    );
+
+    return result.rows
+      .filter(row => row.doc)
+      .map(row => parseNote(row.doc as ExistingNoteDocWithChanges));
+  }
+
+  createKeywordsView(): Promise<void> {
+    return updateView({
+      db: this.db,
+      view: 'notes_by_keyword',
+      mapFunction: views.keywordToNoteMapFunction(NOTE_PREFIX),
+      prefetch: false,
     });
   }
 }

@@ -61,6 +61,59 @@ export const stubbornDelete = async (
   }
 };
 
+interface UpdateViewOptions {
+  db: PouchDB.Database;
+  view: string;
+  mapFunction: string;
+  reduce?: string | boolean;
+  prefetch?: boolean;
+}
+
+/**
+ * Create/update a view.
+ */
+export const updateView = async (options: UpdateViewOptions): Promise<void> => {
+  const { db, view, mapFunction, reduce, prefetch } = options;
+
+  const result: PouchDB.UpsertResponse = await db.upsert(
+    `_design/${view}`,
+    (currentDoc: PouchDB.Core.PostDocument<any>) => {
+      const doc = {
+        _id: `_design/${view}`,
+        views: {
+          [view]: {
+            map: mapFunction,
+            reduce: reduce ? reduce : false,
+          },
+        },
+      };
+
+      if (
+        currentDoc &&
+        currentDoc.views &&
+        currentDoc.views[view] &&
+        currentDoc.views[view].map &&
+        currentDoc.views[view].map === doc.views[view].map
+      ) {
+        return false;
+      }
+
+      return doc;
+    }
+  );
+
+  if (!prefetch) {
+    return;
+  }
+
+  // Don't return the promise from this. Just trigger the query so it can
+  // run in the background.
+  db.query(view, { limit: 0 }).catch(() => {
+    // Ignore errors from this. We hit this often during unit tests where
+    // we destroy the database before the query gets a chance to run.
+  });
+};
+
 // Unfortunately the PouchDB typings forgot the 'name' member of Database.
 // FIXME: File a PR for this.
 export type DatabaseWithName = PouchDB.Database & { name: string };

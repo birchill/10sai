@@ -181,4 +181,58 @@ describe('NoteStore', () => {
 
     expect(gotChange).toBeFalsy();
   });
+
+  it('keyword search: initially returns an empty array when', async () => {
+    const result = await dataStore.getKeywords('ABC', 10);
+    expect(result).toEqual([]);
+  });
+
+  it('keyword search: returns matching keywords', async () => {
+    const note1 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['ABCDEF'],
+    });
+    const note2 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['BCD', 'ABC'],
+    });
+    const note3 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['ABCDEFGHI', 'ABCDEF'],
+    });
+    const note4 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['ABCD'],
+    });
+
+    const result = await dataStore.getKeywords('ABC', 10);
+
+    expect(result).toEqual(['ABC', 'ABCDEF', 'ABCD', 'ABCDEFGHI']);
+  });
+
+  it('keyword search: respects the limit for matched keywords', async () => {
+    const note1 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['ABCDEF'],
+    });
+    const note2 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['BCD', 'ABC'],
+    });
+    const note3 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['ABCDEFGHI'],
+    });
+    const note4 = await subject.putNote({
+      ...typicalNewNote,
+      keywords: ['ABCD'],
+    });
+
+    const result = await dataStore.getKeywords('ABC', 2);
+
+    expect(result).toEqual(['ABC', 'ABCD']);
+  });
+
+  // XXX Add tests that we prioritize notes over cards
+  // XXX Fetch actual notes exactly matching a keyword
 });
