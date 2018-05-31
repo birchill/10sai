@@ -536,10 +536,13 @@ export class DataStore {
 
   // Intended for unit testing only
 
-  destroy() {
+  async destroy(): Promise<void> {
+    await this.noteStore.destroy();
+
     if (!this.db) {
       return;
     }
+
     const db = this.db;
     this.db = undefined;
     return db.destroy();

@@ -57,10 +57,20 @@ type EmitFunction = (type: string, ...args: any[]) => void;
 
 export class NoteStore {
   db: PouchDB.Database;
+  keywordsViewReady: Promise<void>;
 
   constructor(db: PouchDB.Database) {
     this.db = db;
-    // this.createKeywordsView();
+    this.keywordsViewReady = updateView({
+      db,
+      view: 'notes_by_keyword',
+      mapFunction: views.keywordToNoteMapFunction(NOTE_PREFIX),
+      prefetch: false,
+    });
+  }
+
+  async destroy(): Promise<void> {
+    return this.keywordsViewReady;
   }
 
   async getNote(id: string): Promise<Note> {
@@ -199,10 +209,15 @@ export class NoteStore {
   }
 
   async getNotesForKeyword(keyword: string): Promise<Note[]> {
+    await this.keywordsViewReady;
+
     const queryOptions: PouchDB.Query.Options<NoteContent, ExistingNoteDoc> = {
-      startkey: [keyword.toLowerCase()],
-      endkey: [keyword.toLowerCase() + '\ufff0', {}],
-      stale: 'update_after',
+      startkey: keyword.toLowerCase(),
+      endkey: keyword.toLowerCase(),
+      include_docs: true,
+      // XXX We want to use stale: 'update_after' here but it causes unit tests
+      // to timeout.
+      // -- We should also work out how to update after the update occurs
     };
 
     const result = await this.db.query<NoteContent>(
@@ -213,15 +228,6 @@ export class NoteStore {
     return result.rows
       .filter(row => row.doc)
       .map(row => parseNote(row.doc as ExistingNoteDocWithChanges));
-  }
-
-  createKeywordsView(): Promise<void> {
-    return updateView({
-      db: this.db,
-      view: 'notes_by_keyword',
-      mapFunction: views.keywordToNoteMapFunction(NOTE_PREFIX),
-      prefetch: false,
-    });
   }
 }
 

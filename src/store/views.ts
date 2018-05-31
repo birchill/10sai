@@ -124,7 +124,11 @@ export const keywordToNoteMapFunction = (notePrefix: string) => `function(doc) {
       return;
     }
 
+    if (!Array.isArray(doc.keywords) || !doc.keywords.length) {
+      return;
+    }
+
     for (const keyword of doc.keywords) {
-      emit([keyword.toLowerCase(), keyword], { _id: doc._id });
+      emit(keyword.toLowerCase(), { _id: doc._id });
     }
   }`;
