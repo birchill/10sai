@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Dispatch, connect } from 'react-redux';
 
 import { Card } from '../model';
+import AddNoteButton from './AddNoteButton';
 import EditCardToolbar from './EditCardToolbar';
 import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound';
@@ -91,15 +92,19 @@ export class EditCardScreen extends React.PureComponent<Props> {
           onDelete={this.handleDelete}
         />
         {this.props.forms.active.editorState !== EditorState.NOT_FOUND ? (
-          <EditCardForm
-            keywordSuggester={this.props.keywordSuggester}
-            tagSuggester={this.props.tagSuggester}
-            onChange={this.handleFormChange}
-            {...this.props.forms.active}
-            ref={activeForm => {
-              this.activeForm = activeForm || undefined;
-            }}
-          />
+          <>
+            <EditCardForm
+              keywordSuggester={this.props.keywordSuggester}
+              tagSuggester={this.props.tagSuggester}
+              onChange={this.handleFormChange}
+              {...this.props.forms.active}
+              ref={activeForm => {
+                this.activeForm = activeForm || undefined;
+              }}
+            />
+            <hr className="note-divider divider" />
+            <AddNoteButton className="addnote" />
+          </>
         ) : (
           <EditCardNotFound deleted={!!this.props.forms.active.deleted} />
         )}
