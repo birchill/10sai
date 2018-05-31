@@ -10,14 +10,29 @@ interface Props {
 const FormattedText: React.SFC<Props> = props => {
   const parts = parseRuby(props.text);
 
+  // Track how many times each substring occurs so we can assign unique keys
+  const keys: {
+    [key: string]: number;
+  } = {};
+
   return (
     <>
       {parts.map(part => {
+        // Generate a unique key for the substring
+        const keyText =
+          typeof part === 'string' ? part : `${part.base}-${part.ruby}`;
+        if (keys.hasOwnProperty(keyText)) {
+          keys[keyText]++;
+        } else {
+          keys[keyText] = 0;
+        }
+        const key = `${keyText}-${keys[keyText]}`;
+
         if (typeof part === 'string') {
-          return part;
+          return <span key={key}>{part}</span>;
         } else {
           return (
-            <ruby>
+            <ruby key={key}>
               {part.base}
               <rt>{part.ruby}</rt>
             </ruby>
