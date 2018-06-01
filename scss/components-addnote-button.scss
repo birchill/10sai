@@ -2,4 +2,15 @@
   background: $keyword-yellow;
   border-color: $keyword-yellow-dark;
   color: $keyword-yellow-dark;
+
+  &.-icon.-yellow::before {
+    background-position-y: -5em;
+  }
+  &:active, &:focus {
+    filter: brightness(1.03);
+    border-style: dotted;
+  }
+  &:hover {
+    filter: brightness(1.08);
+  }
 }

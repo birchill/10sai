@@ -82,6 +82,9 @@ button.-icon, a.-icon {
   &.-add-card::before {
     background-position-x: -4em;
   }
+  &.-add-note::before {
+    background-position-x: -19em;
+  }
   &.-edit::before {
     background-position-x: -5em;
   }
