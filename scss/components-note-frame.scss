@@ -1,0 +1,33 @@
+.note-frame {
+  box-sizing: border-box;
+  box-shadow: 0px 1px 3px rgba(0, 0, 30, 0.2);
+
+  @supports (display: grid) {
+    display: grid;
+    grid-template-columns: auto 1rem;
+    border-radius: 0 1.6rem 0 0;
+
+    > .header {
+      background: $keyword-yellow;
+    }
+
+    > .corner {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .form {
+      background: $keyword-yellow;
+      grid-column-end: span 2;
+    }
+  }
+
+  @supports not (display: grid) {
+    background: $keyword-yellow;
+    padding-top: 1rem;
+
+    > .header, > .corner {
+      display: none;
+    }
+  }
+}

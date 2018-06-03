@@ -2,11 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Dispatch, connect } from 'react-redux';
 
-import { Card } from '../model';
+import { Card, Note } from '../model';
 import AddNoteButton from './AddNoteButton';
 import EditCardToolbar from './EditCardToolbar';
 import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound';
+import EditNoteForm from './EditNoteForm';
+import NoteFrame from './NoteFrame';
 import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
 import { EditState, EditFormState, FormId } from '../edit/reducer';
@@ -103,6 +105,9 @@ export class EditCardScreen extends React.PureComponent<Props> {
               }}
             />
             <hr className="note-divider divider" />
+            <NoteFrame className="noteform">
+              <EditNoteForm note={{}} />
+            </NoteFrame>
             <AddNoteButton className="addnote" />
           </>
         ) : (

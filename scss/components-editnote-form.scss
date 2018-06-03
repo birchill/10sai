@@ -1,0 +1,54 @@
+.editnote-form {
+  > .content {
+    padding: 1rem;
+    padding-top: 0;
+    min-height: 5rem;
+    font-size: 1.2rem;
+
+    color: lighten($text-color, 20%);
+    &:hover, &:focus-within {
+      color: $text-color;
+    }
+
+    .public-DraftEditorPlaceholder-root {
+      color: $keyword-yellow-dark;
+      opacity: 0.6;
+    }
+
+    &:hover .public-DraftEditorPlaceholder-root {
+      opacity: 1;
+    }
+
+    .public-DraftEditorPlaceholder-hasFocus {
+      display: none;
+    }
+  }
+
+  > .keywords {
+    display: flex;
+    opacity: 0.9;
+    border-top: 1px dotted transparent;
+
+    &:hover, &:focus-within {
+      opacity: 1;
+      border-top: 1px dotted $dark-grey;
+    }
+
+    > .icon {
+      margin-top: 1.2rem;
+      margin-left: .9rem;
+    }
+
+    > .tokens {
+      flex: 1;
+    }
+
+    &:hover, &:focus-within {
+      border-top-color: $keyword-yellow-dark;
+    }
+
+    > .icon {
+      background-position-y: -5em;
+    }
+  }
+}
