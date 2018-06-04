@@ -5,10 +5,15 @@
   @supports (display: grid) {
     display: grid;
     grid-template-columns: auto 1rem;
+    grid-template-rows: 1rem;
     border-radius: 0 1.6rem 0 0;
 
-    > .header {
+    > .header,  > .cornerfiller {
       background: $keyword-yellow;
+    }
+
+    > .header {
+      grid-row-end: span 2;
     }
 
     > .corner {
@@ -16,7 +21,7 @@
       height: 1rem;
     }
 
-    .form {
+    .body {
       background: $keyword-yellow;
       grid-column-end: span 2;
     }
@@ -26,7 +31,7 @@
     background: $keyword-yellow;
     padding-top: 1rem;
 
-    > .header, > .corner {
+    > .header, > .corner, > .cornerfiller {
       display: none;
     }
   }

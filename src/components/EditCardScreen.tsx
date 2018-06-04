@@ -8,7 +8,6 @@ import EditCardToolbar from './EditCardToolbar';
 import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound';
 import EditNoteForm from './EditNoteForm';
-import NoteFrame from './NoteFrame';
 import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
 import { EditState, EditFormState, FormId } from '../edit/reducer';
@@ -105,9 +104,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
               }}
             />
             <hr className="note-divider divider" />
-            <NoteFrame className="noteform">
-              <EditNoteForm note={{}} />
-            </NoteFrame>
+            <EditNoteForm className="noteform" note={{}} />
             <AddNoteButton className="addnote" />
           </>
         ) : (

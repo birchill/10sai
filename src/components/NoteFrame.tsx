@@ -11,9 +11,12 @@ const NoteFrame: React.SFC<Props> = props => {
     className += ' ' + props.className;
   }
 
+  const children = React.Children.toArray(props.children);
+  const header = children.length > 1 ? children.splice(0, 1)[0] : null;
+
   return (
     <div className={className}>
-      <div className="header" />
+      <div className="header">{header}</div>
       <svg className="corner" viewBox="0 0 100 100">
         <polygon fill="#FEFACF" points="0,0 100,100 0,100" />
         <path
@@ -25,7 +28,8 @@ const NoteFrame: React.SFC<Props> = props => {
           d="M0,0l100,100c0,0-62.2-10.3-71-12.8s-12.7-7.4-14.4-14.1S0,0,0,0"
         />
       </svg>
-      {props.children}
+      <div className="cornerfiller" />
+      <div className="body">{children}</div>
     </div>
   );
 };

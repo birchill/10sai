@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Note } from '../model';
 import KeywordSuggester from '../suggestions/KeywordSuggester';
+import NoteFrame from './NoteFrame';
 import TokenList from './TokenList';
 import { debounce } from '../utils';
 import { ContentState, Editor, EditorState } from 'draft-js';
@@ -175,37 +176,39 @@ export class EditNoteForm extends React.Component<Props, State> {
   */
 
   render() {
-    let className = 'form editnote-form';
+    let className = 'editnote-form form';
     if (this.props.className) {
       className += ' ' + this.props.className;
     }
 
     return (
       <form className={className} autoComplete="off">
-        <div className="content">
-          <Editor
-            editorState={this.state.contentEditorState}
-            onChange={this.handleContentChange}
-            /*
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-            */
-            placeholder="Note"
-            stripPastedStyles
-            /*
-            ref={editor => {
-              this.editor = editor || undefined;
-            }}
-            */
-          />
-        </div>
-        <div
-          className="keywords -yellow"
-          /*onClick={this.handleKeywordsClick}*/
-          title="Add words here to cross-reference with cards."
-        >
-          <span className="icon -key" />
-        </div>
+        <NoteFrame>
+          <div
+            className="keywords -yellow"
+            /*onClick={this.handleKeywordsClick}*/
+            title="Add words here to cross-reference with cards."
+          >
+            <span className="icon -key" />
+          </div>
+          <div className="content">
+            <Editor
+              editorState={this.state.contentEditorState}
+              onChange={this.handleContentChange}
+              /*
+              onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
+              */
+              placeholder="Note"
+              stripPastedStyles
+              /*
+              ref={editor => {
+                this.editor = editor || undefined;
+              }}
+              */
+            />
+          </div>
+        </NoteFrame>
       </form>
     );
   }
