@@ -29,6 +29,7 @@
     padding: 1rem;
     min-height: 5rem;
     font-size: 1.2rem;
+    cursor: text;
 
     color: lighten($text-color, 20%);
     &:hover, &:focus-within {

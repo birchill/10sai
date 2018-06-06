@@ -28,6 +28,7 @@ const getEditorContent = (editorState: EditorState): string => {
 export class EditNoteForm extends React.Component<Props, State> {
   state: State;
   keywordsTokenList?: TokenList;
+  editor?: Editor;
 
   /*
   keywordText: string;
@@ -78,6 +79,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       keywordSuggestions: [],
       loadingSuggestions: false,
     };
+    this.handleContentClick = this.handleContentClick.bind(this);
     this.handleContentChange = this.handleContentChange.bind(this);
 
     // Keyword suggestion feature
@@ -90,6 +92,12 @@ export class EditNoteForm extends React.Component<Props, State> {
       200
     ).bind(this);
     */
+  }
+
+  handleContentClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (!e.defaultPrevented && this.editor) {
+      this.editor.focus();
+    }
   }
 
   handleContentChange(editorState: EditorState) {
@@ -174,6 +182,12 @@ export class EditNoteForm extends React.Component<Props, State> {
   }
   */
 
+  focus() {
+    if (this.editor) {
+      this.editor.focus();
+    }
+  }
+
   render() {
     let className = 'editnote-form form';
     if (this.props.className) {
@@ -202,7 +216,7 @@ export class EditNoteForm extends React.Component<Props, State> {
               }}
             />
           </div>
-          <div className="content">
+          <div className="content" onClick={this.handleContentClick}>
             <Editor
               editorState={this.state.contentEditorState}
               onChange={this.handleContentChange}
@@ -212,11 +226,9 @@ export class EditNoteForm extends React.Component<Props, State> {
               */
               placeholder="Note"
               stripPastedStyles
-              /*
               ref={editor => {
                 this.editor = editor || undefined;
               }}
-              */
             />
           </div>
           <div className="controls">
