@@ -6,7 +6,7 @@ interface Props {
 }
 
 const AddNoteButton: React.SFC<Props> = props => {
-  let className = 'addnote-button -icon -add-note -yellow';
+  let className = 'addnote-button -icon -add-note -yellow -large';
   if (props.className) {
     className += ' ' + props.className;
   }

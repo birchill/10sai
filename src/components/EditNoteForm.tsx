@@ -220,7 +220,9 @@ export class EditNoteForm extends React.Component<Props, State> {
             />
           </div>
           <div className="controls">
-            <button className="delete -icon -delete -link">Discard</button>
+            <button className="delete -icon -delete -link -yellow">
+              Discard
+            </button>
           </div>
         </NoteFrame>
       </form>

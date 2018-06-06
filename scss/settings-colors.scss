@@ -8,8 +8,11 @@ $really-light-grey: #f1f2f3;
 $light-grey: #dbdcde;
 $dark-grey: #c3c5ce;
 
-$keyword-yellow: lemonchiffon;
-$keyword-yellow-dark: #cdb900;
+$keyword-yellow: hsl(54, 100%, 90.2%);
+$keyword-yellow-dark: hsl(54, 100%, 40.2%);
+$keyword-yellow-lighter: hsl(54, 75%, 95%);
+$keyword-yellow-dim: hsl(54, 75%, 90.2%);
+$keyword-yellow-dimmer: hsl(54, 50%, 90.2%);
 
 $fail-red: #e10000;
 $pass-green: #00b900;

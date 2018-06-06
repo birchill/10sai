@@ -35,6 +35,20 @@ input[type=button], input[type=submit], input[type=reset], button, a.button {
   &.-center.-icon {
     display: flex;
   }
+
+  &.-yellow {
+    background: $keyword-yellow;
+    color: $keyword-yellow-dark;
+
+    &:active, &:focus {
+      filter: brightness(1.03);
+      border-color: $keyword-yellow-dark;
+      border-style: dotted;
+    }
+    &:hover {
+      filter: brightness(1.08);
+    }
+  }
 }
 
 @media screen and (max-width: 600px) {
@@ -69,6 +83,9 @@ button.-icon, a.-icon {
 
     margin-left: -1.5em;
     margin-right: 0.5em;
+  }
+  &.-yellow::before {
+    background-position-y: -5em;
   }
   &.-search::before {
     background-position-x: -1em;
