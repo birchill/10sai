@@ -613,6 +613,15 @@ export class TokenList extends React.PureComponent<Props> {
     const classes = ['token-list', this.props.className];
     const placeholder = this.props.placeholder || '';
     const suggestions = this.suggestionsToDisplay();
+    let suggestionsLabel = '';
+    if (suggestions.length) {
+      suggestionsLabel = 'e.g.';
+    } else if (
+      this.props.className &&
+      !this.props.className.split(' ').includes('-inline')
+    ) {
+      suggestionsLabel = '(No suggestions)';
+    }
 
     return (
       <div
@@ -664,9 +673,7 @@ export class TokenList extends React.PureComponent<Props> {
           aria-live="assertive"
           aria-atomic="true"
         >
-          <label className="label">
-            {suggestions.length ? 'e.g.' : '(No suggestions)'}
-          </label>
+          <label className="label">{suggestionsLabel}</label>
           {suggestions.length ? (
             <ul className="suggestion-list" hidden={!suggestions.length}>
               {suggestions.map(this.renderSuggestion)}

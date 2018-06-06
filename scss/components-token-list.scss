@@ -190,6 +190,14 @@
     box-shadow: none;
   }
 
+  // A variation that puts the suggestions on the side
+  &.-inline {
+    display: flex;
+    > .input {
+      flex: 1;
+    }
+  }
+
   &.-yellow {
     --text-color: #{$keyword-yellow-dark};
     --chip-fgcolor: #{$keyword-yellow-dark};

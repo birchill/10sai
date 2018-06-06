@@ -27,7 +27,6 @@
 
   .content {
     padding: 1rem;
-    padding-top: 0;
     min-height: 5rem;
     font-size: 1.2rem;
 
@@ -48,5 +47,14 @@
     .public-DraftEditorPlaceholder-hasFocus {
       display: none;
     }
+  }
+
+  .controls {
+    display: flex;
+    // This is just here until we add something else to the container (with
+    // flex: 1).
+    justify-content: end;
+
+    padding: .5rem 1rem;
   }
 }

@@ -17,10 +17,8 @@ interface Props {
 
 interface State {
   contentEditorState: EditorState;
-  /*
   keywordSuggestions: string[];
   loadingSuggestions: boolean;
-*/
 }
 
 const getEditorContent = (editorState: EditorState): string => {
@@ -28,16 +26,11 @@ const getEditorContent = (editorState: EditorState): string => {
 };
 
 export class EditNoteForm extends React.Component<Props, State> {
-  /*
-  state: State = {
-    keywordSuggestions: [],
-    loadingSuggestions: false,
-  };
-  */
+  state: State;
+  keywordsTokenList?: TokenList;
 
   /*
   keywordText: string;
-  keywordsTokenList?: TokenList;
   debouncedUpdateSuggestions: (input: string | Partial<Note>) => void;
   */
 
@@ -82,14 +75,16 @@ export class EditNoteForm extends React.Component<Props, State> {
     // Content editor
     this.state = {
       contentEditorState: EditorState.createEmpty(),
+      keywordSuggestions: [],
+      loadingSuggestions: false,
     };
     this.handleContentChange = this.handleContentChange.bind(this);
 
     // Keyword suggestion feature
-    /*
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
-    this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
+    this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
+    /*
     this.debouncedUpdateSuggestions = debounce(
       this.updateKeywordSuggestions,
       200
@@ -115,7 +110,6 @@ export class EditNoteForm extends React.Component<Props, State> {
     });
   }
 
-  /*
   handleKeywordsClick(e: React.MouseEvent<HTMLDivElement>) {
     if (!e.defaultPrevented && this.keywordsTokenList) {
       this.keywordsTokenList.focus();
@@ -123,11 +117,14 @@ export class EditNoteForm extends React.Component<Props, State> {
   }
 
   handleKeywordsTextChange(text: string) {
+    /*
     this.keywordText = text;
     this.debouncedUpdateSuggestions(text || this.props.note);
+    */
   }
 
   handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
+    /*
     if (this.props.onChange) {
       this.props.onChange('keywords', keywords);
     }
@@ -135,8 +132,10 @@ export class EditNoteForm extends React.Component<Props, State> {
     for (const keyword of addedKeywords) {
       this.props.keywordSuggester.recordAddedKeyword(keyword);
     }
+    */
   }
 
+  /*
   updateKeywordSuggestions(input: string | Partial<Note>) {
     if (!this.mounted) {
       return;
@@ -186,10 +185,22 @@ export class EditNoteForm extends React.Component<Props, State> {
         <NoteFrame>
           <div
             className="keywords -yellow"
-            /*onClick={this.handleKeywordsClick}*/
+            onClick={this.handleKeywordsClick}
             title="Add words here to cross-reference with cards."
           >
             <span className="icon -key" />
+            <TokenList
+              className="tokens -yellow -seamless -inline"
+              tokens={this.props.note.keywords || []}
+              placeholder="Keywords"
+              onTokensChange={this.handleKeywordsChange}
+              onTextChange={this.handleKeywordsTextChange}
+              suggestions={this.state.keywordSuggestions}
+              loadingSuggestions={this.state.loadingSuggestions}
+              ref={e => {
+                this.keywordsTokenList = e || undefined;
+              }}
+            />
           </div>
           <div className="content">
             <Editor
@@ -207,6 +218,9 @@ export class EditNoteForm extends React.Component<Props, State> {
               }}
               */
             />
+          </div>
+          <div className="controls">
+            <button className="delete -icon -delete -link">Discard</button>
           </div>
         </NoteFrame>
       </form>
