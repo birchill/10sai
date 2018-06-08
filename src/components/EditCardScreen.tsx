@@ -104,7 +104,11 @@ export class EditCardScreen extends React.PureComponent<Props> {
               }}
             />
             <hr className="note-divider divider" />
-            <EditNoteForm className="noteform" note={{}} />
+            <EditNoteForm
+              className="noteform"
+              note={{}}
+              relatedKeywords={['屯所', '屯']}
+            />
             <AddNoteButton className="addnote" />
           </>
         ) : (
