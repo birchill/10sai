@@ -145,7 +145,10 @@ export class EditNoteForm extends React.Component<Props, State> {
             title="Add words here to cross-reference with cards."
           >
             <span className="icon -key" />
-            <KeywordSuggestionProvider text={this.state.keywordText}>
+            <KeywordSuggestionProvider
+              text={this.state.keywordText}
+              defaultSuggestions={this.props.relatedKeywords}
+            >
               {(suggestions: string[], loading: boolean) => (
                 <TokenList
                   className="tokens -yellow -seamless -inline"

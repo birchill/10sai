@@ -1,4 +1,4 @@
-import KeywordSuggester from './KeywordSuggester';
+import { KeywordSuggester, SessionKeywordHandling } from './KeywordSuggester';
 import DataStore from '../store/DataStore';
 import EventEmitter from 'event-emitter';
 import { waitForEvents } from '../../test/testcommon';
@@ -38,35 +38,39 @@ describe('KeywordSuggester', () => {
   it('returns guesses from cloze content', () => {
     // TODO: Once we hook up a dictionary we can put the な inside the cloze and
     // test that we drop it automatically
-    const result = subject.getSuggestions({
-      question: '[..superficial..]な関係',
-      answer: '{生半可|なま|はん|か}な関係',
-    });
+    const result = subject.getSuggestions(
+      '',
+      KeywordSuggester.getSuggestionsFromCard({
+        question: '[..superficial..]な関係',
+        answer: '{生半可|なま|はん|か}な関係',
+      }),
+      SessionKeywordHandling.Omit
+    );
     expect(result.initialResult).toEqual(['生半可']);
   });
 
   it('returns kanji guesses from cards that test readings', () => {
-    const result = subject.getSuggestions({
+    const result = KeywordSuggester.getSuggestionsFromCard({
       question: '眼差し',
       answer: 'まなざし\nLook',
     });
-    expect(result.initialResult[0]).toEqual('眼差し');
+    expect(result[0]).toEqual('眼差し');
   });
 
   it('returns guesses from cards that have simple answers', () => {
-    const result = subject.getSuggestions({
+    const result = KeywordSuggester.getSuggestionsFromCard({
       question: 'the former',
       answer: '{前者|ぜん|しゃ}',
     });
-    expect(result.initialResult[0]).toEqual('前者');
+    expect(result[0]).toEqual('前者');
   });
 
   it('returns the individual kanji characters as suggestions', () => {
-    const result = subject.getSuggestions({
+    const result = KeywordSuggester.getSuggestionsFromCard({
       question: '眼差し',
       answer: 'まなざし',
     });
-    expect(result.initialResult[1]).toEqual('眼');
-    expect(result.initialResult[2]).toEqual('差');
+    expect(result[1]).toEqual('眼');
+    expect(result[2]).toEqual('差');
   });
 });

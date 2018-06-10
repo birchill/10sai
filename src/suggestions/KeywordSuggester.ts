@@ -22,8 +22,10 @@ interface KeywordSuggesterOptions {
   maxSuggestions?: number;
 }
 
-const cardHasText = (card: Partial<Card>) =>
-  card && (card.question || card.answer);
+export const enum SessionKeywordHandling {
+  Omit,
+  Include,
+}
 
 export class KeywordSuggester {
   store: DataStore;
@@ -72,23 +74,21 @@ export class KeywordSuggester {
     this.sessionKeywords.set(keyword, undefined);
   }
 
-  getSuggestions(input: Partial<Card> | string): SuggestionResult {
+  getSuggestions(
+    input: string,
+    defaultSuggestions: string[],
+    sessionKeywordHandling: SessionKeywordHandling
+  ): SuggestionResult {
     const result: SuggestionResult = {};
 
-    // When there is no input we return keywords based on the content and also
-    // keywords that have been used recently in this session (e.g. for when
-    // you're adding a number of cards around the same word).
-    if (typeof input === 'object') {
-      // Try guessing from the card contents
-      const guessedKeywords: string[] = this.getSuggestionsFromCard(input);
-
-      // Add as many session keywords as we have
-      const sessionKeywords: string[] = [
-        ...this.sessionKeywords.keys(),
-      ].reverse();
+    if (input === '') {
+      const sessionKeywords: string[] =
+        sessionKeywordHandling === SessionKeywordHandling.Include
+          ? [...this.sessionKeywords.keys()].reverse()
+          : [];
 
       result.initialResult = mergeAndTrimSuggestions(
-        guessedKeywords,
+        defaultSuggestions,
         sessionKeywords,
         this.maxSuggestions
       );
@@ -116,7 +116,7 @@ export class KeywordSuggester {
     return result;
   }
 
-  getSuggestionsFromCard(card: Partial<Card>): string[] {
+  static getSuggestionsFromCard(card: Partial<Card>): string[] {
     if (!card.question || !card.answer) {
       return [];
     }

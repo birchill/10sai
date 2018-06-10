@@ -7,6 +7,7 @@ import TokenList from './TokenList';
 
 import { debounce } from '../utils';
 import { Card } from '../model';
+import KeywordSuggester from '../suggestions/KeywordSuggester';
 import TagSuggester from '../suggestions/TagSuggester';
 import { SuggestionResult } from '../suggestions/SuggestionResult';
 
@@ -167,6 +168,10 @@ export class EditCardForm extends React.Component<Props, State> {
   }
 
   render() {
+    const keywordSuggestions = KeywordSuggester.getSuggestionsFromCard(
+      this.props.card
+    );
+
     return (
       <form className="form editcard-form" autoComplete="off">
         <CardFaceInput
@@ -193,7 +198,8 @@ export class EditCardForm extends React.Component<Props, State> {
           <span className="icon -key" />
           <KeywordSuggestionProvider
             text={this.state.keywordText}
-            card={this.props.card}
+            defaultSuggestions={keywordSuggestions}
+            includeSessionKeywords={true}
           >
             {(
               suggestions: string[],
