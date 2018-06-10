@@ -166,6 +166,8 @@
     > .loading-indicator {
       display: inline-block;
       width: 50px;
+      // Needed to make sure this is vertically centred in inline mode.
+      min-height: 100%;
     }
 
     &.-loading {

@@ -2,17 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import CardFaceInput from './CardFaceInput';
+import KeywordSuggestionProvider from './KeywordSuggestionProvider';
 import TokenList from './TokenList';
 
 import { debounce } from '../utils';
 import { Card } from '../model';
-import KeywordSuggester from '../suggestions/KeywordSuggester';
 import TagSuggester from '../suggestions/TagSuggester';
 import { SuggestionResult } from '../suggestions/SuggestionResult';
 
 interface Props {
   card: Partial<Card>;
-  keywordSuggester: KeywordSuggester;
   tagSuggester: TagSuggester;
   onChange?: (topic: string, value: string | string[]) => void;
 }
@@ -23,21 +22,19 @@ interface SuggestionState {
 }
 
 interface State {
-  keywords: SuggestionState;
+  keywordText: string;
   tags: SuggestionState;
 }
 
 export class EditCardForm extends React.Component<Props, State> {
   state: State = {
-    keywords: { suggestions: [], loading: false },
+    keywordText: '',
     tags: { suggestions: [], loading: false },
   };
   questionTextBox?: CardFaceInput;
-  keywordText: string;
   keywordsTokenList?: TokenList;
   tagsTokenList?: TokenList;
   debouncedUpdateSuggestions: {
-    keywords: (input: string | Partial<Card>) => void;
     tags: (text: string) => void;
   };
   // I know this is an anti-pattern but the amount of code needed to be able to
@@ -49,7 +46,6 @@ export class EditCardForm extends React.Component<Props, State> {
     return {
       // eslint-disable-next-line react/forbid-prop-types
       card: PropTypes.object.isRequired,
-      keywordSuggester: PropTypes.object.isRequired,
       tagSuggester: PropTypes.object.isRequired,
       onChange: PropTypes.func,
     };
@@ -64,19 +60,16 @@ export class EditCardForm extends React.Component<Props, State> {
     // Token lists
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
-    this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
     this.handleTagsClick = this.handleTagsClick.bind(this);
     this.handleTagsChange = this.handleTagsChange.bind(this);
 
     this.debouncedUpdateSuggestions = {
-      keywords: debounce(this.updateKeywordSuggestions, 200).bind(this),
       tags: debounce(this.updateTagSuggestions, 200).bind(this),
     };
   }
 
   componentDidMount() {
     this.mounted = true;
-    this.updateKeywordSuggestions(this.props.card || this.keywordText);
     this.updateTagSuggestions('');
   }
 
@@ -84,22 +77,7 @@ export class EditCardForm extends React.Component<Props, State> {
     this.mounted = false;
   }
 
-  componentWillReceiveProps(nextProps: Props) {
-    // If we have (or will have, or did have) card data, but there's no current
-    // text in the keywords box, make sure we update the suggestions in case the
-    // card data has changed.
-    if (
-      !this.keywordText &&
-      (nextProps.card.question ||
-        nextProps.card.answer ||
-        this.props.card.question ||
-        this.props.card.answer)
-    ) {
-      this.updateKeywordSuggestions(nextProps.card);
-    }
-  }
-
-  updateTokenSuggestions(result: SuggestionResult, list: 'keywords' | 'tags') {
+  updateTokenSuggestions(result: SuggestionResult, list: 'tags') {
     const updatedState: Partial<State> = {};
     updatedState[list] = this.state[list];
     if (result.initialResult) {
@@ -125,15 +103,6 @@ export class EditCardForm extends React.Component<Props, State> {
           /* Ignore, request was canceled. */
         });
     }
-  }
-
-  updateKeywordSuggestions(input: string | Partial<Card>) {
-    if (!this.mounted) {
-      return;
-    }
-
-    const result = this.props.keywordSuggester.getSuggestions(input);
-    this.updateTokenSuggestions(result, 'keywords');
   }
 
   updateTagSuggestions(text: string) {
@@ -164,21 +133,20 @@ export class EditCardForm extends React.Component<Props, State> {
   }
 
   handleKeywordsTextChange(text: string) {
-    this.keywordText = text;
-    // We only need to debounce when doing a text-lookup but we call the
-    // debounced version in both cases since otherwise we can end up with the
-    // non-debounced version racing with the debounced version (unless we
-    // actually cancel the debounced one when doing a non-text lookup).
-    this.debouncedUpdateSuggestions.keywords(text || this.props.card);
+    this.setState({ keywordText: text });
   }
 
-  handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
+  handleKeywordsChange(
+    keywords: string[],
+    addedKeywords: string[],
+    addRecentEntry: (entry: string) => void
+  ) {
     if (this.props.onChange) {
       this.props.onChange('keywords', keywords);
     }
 
     for (const keyword of addedKeywords) {
-      this.props.keywordSuggester.recordAddedKeyword(keyword);
+      addRecentEntry(keyword);
     }
   }
 
@@ -223,18 +191,38 @@ export class EditCardForm extends React.Component<Props, State> {
           title="Add words here to cross-reference with notes and other resources. For example, if this card is about &ldquo;running&rdquo;, adding &ldquo;run&rdquo; as a keyword will make it easy to find related notes, pictures, and dictionary entries."
         >
           <span className="icon -key" />
-          <TokenList
-            className="tokens -yellow -seamless"
-            tokens={this.props.card.keywords || []}
-            placeholder="Keywords"
-            onTokensChange={this.handleKeywordsChange}
-            onTextChange={this.handleKeywordsTextChange}
-            suggestions={this.state.keywords.suggestions}
-            loadingSuggestions={this.state.keywords.loading}
-            ref={e => {
-              this.keywordsTokenList = e || undefined;
-            }}
-          />
+          <KeywordSuggestionProvider
+            text={this.state.keywordText}
+            card={this.props.card}
+          >
+            {(
+              suggestions: string[],
+              loading: boolean,
+              addRecentEntry: (entry: string) => void
+            ) => (
+              <TokenList
+                className="tokens -yellow -seamless"
+                tokens={this.props.card.keywords || []}
+                placeholder="Keywords"
+                onTokensChange={(
+                  keywords: string[],
+                  addedKeywords: string[]
+                ) => {
+                  this.handleKeywordsChange(
+                    keywords,
+                    addedKeywords,
+                    addRecentEntry
+                  );
+                }}
+                onTextChange={this.handleKeywordsTextChange}
+                suggestions={suggestions}
+                loadingSuggestions={loading}
+                ref={e => {
+                  this.keywordsTokenList = e || undefined;
+                }}
+              />
+            )}
+          </KeywordSuggestionProvider>
         </div>
         <div
           className="tags"

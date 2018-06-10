@@ -22,14 +22,14 @@ interface KeywordSuggesterOptions {
   maxSuggestions?: number;
 }
 
+const cardHasText = (card: Partial<Card>) =>
+  card && (card.question || card.answer);
+
 export class KeywordSuggester {
   store: DataStore;
 
   // Keywords that have been *entered* (i.e. added to cards) this session.
   sessionKeywords: LRUMap<string, undefined>;
-
-  // The string we may be doing a lookup for or the Card we are guessing from.
-  currentInput?: Partial<Card> | string;
 
   // Cache of keywords we have looked up.
   lookupCache: LRUMap<string, string[]>;
@@ -75,8 +75,6 @@ export class KeywordSuggester {
   getSuggestions(input: Partial<Card> | string): SuggestionResult {
     const result: SuggestionResult = {};
 
-    this.currentInput = input;
-
     // When there is no input we return keywords based on the content and also
     // keywords that have been used recently in this session (e.g. for when
     // you're adding a number of cards around the same word).
@@ -111,11 +109,6 @@ export class KeywordSuggester {
     result.asyncResult = new Promise<string[]>((resolve, reject) => {
       this.store.getKeywords(input, this.maxSuggestions).then(keywords => {
         this.lookupCache.set(input, keywords);
-
-        if (this.currentInput !== input) {
-          reject(new Error('AbortError'));
-        }
-
         resolve(keywords);
       });
     });

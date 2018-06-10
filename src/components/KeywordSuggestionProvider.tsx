@@ -1,19 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import DataStoreContext from './DataStoreContext';
-import KeywordSuggester from '../suggestions/KeywordSuggester';
+import KeywordSuggesterContext from './KeywordSuggesterContext';
 import { debounce } from '../utils';
 import { Card } from '../model';
-import { DataStore } from '../store/DataStore';
+import { KeywordSuggester } from '../suggestions/KeywordSuggester';
 
 interface Props {
   text?: string;
   card?: Partial<Card>;
-  children: (suggestions: string[], loading: boolean) => React.ReactNode;
+  children: (
+    suggestions: string[],
+    loading: boolean,
+    addRecentEntry: (entry: string) => void
+  ) => React.ReactNode;
 }
 
 interface PropsInner extends Props {
-  dataStore?: DataStore;
+  keywordSuggester: KeywordSuggester;
 }
 
 interface StateInner {
@@ -22,33 +25,31 @@ interface StateInner {
 }
 
 class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
-  state: StateInner = {
-    suggestions: [],
-    loading: false,
-  };
-  updateSeq: number = 0;
-
-  keywordSuggester: KeywordSuggester | null;
-  debouncedUpdate: (input: string | Partial<Card>) => void;
-
   static get propTypes() {
     return {
       text: PropTypes.string.isRequired,
       // eslint-disable-next-line react/forbid-prop-types
       card: PropTypes.object,
       children: PropTypes.func.isRequired,
-      dataStore: PropTypes.object,
+      keywordSuggester: PropTypes.object.isRequired,
     };
   }
+
+  state: StateInner = {
+    suggestions: [],
+    loading: false,
+  };
+  updateSeq: number = 0;
+  debouncedUpdate: (input: string | Partial<Card>) => void;
+  addRecentEntry: (entry: string) => void;
 
   constructor(props: PropsInner) {
     super(props);
 
-    if (props.dataStore) {
-      this.keywordSuggester = new KeywordSuggester(props.dataStore);
-    }
-
     this.debouncedUpdate = debounce(this.updateSuggestions, 200).bind(this);
+    this.addRecentEntry = props.keywordSuggester.recordAddedKeyword.bind(
+      props.keywordSuggester
+    );
   }
 
   componentDidMount() {
@@ -76,10 +77,8 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
     if (!this.props.text) {
       const cardHasText = (card?: Partial<Card>) =>
         card && (card.question || card.answer);
-      if (cardHasText(this.props.card)) {
+      if (cardHasText(this.props.card) || cardHasText(prevProps.card)) {
         this.updateSuggestions(this.props.card!);
-      } else {
-        this.setState({ suggestions: [], loading: false });
       }
       return;
     }
@@ -101,12 +100,7 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
   }
 
   updateSuggestions(input: string | Partial<Card>) {
-    // XXX What to do about this case
-    if (!this.keywordSuggester) {
-      return;
-    }
-
-    const result = this.keywordSuggester.getSuggestions(input);
+    const result = this.props.keywordSuggester.getSuggestions(input);
     const thisUpdate = ++this.updateSeq;
 
     const updatedState: Partial<StateInner> = {};
@@ -136,16 +130,30 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
   }
 
   render() {
-    return this.props.children(this.state.suggestions, this.state.loading);
+    return this.props.children(
+      this.state.suggestions,
+      this.state.loading,
+      this.addRecentEntry
+    );
   }
 }
 
+// The (new) React Context API frustratingly requires a default value. I can't
+// understand the rationale for this: it greatly complicates all users since if
+// a suitable default value cannot be created they are required to handle the
+// undefined/null case everywhere the value is used.
+//
+// In this app we just assert the thing is not undefined and allow the following
+// code to be sensible.
 export const KeywordSuggestionProvider = (props: Props) => (
-  <DataStoreContext.Consumer>
-    {(dataStore?: DataStore) => (
-      <KeywordSuggestionProviderInner {...props} dataStore={dataStore} />
+  <KeywordSuggesterContext.Consumer>
+    {(keywordSuggester?: KeywordSuggester) => (
+      <KeywordSuggestionProviderInner
+        {...props}
+        keywordSuggester={keywordSuggester!}
+      />
     )}
-  </DataStoreContext.Consumer>
+  </KeywordSuggesterContext.Consumer>
 );
 
 export default KeywordSuggestionProvider;

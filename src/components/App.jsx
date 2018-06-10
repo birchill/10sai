@@ -11,6 +11,7 @@ import TagSuggester from '../suggestions/TagSuggester.ts';
 
 import EditCardScreen from './EditCardScreen.tsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
+import KeywordSuggesterContext from './KeywordSuggesterContext.ts';
 import LookupScreen from './LookupScreen.jsx';
 import MainTabBlock from './MainTabBlock.tsx';
 import Popup from './Popup.jsx';
@@ -107,13 +108,7 @@ class App extends React.PureComponent {
 
     return (
       <DocumentTitle title={title}>
-        {/*
-          * This wrapper div is simply because DocumentTitle only expects to
-          * have a single child. See:
-          *
-          *   https://github.com/gaearon/react-document-title/issues/48
-          */}
-        <div className="app">
+        <KeywordSuggesterContext.Provider value={this.keywordSuggester}>
           <div className="screens">
             <HomeScreenContainer />
             <TabPanel
@@ -165,7 +160,7 @@ class App extends React.PureComponent {
               <SyncSettingsPanelContainer />
             </SettingsPanel>
           </Popup>
-        </div>
+        </KeywordSuggesterContext.Provider>
       </DocumentTitle>
     );
   }
