@@ -13,16 +13,16 @@ import {
   CharacterClass,
 } from '../text/japanese';
 
-const MAX_SESSION_KEYWORDS = 6;
+const MAX_RECENT_KEYWORDS = 6;
 const MAX_SUGGESTIONS = 6;
 const LOOKUP_CACHE_SIZE = 15;
 
 interface KeywordSuggesterOptions {
-  maxSessionKeywords?: number;
+  maxRecentKeywords?: number;
   maxSuggestions?: number;
 }
 
-export const enum SessionKeywordHandling {
+export const enum RecentKeywordHandling {
   Omit,
   Include,
 }
@@ -31,14 +31,14 @@ export class KeywordSuggester {
   store: DataStore;
 
   // Keywords that have been *entered* (i.e. added to cards) this session.
-  sessionKeywords: LRUMap<string, undefined>;
+  recentKeywords: LRUMap<string, undefined>;
 
   // Cache of keywords we have looked up.
   lookupCache: LRUMap<string, string[]>;
 
   // The maximum number of initial suggestions to display based on keywords that
   // have already been added in this session.
-  maxSessionKeywords: number;
+  maxRecentKeywords: number;
 
   // The total maximum number of suggestions to return.
   maxSuggestions: number;
@@ -46,18 +46,18 @@ export class KeywordSuggester {
   constructor(store: DataStore, options?: KeywordSuggesterOptions) {
     this.store = store;
 
-    this.maxSessionKeywords =
-      options && typeof options.maxSessionKeywords !== 'undefined'
-        ? options.maxSessionKeywords
-        : MAX_SESSION_KEYWORDS;
+    this.maxRecentKeywords =
+      options && typeof options.maxRecentKeywords !== 'undefined'
+        ? options.maxRecentKeywords
+        : MAX_RECENT_KEYWORDS;
     this.maxSuggestions = Math.max(
       options && typeof options.maxSuggestions !== 'undefined'
         ? options.maxSuggestions
         : MAX_SUGGESTIONS,
-      this.maxSessionKeywords
+      this.maxRecentKeywords
     );
 
-    this.sessionKeywords = new LRUMap(this.maxSessionKeywords);
+    this.recentKeywords = new LRUMap(this.maxRecentKeywords);
     this.lookupCache = new LRUMap(LOOKUP_CACHE_SIZE);
 
     // Whenever there is change to the cards or notes, our cached keyword
@@ -71,25 +71,25 @@ export class KeywordSuggester {
   }
 
   recordAddedKeyword(keyword: string) {
-    this.sessionKeywords.set(keyword, undefined);
+    this.recentKeywords.set(keyword, undefined);
   }
 
   getSuggestions(
     input: string,
     defaultSuggestions: string[],
-    sessionKeywordHandling: SessionKeywordHandling
+    recentKeywordHandling: RecentKeywordHandling
   ): SuggestionResult {
     const result: SuggestionResult = {};
 
     if (input === '') {
-      const sessionKeywords: string[] =
-        sessionKeywordHandling === SessionKeywordHandling.Include
-          ? [...this.sessionKeywords.keys()].reverse()
+      const recentKeywords: string[] =
+        recentKeywordHandling === RecentKeywordHandling.Include
+          ? [...this.recentKeywords.keys()].reverse()
           : [];
 
       result.initialResult = mergeAndTrimSuggestions(
         defaultSuggestions,
-        sessionKeywords,
+        recentKeywords,
         this.maxSuggestions
       );
       return result;

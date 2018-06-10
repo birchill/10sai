@@ -199,7 +199,7 @@ export class EditCardForm extends React.Component<Props, State> {
           <KeywordSuggestionProvider
             text={this.state.keywordText}
             defaultSuggestions={keywordSuggestions}
-            includeSessionKeywords={true}
+            includeRecentKeywords={true}
           >
             {(
               suggestions: string[],

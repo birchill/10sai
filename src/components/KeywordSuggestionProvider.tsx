@@ -5,13 +5,13 @@ import { debounce } from '../utils';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 import {
   KeywordSuggester,
-  SessionKeywordHandling,
+  RecentKeywordHandling,
 } from '../suggestions/KeywordSuggester';
 
 interface Props {
   text?: string;
   defaultSuggestions?: string[];
-  includeSessionKeywords?: boolean;
+  includeRecentKeywords?: boolean;
   children: (
     suggestions: string[],
     loading: boolean,
@@ -34,7 +34,7 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
       text: PropTypes.string.isRequired,
       // eslint-disable-next-line react/forbid-prop-types
       defaultSuggestions: PropTypes.arrayOf(PropTypes.string),
-      includeSessionKeywords: PropTypes.bool,
+      includeRecentKeywords: PropTypes.bool,
       children: PropTypes.func.isRequired,
       keywordSuggester: PropTypes.object.isRequired,
     };
@@ -102,9 +102,9 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
     const result = this.props.keywordSuggester.getSuggestions(
       this.props.text || '',
       this.props.defaultSuggestions || [],
-      !!this.props.includeSessionKeywords
-        ? SessionKeywordHandling.Include
-        : SessionKeywordHandling.Omit
+      !!this.props.includeRecentKeywords
+        ? RecentKeywordHandling.Include
+        : RecentKeywordHandling.Omit
     );
     const thisUpdate = ++this.updateSeq;
 
