@@ -1,4 +1,4 @@
-import { KeywordSuggester, SessionKeywordHandling } from './KeywordSuggester';
+import { KeywordSuggester, RecentKeywordHandling } from './KeywordSuggester';
 import DataStore from '../store/DataStore';
 import EventEmitter from 'event-emitter';
 import { waitForEvents } from '../../test/testcommon';
@@ -30,7 +30,7 @@ describe('KeywordSuggester', () => {
   beforeEach(() => {
     store = new MockDataStore();
     subject = new KeywordSuggester(store as any, {
-      maxSessionKeywords: 3,
+      maxRecentKeywords: 3,
       maxSuggestions: 6,
     });
   });
@@ -44,7 +44,7 @@ describe('KeywordSuggester', () => {
         question: '[..superficial..]な関係',
         answer: '{生半可|なま|はん|か}な関係',
       }),
-      SessionKeywordHandling.Omit
+      RecentKeywordHandling.Omit
     );
     expect(result.initialResult).toEqual(['生半可']);
   });
