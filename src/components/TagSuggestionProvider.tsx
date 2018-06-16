@@ -1,17 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import KeywordSuggesterContext from './KeywordSuggesterContext';
+import TagSuggesterContext from './TagSuggesterContext';
 import { debounce } from '../utils';
-import shallowEqual from 'react-redux/lib/utils/shallowEqual';
-import {
-  KeywordSuggester,
-  RecentKeywordHandling,
-} from '../suggestions/KeywordSuggester';
+import { TagSuggester } from '../suggestions/TagSuggester';
 
 interface Props {
   text?: string;
-  defaultSuggestions?: string[];
-  includeRecentKeywords?: boolean;
   children: (
     suggestions: string[],
     loading: boolean,
@@ -20,7 +14,7 @@ interface Props {
 }
 
 interface PropsInner extends Props {
-  keywordSuggester: KeywordSuggester;
+  tagSuggester: TagSuggester;
 }
 
 interface StateInner {
@@ -28,14 +22,12 @@ interface StateInner {
   loading: boolean;
 }
 
-class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
+class TagSuggestionProviderInner extends React.Component<PropsInner> {
   static get propTypes() {
     return {
       text: PropTypes.string.isRequired,
-      defaultSuggestions: PropTypes.arrayOf(PropTypes.string),
-      includeRecentKeywords: PropTypes.bool,
       children: PropTypes.func.isRequired,
-      keywordSuggester: PropTypes.object.isRequired,
+      tagSuggester: PropTypes.object.isRequired,
     };
   }
 
@@ -51,8 +43,8 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
     super(props);
 
     this.debouncedUpdate = debounce(this.updateSuggestions, 200).bind(this);
-    this.addRecentEntry = props.keywordSuggester.recordAddedKeyword.bind(
-      props.keywordSuggester
+    this.addRecentEntry = props.tagSuggester.recordAddedTag.bind(
+      props.tagSuggester
     );
   }
 
@@ -61,14 +53,7 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
   }
 
   componentDidUpdate(prevProps: PropsInner, prevState: StateInner) {
-    // First check if something we care about changed.
-    if (
-      shallowEqual(
-        prevProps.defaultSuggestions,
-        this.props.defaultSuggestions
-      ) &&
-      prevProps.text === this.props.text
-    ) {
+    if (prevProps.text === this.props.text) {
       return;
     }
 
@@ -98,12 +83,8 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
   }
 
   updateSuggestions() {
-    const result = this.props.keywordSuggester.getSuggestions(
-      this.props.text || '',
-      this.props.defaultSuggestions || [],
-      !!this.props.includeRecentKeywords
-        ? RecentKeywordHandling.Include
-        : RecentKeywordHandling.Omit
+    const result = this.props.tagSuggester.getSuggestions(
+      this.props.text || ''
     );
     const thisUpdate = ++this.updateSeq;
 
@@ -142,22 +123,14 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
   }
 }
 
-// The (new) React Context API frustratingly requires a default value. I can't
-// understand the rationale for this: it greatly complicates all users since if
-// a suitable default value cannot be created they are required to handle the
-// undefined/null case everywhere the value is used.
-//
-// In this app we just assert the thing is not undefined and allow the following
-// code to be sensible.
-export const KeywordSuggestionProvider = (props: Props) => (
-  <KeywordSuggesterContext.Consumer>
-    {(keywordSuggester?: KeywordSuggester) => (
-      <KeywordSuggestionProviderInner
-        {...props}
-        keywordSuggester={keywordSuggester!}
-      />
+// See KeywordSuggestionProvider for rationale for taking a possibly
+// undefined TagSuggester then asserting it is defined.
+export const TagSuggestionProvider = (props: Props) => (
+  <TagSuggesterContext.Consumer>
+    {(tagSuggester?: TagSuggester) => (
+      <TagSuggestionProviderInner {...props} tagSuggester={tagSuggester!} />
     )}
-  </KeywordSuggesterContext.Consumer>
+  </TagSuggesterContext.Consumer>
 );
 
-export default KeywordSuggestionProvider;
+export default TagSuggestionProvider;

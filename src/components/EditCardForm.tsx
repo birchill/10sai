@@ -3,34 +3,27 @@ import PropTypes from 'prop-types';
 
 import CardFaceInput from './CardFaceInput';
 import KeywordSuggestionProvider from './KeywordSuggestionProvider';
+import TagSuggestionProvider from './TagSuggestionProvider';
 import TokenList from './TokenList';
 
-import { debounce } from '../utils';
 import { Card } from '../model';
 import KeywordSuggester from '../suggestions/KeywordSuggester';
 import TagSuggester from '../suggestions/TagSuggester';
-import { SuggestionResult } from '../suggestions/SuggestionResult';
 
 interface Props {
   card: Partial<Card>;
-  tagSuggester: TagSuggester;
   onChange?: (topic: string, value: string | string[]) => void;
 }
 
-interface SuggestionState {
-  suggestions: string[];
-  loading: boolean;
-}
-
 interface State {
-  keywordText: string;
-  tags: SuggestionState;
+  keywordsText: string;
+  tagsText: string;
 }
 
 export class EditCardForm extends React.Component<Props, State> {
   state: State = {
-    keywordText: '',
-    tags: { suggestions: [], loading: false },
+    keywordsText: '',
+    tagsText: '',
   };
   questionTextBox?: CardFaceInput;
   keywordsTokenList?: TokenList;
@@ -38,16 +31,11 @@ export class EditCardForm extends React.Component<Props, State> {
   debouncedUpdateSuggestions: {
     tags: (text: string) => void;
   };
-  // I know this is an anti-pattern but the amount of code needed to be able to
-  // cancel both the debounced functions and lookup promises is much more than
-  // is justified for the sake of placating the purists.
-  mounted: boolean = false;
 
   static get propTypes() {
     return {
       // eslint-disable-next-line react/forbid-prop-types
       card: PropTypes.object.isRequired,
-      tagSuggester: PropTypes.object.isRequired,
       onChange: PropTypes.func,
     };
   }
@@ -62,57 +50,7 @@ export class EditCardForm extends React.Component<Props, State> {
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
     this.handleTagsClick = this.handleTagsClick.bind(this);
-    this.handleTagsChange = this.handleTagsChange.bind(this);
-
-    this.debouncedUpdateSuggestions = {
-      tags: debounce(this.updateTagSuggestions, 200).bind(this),
-    };
-  }
-
-  componentDidMount() {
-    this.mounted = true;
-    this.updateTagSuggestions('');
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-  }
-
-  updateTokenSuggestions(result: SuggestionResult, list: 'tags') {
-    const updatedState: Partial<State> = {};
-    updatedState[list] = this.state[list];
-    if (result.initialResult) {
-      updatedState[list]!.suggestions = result.initialResult;
-    }
-    updatedState[list]!.loading = !!result.asyncResult;
-    // The typings for setState are just messed up.
-    this.setState(updatedState as any);
-
-    if (result.asyncResult) {
-      result.asyncResult
-        .then(suggestions => {
-          if (!this.mounted) {
-            return;
-          }
-
-          // Again, setState typings
-          this.setState({
-            [list]: { suggestions, loading: false },
-          } as any);
-        })
-        .catch(() => {
-          /* Ignore, request was canceled. */
-        });
-    }
-  }
-
-  updateTagSuggestions(text: string) {
-    if (!this.mounted) {
-      return;
-    }
-
-    const result = this.props.tagSuggester.getSuggestions(text);
-    this.updateTokenSuggestions(result, 'tags');
+    this.handleTagsTextChange = this.handleTagsTextChange.bind(this);
   }
 
   handlePromptChange(value: string) {
@@ -134,7 +72,7 @@ export class EditCardForm extends React.Component<Props, State> {
   }
 
   handleKeywordsTextChange(text: string) {
-    this.setState({ keywordText: text });
+    this.setState({ keywordsText: text });
   }
 
   handleKeywordsChange(
@@ -157,13 +95,21 @@ export class EditCardForm extends React.Component<Props, State> {
     }
   }
 
-  handleTagsChange(tags: string[], addedTags: string[]) {
+  handleTagsTextChange(text: string) {
+    this.setState({ tagsText: text });
+  }
+
+  handleTagsChange(
+    tags: string[],
+    addedTags: string[],
+    addRecentEntry: (entry: string) => void
+  ) {
     if (this.props.onChange) {
       this.props.onChange('tags', tags);
     }
 
     for (const tag of addedTags) {
-      this.props.tagSuggester.recordAddedTag(tag);
+      addRecentEntry(tag);
     }
   }
 
@@ -197,7 +143,7 @@ export class EditCardForm extends React.Component<Props, State> {
         >
           <span className="icon -key" />
           <KeywordSuggestionProvider
-            text={this.state.keywordText}
+            text={this.state.keywordsText}
             defaultSuggestions={keywordSuggestions}
             includeRecentKeywords={true}
           >
@@ -236,18 +182,28 @@ export class EditCardForm extends React.Component<Props, State> {
           title="Add labels here to help organize your cards such as &ldquo;vocabulary&rdquo;, &ldquo;Intermediate French Conversation&rdquo;, &ldquo;Needs picture&rdquo; etc."
         >
           <span className="icon -tag -grey" />
-          <TokenList
-            className="tokens -seamless"
-            tokens={this.props.card.tags || []}
-            placeholder="Tags"
-            onTokensChange={this.handleTagsChange}
-            onTextChange={this.debouncedUpdateSuggestions.tags}
-            suggestions={this.state.tags.suggestions}
-            loadingSuggestions={this.state.tags.loading}
-            ref={e => {
-              this.tagsTokenList = e || undefined;
-            }}
-          />
+          <TagSuggestionProvider text={this.state.tagsText}>
+            {(
+              suggestions: string[],
+              loading: boolean,
+              addRecentEntry: (entry: string) => void
+            ) => (
+              <TokenList
+                className="tokens -seamless"
+                tokens={this.props.card.tags || []}
+                placeholder="Tags"
+                onTokensChange={(tags: string[], addedTags: string[]) => {
+                  this.handleTagsChange(tags, addedTags, addRecentEntry);
+                }}
+                onTextChange={this.handleTagsTextChange}
+                suggestions={suggestions}
+                loadingSuggestions={loading}
+                ref={e => {
+                  this.tagsTokenList = e || undefined;
+                }}
+              />
+            )}
+          </TagSuggestionProvider>
         </div>
       </form>
     );

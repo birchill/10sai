@@ -12,10 +12,8 @@ import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
 import { EditState, EditFormState, FormId } from '../edit/reducer';
 import * as routeActions from '../route/actions';
-import TagSuggester from '../suggestions/TagSuggester';
 
 interface Props {
-  tagSuggester: TagSuggester;
   forms: {
     active: EditFormState;
   };
@@ -29,7 +27,6 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
   static get propTypes() {
     return {
-      tagSuggester: PropTypes.instanceOf(TagSuggester).isRequired,
       forms: PropTypes.shape({
         active: PropTypes.shape({
           formId: PropTypes.any,
@@ -92,7 +89,6 @@ export class EditCardScreen extends React.PureComponent<Props> {
         {this.props.forms.active.editorState !== EditorState.NOT_FOUND ? (
           <>
             <EditCardForm
-              tagSuggester={this.props.tagSuggester}
               onChange={this.handleFormChange}
               {...this.props.forms.active}
               ref={activeForm => {
