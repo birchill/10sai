@@ -1,4 +1,6 @@
 import { collate } from 'pouchdb-collate';
+import { Card } from './model';
+import { DataStore } from './store/DataStore';
 
 // A simple wrapper around a Store that represents a particular view onto the
 // cards performing incremental updates to the view in response to change
@@ -10,10 +12,10 @@ import { collate } from 'pouchdb-collate';
 // matching card in |cards|. If |found| is false, |index| is the index to use
 // such that cards.splice(index, 0, card) would keep |cards| sorted.
 
-const findCard = (id, cards) => {
+const findCard = (id: string, cards: Card[]): [boolean, number] => {
   let min = 0;
   let max = cards.length - 1;
-  let guess;
+  let guess: number;
 
   while (min <= max) {
     guess = Math.floor((min + max) / 2);
@@ -34,8 +36,15 @@ const findCard = (id, cards) => {
   return [false, Math.max(min, max)];
 };
 
+type CardListListener = (cards: Card[]) => void;
+
 class CardList {
-  constructor(dataStore) {
+  dataStore: DataStore;
+  cards: Card[];
+  listeners: CardListListener[];
+  initDone: Promise<void>;
+
+  constructor(dataStore: DataStore) {
     this.dataStore = dataStore;
 
     this.cards = [];
@@ -68,7 +77,7 @@ class CardList {
     return this.initDone.then(() => this.cards);
   }
 
-  subscribe(listener) {
+  subscribe(listener: CardListListener) {
     // We should only have 1~2 listeners so we just do a linear search
     if (this.listeners.indexOf(listener) !== -1) {
       return;
@@ -77,7 +86,7 @@ class CardList {
     this.listeners.push(listener);
   }
 
-  unsubscribe(listener) {
+  unsubscribe(listener: CardListListener) {
     const index = this.listeners.indexOf(listener);
     if (index === -1) {
       return;

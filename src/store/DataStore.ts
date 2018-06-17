@@ -109,7 +109,7 @@ export class DataStore {
   deleteCard(id: string) {
     return this.cardStore.deleteCard(id);
   }
-  getCards(options: GetCardsOptions): Promise<Card[]> {
+  getCards(options?: GetCardsOptions): Promise<Card[]> {
     return this.cardStore.getCards(options);
   }
   getCardsById(ids: string[]): Promise<Card[]> {

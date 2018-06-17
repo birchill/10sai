@@ -5,7 +5,7 @@ import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../route/router';
 import { getReviewProgress } from '../review/selectors';
-import CardList from '../CardList';
+import CardList from '../CardList.ts';
 import KeywordSuggester from '../suggestions/KeywordSuggester.ts';
 import TagSuggester from '../suggestions/TagSuggester.ts';
 
