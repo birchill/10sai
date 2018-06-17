@@ -18,7 +18,6 @@ import * as routeActions from './route/actions';
 
 import SettingsStore from './SettingsStore';
 import DataStore from './store/DataStore.ts';
-import DataStoreContext from './components/DataStoreContext.ts';
 import App from './components/App.jsx';
 
 import 'main.scss'; // eslint-disable-line
@@ -158,9 +157,7 @@ window.addEventListener('offline', () => {
 
 ReactDOM.render(
   <Provider store={store}>
-    <DataStoreContext.Provider value={dataStore}>
-      <App dataStore={dataStore} />
-    </DataStoreContext.Provider>
+    <App dataStore={dataStore} />
   </Provider>,
   document.getElementById('container')
 );

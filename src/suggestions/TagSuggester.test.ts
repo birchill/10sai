@@ -51,7 +51,7 @@ describe('TagSuggester', () => {
   beforeEach(() => {
     store = new MockDataStore();
     subject = new TagSuggester(store as any, {
-      maxSessionTags: 3,
+      maxRecentTags: 3,
       maxSuggestions: 6,
     });
   });
