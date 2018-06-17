@@ -1,7 +1,7 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
-import * as reviewActions from './actions';
+import * as reviewActions from './actions.ts';
 import { getReviewSummary } from './selectors';
-import ReviewState from './states';
+import ReviewPhase from './ReviewPhase.ts';
 
 // Which cards to use when we update the heap.
 //
@@ -24,7 +24,7 @@ export function* updateHeap(dataStore, action) {
 
   // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
   // action.
-  if (reviewInfo.reviewState === ReviewState.IDLE) {
+  if (reviewInfo.phase === ReviewPhase.IDLE) {
     return;
   }
 
@@ -120,7 +120,7 @@ export function* updateProgress(dataStore, action) {
   }
 
   try {
-    if (reviewInfo.reviewState === ReviewState.COMPLETE) {
+    if (reviewInfo.phase === ReviewPhase.COMPLETE) {
       yield call([dataStore, 'deleteReview']);
     } else {
       yield call([dataStore, 'putReview'], yield select(getReviewSummary));

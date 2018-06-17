@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
-import ReviewState from '../review/states';
-import * as reviewActions from '../review/actions';
+import ReviewPhase from '../review/ReviewPhase.ts';
+import * as reviewActions from '../review/actions.ts';
 
 import ReviewPanel from './ReviewPanel.jsx';
 
@@ -10,7 +10,7 @@ const mapStateToProps = state => {
   const previousCard = history.length ? history[history.length - 1] : undefined;
 
   return {
-    showAnswer: state.review.reviewState === ReviewState.ANSWER,
+    showAnswer: state.review.phase === ReviewPhase.ANSWER,
     previousCard,
     currentCard: state.review.currentCard,
     nextCard: state.review.nextCard,

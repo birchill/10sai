@@ -1,12 +1,12 @@
 import { connect } from 'react-redux';
 
-import * as reviewActions from '../review/actions';
+import * as reviewActions from '../review/actions.ts';
 import { getReviewProgress } from '../review/selectors';
 
 import ReviewScreen from './ReviewScreen.jsx';
 
 const mapStateToProps = state => ({
-  reviewState: state.review.reviewState,
+  phase: state.review.phase,
   availableCards: state.review.availableCards,
   // TODO: Actually get these from somewhere
   maxNewCards: 10,

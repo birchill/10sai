@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 import edit from './edit/reducer.ts';
-import review from './review/reducer';
+import review from './review/reducer.ts';
 import route from './route/reducer';
 import selection from './selection/reducer';
 import sync from './sync/reducer';

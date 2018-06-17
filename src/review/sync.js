@@ -7,8 +7,8 @@ import {
   getReviewSummary,
   getSavingProgress,
 } from './selectors';
-import * as reviewActions from './actions';
-import ReviewState from './states';
+import * as reviewActions from './actions.ts';
+import ReviewPhase from './ReviewPhase.ts';
 
 // In some circumstances we delay querying available cards. We do this so that
 // changes that occur in rapid succession are batched, but also because when
@@ -98,8 +98,8 @@ function sync(store, stateStore) {
     // Review document was deleted
     if (!review) {
       if (
-        currentState.reviewState !== ReviewState.IDLE &&
-        currentState.reviewState !== ReviewState.COMPLETE
+        currentState.phase !== ReviewPhase.IDLE &&
+        currentState.phase !== ReviewPhase.COMPLETE
       ) {
         stateStore.dispatch(reviewActions.cancelReview());
       }

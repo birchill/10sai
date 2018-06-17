@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import ReviewState from '../review/states';
+import ReviewPhase from '../review/ReviewPhase.ts';
 
 import Link from './Link.tsx';
 import LoadingIndicator from './LoadingIndicator.tsx';
@@ -46,8 +46,8 @@ function ReviewScreen(props) {
   const pluralCards = num => (num === 1 ? 'card' : 'cards');
 
   const loading =
-    props.reviewState === ReviewState.LOADING ||
-    ([ReviewState.IDLE, ReviewState.COMPLETE].includes(props.reviewState) &&
+    props.phase === ReviewPhase.LOADING ||
+    ([ReviewPhase.IDLE, ReviewPhase.COMPLETE].includes(props.phase) &&
       !props.availableCards);
 
   let content;
@@ -59,7 +59,7 @@ function ReviewScreen(props) {
         </div>
       </div>
     );
-  } else if (props.reviewState === ReviewState.IDLE) {
+  } else if (props.phase === ReviewPhase.IDLE) {
     const numCards = nextReviewNumCards(props);
     if (numCards === 0) {
       content = (
@@ -93,7 +93,7 @@ function ReviewScreen(props) {
         </div>
       );
     }
-  } else if (props.reviewState === ReviewState.COMPLETE) {
+  } else if (props.phase === ReviewPhase.COMPLETE) {
     // TODO: Stats here about review -- num cards reviewed, % correct on first
     // attempt.
 
@@ -155,8 +155,8 @@ function ReviewScreen(props) {
 
   let progressBar;
   if (
-    props.reviewState === ReviewState.QUESTION ||
-    props.reviewState === ReviewState.ANSWER
+    props.phase === ReviewPhase.QUESTION ||
+    props.phase === ReviewPhase.ANSWER
   ) {
     // We want to roughly represent the number of reviews. Bear in mind that
     // a failed card will need to be reviewed twice before it is considered to
@@ -189,7 +189,7 @@ function ReviewScreen(props) {
   return (
     <section className="review-screen" aria-hidden={!props.active}>
       <div className="buttons">
-        {props.reviewState !== ReviewState.LOADING ? settingsButton : ''}
+        {props.phase !== ReviewPhase.LOADING ? settingsButton : ''}
         <Link href="/" className="close-button" direction="backwards">
           Close
         </Link>
@@ -202,7 +202,7 @@ function ReviewScreen(props) {
 
 ReviewScreen.propTypes = {
   active: PropTypes.bool.isRequired,
-  reviewState: PropTypes.symbol.isRequired,
+  phase: PropTypes.symbol.isRequired,
   // eslint-disable-next-line react/no-unused-prop-types
   onNewReview: PropTypes.func.isRequired,
   availableCards: PropTypes.shape({

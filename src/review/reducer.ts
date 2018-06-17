@@ -1,71 +1,91 @@
-import ReviewState from './states';
+import ReviewPhase from './ReviewPhase';
+import { Card } from '../model';
+import { ReviewAction } from './actions';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-const initialState = {
-  reviewState: ReviewState.IDLE,
+export interface AvailableCards {
+  newCards: number;
+  overdueCards: number;
+}
+
+export interface ReviewState {
+  phase: symbol;
 
   // The time to use to update cards and calculating their next level etc.
-  reviewTime: new Date(),
+  reviewTime: Date;
 
   // The maximum number of unique cards that will be presented to the user in
   // this review. The actual number presented may be less if there are
   // insufficient new and overdue cards.
-  maxCards: 0,
+  maxCards: number;
 
   // The maximum number of as-yet unreviewed cards that will be presented to the
   // user in this review.
-  maxNewCards: 0,
+  maxNewCards: number;
 
   // The number of cards that have been correctly answered and will not be
   // presented again in this review.
-  completed: 0,
+  completed: number;
 
   // The number of cards that *were* in the heap but are now in one of
   // the failed heaps or are the current card.
-  newCardsInPlay: 0,
+  newCardsInPlay: number;
 
   // Cards we have queued up but have yet to show to the user.
-  heap: [],
+  heap: Card[];
 
   // Cards which we once failed but have since answered correctly once.
-  failedCardsLevel1: [],
+  failedCardsLevel1: Card[];
 
   // Cards which we have failed and have since yet to answer correctly.
-  failedCardsLevel2: [],
+  failedCardsLevel2: Card[];
 
-  // An array of the IDs of cards we've presented to the user in order from most
+  // An array of the cards we've presented to the user in order from most
   // to least recently seen. If a card has been shown more than once only the
   // most recent occurence is included. Note that the currentCard is not
   // included in the history.
-  history: [],
+  history: Card[];
 
   // The card currently being presented to the user. May be null if there is no
   // review in progress (or it is complete, or loading).
-  currentCard: null,
+  currentCard: Card | null;
 
   // The next card to present if the current card.
   // May be null if there are no more cards to be reviewed or if there is no
   // review in progress.
-  nextCard: null,
+  nextCard: Card | null;
 
-  // An object describing the cards available for review in the format:
-  //
-  // {
-  //    newCards: number,
-  //    overdueCards: number
-  // }
+  // An object describing the cards available for review.
   //
   // This is only ever set in the IDLE / COMPLETE states and even then it is not
   // always set.
-  availableCards: undefined,
+  availableCards?: AvailableCards;
 
   // True if we are still saving the progress.
   // We use this to determine if it is ok to query the available cards or if we
   // should wait.
-  savingProgress: false,
+  savingProgress: boolean;
 
   // True if we are currently refreshing the set of available cards.
+  loadingAvailableCards: boolean;
+}
+
+const initialState: ReviewState = {
+  phase: ReviewPhase.IDLE,
+  reviewTime: new Date(),
+  maxCards: 0,
+  maxNewCards: 0,
+  completed: 0,
+  newCardsInPlay: 0,
+  heap: [],
+  failedCardsLevel1: [],
+  failedCardsLevel2: [],
+  history: [],
+  currentCard: null,
+  nextCard: null,
+  availableCards: undefined,
+  savingProgress: false,
   loadingAvailableCards: false,
 };
 
@@ -80,12 +100,15 @@ const Update = {
   ReplaceNextCard: Symbol('ReplaceNextCard'),
 };
 
-export default function review(state = initialState, action) {
+export function review(
+  state: ReviewState = initialState,
+  action: ReviewAction
+): ReviewState {
   switch (action.type) {
     case 'NEW_REVIEW': {
       return {
         ...initialState,
-        reviewState: ReviewState.LOADING,
+        phase: ReviewPhase.LOADING,
         reviewTime: state.reviewTime,
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
@@ -96,7 +119,7 @@ export default function review(state = initialState, action) {
     case 'SET_REVIEW_LIMIT': {
       return {
         ...state,
-        reviewState: ReviewState.LOADING,
+        phase: ReviewPhase.LOADING,
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
       };
@@ -123,10 +146,10 @@ export default function review(state = initialState, action) {
       for (const field of [
         'history',
         'failedCardsLevel1',
-        'failedCardsLevel',
-      ]) {
+        'failedCardsLevel2',
+      ] as ('history' | 'failedCardsLevel1' | 'failedCardsLevel2')[]) {
         if (typeof action[field] !== 'undefined') {
-          updatedState[field] = action[field];
+          updatedState[field] = action[field]!;
         }
       }
 
@@ -152,20 +175,17 @@ export default function review(state = initialState, action) {
       // If we were complete but now have cards we need to go back to the
       // question state.
       if (
-        (updatedState.reviewState === ReviewState.COMPLETE ||
-          updatedState.reviewState === ReviewState.LOADING) &&
+        (updatedState.phase === ReviewPhase.COMPLETE ||
+          updatedState.phase === ReviewPhase.LOADING) &&
         updatedState.currentCard
       ) {
-        updatedState.reviewState = ReviewState.QUESTION;
+        updatedState.phase = ReviewPhase.QUESTION;
       }
 
       // If we are complete but this is the initial load, then it makes more
       // sense to show the user the idle state.
-      if (
-        updatedState.reviewState === ReviewState.COMPLETE &&
-        action.initialReview
-      ) {
-        updatedState.reviewState = ReviewState.IDLE;
+      if (updatedState.phase === ReviewPhase.COMPLETE && action.initialReview) {
+        updatedState.phase = ReviewPhase.IDLE;
       }
 
       return updatedState;
@@ -173,14 +193,14 @@ export default function review(state = initialState, action) {
 
     case 'PASS_CARD': {
       if (
-        state.reviewState !== ReviewState.ANSWER &&
-        state.reviewState !== ReviewState.QUESTION
+        state.phase !== ReviewPhase.ANSWER &&
+        state.phase !== ReviewPhase.QUESTION
       ) {
         return state;
       }
 
       // We use passedCard to search arrays
-      const passedCard = state.currentCard;
+      const passedCard = state.currentCard!;
       // But we push a copy of it that we will (probably) update
       const updatedCard = { ...passedCard };
 
@@ -241,7 +261,7 @@ export default function review(state = initialState, action) {
 
       const intermediateState = {
         ...state,
-        reviewState: ReviewState.QUESTION,
+        phase: ReviewPhase.QUESTION,
         completed,
         failedCardsLevel2,
         failedCardsLevel1,
@@ -258,26 +278,26 @@ export default function review(state = initialState, action) {
     }
 
     case 'SHOW_ANSWER': {
-      if (state.reviewState !== ReviewState.QUESTION) {
+      if (state.phase !== ReviewPhase.QUESTION) {
         return state;
       }
 
       return {
         ...state,
-        reviewState: ReviewState.ANSWER,
+        phase: ReviewPhase.ANSWER,
       };
     }
 
     case 'FAIL_CARD': {
       if (
-        state.reviewState !== ReviewState.ANSWER &&
-        state.reviewState !== ReviewState.QUESTION
+        state.phase !== ReviewPhase.ANSWER &&
+        state.phase !== ReviewPhase.QUESTION
       ) {
         return state;
       }
 
       // We use failedCard to search arrays
-      const failedCard = state.currentCard;
+      const failedCard = state.currentCard!;
       // But we push a copy of it that we will (probably) update
       const updatedCard = { ...failedCard };
 
@@ -317,7 +337,7 @@ export default function review(state = initialState, action) {
 
       const intermediateState = {
         ...state,
-        reviewState: ReviewState.QUESTION,
+        phase: ReviewPhase.QUESTION,
         failedCardsLevel1,
         failedCardsLevel2,
         history,
@@ -354,9 +374,7 @@ export default function review(state = initialState, action) {
       // If we're mid-review and we get a stray update to the available cards
       // we should be careful to clear availableCards so that when we actually
       // need them, we immediately fetch them.
-      if (
-        ![ReviewState.IDLE, ReviewState.COMPLETE].includes(state.reviewState)
-      ) {
+      if (![ReviewPhase.IDLE, ReviewPhase.COMPLETE].includes(state.phase)) {
         return {
           ...state,
           availableCards: undefined,
@@ -372,8 +390,8 @@ export default function review(state = initialState, action) {
     }
 
     case 'UPDATE_REVIEW_CARD': {
-      const update = {};
-      const fieldsWithCards = [
+      const update: Partial<ReviewState> = {};
+      const fieldsWithCards: (keyof ReviewState)[] = [
         'currentCard',
         'nextCard',
         'heap',
@@ -381,14 +399,18 @@ export default function review(state = initialState, action) {
         'failedCardsLevel2',
         'history',
       ];
-      for (const field of fieldsWithCards) {
-        if (!state[field]) {
-          continue;
-        }
+      const isArrayOfCards = (
+        value: ReviewState[keyof ReviewState]
+      ): value is Card[] => !!value && Array.isArray(value);
+      const isCard = (value: ReviewState[keyof ReviewState]): value is Card =>
+        !!value && typeof value === 'object' && value.hasOwnProperty('_id');
 
-        if (Array.isArray(state[field])) {
+      for (const field of fieldsWithCards) {
+        const value = state[field];
+
+        if (isArrayOfCards(value)) {
           let found = false;
-          const updatedArray = state[field].map(card => {
+          const updatedArray = value.map(card => {
             if (card._id === action.card._id) {
               found = true;
               return action.card;
@@ -399,7 +421,7 @@ export default function review(state = initialState, action) {
           if (found) {
             update[field] = updatedArray;
           }
-        } else if (state[field]._id === action.card._id) {
+        } else if (isCard(value) && value._id === action.card._id) {
           update[field] = action.card;
         }
       }
@@ -415,13 +437,17 @@ export default function review(state = initialState, action) {
     }
 
     case 'DELETE_REVIEW_CARD': {
-      const arrayFieldsWithCards = [
+      const arrayFieldsWithCards: (
+        | 'heap'
+        | 'failedCardsLevel1'
+        | 'failedCardsLevel2'
+        | 'history')[] = [
         'heap',
         'failedCardsLevel1',
         'failedCardsLevel2',
         'history',
       ];
-      const update = {};
+      const update: Partial<ReviewState> = {};
       for (const field of arrayFieldsWithCards) {
         if (!state[field]) {
           continue;
@@ -435,7 +461,7 @@ export default function review(state = initialState, action) {
         // We're currently assuming we only add cards once to any of these
         // arrays which I *think* is true.
         update[field] = state[field].slice();
-        update[field].splice(index, 1);
+        update[field]!.splice(index, 1);
       }
 
       if (state.nextCard && state.nextCard._id === action.id) {
@@ -467,7 +493,7 @@ export default function review(state = initialState, action) {
     case 'LOAD_REVIEW': {
       return {
         ...state,
-        reviewState: ReviewState.LOADING,
+        phase: ReviewPhase.LOADING,
         maxCards: action.review.maxCards,
         maxNewCards: action.review.maxNewCards,
         completed: action.review.completed,
@@ -481,15 +507,15 @@ export default function review(state = initialState, action) {
 
     case 'CANCEL_REVIEW': {
       if (
-        state.reviewState === ReviewState.IDLE ||
-        state.reviewState === ReviewState.COMPLETE
+        state.phase === ReviewPhase.IDLE ||
+        state.phase === ReviewPhase.COMPLETE
       ) {
         return state;
       }
 
       return {
         ...state,
-        reviewState: ReviewState.IDLE,
+        phase: ReviewPhase.IDLE,
         maxCards: 0,
         maxNewCards: 0,
         completed: 0,
@@ -510,9 +536,14 @@ export default function review(state = initialState, action) {
 
 // TODO: I'm sure I can factor this out better---perhaps into two methods? One
 // for updating the current card and one for updating the next card?
-function updateNextCard(state, seed, updateMode) {
+// XXX Use an enum type for updateMode below
+function updateNextCard(
+  state: ReviewState,
+  seed: number,
+  updateMode: symbol
+): ReviewState {
   // The fields we might update
-  let { reviewState, currentCard, heap, history, newCardsInPlay } = state;
+  let { phase, currentCard, heap, history, newCardsInPlay } = state;
   let nextCard;
 
   let cardsAvailable =
@@ -521,7 +552,7 @@ function updateNextCard(state, seed, updateMode) {
     heap.length;
   if (!cardsAvailable) {
     if (updateMode === Update.UpdateCurrentCard || !currentCard) {
-      reviewState = ReviewState.COMPLETE;
+      phase = ReviewPhase.COMPLETE;
       currentCard = null;
       nextCard = null;
     } else {
@@ -541,9 +572,9 @@ function updateNextCard(state, seed, updateMode) {
         // If we found a level zero card that hasn't been reviewed in the heap
         // it's fair to say it's a new card.
         if (
-          currentCard.progress &&
-          currentCard.progress.level === 0 &&
-          currentCard.progress.reviewed === null
+          currentCard!.progress &&
+          currentCard!.progress.level === 0 &&
+          currentCard!.progress.reviewed === null
         ) {
           newCardsInPlay++;
         }
@@ -553,7 +584,7 @@ function updateNextCard(state, seed, updateMode) {
     // Find next card
     if (cardsAvailable) {
       let cardIndex = Math.floor(seed * cardsAvailable);
-      const getCardAtIndex = cardIndex => {
+      const getCardAtIndex = (cardIndex: number) => {
         const level1Start = state.failedCardsLevel2.length;
         const heapStart =
           state.failedCardsLevel2.length + state.failedCardsLevel1.length;
@@ -601,7 +632,7 @@ function updateNextCard(state, seed, updateMode) {
 
   return {
     ...state,
-    reviewState,
+    phase,
     newCardsInPlay,
     heap,
     history,
@@ -609,3 +640,5 @@ function updateNextCard(state, seed, updateMode) {
     nextCard,
   };
 }
+
+export default review;
