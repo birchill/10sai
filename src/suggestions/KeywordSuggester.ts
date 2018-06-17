@@ -70,7 +70,7 @@ export class KeywordSuggester {
     });
   }
 
-  recordAddedKeyword(keyword: string) {
+  recordRecentKeyword(keyword: string) {
     this.recentKeywords.set(keyword, undefined);
   }
 

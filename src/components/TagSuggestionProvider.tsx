@@ -43,7 +43,7 @@ class TagSuggestionProviderInner extends React.Component<PropsInner> {
     super(props);
 
     this.debouncedUpdate = debounce(this.updateSuggestions, 200).bind(this);
-    this.addRecentEntry = props.tagSuggester.recordAddedTag.bind(
+    this.addRecentEntry = props.tagSuggester.recordRecentTag.bind(
       props.tagSuggester
     );
   }

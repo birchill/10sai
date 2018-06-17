@@ -51,7 +51,7 @@ class KeywordSuggestionProviderInner extends React.Component<PropsInner> {
     super(props);
 
     this.debouncedUpdate = debounce(this.updateSuggestions, 200).bind(this);
-    this.addRecentEntry = props.keywordSuggester.recordAddedKeyword.bind(
+    this.addRecentEntry = props.keywordSuggester.recordRecentKeyword.bind(
       props.keywordSuggester
     );
   }

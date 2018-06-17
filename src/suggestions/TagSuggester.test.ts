@@ -66,11 +66,11 @@ describe('TagSuggester', () => {
   });
 
   it('returns recently added tags synchronously', () => {
-    subject.recordAddedTag('A');
-    subject.recordAddedTag('B');
-    subject.recordAddedTag('C');
-    subject.recordAddedTag('A'); // Bump A's access time
-    subject.recordAddedTag('D'); // B should be dropped
+    subject.recordRecentTag('A');
+    subject.recordRecentTag('B');
+    subject.recordRecentTag('C');
+    subject.recordRecentTag('A'); // Bump A's access time
+    subject.recordRecentTag('D'); // B should be dropped
 
     const result = subject.getSuggestions('');
 
@@ -79,9 +79,9 @@ describe('TagSuggester', () => {
 
   it('returns frequently used tags asynchronously', async () => {
     store._tags = ['F1', 'F2', 'F3'];
-    subject.recordAddedTag('R1');
-    subject.recordAddedTag('R2');
-    subject.recordAddedTag('R3');
+    subject.recordRecentTag('R1');
+    subject.recordRecentTag('R2');
+    subject.recordRecentTag('R3');
 
     const result = subject.getSuggestions('');
 
@@ -92,9 +92,9 @@ describe('TagSuggester', () => {
 
   it('respects the maximum number of suggestions', async () => {
     store._tags = ['F1', 'F2', 'F3', 'F4', 'F5'];
-    subject.recordAddedTag('R1');
-    subject.recordAddedTag('R2');
-    subject.recordAddedTag('R3');
+    subject.recordRecentTag('R1');
+    subject.recordRecentTag('R2');
+    subject.recordRecentTag('R3');
 
     const result = subject.getSuggestions('');
 
@@ -104,9 +104,9 @@ describe('TagSuggester', () => {
 
   it('de-duplicates recent and frequent tags', async () => {
     store._tags = ['A', 'C', 'E', 'G', 'I', 'K'];
-    subject.recordAddedTag('A');
-    subject.recordAddedTag('B');
-    subject.recordAddedTag('C');
+    subject.recordRecentTag('A');
+    subject.recordRecentTag('B');
+    subject.recordRecentTag('C');
 
     const result = subject.getSuggestions('');
 
@@ -116,9 +116,9 @@ describe('TagSuggester', () => {
 
   it('caches frequent tags', async () => {
     store._tags = ['D', 'E', 'F', 'G'];
-    subject.recordAddedTag('A');
-    subject.recordAddedTag('B');
-    subject.recordAddedTag('C');
+    subject.recordRecentTag('A');
+    subject.recordRecentTag('B');
+    subject.recordRecentTag('C');
 
     // Do initial fetch
     const initialFetch = subject.getSuggestions('');
@@ -132,9 +132,9 @@ describe('TagSuggester', () => {
 
   it('returns matching tags matching a prefix', async () => {
     store._tags = ['ABC', 'ABCD', 'AB', 'DEF'];
-    subject.recordAddedTag('R1');
-    subject.recordAddedTag('R2');
-    subject.recordAddedTag('R3');
+    subject.recordRecentTag('R1');
+    subject.recordRecentTag('R2');
+    subject.recordRecentTag('R3');
 
     const result = subject.getSuggestions('ABC');
 
@@ -226,9 +226,9 @@ describe('TagSuggester', () => {
 
   it('clears the cache when cards are changed', async () => {
     store._tags = ['F1', 'F2', 'F3'];
-    subject.recordAddedTag('R1');
-    subject.recordAddedTag('R2');
-    subject.recordAddedTag('R3');
+    subject.recordRecentTag('R1');
+    subject.recordRecentTag('R2');
+    subject.recordRecentTag('R3');
 
     // Get initial result.
     const initialResult = subject.getSuggestions('');

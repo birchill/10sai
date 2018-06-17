@@ -55,7 +55,7 @@ export class TagSuggester {
     });
   }
 
-  recordAddedTag(tag: string) {
+  recordRecentTag(tag: string) {
     this.recentTags.set(tag, undefined);
   }
 
