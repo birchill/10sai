@@ -8,11 +8,11 @@ import { all } from 'redux-saga/effects';
 import reducer from './reducer';
 
 import { editSagas, syncEditChanges } from './edit/sagas.ts';
-import reviewSagas from './review/sagas';
+import reviewSagas from './review/sagas.ts';
 import routeSagas from './route/sagas';
 import syncSagas from './sync/sagas';
 
-import reviewSync from './review/sync';
+import reviewSync from './review/sync.ts';
 
 import * as routeActions from './route/actions';
 

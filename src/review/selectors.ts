@@ -1,11 +1,18 @@
 import { createSelector } from 'reselect';
 import { getScreen } from '../route/selectors';
-import ReviewPhase from './ReviewPhase.ts';
+import ReviewPhase from './ReviewPhase';
+import { ReviewState } from './reducer';
+import { Card, Review } from '../model';
 
-const getHeapLength = state => state.review.heap.length;
-const getCurrentCard = state => state.review.currentCard;
-const getFailedCardsLevel1 = state => state.review.failedCardsLevel1;
-const getFailedCardsLevel2 = state => state.review.failedCardsLevel2;
+// XXX Move this to root reducer once it gets converted to TS.
+interface State {
+  review: ReviewState;
+}
+
+const getHeapLength = (state: State) => state.review.heap.length;
+const getCurrentCard = (state: State) => state.review.currentCard;
+const getFailedCardsLevel1 = (state: State) => state.review.failedCardsLevel1;
+const getFailedCardsLevel2 = (state: State) => state.review.failedCardsLevel2;
 
 const getUnreviewedCards = createSelector(
   [getHeapLength, getCurrentCard, getFailedCardsLevel1, getFailedCardsLevel2],
@@ -20,11 +27,11 @@ const getUnreviewedCards = createSelector(
   }
 );
 
-const getFailedCardsLevel1Length = state =>
+const getFailedCardsLevel1Length = (state: State) =>
   state.review.failedCardsLevel1.length;
-const getFailedCardsLevel2Length = state =>
+const getFailedCardsLevel2Length = (state: State) =>
   state.review.failedCardsLevel2.length;
-const getCompleted = state => state.review.completed;
+const getCompleted = (state: State) => state.review.completed;
 
 export const getReviewProgress = createSelector(
   [
@@ -41,41 +48,39 @@ export const getReviewProgress = createSelector(
   })
 );
 
-const getReviewPhase = state => state.review.phase;
+export const getReviewPhase = (state: State) => state.review.phase;
 
 // We only care about available cards if we are looking at the review screen
 // and we are in the idle or complete state.
-export const getNeedAvailableCards = state =>
+export const getNeedAvailableCards = (state: State) =>
   getScreen(state) === 'review' &&
   [ReviewPhase.IDLE, ReviewPhase.COMPLETE].includes(getReviewPhase(state));
 
-export const getAvailableCards = state => state.review.availableCards;
-export const getLoadingAvailableCards = state =>
+export const getAvailableCards = (state: State) => state.review.availableCards;
+export const getLoadingAvailableCards = (state: State) =>
   state.review.loadingAvailableCards;
-export const getSavingProgress = state => state.review.savingProgress;
+export const getSavingProgress = (state: State) => state.review.savingProgress;
 
-export const getReviewCards = state => [
-  ...new Set(
-    [
-      ...state.review.heap,
-      ...state.review.failedCardsLevel1,
-      ...state.review.failedCardsLevel2,
-      ...state.review.history,
-      state.review.currentCard,
-    ].filter(card => card)
-  ),
+export const getReviewCards = (state: State): Card[] => [
+  ...new Set([
+    ...state.review.heap,
+    ...state.review.failedCardsLevel1,
+    ...state.review.failedCardsLevel2,
+    ...state.review.history,
+    state.review.currentCard,
+  ].filter(card => card) as Card[]),
 ];
 
-export const getReviewInfo = state => (state ? state.review : {});
+export const getReviewInfo = (state: State) => (state ? state.review : {});
 
-const extractId = card => card._id;
-const newCardsCompleted = state =>
+const extractId = (card: Card) => card._id;
+const newCardsCompleted = (state: State) =>
   state.review.newCardsInPlay -
   (state.review.currentCard && !state.review.currentCard.progress.reviewed
     ? 1
     : 0);
 
-export const getReviewSummary = state => ({
+export const getReviewSummary = (state: State): Review => ({
   reviewTime: state.review.reviewTime,
   maxCards: state.review.maxCards,
   maxNewCards: state.review.maxNewCards,

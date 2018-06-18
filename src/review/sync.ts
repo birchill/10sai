@@ -1,4 +1,5 @@
 import deepEqual from 'deep-equal';
+import { Store } from 'redux';
 import {
   getAvailableCards,
   getLoadingAvailableCards,
@@ -6,9 +7,12 @@ import {
   getReviewCards,
   getReviewSummary,
   getSavingProgress,
+  getReviewPhase,
 } from './selectors';
-import * as reviewActions from './actions.ts';
-import ReviewPhase from './ReviewPhase.ts';
+import * as reviewActions from './actions';
+import ReviewPhase from './ReviewPhase';
+import { DataStore } from '../store/DataStore';
+import { ReviewState } from './reducer';
 
 // In some circumstances we delay querying available cards. We do this so that
 // changes that occur in rapid succession are batched, but also because when
@@ -18,12 +22,17 @@ import ReviewPhase from './ReviewPhase.ts';
 // be enough, normally, for views to be updated.
 const QUERY_AVAILABLE_CARDS_DELAY = 3000;
 
-function sync(store, stateStore) {
-  let needAvailableCards;
-  let delayedCallback;
+// XXX Move this to root reducer once it gets converted to TS.
+interface State {
+  review: ReviewState;
+}
 
-  stateStore.subscribe(() => {
-    const state = stateStore.getState();
+function sync(dataStore: DataStore, store: Store<State>) {
+  let needAvailableCards: boolean;
+  let delayedCallback: number | undefined;
+
+  store.subscribe(() => {
+    const state = store.getState();
 
     if (getLoadingAvailableCards(state) || getSavingProgress(state)) {
       return;
@@ -47,10 +56,10 @@ function sync(store, stateStore) {
       return;
     }
 
-    stateStore.dispatch(reviewActions.queryAvailableCards());
+    store.dispatch(reviewActions.queryAvailableCards());
   });
 
-  store.changes.on('card', change => {
+  dataStore.changes.on('card', change => {
     // Update available cards if needed
     if (needAvailableCards) {
       if (delayedCallback) {
@@ -63,13 +72,13 @@ function sync(store, stateStore) {
       // content of cards so for now its simplest just to re-query cards when
       // anything changes. Since we debounce and delay these updates, and only
       // do them when we're looking at the review screen it should be fine.
-      delayedCallback = setTimeout(() => {
-        stateStore.dispatch(reviewActions.queryAvailableCards());
+      delayedCallback = window.setTimeout(() => {
+        store.dispatch(reviewActions.queryAvailableCards());
         delayedCallback = undefined;
       }, QUERY_AVAILABLE_CARDS_DELAY);
     }
 
-    const reviewCard = getReviewCards(stateStore.getState()).find(
+    const reviewCard = getReviewCards(store.getState()).find(
       card => card._id === change.id
     );
 
@@ -79,7 +88,7 @@ function sync(store, stateStore) {
     }
 
     if (change.deleted) {
-      stateStore.dispatch(reviewActions.deleteReviewCard(change.id));
+      store.dispatch(reviewActions.deleteReviewCard(change.id));
       return;
     }
 
@@ -88,33 +97,34 @@ function sync(store, stateStore) {
       return;
     }
 
-    stateStore.dispatch(reviewActions.updateReviewCard(change.doc));
+    store.dispatch(reviewActions.updateReviewCard(change.doc));
   });
 
   // Synchronize changes to review document
-  store.changes.on('review', review => {
-    const currentState = getReviewSummary(stateStore.getState());
+  dataStore.changes.on('review', review => {
+    const currentState = getReviewSummary(store.getState());
+    const currentPhase = getReviewPhase(store.getState());
 
     // Review document was deleted
     if (!review) {
       if (
-        currentState.phase !== ReviewPhase.IDLE &&
-        currentState.phase !== ReviewPhase.COMPLETE
+        currentPhase !== ReviewPhase.IDLE &&
+        currentPhase !== ReviewPhase.COMPLETE
       ) {
-        stateStore.dispatch(reviewActions.cancelReview());
+        store.dispatch(reviewActions.cancelReview());
       }
       return;
     }
 
     if (!deepEqual(currentState, review)) {
-      stateStore.dispatch(reviewActions.loadReview(review));
+      store.dispatch(reviewActions.loadReview(review));
     }
   });
 
   // Do initial sync
-  store.getReview().then(review => {
+  dataStore.getReview().then(review => {
     if (review) {
-      stateStore.dispatch(reviewActions.loadInitialReview(review));
+      store.dispatch(reviewActions.loadInitialReview(review));
     }
   });
 }

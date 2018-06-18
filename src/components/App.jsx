@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../route/router';
-import { getReviewProgress } from '../review/selectors';
+import { getReviewProgress } from '../review/selectors.ts';
 import CardList from '../CardList.ts';
 import KeywordSuggester from '../suggestions/KeywordSuggester.ts';
 import TagSuggester from '../suggestions/TagSuggester.ts';

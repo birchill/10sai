@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import * as reviewActions from '../review/actions.ts';
-import { getReviewProgress } from '../review/selectors';
+import { getReviewProgress } from '../review/selectors.ts';
 
 import ReviewScreen from './ReviewScreen.jsx';
 

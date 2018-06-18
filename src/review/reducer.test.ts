@@ -6,7 +6,8 @@ import ReviewPhase from './ReviewPhase';
 import * as actions from './actions';
 import { getReviewSummary } from './selectors';
 import { generateCards } from '../../test/testcommon';
-import { Card } from '../model';
+import { Card, Review } from '../model';
+import { stripFields } from '../utils/type-helpers';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -643,10 +644,12 @@ describe('reducer:review', () => {
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
     const reviewSummary = getReviewSummary({ review: updatedState });
-    reviewSummary.completed = 1;
-    reviewSummary.newCardsCompleted = 1;
-    reviewSummary.heap = [cards[0]._id];
-    updatedState = subject(updatedState, actions.loadReview(reviewSummary));
+    const review: Review = {
+      ...reviewSummary,
+      completed: 1,
+      newCardsCompleted: 1,
+    };
+    updatedState = subject(updatedState, actions.loadReview(review));
 
     expect(updatedState).toMatchObject({
       phase: ReviewPhase.LOADING,

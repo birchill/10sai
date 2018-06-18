@@ -2,24 +2,33 @@
 
 import subject from './sync';
 import { queryAvailableCards, updateReviewCard } from './actions';
-import reducer from './reducer';
+import reducer, { ReviewState } from './reducer';
 import { getReviewSummary } from './selectors';
+import EventEmitter from 'event-emitter';
 import ReviewPhase from './ReviewPhase';
+import { Card } from '../model';
 
 jest.useFakeTimers();
 
+type ChangeCallback = (change: any) => void;
+
 class MockDataStore {
+  cbs: {
+    [type: string]: ChangeCallback[];
+  };
+  changes: EventEmitter;
+
   constructor() {
     this.cbs = {};
     this.changes = {
-      on: (type, cb) => {
+      on: (type: string, cb: ChangeCallback) => {
         if (this.cbs[type]) {
           this.cbs[type].push(cb);
         } else {
           this.cbs[type] = [cb];
         }
       },
-    };
+    } as EventEmitter;
   }
 
   __triggerChange(type, change) {
@@ -37,9 +46,24 @@ class MockDataStore {
   }
 }
 
+// This is the simplified view of the State we use here.
+interface State {
+  screen: string;
+  review: ReviewState;
+}
+
+const initialReviewState = reducer(undefined, { type: 'NONE' } as any);
+
 class MockStore {
+  cb?: () => void;
+  state: State;
+  actions: any[];
+
   constructor() {
-    this.state = {};
+    this.state = {
+      screen: '',
+      review: initialReviewState,
+    };
     this.actions = [];
   }
 
@@ -69,8 +93,6 @@ jest.mock('../route/selectors', () => ({
   getScreen: state => state.screen,
 }));
 
-const initialState = reducer(undefined, { type: 'NONE' });
-
 describe('review:sync', () => {
   let dataStore;
   let store;
@@ -79,8 +101,10 @@ describe('review:sync', () => {
     dataStore = new MockDataStore();
     store = new MockStore();
 
-    setTimeout.mockClear();
-    clearTimeout.mockClear();
+    // I couldn't work out how to get jest.MockImplementation to work for
+    // this and ultimately I figured it's not worth the time.
+    (setTimeout as any).mockClear();
+    (clearTimeout as any).mockClear();
   });
 
   describe('available cards', () => {
@@ -88,7 +112,7 @@ describe('review:sync', () => {
       subject(dataStore, store);
       store.__update({
         screen: 'review',
-        review: initialState,
+        review: initialReviewState,
       });
 
       expect(store.actions).toEqual([queryAvailableCards()]);
@@ -100,7 +124,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           availableCards: { newCards: 2, overdueCards: 3 },
         },
       });
@@ -113,7 +137,7 @@ describe('review:sync', () => {
       subject(dataStore, store);
       store.__update({
         screen: 'review',
-        review: initialState,
+        review: initialReviewState,
       });
       expect(store.actions).toEqual([queryAvailableCards()]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
@@ -134,7 +158,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           availableCards: { newCards: 2, overdueCards: 3 },
         },
       });
@@ -148,7 +172,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           availableCards: undefined,
         },
       });
@@ -164,7 +188,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           availableCards: { newCards: 2, overdueCards: 3 },
         },
       });
@@ -177,7 +201,7 @@ describe('review:sync', () => {
       // Then change screen
       store.__update({
         screen: 'home',
-        review: initialState,
+        review: initialReviewState,
       });
       expect(clearTimeout).toHaveBeenCalledTimes(1);
       expect(store.actions).toEqual([queryAvailableCards()]);
@@ -188,7 +212,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           loadingAvailableCards: true,
         },
       });
@@ -202,7 +226,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           savingProgress: true,
         },
       });
@@ -215,7 +239,7 @@ describe('review:sync', () => {
       subject(dataStore, store);
       store.__update({
         screen: 'home',
-        review: initialState,
+        review: initialReviewState,
       });
       expect(store.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
@@ -230,7 +254,7 @@ describe('review:sync', () => {
       subject(dataStore, store);
       store.__update({
         screen: 'review',
-        review: initialState,
+        review: initialReviewState,
       });
       expect(store.actions).toEqual([queryAvailableCards()]);
 
@@ -250,20 +274,20 @@ describe('review:sync', () => {
     it('triggers an update when the current card is updated', () => {
       subject(dataStore, store);
 
-      const card = {
+      const card: Card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
-      };
+      } as Card;
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           currentCard: card,
         },
       });
 
-      const updatedCard = {
+      const updatedCard: Card = {
         ...card,
         question: 'Updated question',
       };
@@ -282,11 +306,11 @@ describe('review:sync', () => {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
-      };
+      } as Card;
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           heap: [card],
         },
       });
@@ -310,11 +334,11 @@ describe('review:sync', () => {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
-      };
+      } as Card;
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           failedCardsLevel2: [card],
         },
       });
@@ -342,7 +366,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           currentCard: card,
         },
       });
@@ -372,11 +396,11 @@ describe('review:sync', () => {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
-      };
+      } as Card;
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           currentCard: card,
         },
       });
@@ -396,11 +420,11 @@ describe('review:sync', () => {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
-      };
+      } as Card;
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           currentCard: card,
         },
       });
@@ -427,7 +451,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           currentCard: card,
         },
       });
@@ -454,7 +478,7 @@ describe('review:sync', () => {
 
       store.__update({
         screen: 'review',
-        review: initialState,
+        review: initialReviewState,
       });
 
       const review = {
@@ -478,10 +502,10 @@ describe('review:sync', () => {
 
       store.__update({
         screen: 'review',
-        review: initialState,
+        review: initialReviewState,
       });
       const reviewSummary = getReviewSummary({
-        review: initialState,
+        review: initialReviewState,
       });
 
       dataStore.__triggerChange('review', reviewSummary);
@@ -495,7 +519,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialState,
+          ...initialReviewState,
           phase: ReviewPhase.QUESTION,
         },
       });

@@ -60,7 +60,7 @@ describe('sagas:review updateHeap', () => {
       .provide([[matchers.call.fn(dataStore.getCards), newCards]])
       .withState(reducer(undefined, action))
       .call([dataStore, 'getCards'], { limit: 2, type: 'new' })
-      .not.call.fn([dataStore, 'getCards'])
+      .not.call.fn(dataStore.getCards)
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();
   });
@@ -112,8 +112,8 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, dataStore, action)
       .withState(state)
-      .not.call.fn([dataStore, 'getCards'])
-      .not.call.fn([dataStore, 'getCards'])
+      .not.call.fn(dataStore.getCards)
+      .not.call.fn(dataStore.getCards)
       .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
       .run();
   });
@@ -127,8 +127,8 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, dataStore, action)
       .withState(state)
-      .not.call.fn([dataStore, 'getCards'])
-      .not.call.fn([dataStore, 'getCards'])
+      .not.call.fn(dataStore.getCards)
+      .not.call.fn(dataStore.getCards)
       .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
       .run();
   });
@@ -178,7 +178,7 @@ describe('sagas:review updateHeap', () => {
       .provide([[matchers.call.fn(dataStore.getCards), newCards]])
       .withState(state)
       .call([dataStore, 'getCards'], { limit: 1, type: 'new' })
-      .not.call.fn([dataStore, 'getCards'])
+      .not.call.fn(dataStore.getCards)
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();
   });
@@ -192,6 +192,8 @@ describe('sagas:review updateHeap', () => {
     return expectSaga(updateHeapSaga, dataStore, action)
       .provide(getDataStoreProvider(newCards, overdueCards))
       .withState(initialState)
+      .call.fn(dataStore.getCards)
+      .call.fn(dataStore.getCards)
       .call([dataStore, 'putReview'], {
         reviewTime: initialState.review.reviewTime,
         maxCards: 3,

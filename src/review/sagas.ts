@@ -1,7 +1,11 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
-import * as reviewActions from './actions.ts';
+import * as reviewActions from './actions';
 import { getReviewSummary } from './selectors';
-import ReviewPhase from './ReviewPhase.ts';
+import ReviewPhase from './ReviewPhase';
+import { DataStore } from '../store/DataStore';
+import { ReviewState } from './reducer';
+import { GetCardsOptions } from '../store/CardStore';
+import { AvailableCards, Card } from '../model';
 
 // Which cards to use when we update the heap.
 //
@@ -14,13 +18,27 @@ import ReviewPhase from './ReviewPhase.ts';
 // This mostly works but it won't work if we don't address all failed cards in
 // a review (e.g. we cancel a review while there are still failed cards) and
 // then we refresh a review.
+// XXX Convert this to a TS enum of some type
 const CardsToSelect = {
   IncludeFailed: Symbol('IncludeFailed'),
   SkipFailed: Symbol('SkipFailed'),
 };
 
-export function* updateHeap(dataStore, action) {
-  const reviewInfo = yield select(state => (state ? state.review : {}));
+// XXX Move this to root reducer once it gets converted to TS.
+interface State {
+  review: ReviewState;
+}
+
+export function* updateHeap(
+  dataStore: DataStore,
+  action:
+    | reviewActions.NewReviewAction
+    | reviewActions.SetReviewLimitAction
+    | reviewActions.SetReviewTimeAction
+) {
+  const reviewInfo = yield select(
+    (state: State) => (state ? state.review : {})
+  );
 
   // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
   // action.
@@ -42,7 +60,11 @@ export function* updateHeap(dataStore, action) {
   }
 }
 
-function* getCardsForHeap(dataStore, reviewInfo, cardsToSelect) {
+function* getCardsForHeap(
+  dataStore: DataStore,
+  reviewInfo: ReviewState,
+  cardsToSelect: symbol
+) {
   let freeSlots = Math.max(
     0,
     reviewInfo.maxCards -
@@ -62,18 +84,16 @@ function* getCardsForHeap(dataStore, reviewInfo, cardsToSelect) {
     Math.min(reviewInfo.maxNewCards - reviewInfo.newCardsInPlay, freeSlots),
     0
   );
-  let cards = [];
+  let cards: Card[] = [];
   if (newCardSlots) {
-    cards = yield call([dataStore, 'getCards'], {
-      limit: newCardSlots,
-      type: 'new',
-    });
+    const options: GetCardsOptions = { type: 'new', limit: newCardSlots };
+    cards = yield call([dataStore, 'getCards'], options);
     freeSlots -= cards.length;
   }
 
   // Now fill up the overdue slots
   if (freeSlots) {
-    const options = { type: 'overdue', limit: freeSlots };
+    const options: GetCardsOptions = { type: 'overdue', limit: freeSlots };
     // If we are updating the heap mid-review then avoid getting failed cards
     // since they might already be in our failed heaps.
     if (cardsToSelect === CardsToSelect.SkipFailed) {
@@ -85,8 +105,13 @@ function* getCardsForHeap(dataStore, reviewInfo, cardsToSelect) {
   return cards;
 }
 
-export function* updateProgress(dataStore, action) {
-  const reviewInfo = yield select(state => (state ? state.review : {}));
+export function* updateProgress(
+  dataStore: DataStore,
+  action: reviewActions.PassCardAction | reviewActions.FailCardAction
+) {
+  const reviewInfo: ReviewState = yield select(
+    (state: State) => (state ? state.review : {})
+  );
 
   // Fetch the updated card from the state. Normally this is the last card in
   // the history, unless we happen to choose the same card twice which should
@@ -102,10 +127,11 @@ export function* updateProgress(dataStore, action) {
   } else {
     card = reviewInfo.history[reviewInfo.history.length - 1];
   }
+  console.assert(card, 'Should have a card if we passed or failed one');
 
-  const update = {
-    _id: card._id,
-    progress: card.progress,
+  const update: Partial<Card> = {
+    _id: card!._id,
+    progress: card!.progress,
   };
 
   try {
@@ -130,17 +156,26 @@ export function* updateProgress(dataStore, action) {
   }
 }
 
-export function* updateReviewTime(dataStore, action) {
+export function* updateReviewTime(
+  dataStore: DataStore,
+  action: reviewActions.SetReviewTimeAction
+) {
   yield call([dataStore, 'setReviewTime'], action.reviewTime);
 }
 
-export function* queryAvailableCards(dataStore) {
+export function* queryAvailableCards(dataStore: DataStore) {
   // TODO: Error handling
-  const availableCards = yield call([dataStore, 'getAvailableCards']);
+  const availableCards: AvailableCards = yield call([
+    dataStore,
+    'getAvailableCards',
+  ]);
   yield put(reviewActions.updateAvailableCards(availableCards));
 }
 
-export function* loadReview(dataStore, action) {
+export function* loadReview(
+  dataStore: DataStore,
+  action: reviewActions.LoadReviewAction
+) {
   // Load cards from history
   const history = yield call(
     [dataStore, 'getCardsById'],
@@ -168,7 +203,9 @@ export function* loadReview(dataStore, action) {
 
   // Fetch and update reviewInfo so that getCardsForHeap knows how many slots it
   // needs to fill.
-  const reviewInfo = yield select(state => (state ? state.review : {}));
+  const reviewInfo = yield select(
+    (state: State) => (state ? state.review : {})
+  );
   reviewInfo.history = history;
   reviewInfo.failedCardsLevel1 = failedCardsLevel1;
   reviewInfo.failedCardsLevel2 = failedCardsLevel2;
@@ -190,12 +227,12 @@ export function* loadReview(dataStore, action) {
   );
 }
 
-export function* cancelReview(dataStore) {
+export function* cancelReview(dataStore: DataStore) {
   // TODO: Error handling
   yield call([dataStore, 'deleteReview']);
 }
 
-function* reviewSagas(dataStore) {
+function* reviewSagas(dataStore: DataStore) {
   yield* [
     takeEvery(
       ['NEW_REVIEW', 'SET_REVIEW_LIMITS', 'SET_REVIEW_TIME'],

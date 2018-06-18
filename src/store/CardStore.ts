@@ -1,5 +1,5 @@
 import * as views from './views';
-import { Card, Progress } from '../model';
+import { AvailableCards, Card, Progress } from '../model';
 import {
   DeepPartial,
   MakeOptional,
@@ -197,7 +197,7 @@ export class CardStore {
     }));
   }
 
-  async getAvailableCards() {
+  async getAvailableCards(): Promise<AvailableCards> {
     await this.viewPromises.review.promise;
 
     const overdueResult = await this.db.query('overdueness', {

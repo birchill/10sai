@@ -36,6 +36,14 @@ export interface Review {
 }
 
 /**
+ * A summary of how many cards are available for review.
+ */
+export interface AvailableCards {
+  newCards: number;
+  overdueCards: number;
+}
+
+/**
  * A note.
  */
 export interface Note {

@@ -1,13 +1,8 @@
 import ReviewPhase from './ReviewPhase';
-import { Card } from '../model';
+import { AvailableCards, Card } from '../model';
 import { ReviewAction } from './actions';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-export interface AvailableCards {
-  newCards: number;
-  overdueCards: number;
-}
 
 export interface ReviewState {
   phase: symbol;

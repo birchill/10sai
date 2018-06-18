@@ -1,15 +1,15 @@
 /* global describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
-import { edit as subject, EditState } from './reducer';
+import { edit as subject, EditState, FormId } from './reducer';
 import EditorState from './EditorState';
 import * as actions from './actions';
 import { Card } from '../model';
-import { CardChange } from '../store/cards/CardStore';
+import { CardChange } from '../store/CardStore';
 import { StoreError } from '../store/DataStore';
 import { generateCard } from '../../test/testcommon';
 
-const emptyState = (formId: actions.FormId): EditState => ({
+const emptyState = (formId: FormId): EditState => ({
   forms: {
     active: {
       formId,
@@ -40,7 +40,7 @@ const okState = (
   return result;
 };
 
-const loadingState = (formId: actions.FormId): EditState => ({
+const loadingState = (formId: FormId): EditState => ({
   forms: {
     active: {
       formId,
@@ -51,7 +51,7 @@ const loadingState = (formId: actions.FormId): EditState => ({
 });
 
 const dirtyState = (
-  formId: actions.FormId,
+  formId: FormId,
   card: Partial<Card>,
   dirtyFields: Array<keyof Card>
 ): EditState => ({

@@ -1,5 +1,4 @@
-import { Card, Review } from '../model';
-import { AvailableCards } from './reducer';
+import { AvailableCards, Card, Review } from '../model';
 
 export type ReviewAction =
   | NewReviewAction

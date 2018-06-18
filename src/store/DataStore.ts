@@ -1,7 +1,7 @@
 import PouchDB from 'pouchdb';
 import EventEmitter from 'event-emitter';
 
-import { Card, Note, Review } from '../model';
+import { AvailableCards, Card, Note, Review } from '../model';
 import { DatabaseWithName } from './utils';
 import {
   CardStore,
@@ -115,7 +115,7 @@ export class DataStore {
   getCardsById(ids: string[]): Promise<Card[]> {
     return this.cardStore.getCardsById(ids);
   }
-  getAvailableCards() {
+  getAvailableCards(): Promise<AvailableCards> {
     return this.cardStore.getAvailableCards();
   }
   putCard(card: Partial<Card>): Promise<Card> {
