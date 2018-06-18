@@ -54,7 +54,7 @@
     display: flex;
     // This is just here until we add something else to the container (with
     // flex: 1).
-    justify-content: end;
+    justify-content: flex-end;
 
     padding: .5rem 1rem;
   }
