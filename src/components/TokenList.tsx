@@ -120,9 +120,6 @@ export class TokenList extends React.PureComponent<Props> {
       return;
     }
 
-    const inlineMode =
-      this.props.className &&
-      this.props.className.split(' ').includes('-inline');
     const textIndex = this.textInput ? this.textInput.selectionStart : 0;
 
     switch (e.key) {
@@ -160,21 +157,20 @@ export class TokenList extends React.PureComponent<Props> {
           }
 
           if (this.state.focusRegion === FocusRegion.Suggestions) {
+            // If we're at the start pressing left should take us back to the
+            // text region.
             if (this.state.focusIndex === 0) {
-              // If we're at the start and in inline mode, pressing left should
-              // take us back to the text region.
-              if (inlineMode) {
-                this.setState(
-                  {
-                    focusRegion: FocusRegion.TextInput,
-                    focusIndex: 0,
-                  },
-                  () => this.updateFocus()
-                );
-                e.preventDefault();
-              }
+              this.setState(
+                {
+                  focusRegion: FocusRegion.TextInput,
+                  focusIndex: 0,
+                },
+                () => this.updateFocus()
+              );
+              e.preventDefault();
               return;
             }
+
             const suggestionIndex = this.state.focusIndex - 1;
             this.setState(
               {
@@ -192,17 +188,21 @@ export class TokenList extends React.PureComponent<Props> {
       case 'ArrowRight':
         {
           if (this.state.focusRegion === FocusRegion.TextInput) {
-            // If we are at the end of the text and we press right in inline
-            // mode, jump to the suggestions.
-            if (inlineMode && textIndex === this.state.text.length) {
-              this.setState(
-                {
-                  focusRegion: FocusRegion.Suggestions,
-                  focusIndex: 0,
-                },
-                () => this.updateFocus()
-              );
-              e.preventDefault();
+            // If we are at the end of the text, pressing right should jump to
+            // the suggestions.
+            if (textIndex === this.state.text.length) {
+              const suggestions = this.suggestionsToDisplay();
+              if (suggestions.length) {
+                this.setState(
+                  {
+                    focusRegion: FocusRegion.Suggestions,
+                    focusIndex: 0,
+                    text: suggestions[0],
+                  },
+                  () => this.updateFocus()
+                );
+                e.preventDefault();
+              }
             }
             return;
           }
@@ -255,7 +255,6 @@ export class TokenList extends React.PureComponent<Props> {
         {
           const suggestions = this.suggestionsToDisplay();
           if (
-            !inlineMode &&
             (this.state.focusRegion === FocusRegion.TextInput ||
               this.state.focusRegion === FocusRegion.Tokens) &&
             suggestions.length
@@ -656,15 +655,7 @@ export class TokenList extends React.PureComponent<Props> {
     const classes = ['token-list', this.props.className];
     const placeholder = this.props.placeholder || '';
     const suggestions = this.suggestionsToDisplay();
-    let suggestionsLabel = '';
-    if (suggestions.length) {
-      suggestionsLabel = 'e.g.';
-    } else if (
-      this.props.className &&
-      !this.props.className.split(' ').includes('-inline')
-    ) {
-      suggestionsLabel = '(No suggestions)';
-    }
+    const suggestionsLabel = suggestions.length ? 'e.g.' : '';
 
     return (
       <div
@@ -676,49 +667,46 @@ export class TokenList extends React.PureComponent<Props> {
           this.rootElem = elem || undefined;
         }}
       >
-        <div className="input">
-          {this.state.tokens.map((token, i) => {
-            const linked =
-              this.props.linkedTokens &&
-              this.props.linkedTokens.includes(token);
-            let chipClassName = 'chip';
-            if (linked) {
-              chipClassName += ' -linked';
-            }
-            const tooltip = (linked && this.props.linkedTooltip) || undefined;
-            return (
-              <span key={i} className={chipClassName} title={tooltip}>
-                <span className="label">{token}</span>
-                <button
-                  className="clear"
-                  aria-label="Delete"
-                  onClick={this.handleTokenClick}
-                  onKeyDown={this.handleTokenKeyDown}
-                  onKeyUp={this.handleTokenKeyUp}
-                  tabIndex={-1}
-                  data-index={i}
-                >
-                  &#x2715;
-                </button>
-              </span>
-            );
-          })}
-          <input
-            className="textentry"
-            type="text"
-            value={this.state.text}
-            placeholder={placeholder}
-            onChange={this.handleTextChange}
-            onCompositionStart={this.handleTextCompositionStart}
-            onCompositionEnd={this.handleTextCompositionEnd}
-            onKeyPress={this.handleTextKeyPress}
-            onKeyDown={this.handleTextKeyDown}
-            tabIndex={this.state.focusRegion === FocusRegion.TextInput ? 0 : -1}
-            ref={textInput => {
-              this.textInput = textInput || undefined;
-            }}
-          />
-        </div>
+        {this.state.tokens.map((token, i) => {
+          const linked =
+            this.props.linkedTokens && this.props.linkedTokens.includes(token);
+          let chipClassName = 'chip';
+          if (linked) {
+            chipClassName += ' -linked';
+          }
+          const tooltip = (linked && this.props.linkedTooltip) || undefined;
+          return (
+            <span key={i} className={chipClassName} title={tooltip}>
+              <span className="label">{token}</span>
+              <button
+                className="clear"
+                aria-label="Delete"
+                onClick={this.handleTokenClick}
+                onKeyDown={this.handleTokenKeyDown}
+                onKeyUp={this.handleTokenKeyUp}
+                tabIndex={-1}
+                data-index={i}
+              >
+                &#x2715;
+              </button>
+            </span>
+          );
+        })}
+        <input
+          className="textentry"
+          type="text"
+          value={this.state.text}
+          placeholder={placeholder}
+          onChange={this.handleTextChange}
+          onCompositionStart={this.handleTextCompositionStart}
+          onCompositionEnd={this.handleTextCompositionEnd}
+          onKeyPress={this.handleTextKeyPress}
+          onKeyDown={this.handleTextKeyDown}
+          tabIndex={this.state.focusRegion === FocusRegion.TextInput ? 0 : -1}
+          ref={textInput => {
+            this.textInput = textInput || undefined;
+          }}
+        />
         <div
           className={
             'suggestions' + (this.props.loadingSuggestions ? ' -loading' : '')

@@ -24,95 +24,94 @@
   --loading-bgcolor: #{$really-light-grey};
   --indicator-color: #{$light-grey};
 
-  > .input {
-    display: flex;
-    align-content: flex-start;
-    flex-wrap: wrap;
+  display: flex;
+  align-content: flex-start;
+  flex-wrap: wrap;
 
-    // Replace textbox-styles' height: 3rem with an equivalent min-height since
-    // we expect this to wrap.
+  // Replace textbox-styles' height: 3rem with an equivalent min-height since
+  // we expect this to wrap.
+  box-sizing: border-box;
+
+  // We drop 0.4em from the padding-bottom and put it on the chip and text's
+  // margin-bottom instead so that there is a gap between chips when the
+  // control wraps
+  padding-bottom: 0.6em - 0.4em;
+
+  > .chip {
+    display: inline-flex;
+    align-items: center;
+
     box-sizing: border-box;
+    // 0.4em is the vertical padding of the text box
+    height: calc(3rem - (0.4em * 2));
+    margin: 0 .5em .4em 0;
+    padding: .2em 0 .2em .4em;
 
-    // We drop 0.4em from the padding-bottom and put it on the chip and text's
-    // margin-bottom instead so that there is a gap between chips when the
-    // control wraps
-    padding-bottom: 0.6em - 0.4em;
+    vertical-align: middle;
+    cursor: default;
 
-    > .chip {
-      display: inline-flex;
-      align-items: center;
+    border: $border-width solid var(--chip-fgcolor);
+    border-radius: .3em;
+    color: var(--chip-fgcolor);
 
-      box-sizing: border-box;
-      // 0.4em is the vertical padding of the text box
-      height: calc(3rem - (0.4em * 2));
-      margin: 0 .5em .4em 0;
-      padding: .2em 0 .2em .4em;
+    background: var(--chip-bgcolor);
 
-      vertical-align: middle;
-      cursor: default;
+    &:hover, &:focus-within {
+      filter: brightness(1.03);
+    }
 
-      border: $border-width solid var(--chip-fgcolor);
-      border-radius: .3em;
+    &:focus-within {
+      border-style: dashed;
+    }
+
+    > .clear {
       color: var(--chip-fgcolor);
+      background: none;
+      border: 0;
+      padding: .3em .4em;
 
-      background: var(--chip-bgcolor);
-
-      &:hover, &:focus-within {
-        filter: brightness(1.03);
-      }
-
-      &:focus-within {
-        border-style: dashed;
-      }
-
-      > .clear {
-        color: var(--chip-fgcolor);
-        background: none;
-        border: 0;
-        padding: .3em .4em;
-
-        // Drop filter so we don't get double highlight
-        &:hover {
-          filter: none;
-        }
-      }
-
-      &.-linked > .label {
-        text-decoration: underline dotted;
-      }
-      &.-linked::before {
-        content: "";
-        display: inline-block;
-        position: relative;
-
-        width: 1em;
-        height: 1em;
-
-        background-image: url('img/icons.svg');
-        background-position-y: -3em;
-        background-position-x: -20em;
-        background-size: $icon-columns+em $icon-rows+em;
-        background-repeat: no-repeat;
-
-        margin-right: 0.2em;
+      // Drop filter so we don't get double highlight
+      &:hover {
+        filter: none;
       }
     }
 
-    > .textentry, > .textentry:focus {
-      flex: 1;
-      outline: none;
-
-      border: none;
-      box-shadow: none;
-      // 0.4em is the vertical padding of the text box
-      height: calc(3rem - (0.4em * 2));
-      padding: 0;
-
-      // See above
-      margin-bottom: .4rem;
-
-      color: var(--text-color);
+    &.-linked > .label {
+      text-decoration: underline dotted;
     }
+    &.-linked::before {
+      content: "";
+      display: inline-block;
+      position: relative;
+
+      width: 1em;
+      height: 1em;
+
+      background-image: url('img/icons.svg');
+      background-position-y: -3em;
+      background-position-x: -20em;
+      background-size: $icon-columns+em $icon-rows+em;
+      background-repeat: no-repeat;
+
+      margin-right: 0.2em;
+    }
+  }
+
+  > .textentry, > .textentry:focus {
+    flex: 1;
+    min-width: 150px;
+    outline: none;
+
+    border: none;
+    box-shadow: none;
+    // 0.4em is the vertical padding of the text box
+    height: calc(3rem - (0.4em * 2));
+    padding: 0;
+
+    // See above
+    margin-bottom: .4rem;
+
+    color: var(--text-color);
   }
 
   > .suggestions {
@@ -214,14 +213,6 @@
     box-shadow: none;
   }
 
-  // A variation that puts the suggestions on the side
-  &.-inline {
-    display: flex;
-    > .input {
-      flex: 1;
-    }
-  }
-
   &.-yellow {
     --text-color: #{$keyword-yellow-dark};
     --chip-fgcolor: #{$keyword-yellow-dark};
@@ -238,23 +229,21 @@
     background-color: $keyword-yellow;
     border-color: $keyword-yellow-dark;
 
-    > .input {
-      > .textentry {
-        background-color: $keyword-yellow;
-        &::placeholder {
-          color: $keyword-yellow-dark;
-          opacity: 0.8;
-        }
+    > .textentry {
+      background-color: $keyword-yellow;
+      &::placeholder {
+        color: $keyword-yellow-dark;
+        opacity: 0.8;
       }
+    }
 
-      > .chip {
-        &:hover, &:focus-within {
-          // The brightness we use for the normal style washes this out
-          filter: brightness(1.06);
-        }
-        &.-linked::before {
-          background-position-y: -5em;
-        }
+    > .chip {
+      &:hover, &:focus-within {
+        // The brightness we use for the normal style washes this out
+        filter: brightness(1.06);
+      }
+      &.-linked::before {
+        background-position-y: -5em;
       }
     }
 
