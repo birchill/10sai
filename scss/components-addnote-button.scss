@@ -1,5 +1,118 @@
 .addnote-button {
-  // XXX This should eventually become a standard kind of button...
-  border-color: transparent;
-  box-shadow: 0px 1px 3px rgba(0, 0, 30, 0.2);
+  color: $keyword-yellow-dark;
+  cursor: pointer;
+
+  // XXX See how much of this we really need
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  --label-height: calc(1.4 * 1em);
+  --button-height: calc(2 * 1rem + var(--label-height));
+
+  display: grid;
+  grid-template-columns: 1rem max-content 1rem;
+  grid-template-rows: 1rem var(--label-height) 1rem
+                      1rem var(--label-height) 1rem;
+
+
+  // Set the height explicitly so that the extra space we use for the two layers
+  // of the button don't occupy space.
+  height: var(--button-height);
+
+  > .-shadow {
+    box-shadow: 0px 1px 3px rgba(0, 0, 30, 0.2);
+
+    &.topright {
+      box-shadow: none;
+    }
+  }
+
+  > :not(.-shadow) {
+    background: $keyword-yellow;
+    transform: translateY(calc(-1 * var(--button-height)));
+
+    &.topright {
+      background: transparent;
+    }
+
+    &.label {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      padding-left: 2.2em;
+      padding-right: 1em;
+
+      box-shadow: none;
+
+      &::before {
+        content: "";
+        display: inline-block;
+        position: relative;
+
+        width: 1em;
+        height: 1em;
+
+        background-image: url('img/icons.svg');
+        background-position-x: -19em;
+        background-position-y: -5em;
+        background-size: $icon-columns+em $icon-rows+em;
+        background-repeat: no-repeat;
+
+        margin-left: -1.5em;
+        margin-right: 0.5em;
+      }
+    }
+  }
+
+  &:active, &:focus {
+    filter: brightness(1.03);
+  }
+  &:hover {
+    filter: brightness(1.08);
+  }
+  &:active {
+    // Depress button
+    > :not(.-shadow) {
+      transform: translateY(calc(-1 * var(--button-height) + 1px));
+    }
+  }
+  &:focus {
+    outline: none;
+
+    > .topleft:not(.-shadow) {
+      border-left: 1px dotted $keyword-yellow-dark;
+      border-top: 1px dotted $keyword-yellow-dark;
+    }
+    > .top:not(.-shadow) {
+      border-top: 1px dotted $keyword-yellow-dark;
+    }
+    > .left:not(.-shadow) {
+      border-left: 1px dotted $keyword-yellow-dark;
+    }
+    > .right:not(.-shadow) {
+      border-right: 1px dotted $keyword-yellow-dark;
+    }
+    > .bottomleft:not(.-shadow) {
+      border-left: 1px dotted $keyword-yellow-dark;
+      border-bottom: 1px dotted $keyword-yellow-dark;
+    }
+    > .bottom:not(.-shadow) {
+      border-bottom: 1px dotted $keyword-yellow-dark;
+    }
+    > .bottomright:not(.-shadow) {
+      border-bottom: 1px dotted $keyword-yellow-dark;
+      border-right: 1px dotted $keyword-yellow-dark;
+    }
+  }
 }
