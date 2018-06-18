@@ -115,7 +115,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
 const mapStateToProps = (state: any) => ({
   forms: (state.edit as EditState).forms,
 });
-const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   onEdit: (formId: FormId, card: Partial<Card>) => {
     dispatch(editActions.editCard(formId, card));
   },
@@ -125,4 +125,7 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
   },
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditCardScreen);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(EditCardScreen);

@@ -75,7 +75,7 @@ interface DispatchProps {
 }
 
 const mapDispatchToProps = (
-  dispatch: Dispatch<any>,
+  dispatch: Dispatch,
   props: Props
 ): DispatchProps => ({
   onClick: (href: string) => {
@@ -106,4 +106,8 @@ const mergeProps = (
   return Object.assign({}, ownProps, stateProps, dispatchProps, onClickWrapper);
 };
 
-export default connect(null, mapDispatchToProps, mergeProps)(Link);
+export default connect(
+  null,
+  mapDispatchToProps,
+  mergeProps
+)(Link);
