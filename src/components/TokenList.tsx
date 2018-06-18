@@ -7,6 +7,8 @@ interface Props {
   className?: string;
   tokens?: string[];
   placeholder?: string;
+  linkedTokens?: string[];
+  linkedTooltip?: string;
   onTokensChange?: (tokens: string[], addedTokens: string[]) => void;
   onTextChange?: (text: string) => void;
   suggestions?: string[];
@@ -42,6 +44,8 @@ export class TokenList extends React.PureComponent<Props> {
       className: PropTypes.string,
       tokens: PropTypes.arrayOf(PropTypes.string),
       placeholder: PropTypes.string,
+      linkedTokens: PropTypes.arrayOf(PropTypes.string),
+      linkedTooltip: PropTypes.string,
       onTokensChange: PropTypes.func,
       onTextChange: PropTypes.func,
       suggestions: PropTypes.arrayOf(PropTypes.string),
@@ -673,22 +677,32 @@ export class TokenList extends React.PureComponent<Props> {
         }}
       >
         <div className="input">
-          {this.state.tokens.map((token, i) => (
-            <span key={i} className="chip">
-              {token}
-              <button
-                className="clear"
-                aria-label="Delete"
-                onClick={this.handleTokenClick}
-                onKeyDown={this.handleTokenKeyDown}
-                onKeyUp={this.handleTokenKeyUp}
-                tabIndex={-1}
-                data-index={i}
-              >
-                &#x2715;
-              </button>
-            </span>
-          ))}
+          {this.state.tokens.map((token, i) => {
+            const linked =
+              this.props.linkedTokens &&
+              this.props.linkedTokens.includes(token);
+            let chipClassName = 'chip';
+            if (linked) {
+              chipClassName += ' -linked';
+            }
+            const tooltip = (linked && this.props.linkedTooltip) || undefined;
+            return (
+              <span key={i} className={chipClassName} title={tooltip}>
+                <span className="label">{token}</span>
+                <button
+                  className="clear"
+                  aria-label="Delete"
+                  onClick={this.handleTokenClick}
+                  onKeyDown={this.handleTokenKeyDown}
+                  onKeyUp={this.handleTokenKeyUp}
+                  tabIndex={-1}
+                  data-index={i}
+                >
+                  &#x2715;
+                </button>
+              </span>
+            );
+          })}
           <input
             className="textentry"
             type="text"

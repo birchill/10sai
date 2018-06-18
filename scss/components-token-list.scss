@@ -76,6 +76,26 @@
           filter: none;
         }
       }
+
+      &.-linked > .label {
+        text-decoration: underline dotted;
+      }
+      &.-linked::before {
+        content: "";
+        display: inline-block;
+        position: relative;
+
+        width: 1em;
+        height: 1em;
+
+        background-image: url('img/icons.svg');
+        background-position-y: -3em;
+        background-position-x: -20em;
+        background-size: $icon-columns+em $icon-rows+em;
+        background-repeat: no-repeat;
+
+        margin-right: 0.2em;
+      }
     }
 
     > .textentry, > .textentry:focus {
@@ -231,6 +251,9 @@
         &:hover, &:focus-within {
           // The brightness we use for the normal style washes this out
           filter: brightness(1.06);
+        }
+        &.-linked::before {
+          background-position-y: -5em;
         }
       }
     }

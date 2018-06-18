@@ -152,8 +152,10 @@ export class EditNoteForm extends React.Component<Props, State> {
               {(suggestions: string[], loading: boolean) => (
                 <TokenList
                   className="tokens -yellow -seamless -inline"
-                  tokens={this.props.note.keywords || []}
+                  tokens={this.props.note.keywords || ['屯所']}
                   placeholder="Keywords"
+                  linkedTokens={this.props.relatedKeywords}
+                  linkedTooltip="This keyword links the note to the card"
                   onTokensChange={this.handleKeywordsChange}
                   onTextChange={this.handleKeywordsTextChange}
                   suggestions={suggestions}
