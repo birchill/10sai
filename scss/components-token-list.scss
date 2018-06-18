@@ -166,8 +166,10 @@
     > .loading-indicator {
       display: inline-block;
       width: 50px;
-      // Needed to make sure this is vertically centred in inline mode.
-      min-height: 100%;
+      // 0.4em is the vertical padding of the text box
+      min-height: calc(3rem - (0.4em * 2));
+      box-sizing: border-box;
+      vertical-align: top;
     }
 
     &.-loading {
