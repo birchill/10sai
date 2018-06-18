@@ -116,11 +116,18 @@ export class TokenList extends React.PureComponent<Props> {
       return;
     }
 
+    const inlineMode =
+      this.props.className &&
+      this.props.className.split(' ').includes('-inline');
+    const textIndex = this.textInput ? this.textInput.selectionStart : 0;
+
     switch (e.key) {
       case 'ArrowLeft':
         {
+          // Track position within the text
           if (this.state.focusRegion === FocusRegion.TextInput) {
-            if (this.state.tokens.length) {
+            // If we are at the far left, jump to the tokens.
+            if (textIndex === 0 && this.state.tokens.length) {
               this.setState(
                 {
                   focusRegion: FocusRegion.Tokens,
@@ -137,6 +144,7 @@ export class TokenList extends React.PureComponent<Props> {
             if (this.state.focusIndex === 0) {
               return;
             }
+
             this.setState(
               {
                 focusIndex: this.state.focusIndex - 1,
@@ -149,6 +157,18 @@ export class TokenList extends React.PureComponent<Props> {
 
           if (this.state.focusRegion === FocusRegion.Suggestions) {
             if (this.state.focusIndex === 0) {
+              // If we're at the start and in inline mode, pressing left should
+              // take us back to the text region.
+              if (inlineMode) {
+                this.setState(
+                  {
+                    focusRegion: FocusRegion.TextInput,
+                    focusIndex: 0,
+                  },
+                  () => this.updateFocus()
+                );
+                e.preventDefault();
+              }
               return;
             }
             const suggestionIndex = this.state.focusIndex - 1;
@@ -167,7 +187,24 @@ export class TokenList extends React.PureComponent<Props> {
 
       case 'ArrowRight':
         {
+          if (this.state.focusRegion === FocusRegion.TextInput) {
+            // If we are at the end of the text and we press right in inline
+            // mode, jump to the suggestions.
+            if (inlineMode && textIndex === this.state.text.length) {
+              this.setState(
+                {
+                  focusRegion: FocusRegion.Suggestions,
+                  focusIndex: 0,
+                },
+                () => this.updateFocus()
+              );
+              e.preventDefault();
+            }
+            return;
+          }
+
           if (this.state.focusRegion === FocusRegion.Tokens) {
+            // If we reach the end of the tokens, jump to the text input.
             if (this.state.focusIndex >= this.state.tokens.length - 1) {
               this.setState(
                 {
@@ -178,6 +215,7 @@ export class TokenList extends React.PureComponent<Props> {
               );
               e.preventDefault();
             } else {
+              // Otherwise navigate within the set of tokens
               this.setState(
                 {
                   focusIndex: this.state.focusIndex + 1,
@@ -213,6 +251,7 @@ export class TokenList extends React.PureComponent<Props> {
         {
           const suggestions = this.suggestionsToDisplay();
           if (
+            !inlineMode &&
             (this.state.focusRegion === FocusRegion.TextInput ||
               this.state.focusRegion === FocusRegion.Tokens) &&
             suggestions.length
@@ -358,15 +397,15 @@ export class TokenList extends React.PureComponent<Props> {
   updateText(value: string) {
     const tokens = value.split(/[,、]/);
 
-    // Make the new text the last tag, if any.
+    // Make the new text the last token, if any.
     const text = tokens[tokens.length - 1];
     this.setState({ text });
 
     // Add any extra non-empty tokens
     const addedTokens = tokens
       .slice(0, -1)
-      .map(tag => tag.trim())
-      .filter(tag => tag);
+      .map(token => token.trim())
+      .filter(token => token);
     if (addedTokens.length) {
       const tokens = this.state.tokens.concat(addedTokens);
       // Since we're only adding tokens, the existing focus should be fine.
@@ -492,7 +531,7 @@ export class TokenList extends React.PureComponent<Props> {
       this.props.onTokensChange(tokens, []);
     }
 
-    // If we deleted the last tag in the list, focus on the text field.
+    // If we deleted the last token in the list, focus on the text field.
     if (
       this.state.focusRegion === FocusRegion.Tokens &&
       this.state.focusIndex >= tokens.length
