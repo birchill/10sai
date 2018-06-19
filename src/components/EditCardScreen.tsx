@@ -23,8 +23,6 @@ interface Props {
 }
 
 export class EditCardScreen extends React.PureComponent<Props> {
-  activeForm?: EditCardForm;
-
   static get propTypes() {
     return {
       forms: PropTypes.shape({
@@ -42,11 +40,18 @@ export class EditCardScreen extends React.PureComponent<Props> {
     };
   }
 
+  activeFormRef: React.RefObject<EditCardForm>;
+  addNoteButtonRef: React.RefObject<AddNoteButton>;
+
   constructor(props: Props) {
     super(props);
 
+    this.activeFormRef = React.createRef<EditCardForm>();
+    this.addNoteButtonRef = React.createRef<AddNoteButton>();
+
     this.handleFormChange = this.handleFormChange.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+    this.handleAddNote = this.handleAddNote.bind(this);
   }
 
   componentDidMount() {
@@ -64,10 +69,10 @@ export class EditCardScreen extends React.PureComponent<Props> {
   activate() {
     if (
       this.props.forms.active.editorState === EditorState.EMPTY &&
-      this.activeForm &&
-      this.activeForm.questionTextBox
+      this.activeFormRef.current &&
+      this.activeFormRef.current.questionTextBoxRef.current
     ) {
-      this.activeForm.questionTextBox.focus();
+      this.activeFormRef.current.questionTextBoxRef.current.focus();
     }
   }
 
@@ -77,6 +82,20 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
   handleDelete() {
     this.props.onDelete(this.props.forms.active.formId);
+  }
+
+  handleAddNote() {
+    console.log('Add note');
+    if (this.addNoteButtonRef.current) {
+      console.log('Doing animation');
+      this.addNoteButtonRef.current.stretchTo({
+        left: 100,
+        top: 100,
+        width: 200,
+        height: 200,
+        duration: 1000,
+      });
+    }
   }
 
   render() {
@@ -91,9 +110,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
             <EditCardForm
               onChange={this.handleFormChange}
               {...this.props.forms.active}
-              ref={activeForm => {
-                this.activeForm = activeForm || undefined;
-              }}
+              ref={this.activeFormRef}
             />
             <hr className="note-divider divider" />
             <EditNoteForm
@@ -101,7 +118,11 @@ export class EditCardScreen extends React.PureComponent<Props> {
               note={{}}
               relatedKeywords={['屯所', '屯']}
             />
-            <AddNoteButton className="addnote" />
+            <AddNoteButton
+              className="addnote"
+              ref={this.addNoteButtonRef}
+              onClick={this.handleAddNote}
+            />
           </>
         ) : (
           <EditCardNotFound deleted={!!this.props.forms.active.deleted} />

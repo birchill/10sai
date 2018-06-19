@@ -21,17 +21,6 @@ interface State {
 }
 
 export class EditCardForm extends React.Component<Props, State> {
-  state: State = {
-    keywordsText: '',
-    tagsText: '',
-  };
-  questionTextBox?: CardFaceInput;
-  keywordsTokenList?: TokenList;
-  tagsTokenList?: TokenList;
-  debouncedUpdateSuggestions: {
-    tags: (text: string) => void;
-  };
-
   static get propTypes() {
     return {
       // eslint-disable-next-line react/forbid-prop-types
@@ -40,8 +29,25 @@ export class EditCardForm extends React.Component<Props, State> {
     };
   }
 
+  state: State = {
+    keywordsText: '',
+    tagsText: '',
+  };
+
+  questionTextBoxRef: React.RefObject<CardFaceInput>;
+  keywordsTokenListRef: React.RefObject<TokenList>;
+  tagsTokenListRef: React.RefObject<TokenList>;
+
+  debouncedUpdateSuggestions: {
+    tags: (text: string) => void;
+  };
+
   constructor(props: Props) {
     super(props);
+
+    this.questionTextBoxRef = React.createRef<CardFaceInput>();
+    this.keywordsTokenListRef = React.createRef<TokenList>();
+    this.tagsTokenListRef = React.createRef<TokenList>();
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
@@ -66,8 +72,8 @@ export class EditCardForm extends React.Component<Props, State> {
   }
 
   handleKeywordsClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (!e.defaultPrevented && this.keywordsTokenList) {
-      this.keywordsTokenList.focus();
+    if (!e.defaultPrevented && this.keywordsTokenListRef.current) {
+      this.keywordsTokenListRef.current.focus();
     }
   }
 
@@ -90,8 +96,8 @@ export class EditCardForm extends React.Component<Props, State> {
   }
 
   handleTagsClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (!e.defaultPrevented && this.tagsTokenList) {
-      this.tagsTokenList.focus();
+    if (!e.defaultPrevented && this.tagsTokenListRef.current) {
+      this.tagsTokenListRef.current.focus();
     }
   }
 
@@ -125,9 +131,7 @@ export class EditCardForm extends React.Component<Props, State> {
           value={this.props.card.question || ''}
           placeholder="Prompt"
           onChange={this.handlePromptChange}
-          ref={questionTextBox => {
-            this.questionTextBox = questionTextBox || undefined;
-          }}
+          ref={this.questionTextBoxRef}
         />
         <hr className="card-divider divider" />
         <CardFaceInput
@@ -169,9 +173,7 @@ export class EditCardForm extends React.Component<Props, State> {
                 onTextChange={this.handleKeywordsTextChange}
                 suggestions={suggestions}
                 loadingSuggestions={loading}
-                ref={e => {
-                  this.keywordsTokenList = e || undefined;
-                }}
+                ref={this.keywordsTokenListRef}
               />
             )}
           </KeywordSuggestionProvider>
@@ -198,9 +200,7 @@ export class EditCardForm extends React.Component<Props, State> {
                 onTextChange={this.handleTagsTextChange}
                 suggestions={suggestions}
                 loadingSuggestions={loading}
-                ref={e => {
-                  this.tagsTokenList = e || undefined;
-                }}
+                ref={this.tagsTokenListRef}
               />
             )}
           </TagSuggestionProvider>

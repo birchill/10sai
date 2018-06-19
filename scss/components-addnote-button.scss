@@ -34,11 +34,13 @@
 
       > .top {
         flex: 1;
+        transform-origin: 0% 0%;
       }
 
       > .corner {
         width: 1em;
         height: 1em;
+        transform-origin: 0% 0%;
       }
     }
 
@@ -50,6 +52,8 @@
       padding-left: 3.2em;
       padding-right: 2em;
       padding-bottom: 1em;
+
+      transform-origin: 0% 0%;
 
       &::before {
         content: "";
