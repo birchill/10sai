@@ -85,7 +85,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 
   handleAddNote() {
-    if (!this.addNoteButtonRef.current) {
+    if (!this.addNoteButtonRef.current || !this.addNoteButtonRef.current.elem) {
       return;
     }
 
@@ -93,7 +93,15 @@ export class EditCardScreen extends React.PureComponent<Props> {
       width: 400,
       height: 150,
       duration: 300,
+      holdDuration: 300,
     });
+    this.addNoteButtonRef.current.elem.animate(
+      {
+        transform: ['translateY(-200px)', 'translateY(-200px)'],
+        opacity: [1, 1, 0],
+      },
+      { duration: 600 }
+    );
   }
 
   render() {

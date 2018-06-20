@@ -10,6 +10,7 @@ interface StretchParams {
   width: number;
   height: number;
   duration: number;
+  holdDuration: number;
 }
 
 export class AddNoteButton extends React.PureComponent<Props> {
@@ -36,6 +37,10 @@ export class AddNoteButton extends React.PureComponent<Props> {
     }
   }
 
+  get elem(): HTMLDivElement | null {
+    return this.buttonRef.current;
+  }
+
   stretchTo(params: StretchParams) {
     if (!this.buttonRef.current) {
       return;
@@ -44,8 +49,10 @@ export class AddNoteButton extends React.PureComponent<Props> {
     // XXX Test for Element.animate support
 
     // Set up the common timing
+    const totalDuration = params.duration + params.holdDuration;
+    const offset = params.duration / totalDuration;
     const timing = {
-      duration: params.duration,
+      duration: totalDuration,
       easing: 'cubic-bezier(.34,1.41,.85,1.22)',
     };
 
@@ -68,10 +75,13 @@ export class AddNoteButton extends React.PureComponent<Props> {
     const oneEm = corner.getBoundingClientRect().width;
     const cornerTranslateX = (params.width - bbox.width) / 2;
     const cornerTranslateY = (params.height - bbox.height) / -2;
+    const cornerTransform = `translate(${cornerTranslateX}px, ${cornerTranslateY}px)`;
     corner.animate(
-      {
-        transform: [`translate(${cornerTranslateX}px, ${cornerTranslateY}px)`],
-      },
+      [
+        { transform: 'none' },
+        { transform: cornerTransform, offset },
+        { transform: cornerTransform, offset: 1 },
+      ],
       timing
     );
 
@@ -80,8 +90,13 @@ export class AddNoteButton extends React.PureComponent<Props> {
       '.top'
     ) as HTMLDivElement;
     const topScaleX = (params.width - oneEm) / (bbox.width - oneEm);
+    const topTransform = `translateY(${cornerTranslateY}px) scaleX(${topScaleX})`;
     topBit.animate(
-      { transform: [`translateY(${cornerTranslateY}px) scaleX(${topScaleX})`] },
+      [
+        { transform: 'none' },
+        { transform: topTransform, offset },
+        { transform: topTransform, offset: 1 },
+      ],
       timing
     );
 
@@ -90,20 +105,36 @@ export class AddNoteButton extends React.PureComponent<Props> {
       '.body'
     ) as HTMLDivElement;
     const bodyScaleY = (params.height - oneEm) / (bbox.height - oneEm);
-    body.animate({ transform: [`scale(${scaleX}, ${bodyScaleY})`] }, timing);
+    const bodyTransform = `scale(${scaleX}, ${bodyScaleY})`;
+    body.animate(
+      [
+        { transform: 'none' },
+        { transform: bodyTransform, offset },
+        { transform: bodyTransform, offset: 1 },
+      ],
+      timing
+    );
 
     // Animate the shadow
     const shadow = this.buttonRef.current.querySelector(
       '.shadow'
     ) as HTMLDivElement;
-    shadow.animate({ transform: [`scale(${scaleX}, ${scaleY})`] }, timing);
+    const shadowTransform = `scale(${scaleX}, ${scaleY})`;
+    shadow.animate(
+      [
+        { transform: 'none' },
+        { transform: shadowTransform, offset },
+        { transform: shadowTransform, offset: 1 },
+      ],
+      timing
+    );
 
     // Fade out the label
     const label = body.querySelector('.label') as HTMLSpanElement;
     label.animate(
       [
         { opacity: 1, offset: 0 },
-        { opacity: 0, offset: 0.2 },
+        { opacity: 0, offset: 0.2 * offset },
         { opacity: 0, offset: 1 },
       ],
       timing
