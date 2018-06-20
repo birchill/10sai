@@ -22,6 +22,7 @@
   white-space: nowrap;
 
   position: relative;
+  will-change: transform, opacity;
 
   > .front {
     > .toprow > .top, > .body {
@@ -34,13 +35,13 @@
 
       > .top {
         flex: 1;
-        transform-origin: 0% 0%;
+        will-change: transform;
       }
 
       > .corner {
         width: 1em;
         height: 1em;
-        transform-origin: 0% 0%;
+        will-change: transform;
       }
     }
 
@@ -48,12 +49,12 @@
       padding-left: 3.2em;
       padding-right: 2em;
       padding-bottom: 1em;
-
-      transform-origin: 0% 0%;
+      will-change: transform;
 
       > .label {
         display: flex;
         align-items: center;
+        will-change: opacity;
       }
 
       > .label::before {

@@ -7,8 +7,6 @@ interface Props {
 }
 
 interface StretchParams {
-  left: number;
-  top: number;
   width: number;
   height: number;
   duration: number;
@@ -45,41 +43,31 @@ export class AddNoteButton extends React.PureComponent<Props> {
 
     // XXX Test for Element.animate support
 
-    const topBit = this.buttonRef.current.querySelector(
-      '.top'
-    ) as HTMLDivElement;
+    // Set up the common timing
+    const timing = {
+      duration: params.duration,
+      easing: 'cubic-bezier(.34,1.41,.85,1.22)',
+    };
+
+    // Calculate a few useful numbers
+    const bbox = this.buttonRef.current.getBoundingClientRect();
+    const scaleX = params.width / bbox.width;
+    const scaleY = params.height / bbox.height;
+
+    // Animate the corner
+    //
+    // We do this first because we need to know its size to position the other
+    // elements.
+    //
     // 'corner' is actually an SVGSVGElement but the Typescript DOM typings
     // incorrectly put animate() on HTMLElement (instead of Element) so we just
     // pretend corner is an HTMLElement.
     const corner = this.buttonRef.current.querySelector(
       '.corner'
     ) as HTMLElement;
-    const body = this.buttonRef.current.querySelector(
-      '.body'
-    ) as HTMLDivElement;
-
-    const timing = {
-      duration: params.duration,
-      easing: 'ease',
-    };
-
-    const bbox = this.buttonRef.current.getBoundingClientRect();
     const oneEm = corner.getBoundingClientRect().width;
-
-    const topScale = (params.width - oneEm) / (bbox.width - oneEm);
-    const topTranslateX = params.left - bbox.left;
-    const topTranslateY = params.top - bbox.top;
-    topBit.animate(
-      {
-        transform: [
-          `translate(${topTranslateX}px, ${topTranslateY}px) scaleX(${topScale})`,
-        ],
-      },
-      timing
-    );
-
-    const cornerTranslateX = params.left + params.width - bbox.right;
-    const cornerTranslateY = params.top - bbox.top;
+    const cornerTranslateX = (params.width - bbox.width) / 2;
+    const cornerTranslateY = (params.height - bbox.height) / -2;
     corner.animate(
       {
         transform: [`translate(${cornerTranslateX}px, ${cornerTranslateY}px)`],
@@ -87,17 +75,30 @@ export class AddNoteButton extends React.PureComponent<Props> {
       timing
     );
 
-    const bodyScaleX = params.width / bbox.width;
-    const bodyScaleY = (params.height - oneEm) / (bbox.height - oneEm);
-    body.animate(
-      {
-        transform: [
-          `translate(${topTranslateX}px, ${topTranslateY}px) scale(${bodyScaleX}, ${bodyScaleY})`,
-        ],
-      },
+    // Animate the top row
+    const topBit = this.buttonRef.current.querySelector(
+      '.top'
+    ) as HTMLDivElement;
+    const topScaleX = (params.width - oneEm) / (bbox.width - oneEm);
+    topBit.animate(
+      { transform: [`translateY(${cornerTranslateY}px) scaleX(${topScaleX})`] },
       timing
     );
 
+    // Animate the body
+    const body = this.buttonRef.current.querySelector(
+      '.body'
+    ) as HTMLDivElement;
+    const bodyScaleY = (params.height - oneEm) / (bbox.height - oneEm);
+    body.animate({ transform: [`scale(${scaleX}, ${bodyScaleY})`] }, timing);
+
+    // Animate the shadow
+    const shadow = this.buttonRef.current.querySelector(
+      '.shadow'
+    ) as HTMLDivElement;
+    shadow.animate({ transform: [`scale(${scaleX}, ${scaleY})`] }, timing);
+
+    // Fade out the label
     const label = body.querySelector('.label') as HTMLSpanElement;
     label.animate(
       [
@@ -107,12 +108,6 @@ export class AddNoteButton extends React.PureComponent<Props> {
       ],
       timing
     );
-
-    // XXX Fade out label
-    // XXX Fade out dotted outline
-    // XXX Animate shadow
-    // XXX Get it to run on the compositor (drop excessive will-change usage
-    //     elsewhere and add it here?)
   }
 
   render() {

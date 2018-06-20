@@ -85,17 +85,15 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 
   handleAddNote() {
-    console.log('Add note');
-    if (this.addNoteButtonRef.current) {
-      console.log('Doing animation');
-      this.addNoteButtonRef.current.stretchTo({
-        left: 100,
-        top: 100,
-        width: 200,
-        height: 200,
-        duration: 1000,
-      });
+    if (!this.addNoteButtonRef.current) {
+      return;
     }
+
+    this.addNoteButtonRef.current.stretchTo({
+      width: 400,
+      height: 150,
+      duration: 300,
+    });
   }
 
   render() {
