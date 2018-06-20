@@ -45,17 +45,18 @@
     }
 
     > .body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
       padding-left: 3.2em;
       padding-right: 2em;
       padding-bottom: 1em;
 
       transform-origin: 0% 0%;
 
-      &::before {
+      > .label {
+        display: flex;
+        align-items: center;
+      }
+
+      > .label::before {
         content: "";
         display: inline-block;
         position: relative;

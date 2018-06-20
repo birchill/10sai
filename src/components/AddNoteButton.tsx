@@ -98,6 +98,16 @@ export class AddNoteButton extends React.PureComponent<Props> {
       timing
     );
 
+    const label = body.querySelector('.label') as HTMLSpanElement;
+    label.animate(
+      [
+        { opacity: 1, offset: 0 },
+        { opacity: 0, offset: 0.2 },
+        { opacity: 0, offset: 1 },
+      ],
+      timing
+    );
+
     // XXX Fade out label
     // XXX Fade out dotted outline
     // XXX Animate shadow
@@ -136,7 +146,9 @@ export class AddNoteButton extends React.PureComponent<Props> {
               />
             </svg>
           </div>
-          <div className="body">Add note</div>
+          <div className="body">
+            <span className="label">Add note</span>
+          </div>
         </div>
       </div>
     );
