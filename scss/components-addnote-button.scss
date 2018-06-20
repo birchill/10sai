@@ -85,7 +85,7 @@
     height: 100%;
     border-radius: 0 1.7rem 0 0;
 
-    background: rgba(0, 0, 30, 0.2);
+    background: rgba(0, 0, 30, 0.1);
     box-shadow: 0px 1px 3px rgba(0, 0, 30, 0.2);
 
     &.topright {
@@ -93,32 +93,45 @@
     }
   }
 
-  &:active, &:focus {
-    filter: brightness(1.03);
+  &:focus, &:active {
+    // We want to use the following filter here:
+    //
+    //   filter: brightness(1.03);
+    //
+    // But that seems to affect animation perf on Firefox so we just directly
+    // apply the colors to the components.
+    //
+    // That means the icon won't get recolored correctly but you generally won't
+    // notice it (not like the jankiness which you definitely notice!) and we
+    // can always prepare other color versions of those icons if needed.
+    color: #d3bf00;
+    > .front {
+      > .toprow > .top, > .body {
+        background-color: #ffffd3;
+      }
+    }
   }
 
   &:hover {
-    filter: brightness(1.08);
-  }
-
-  &:active {
+    // As above, we'd like to use the following filter if we could:
+    //
+    //   filter: brightness(1.08);
+    //
+    color: #ddc800;
     > .front {
-      transform: translateY(1px);
+      > .toprow > .top, > .body {
+        background-color: #ffffdd;
+      }
     }
   }
 
   &:focus {
     outline: none;
+  }
 
+  &:active {
     > .front {
-      > .toprow > .top {
-        border-left: 1px dotted $keyword-yellow-dark;
-        border-top: 1px dotted $keyword-yellow-dark;
-      }
-      > .body {
-        border: 1px dotted $keyword-yellow-dark;
-        border-top: none;
-      }
+      transform: translateY(1px);
     }
   }
 }
