@@ -89,6 +89,11 @@ export class EditCardScreen extends React.PureComponent<Props> {
       return;
     }
 
+    // Check for animations support
+    if (typeof this.addNoteButtonRef.current.elem.animate !== 'function') {
+      return;
+    }
+
     this.addNoteButtonRef.current.stretchTo({
       width: 400,
       height: 150,

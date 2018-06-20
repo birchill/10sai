@@ -46,7 +46,10 @@ export class AddNoteButton extends React.PureComponent<Props> {
       return;
     }
 
-    // XXX Test for Element.animate support
+    // Check for Web Animations support
+    if (typeof this.buttonRef.current.animate !== 'function') {
+      return;
+    }
 
     // Set up the common timing
     const totalDuration = params.duration + params.holdDuration;
@@ -76,6 +79,9 @@ export class AddNoteButton extends React.PureComponent<Props> {
     const cornerTranslateX = (params.width - bbox.width) / 2;
     const cornerTranslateY = (params.height - bbox.height) / -2;
     const cornerTransform = `translate(${cornerTranslateX}px, ${cornerTranslateY}px)`;
+    // (There are more compact was of writing this but this format should have
+    // the best backwards compatibility with old versions of Firefox and
+    // Chrome.)
     corner.animate(
       [
         { transform: 'none' },
