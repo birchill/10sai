@@ -51,6 +51,7 @@ describe('integration:edit', () => {
                   prompt: 'Prompt',
                   answer: 'Answer',
                 },
+                notes: [],
               },
             },
           },

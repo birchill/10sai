@@ -1,6 +1,6 @@
 import deepEqual from 'deep-equal';
 import EditorState from './EditorState';
-import { Card } from '../model';
+import { Card, Note } from '../model';
 import * as actions from './actions';
 import { StoreError } from '../store/DataStore';
 
@@ -29,6 +29,18 @@ export interface EditFormState {
   card: Partial<Card>;
   dirtyFields?: Array<keyof Card>;
   deleted?: boolean;
+  notes: Array<EditNote>;
+}
+
+export const enum EditNoteState {
+  Ok = 'ok',
+  Dirty = 'dirty',
+  Deleted = 'deleted',
+}
+
+export interface EditNote {
+  note: Partial<Note>;
+  noteState: EditNoteState;
 }
 
 export interface EditState {
@@ -44,6 +56,7 @@ const initialState: EditState = {
       formId: 0,
       editorState: EditorState.EMPTY,
       card: {},
+      notes: [],
     },
   },
 };
@@ -60,6 +73,7 @@ export function edit(
             formId: action.id,
             editorState: EditorState.EMPTY,
             card: {},
+            notes: [],
           },
         },
       };
@@ -72,6 +86,7 @@ export function edit(
             formId: action.id,
             editorState: EditorState.LOADING,
             card: {},
+            notes: [],
           },
         },
       };
@@ -88,6 +103,7 @@ export function edit(
             formId: action.card._id,
             editorState: EditorState.OK,
             card: action.card,
+            notes: [],
           },
         },
       };
@@ -110,6 +126,7 @@ export function edit(
             editorState: EditorState.NOT_FOUND,
             card: {},
             deleted,
+            notes: [],
           },
         },
       };
@@ -148,6 +165,7 @@ export function edit(
             editorState: EditorState.DIRTY,
             card: { ...state.forms.active.card, ...action.card },
             dirtyFields,
+            notes: state.forms.active.notes,
           },
         },
       };
@@ -179,6 +197,7 @@ export function edit(
             formId: action.card._id!,
             editorState,
             card: { ...action.card, ...state.forms.active.card },
+            notes: state.forms.active.notes,
           },
         },
       };
@@ -214,6 +233,7 @@ export function edit(
               editorState: EditorState.NOT_FOUND,
               card: {},
               deleted: true,
+              notes: [],
             },
           },
         };
@@ -251,6 +271,7 @@ export function edit(
               formId: action.formId,
               editorState: EditorState.EMPTY,
               card: {},
+              notes: [],
             },
           },
         };
@@ -263,6 +284,7 @@ export function edit(
             editorState: EditorState.NOT_FOUND,
             card: {},
             deleted: true,
+            notes: [],
           },
         },
       };
