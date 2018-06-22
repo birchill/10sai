@@ -20,6 +20,7 @@ interface Props {
   active: boolean;
   onEdit: (id: FormId, change: Partial<Card>) => void;
   onDelete: (id: FormId) => void;
+  onAddNote: (id: FormId, initialKeywords: string[]) => void;
 }
 
 export class EditCardScreen extends React.PureComponent<Props> {
@@ -37,6 +38,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
       active: PropTypes.bool.isRequired,
       onEdit: PropTypes.func.isRequired,
       onDelete: PropTypes.func.isRequired,
+      onAddNote: PropTypes.func.isRequired,
     };
   }
 
@@ -85,6 +87,18 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 
   handleAddNote() {
+    const initialKeywords = [];
+    // Make the first keyword in the list the initial keyword.
+    if (
+      this.props.forms.active.card.keywords &&
+      this.props.forms.active.card.keywords.length
+    ) {
+      initialKeywords.push(this.props.forms.active.card.keywords[0]);
+    }
+
+    this.props.onAddNote(this.props.forms.active.formId, initialKeywords);
+
+    // Animate the transition
     if (!this.addNoteButtonRef.current || !this.addNoteButtonRef.current.elem) {
       return;
     }
@@ -148,12 +162,15 @@ const mapStateToProps = (state: any) => ({
   forms: (state.edit as EditState).forms,
 });
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onEdit: (formId: FormId, card: Partial<Card>) => {
-    dispatch(editActions.editCard(formId, card));
+  onEdit: (formId: FormId, change: Partial<Card>) => {
+    dispatch(editActions.editCard(formId, change));
   },
   onDelete: (formId: FormId) => {
     dispatch(editActions.deleteEditCard(formId));
     dispatch(routeActions.followLink('/'));
+  },
+  onAddNote: (formId: FormId, initialKeywords: string[]) => {
+    dispatch(editActions.addEditNote(formId, initialKeywords));
   },
 });
 
