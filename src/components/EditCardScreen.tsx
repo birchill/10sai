@@ -30,9 +30,14 @@ export class EditCardScreen extends React.PureComponent<Props> {
         active: PropTypes.shape({
           formId: PropTypes.any,
           editorState: PropTypes.symbol.isRequired,
-          // eslint-disable-next-line react/forbid-prop-types
           card: PropTypes.object.isRequired,
           deleted: PropTypes.bool,
+          notes: PropTypes.arrayOf(
+            PropTypes.shape({
+              note: PropTypes.object.isRequired,
+              noteState: PropTypes.string.isRequired,
+            })
+          ),
         }).isRequired,
       }),
       active: PropTypes.bool.isRequired,
@@ -98,7 +103,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
     this.props.onAddNote(this.props.forms.active.formId, initialKeywords);
 
-    // Animate the transition
+    // Animate the transition... assuming we have a button to animate.
     if (!this.addNoteButtonRef.current || !this.addNoteButtonRef.current.elem) {
       return;
     }
@@ -124,6 +129,8 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 
   render() {
+    const relatedKeywords = this.props.forms.active.card.keywords || [];
+
     return (
       <section className="edit-screen" aria-hidden={!this.props.active}>
         <EditCardToolbar
@@ -138,11 +145,14 @@ export class EditCardScreen extends React.PureComponent<Props> {
               ref={this.activeFormRef}
             />
             <hr className="note-divider divider" />
-            <EditNoteForm
-              className="noteform"
-              note={{}}
-              relatedKeywords={['屯所', '屯']}
-            />
+            {this.props.forms.active.notes.map((note, i) => (
+              <EditNoteForm
+                key={note.note.id || `new-note-i`}
+                className="noteform"
+                note={note.note}
+                relatedKeywords={relatedKeywords}
+              />
+            ))}
             <AddNoteButton
               className="addnote"
               ref={this.addNoteButtonRef}
