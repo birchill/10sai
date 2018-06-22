@@ -290,6 +290,32 @@ export function edit(
       };
     }
 
+    case 'ADD_EDIT_NOTE': {
+      if (action.formId !== state.forms.active.formId) {
+        return state;
+      }
+
+      const newNote: Partial<Note> = {};
+      if (action.initialKeywords) {
+        newNote.keywords = action.initialKeywords.slice();
+      }
+
+      return {
+        forms: {
+          active: {
+            ...state.forms.active,
+            notes: [
+              ...state.forms.active.notes,
+              {
+                note: newNote,
+                noteState: EditNoteState.Ok,
+              },
+            ],
+          },
+        },
+      };
+    }
+
     default:
       return state;
   }

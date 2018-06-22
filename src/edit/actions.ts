@@ -22,7 +22,8 @@ export type EditAction =
   | FinishSaveCardAction
   | FailSaveCardAction
   | SyncEditCardAction
-  | DeleteEditCardAction;
+  | DeleteEditCardAction
+  | AddEditNoteAction;
 
 export interface NewCardAction {
   type: 'NEW_CARD';
@@ -164,5 +165,22 @@ export function deleteEditCard(formId: FormId): DeleteEditCardAction {
   return {
     type: 'DELETE_EDIT_CARD',
     formId,
+  };
+}
+
+export interface AddEditNoteAction {
+  type: 'ADD_EDIT_NOTE';
+  formId: FormId;
+  initialKeywords?: string[];
+}
+
+export function addEditNote(
+  formId: FormId,
+  initialKeywords?: string[]
+): AddEditNoteAction {
+  return {
+    type: 'ADD_EDIT_NOTE',
+    formId,
+    initialKeywords,
   };
 }

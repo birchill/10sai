@@ -1,7 +1,13 @@
 /* global describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
-import { edit as subject, EditState, FormId } from './reducer';
+import {
+  edit as subject,
+  EditNote,
+  EditNoteState,
+  EditState,
+  FormId,
+} from './reducer';
 import EditorState from './EditorState';
 import * as actions from './actions';
 import { Card } from '../model';
@@ -580,6 +586,80 @@ describe('reducer:edit', () => {
     );
 
     const updatedState = subject(initialState, actions.deleteEditCard('def'));
+
+    expect(updatedState).toEqual(initialState);
+  });
+
+  const newEditNote = (initialKeywords?: string[]): EditNote => {
+    const result: EditNote = { note: {}, noteState: EditNoteState.Ok };
+    if (initialKeywords) {
+      result.note.keywords = initialKeywords;
+    }
+    return result;
+  };
+
+  it('should add an empty note on ADD_EDIT_NOTE', () => {
+    const initialState = emptyState(7);
+
+    const updatedState = subject(initialState, actions.addEditNote(7));
+
+    const expectedState = { ...emptyState(7) };
+    expectedState.forms.active = {
+      ...expectedState.forms.active,
+      notes: [newEditNote()],
+    };
+
+    expect(updatedState).toEqual(expectedState);
+  });
+
+  const typicalNote = (): EditNote => ({
+    note: {
+      id: 'abc',
+      keywords: ['def', 'ghi'],
+      content: 'Noterifictastical!',
+      created: Date.now(),
+      modified: Date.now(),
+    },
+    noteState: EditNoteState.Ok,
+  });
+
+  it('should append new notes on ADD_EDIT_NOTE', () => {
+    const initialState = emptyState(7);
+    const initialNotes = initialState.forms.active.notes;
+    initialNotes.push(typicalNote());
+
+    const updatedState = subject(initialState, actions.addEditNote(7));
+
+    const expectedState = { ...emptyState(7) };
+    expectedState.forms.active = {
+      ...expectedState.forms.active,
+      notes: [...initialNotes, newEditNote()],
+    };
+
+    expect(updatedState).toEqual(expectedState);
+  });
+
+  it('should fill in initial keywords on ADD_EDIT_NOTE', () => {
+    const initialState = emptyState(7);
+
+    const updatedState = subject(
+      initialState,
+      actions.addEditNote(7, ['initial', 'keywords'])
+    );
+
+    const expectedState = { ...emptyState(7) };
+    expectedState.forms.active = {
+      ...expectedState.forms.active,
+      notes: [newEditNote(['initial', 'keywords'])],
+    };
+
+    expect(updatedState).toEqual(expectedState);
+  });
+
+  it('should do nothing on ADD_EDIT_NOTE if formId does not match', () => {
+    const initialState = emptyState(7);
+
+    const updatedState = subject(initialState, actions.addEditNote(6));
 
     expect(updatedState).toEqual(initialState);
   });
