@@ -11,6 +11,7 @@ interface StretchParams {
   height: number;
   duration: number;
   holdDuration: number;
+  easing: string;
 }
 
 export class AddNoteButton extends React.PureComponent<Props> {
@@ -54,10 +55,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     // Set up the common timing
     const totalDuration = params.duration + params.holdDuration;
     const offset = params.duration / totalDuration;
-    const timing = {
-      duration: totalDuration,
-      easing: 'cubic-bezier(.34,1.41,.85,1.22)',
-    };
+    const timing = { duration: totalDuration };
 
     // Calculate a few useful numbers
     const bbox = this.buttonRef.current.getBoundingClientRect();
@@ -84,7 +82,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     // Chrome.)
     corner.animate(
       [
-        { transform: 'none' },
+        { transform: 'none', easing: params.easing },
         { transform: cornerTransform, offset },
         { transform: cornerTransform, offset: 1 },
       ],
@@ -99,7 +97,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     const topTransform = `translateY(${cornerTranslateY}px) scaleX(${topScaleX})`;
     topBit.animate(
       [
-        { transform: 'none' },
+        { transform: 'none', easing: params.easing },
         { transform: topTransform, offset },
         { transform: topTransform, offset: 1 },
       ],
@@ -114,7 +112,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     const bodyTransform = `scale(${scaleX}, ${bodyScaleY})`;
     body.animate(
       [
-        { transform: 'none' },
+        { transform: 'none', easing: params.easing },
         { transform: bodyTransform, offset },
         { transform: bodyTransform, offset: 1 },
       ],
@@ -128,7 +126,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     const shadowTransform = `scale(${scaleX}, ${scaleY})`;
     shadow.animate(
       [
-        { transform: 'none' },
+        { transform: 'none', easing: params.easing },
         { transform: shadowTransform, offset },
         { transform: shadowTransform, offset: 1 },
       ],

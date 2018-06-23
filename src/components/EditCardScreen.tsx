@@ -10,7 +10,7 @@ import EditCardNotFound from './EditCardNotFound';
 import EditNoteForm from './EditNoteForm';
 import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
-import { EditState, EditFormState, FormId } from '../edit/reducer';
+import { EditFormState, EditNote, EditState, FormId } from '../edit/reducer';
 import * as routeActions from '../route/actions';
 
 interface Props {
@@ -49,12 +49,15 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
   activeFormRef: React.RefObject<EditCardForm>;
   addNoteButtonRef: React.RefObject<AddNoteButton>;
+  addNoteButtonBbox?: ClientRect;
+  notesRef: React.RefObject<HTMLDivElement>;
 
   constructor(props: Props) {
     super(props);
 
     this.activeFormRef = React.createRef<EditCardForm>();
     this.addNoteButtonRef = React.createRef<AddNoteButton>();
+    this.notesRef = React.createRef<HTMLDivElement>();
 
     this.handleFormChange = this.handleFormChange.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
@@ -71,6 +74,23 @@ export class EditCardScreen extends React.PureComponent<Props> {
     if (this.props.active && previousProps.active !== this.props.active) {
       this.activate();
     }
+
+    // If we just added a new note, animate it in.
+    const hasNewNote = (
+      prevNotesList: Array<EditNote>,
+      newNotesList: Array<EditNote>
+    ) =>
+      prevNotesList.length + 1 === newNotesList.length &&
+      prevNotesList.every((note, i) => note.note === newNotesList[i].note) &&
+      typeof newNotesList[newNotesList.length - 1].note.id === 'undefined';
+    if (
+      hasNewNote(
+        previousProps.forms.active.notes,
+        this.props.forms.active.notes
+      )
+    ) {
+      this.animateNewNote();
+    }
   }
 
   activate() {
@@ -81,6 +101,108 @@ export class EditCardScreen extends React.PureComponent<Props> {
     ) {
       this.activeFormRef.current.questionTextBoxRef.current.focus();
     }
+  }
+
+  animateNewNote() {
+    // First, check we have a button to animate.
+    if (!this.addNoteButtonRef.current || !this.addNoteButtonRef.current.elem) {
+      return;
+    }
+
+    // Next check for animations support.
+    if (typeof this.addNoteButtonRef.current.elem.animate !== 'function') {
+      return;
+    }
+
+    // And check we have the necessary geometry information.
+    if (!this.addNoteButtonBbox) {
+      return;
+    }
+
+    // Finally, check we have a form to align with.
+    if (!this.notesRef.current) {
+      return;
+    }
+    // Typescript typings put animate on HTMLElement instead of Element... oh
+    // well.
+    const newNote = this.notesRef.current.querySelector(
+      '.noteform:last-of-type'
+    ) as HTMLElement | undefined;
+    if (!newNote) {
+      return;
+    }
+
+    // Timing
+    const stretchDuration: number = 250;
+    const stretchEasing: string = 'cubic-bezier(.43,1.17,.88,1.1)';
+    const fadeDuration: number = 150;
+    const fadeOffset = stretchDuration / (stretchDuration + fadeDuration);
+
+    // Get the button positions
+    const prevButtonPosition: ClientRect = this.addNoteButtonBbox;
+    const newButtonPosition: ClientRect = this.addNoteButtonRef.current.elem.getBoundingClientRect();
+
+    // Get the position of the new note.
+    const newNotePosition: ClientRect = newNote.getBoundingClientRect();
+
+    // Streth the button to the size of the new note.
+    this.addNoteButtonRef.current.stretchTo({
+      width: newNotePosition.width,
+      height: newNotePosition.height,
+      duration: stretchDuration,
+      holdDuration: fadeDuration,
+      easing: stretchEasing,
+    });
+
+    // Shift the button up from its new position so that it lines up with the
+    // note.
+    const initialYShift = prevButtonPosition.top - newButtonPosition.top;
+    const finalYShift =
+      initialYShift + (newNotePosition.height - prevButtonPosition.height) / 2;
+    this.addNoteButtonRef.current.elem.animate(
+      [
+        {
+          transform: `translateY(${initialYShift}px)`,
+          opacity: 1,
+          easing: stretchEasing,
+        },
+        {
+          transform: `translateY(${finalYShift}px)`,
+          opacity: 1,
+          offset: fadeOffset,
+        },
+        {
+          transform: `translateY(${finalYShift}px)`,
+          opacity: 0,
+        },
+      ],
+      { duration: stretchDuration + fadeDuration }
+    );
+
+    // Fade in the actual note
+    newNote.animate(
+      { opacity: [0, 1] },
+      {
+        delay: stretchDuration * 0.6,
+        fill: 'backwards',
+        duration: fadeDuration,
+      }
+    );
+
+    // Stretch in add button
+    this.addNoteButtonRef.current.elem.animate(
+      {
+        transform: ['scale(0)', 'scale(0)', 'scale(0.6, 0.5)', 'scale(1)'],
+      },
+      {
+        duration: stretchDuration,
+        easing: stretchEasing,
+        delay: stretchDuration + fadeDuration,
+      }
+    );
+
+    // Scroll to the new note
+    newNote.scrollIntoView({ behavior: 'smooth' });
   }
 
   handleFormChange<K extends keyof Card>(field: K, value: Card[K]) {
@@ -101,31 +223,12 @@ export class EditCardScreen extends React.PureComponent<Props> {
       initialKeywords.push(this.props.forms.active.card.keywords[0]);
     }
 
+    // Record the position of the Add Note button so we can animate it later.
+    if (this.addNoteButtonRef.current && this.addNoteButtonRef.current.elem) {
+      this.addNoteButtonBbox = this.addNoteButtonRef.current.elem.getBoundingClientRect();
+    }
+
     this.props.onAddNote(this.props.forms.active.formId, initialKeywords);
-
-    // Animate the transition... assuming we have a button to animate.
-    if (!this.addNoteButtonRef.current || !this.addNoteButtonRef.current.elem) {
-      return;
-    }
-
-    // Check for animations support
-    if (typeof this.addNoteButtonRef.current.elem.animate !== 'function') {
-      return;
-    }
-
-    this.addNoteButtonRef.current.stretchTo({
-      width: 400,
-      height: 150,
-      duration: 300,
-      holdDuration: 300,
-    });
-    this.addNoteButtonRef.current.elem.animate(
-      {
-        transform: ['translateY(-200px)', 'translateY(-200px)'],
-        opacity: [1, 1, 0],
-      },
-      { duration: 600 }
-    );
   }
 
   render() {
@@ -145,14 +248,16 @@ export class EditCardScreen extends React.PureComponent<Props> {
               ref={this.activeFormRef}
             />
             <hr className="note-divider divider" />
-            {this.props.forms.active.notes.map((note, i) => (
-              <EditNoteForm
-                key={note.note.id || `new-note-i`}
-                className="noteform"
-                note={note.note}
-                relatedKeywords={relatedKeywords}
-              />
-            ))}
+            <div className="notes" ref={this.notesRef}>
+              {this.props.forms.active.notes.map((note, i) => (
+                <EditNoteForm
+                  key={note.note.id || `new-note-${i}`}
+                  className="noteform"
+                  note={note.note}
+                  relatedKeywords={relatedKeywords}
+                />
+              ))}
+            </div>
             <AddNoteButton
               className="addnote"
               ref={this.addNoteButtonRef}
