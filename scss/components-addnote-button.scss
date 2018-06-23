@@ -1,26 +1,8 @@
 .addnote-button {
   color: $keyword-yellow-dark;
-  cursor: pointer;
-
-  // XXX See how much of this we really need
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-
-  width: -webkit-fit-content;
-  width: -moz-fit-content;
-  width: fit-content;
-
-  // Edge support
-  @supports (not (width: fit-content)) and (not (width: -moz-fit-content)) and (not (width: -webkit-fit-content)) {
-    display: table;
-  }
-
-  text-align: center;
-  vertical-align: middle;
-  white-space: nowrap;
-
+  border: none;
+  border-radius: 0;
+  padding: 0;
   position: relative;
   will-change: transform, opacity;
 
@@ -106,6 +88,7 @@
     // That means the icon won't get recolored correctly but you generally won't
     // notice it (not like the jankiness which you definitely notice!) and we
     // can always prepare other color versions of those icons if needed.
+    filter: none;
     color: #d3bf00;
     > .front {
       > .toprow > .top, > .body {
@@ -119,6 +102,7 @@
     //
     //   filter: brightness(1.08);
     //
+    filter: none;
     color: #ddc800;
     > .front {
       > .toprow > .top, > .body {

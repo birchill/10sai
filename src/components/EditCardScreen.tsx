@@ -201,9 +201,6 @@ export class EditCardScreen extends React.PureComponent<Props> {
         delay: stretchDuration + fadeDuration,
       }
     );
-
-    // Scroll to the new note
-    newNote.scrollIntoView({ behavior: 'smooth' });
   }
 
   handleFormChange<K extends keyof Card>(field: K, value: Card[K]) {

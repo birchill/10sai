@@ -22,12 +22,12 @@ export class AddNoteButton extends React.PureComponent<Props> {
     };
   }
 
-  buttonRef: React.RefObject<HTMLDivElement>;
+  buttonRef: React.RefObject<HTMLButtonElement>;
 
   constructor(props: Props) {
     super(props);
 
-    this.buttonRef = React.createRef<HTMLDivElement>();
+    this.buttonRef = React.createRef<HTMLButtonElement>();
 
     this.handleClick = this.handleClick.bind(this);
   }
@@ -38,7 +38,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     }
   }
 
-  get elem(): HTMLDivElement | null {
+  get elem(): HTMLButtonElement | null {
     return this.buttonRef.current;
   }
 
@@ -152,7 +152,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     }
 
     return (
-      <div
+      <button
         className={className}
         role="button"
         tabIndex={0}
@@ -180,7 +180,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
             <span className="label">Add note</span>
           </div>
         </div>
-      </div>
+      </button>
     );
   }
 }
