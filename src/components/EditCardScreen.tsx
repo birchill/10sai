@@ -51,6 +51,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
   addNoteButtonRef: React.RefObject<AddNoteButton>;
   addNoteButtonBbox?: ClientRect;
   notesRef: React.RefObject<HTMLDivElement>;
+  lastNoteRef: React.RefObject<EditNoteForm>;
 
   constructor(props: Props) {
     super(props);
@@ -58,6 +59,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
     this.activeFormRef = React.createRef<EditCardForm>();
     this.addNoteButtonRef = React.createRef<AddNoteButton>();
     this.notesRef = React.createRef<HTMLDivElement>();
+    this.lastNoteRef = React.createRef<EditNoteForm>();
 
     this.handleFormChange = this.handleFormChange.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
@@ -90,6 +92,11 @@ export class EditCardScreen extends React.PureComponent<Props> {
       )
     ) {
       this.animateNewNote();
+
+      // Focus the note
+      if (this.lastNoteRef.current) {
+        this.lastNoteRef.current.focus();
+      }
     }
   }
 
@@ -119,7 +126,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
       return;
     }
 
-    // Finally, check we have a form to align with.
+    // Finally, check we have a notes form to align with.
     if (!this.notesRef.current) {
       return;
     }
@@ -249,14 +256,21 @@ export class EditCardScreen extends React.PureComponent<Props> {
             />
             <hr className="note-divider divider" />
             <div className="notes" ref={this.notesRef}>
-              {this.props.forms.active.notes.map((note, i) => (
-                <EditNoteForm
-                  key={note.note.id || `new-note-${i}`}
-                  className="noteform"
-                  note={note.note}
-                  relatedKeywords={relatedKeywords}
-                />
-              ))}
+              {this.props.forms.active.notes.map((note, i) => {
+                const ref =
+                  i === this.props.forms.active.notes.length - 1
+                    ? this.lastNoteRef
+                    : undefined;
+                return (
+                  <EditNoteForm
+                    key={note.note.id || `new-note-${i}`}
+                    className="noteform"
+                    note={note.note}
+                    relatedKeywords={relatedKeywords}
+                    ref={ref}
+                  />
+                );
+              })}
             </div>
             <AddNoteButton
               className="addnote"
