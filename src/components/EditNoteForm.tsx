@@ -63,8 +63,12 @@ export class EditNoteForm extends React.Component<Props, State> {
     return { contentEditorState };
   }
 
+  formRef: React.RefObject<HTMLFormElement>;
+
   constructor(props: Props) {
     super(props);
+
+    this.formRef = React.createRef<HTMLFormElement>();
 
     // Content editor
     this.state = {
@@ -130,6 +134,10 @@ export class EditNoteForm extends React.Component<Props, State> {
     }
   }
 
+  get form(): HTMLFormElement | null {
+    return this.formRef.current;
+  }
+
   render() {
     let className = 'editnote-form form';
     if (this.props.className) {
@@ -137,7 +145,7 @@ export class EditNoteForm extends React.Component<Props, State> {
     }
 
     return (
-      <form className={className} autoComplete="off">
+      <form className={className} autoComplete="off" ref={this.formRef}>
         <NoteFrame>
           <div
             className="keywords -yellow"

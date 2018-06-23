@@ -50,7 +50,6 @@ export class EditCardScreen extends React.PureComponent<Props> {
   activeFormRef: React.RefObject<EditCardForm>;
   addNoteButtonRef: React.RefObject<AddNoteButton>;
   addNoteButtonBbox?: ClientRect;
-  notesRef: React.RefObject<HTMLDivElement>;
   lastNoteRef: React.RefObject<EditNoteForm>;
 
   constructor(props: Props) {
@@ -58,7 +57,6 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
     this.activeFormRef = React.createRef<EditCardForm>();
     this.addNoteButtonRef = React.createRef<AddNoteButton>();
-    this.notesRef = React.createRef<HTMLDivElement>();
     this.lastNoteRef = React.createRef<EditNoteForm>();
 
     this.handleFormChange = this.handleFormChange.bind(this);
@@ -127,14 +125,10 @@ export class EditCardScreen extends React.PureComponent<Props> {
     }
 
     // Finally, check we have a notes form to align with.
-    if (!this.notesRef.current) {
+    if (!this.lastNoteRef.current) {
       return;
     }
-    // Typescript typings put animate on HTMLElement instead of Element... oh
-    // well.
-    const newNote = this.notesRef.current.querySelector(
-      '.noteform:last-of-type'
-    ) as HTMLElement | undefined;
+    const newNote = this.lastNoteRef.current.form;
     if (!newNote) {
       return;
     }
@@ -255,7 +249,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
               ref={this.activeFormRef}
             />
             <hr className="note-divider divider" />
-            <div className="notes" ref={this.notesRef}>
+            <div className="notes">
               {this.props.forms.active.notes.map((note, i) => {
                 const ref =
                   i === this.props.forms.active.notes.length - 1
