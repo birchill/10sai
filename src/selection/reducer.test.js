@@ -5,7 +5,7 @@ import subject from '../reducer';
 import * as editActions from '../edit/actions';
 import * as reviewActions from '../review/actions';
 import * as routeActions from '../route/actions';
-import { generateCards } from '../../test/testcommon';
+import { generateCards } from '../utils/testing';
 
 describe('reducer:selection', () => {
   it('should initially populate the active card field with undefined', () => {

@@ -7,7 +7,7 @@ import DataStore from './DataStore';
 import { NoteStore, NoteContent, NOTE_PREFIX } from './NoteStore';
 import { Note } from '../model';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
-import { waitForEvents } from '../../test/testcommon';
+import { waitForEvents } from '../utils/testing';
 import { stripFields } from '../utils/type-helpers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));

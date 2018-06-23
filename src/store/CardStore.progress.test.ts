@@ -5,10 +5,8 @@ import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
 import CardStore from './CardStore';
-import { generateUniqueTimestampId } from './utils';
-import { waitForEvents } from '../../test/testcommon';
 import { waitForChangeEvents } from './test-utils';
-import { AtomicBlockUtils } from 'draft-js';
+import { Card } from '../model';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 

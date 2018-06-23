@@ -13,7 +13,7 @@ import * as actions from './actions';
 import { Card } from '../model';
 import { CardChange } from '../store/CardStore';
 import { StoreError } from '../store/DataStore';
-import { generateCard } from '../../test/testcommon';
+import { generateCard } from '../utils/testing';
 
 const emptyState = (formId: FormId): EditState => ({
   forms: {

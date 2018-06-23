@@ -5,7 +5,7 @@ import { review as subject, ReviewState } from './reducer';
 import ReviewPhase from './ReviewPhase';
 import * as actions from './actions';
 import { getReviewSummary } from './selectors';
-import { generateCards } from '../../test/testcommon';
+import { generateCards } from '../utils/testing';
 import { Card, Review } from '../model';
 import { stripFields } from '../utils/type-helpers';
 

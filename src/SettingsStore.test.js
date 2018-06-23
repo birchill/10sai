@@ -3,7 +3,7 @@
 
 import PouchDB from 'pouchdb';
 import SettingsStore from './SettingsStore';
-import { waitForEvents } from '../test/testcommon';
+import { waitForEvents } from './utils/testing';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 

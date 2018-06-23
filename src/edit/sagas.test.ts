@@ -18,7 +18,7 @@ import reducer from '../reducer';
 import EditorState from './EditorState';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
-import { generateCard } from '../../test/testcommon';
+import { generateCard } from '../utils/testing';
 
 declare global {
   namespace NodeJS {

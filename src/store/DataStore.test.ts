@@ -1,11 +1,10 @@
 import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
-import CardStore from './CardStore';
 import { generateUniqueTimestampId } from './utils';
 import { waitForChangeEvents } from './test-utils';
 import { Card } from '../model';
-import { waitForEvents } from '../../test/testcommon';
+import { waitForEvents } from '../utils/testing';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 

@@ -1,7 +1,4 @@
 import { KeywordSuggester, RecentKeywordHandling } from './KeywordSuggester';
-import DataStore from '../store/DataStore';
-import EventEmitter from 'event-emitter';
-import { waitForEvents } from '../../test/testcommon';
 
 type ChangeCallback = (change: any) => void;
 
