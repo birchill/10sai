@@ -76,13 +76,13 @@
     height: 1.1rem;
   }
   &.-sync.-paused .overlay {
-    background: url('img/sync-icons.svg#overlay-pause') 0 / 100% 100% content-box;
+    background: url("img/sync-icons.svg") -400% 0/1000% 100% content-box
   }
   &.-sync.-offline .overlay {
-    background: url('img/sync-icons.svg#overlay-offline') 0 / 100% 100% content-box;
+    background: url("img/sync-icons.svg") -300% 0/1000% 100% content-box
   }
   &.-sync.-error .overlay {
-    background: url('img/sync-icons.svg#overlay-error') 0 / 100% 100% content-box;
+    background: url("img/sync-icons.svg") -200% 0/1000% 100% content-box
   }
 
   // Settings menu
