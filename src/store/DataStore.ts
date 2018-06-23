@@ -317,6 +317,13 @@ export class DataStore {
       ) {
         return;
       }
+      // Convert FetchErrors to something more familiar.
+      // This is really only for unit testing.
+      if (err.constructor.name === 'FetchError') {
+        const message = err.message;
+        err = new StoreError(500, err.errno, 'FetchError');
+        err.message = message;
+      }
       this.remoteDb = undefined;
       reportErrorAsync(err);
       throw err;
@@ -463,12 +470,12 @@ export class DataStore {
 
   async onSyncChange(docs: PouchDB.Core.ExistingDocument<{}>[]) {
     for (const doc of docs) {
-      await this.noteStore.onSyncChange(<PouchDB.Core.ExistingDocument<
-        {} & PouchDB.Core.ChangesMeta
-      >>doc);
-      await this.reviewStore.onSyncChange(<PouchDB.Core.ExistingDocument<
-        {} & PouchDB.Core.ChangesMeta
-      >>doc);
+      await this.noteStore.onSyncChange(<
+        PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
+      >doc);
+      await this.reviewStore.onSyncChange(<
+        PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
+      >doc);
 
       // NOTE: resolveConflicts will currently drop attachments on the floor.
       // Need to be careful once we start using them.
@@ -547,6 +554,7 @@ export class DataStore {
     this.db = undefined;
     return db.destroy();
   }
+
   getSyncServer() {
     return this.remoteDb;
   }
