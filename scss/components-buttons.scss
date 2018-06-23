@@ -41,7 +41,7 @@ input[type=button], input[type=submit], input[type=reset], button, a.button {
     color: $keyword-yellow-dark;
 
     &:active, &:focus {
-      filter: brightness(1.03);
+      filter: brightness(1.05);
       border-color: $keyword-yellow-dark;
       border-style: dotted;
     }
