@@ -1,11 +1,6 @@
 .editnote-form {
   .keywords {
     display: flex;
-    opacity: 0.9;
-
-    &:hover, &:focus-within {
-      opacity: 1;
-    }
 
     > .icon {
       margin-top: 1.2rem;
@@ -18,6 +13,15 @@
 
     > .icon {
       background-position-y: -5em;
+    }
+
+    > .icon, > .tokens > .textentry {
+      opacity: 0.7;
+    }
+    &:hover, &:focus-within {
+      > .icon, > .tokens > .textentry {
+        opacity: 1;
+      }
     }
   }
 
@@ -38,7 +42,7 @@
 
     .public-DraftEditorPlaceholder-root {
       color: $keyword-yellow-dark;
-      opacity: 0.6;
+      opacity: 0.7;
     }
 
     &:hover .public-DraftEditorPlaceholder-root {
