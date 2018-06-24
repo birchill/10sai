@@ -224,7 +224,6 @@ export function edit(
         return state;
       }
 
-      // XXX Does sync return an augmented type?
       if (action.change._deleted) {
         return {
           forms: {
@@ -239,16 +238,22 @@ export function edit(
         };
       }
 
+      // Rebuild the card choosing the fields from the action except for fields
+      // that are currently marked as dirty--for those we choose the value in
+      // the state.
       const card: Partial<Card> = {};
-      // XXX Work out how to annotate field as keyof Card so we can drop all the
-      // type assertions below
-      for (const field in action.change) {
-        if (action.change.hasOwnProperty(field)) {
-          card[field as keyof Card] =
+      // The type of action.change includes the properties of Card as well as
+      // ChangesMeta (e.g. _deleted, _attachments, _conflicts). We don't expect
+      // those other things to be present here, but just to make TS happy...
+      const isCardField = (field: string): field is keyof Card =>
+        !field.startsWith('_') || field === '_id';
+      for (const field of Object.keys(action.change)) {
+        if (isCardField(field)) {
+          card[field] =
             state.forms.active.dirtyFields &&
-            state.forms.active.dirtyFields.includes(field as keyof Card)
-              ? state.forms.active.card[field as keyof Card]
-              : action.change[field as keyof Card];
+            state.forms.active.dirtyFields.includes(field)
+              ? state.forms.active.card[field]
+              : action.change[field];
         }
       }
 
