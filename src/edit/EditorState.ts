@@ -1,4 +1,8 @@
-export const enum EditorState {
+// This should be a const enum but doing that breaks ts-jest:
+//
+//   https://github.com/kulshekhar/ts-jest/issues/112
+//
+export enum EditorState {
   // Form is empty
   Empty = 'empty',
 
