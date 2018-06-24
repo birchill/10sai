@@ -10,7 +10,9 @@ import EditCardNotFound from './EditCardNotFound';
 import EditNoteForm from './EditNoteForm';
 import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
-import { EditFormState, EditNote, EditState, FormId } from '../edit/reducer';
+import { EditFormState, EditState, FormId } from '../edit/reducer';
+import { NoteState } from '../notes/reducer';
+import * as noteActions from '../notes/actions';
 import * as routeActions from '../route/actions';
 
 interface Props {
@@ -34,8 +36,9 @@ export class EditCardScreen extends React.PureComponent<Props> {
           deleted: PropTypes.bool,
           notes: PropTypes.arrayOf(
             PropTypes.shape({
+              newId: PropTypes.number,
               note: PropTypes.object.isRequired,
-              noteState: PropTypes.string.isRequired,
+              editState: PropTypes.string.isRequired,
             })
           ),
         }).isRequired,
@@ -77,8 +80,8 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
     // If we just added a new note, animate it in.
     const hasNewNote = (
-      prevNotesList: Array<EditNote>,
-      newNotesList: Array<EditNote>
+      prevNotesList: Array<NoteState>,
+      newNotesList: Array<NoteState>
     ) =>
       prevNotesList.length + 1 === newNotesList.length &&
       prevNotesList.every((note, i) => note.note === newNotesList[i].note) &&
@@ -290,7 +293,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(routeActions.followLink('/'));
   },
   onAddNote: (formId: FormId, initialKeywords: string[]) => {
-    dispatch(editActions.addEditNote(formId, initialKeywords));
+    dispatch(noteActions.addNote({ screen: 'edit', formId }, initialKeywords));
   },
 });
 
