@@ -1,21 +1,21 @@
-export const EditorState = {
+export const enum EditorState {
   // Form is empty
-  EMPTY: Symbol('EMPTY'),
+  Empty = 'empty',
 
   // Started editing a card but have yet to save it once
   // (A never-saved card can be distinguished from
   // a once-saved but dirty card by the presence of an
   // ID on the card)
-  DIRTY: Symbol('DIRTY'),
+  Dirty = 'dirty',
 
   // Card is loaded and all edits have been saved
-  OK: Symbol('OK'),
+  Ok = 'ok',
 
   // Loading a card from the DB
-  LOADING: Symbol('LOADING'),
+  Loading = 'loading',
 
   // Card not found in the DB
-  NOT_FOUND: Symbol('NOT_FOUND'),
-};
+  NotFound = 'not found',
+}
 
 export default EditorState;

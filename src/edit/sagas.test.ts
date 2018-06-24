@@ -37,7 +37,7 @@ const loadingState = formId => ({
     forms: {
       active: {
         formId,
-        editorState: EditorState.LOADING,
+        editorState: EditorState.Loading,
         card: {},
       },
     },
@@ -52,7 +52,7 @@ const dirtyState = (formId, cardToUse) => {
       forms: {
         active: {
           formId,
-          editorState: EditorState.DIRTY,
+          editorState: EditorState.Dirty,
           card,
           dirtyFields: ['prompt'],
         },
@@ -171,7 +171,7 @@ const okState = (formId, cardToUse) => {
       forms: {
         active: {
           formId,
-          editorState: EditorState.OK,
+          editorState: EditorState.Ok,
           card,
         },
       },
@@ -184,7 +184,7 @@ const emptyState = formId => ({
     forms: {
       active: {
         formId,
-        editorState: EditorState.EMPTY,
+        editorState: EditorState.Empty,
         card: {},
       },
     },
@@ -196,7 +196,7 @@ const notFoundState = (formId, deleted) => ({
     forms: {
       active: {
         formId,
-        editorState: EditorState.NOT_FOUND,
+        editorState: EditorState.NotFound,
         card: {},
         deleted,
       },
@@ -419,7 +419,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('dispatches SAVE_EDIT_CARD if the card is dirty', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
+      edit: { forms: { active: { formId, editorState: EditorState.Dirty } } },
     };
 
     return expectSaga(beforeEditScreenChangeSaga)
@@ -433,7 +433,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('does nothing if the card is not dirty', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editorState: EditorState.OK } } },
+      edit: { forms: { active: { formId, editorState: EditorState.Ok } } },
     };
 
     return expectSaga(beforeEditScreenChangeSaga)
@@ -446,7 +446,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('returns false if the card fails to save', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
+      edit: { forms: { active: { formId, editorState: EditorState.Dirty } } },
     };
     const error = { name: 'too_bad', message: 'too bad' };
 

@@ -19,7 +19,7 @@ const emptyState = (formId: FormId): EditState => ({
   forms: {
     active: {
       formId,
-      editorState: EditorState.EMPTY,
+      editorState: EditorState.Empty,
       card: {},
       notes: [],
     },
@@ -34,7 +34,7 @@ const okState = (
     forms: {
       active: {
         formId: card._id,
-        editorState: EditorState.OK,
+        editorState: EditorState.Ok,
         card,
         notes: [],
       },
@@ -52,7 +52,7 @@ const loadingState = (formId: FormId): EditState => ({
   forms: {
     active: {
       formId,
-      editorState: EditorState.LOADING,
+      editorState: EditorState.Loading,
       card: {},
       notes: [],
     },
@@ -67,7 +67,7 @@ const dirtyState = (
   forms: {
     active: {
       formId,
-      editorState: EditorState.DIRTY,
+      editorState: EditorState.Dirty,
       card,
       dirtyFields,
       notes: [],
@@ -79,7 +79,7 @@ const notFoundState = (formId, deleted): EditState => ({
   forms: {
     active: {
       formId,
-      editorState: EditorState.NOT_FOUND,
+      editorState: EditorState.NotFound,
       card: {},
       deleted,
       notes: [],

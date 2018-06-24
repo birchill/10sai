@@ -29,7 +29,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
       forms: PropTypes.shape({
         active: PropTypes.shape({
           formId: PropTypes.any,
-          editorState: PropTypes.symbol.isRequired,
+          editorState: PropTypes.string.isRequired,
           card: PropTypes.object.isRequired,
           deleted: PropTypes.bool,
           notes: PropTypes.arrayOf(
@@ -100,7 +100,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
   activate() {
     if (
-      this.props.forms.active.editorState === EditorState.EMPTY &&
+      this.props.forms.active.editorState === EditorState.Empty &&
       this.activeFormRef.current &&
       this.activeFormRef.current.questionTextBoxRef.current
     ) {
@@ -238,7 +238,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
           editorState={this.props.forms.active.editorState}
           onDelete={this.handleDelete}
         />
-        {this.props.forms.active.editorState !== EditorState.NOT_FOUND ? (
+        {this.props.forms.active.editorState !== EditorState.NotFound ? (
           <>
             <EditCardForm
               onChange={this.handleFormChange}

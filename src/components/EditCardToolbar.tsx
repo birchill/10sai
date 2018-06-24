@@ -5,23 +5,23 @@ import Link from './Link';
 import EditorState from '../edit/EditorState';
 
 interface Props {
-  editorState: symbol;
+  editorState: EditorState;
   onDelete: () => void;
 }
 
 export class EditCardToolbar extends React.PureComponent<Props> {
   static get propTypes() {
     return {
-      editorState: PropTypes.symbol.isRequired,
+      editorState: PropTypes.string.isRequired,
       onDelete: PropTypes.func.isRequired,
     };
   }
 
   render() {
     const disabled =
-      this.props.editorState === EditorState.EMPTY ||
-      this.props.editorState === EditorState.LOADING ||
-      this.props.editorState === EditorState.NOT_FOUND;
+      this.props.editorState === EditorState.Empty ||
+      this.props.editorState === EditorState.Loading ||
+      this.props.editorState === EditorState.NotFound;
     return (
       <nav className="buttons tool-bar editcard-toolbar">
         <div>

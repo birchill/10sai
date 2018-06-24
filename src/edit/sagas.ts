@@ -174,7 +174,7 @@ export function* watchCardEdits(dataStore: DataStore) {
       cardHasNonEmptyField('answer');
     const shouldSave =
       action.type === 'DELETE_EDIT_CARD' ||
-      (activeRecord.editorState === EditorState.DIRTY && hasDataWorthSaving());
+      (activeRecord.editorState === EditorState.Dirty && hasDataWorthSaving());
     if (!shouldSave) {
       // If we are responding to a save action, put the finish action anyway
       // in case someone is waiting on either a finished or fail to indicate
@@ -242,7 +242,7 @@ export function* editSagas(dataStore: DataStore) {
 
 export function* beforeEditScreenChange() {
   const activeRecord = yield select(getActiveRecord);
-  if (activeRecord.editorState !== EditorState.DIRTY) {
+  if (activeRecord.editorState !== EditorState.Dirty) {
     return true;
   }
 

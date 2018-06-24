@@ -24,8 +24,7 @@ export type FormId = string | number;
 
 export interface EditFormState {
   formId: string | number;
-  // XXX Convert EditorState into an enum type?
-  editorState: symbol;
+  editorState: EditorState;
   card: Partial<Card>;
   dirtyFields?: Array<keyof Card>;
   deleted?: boolean;
@@ -54,7 +53,7 @@ const initialState: EditState = {
   forms: {
     active: {
       formId: 0,
-      editorState: EditorState.EMPTY,
+      editorState: EditorState.Empty,
       card: {},
       notes: [],
     },
@@ -71,7 +70,7 @@ export function edit(
         forms: {
           active: {
             formId: action.id,
-            editorState: EditorState.EMPTY,
+            editorState: EditorState.Empty,
             card: {},
             notes: [],
           },
@@ -84,7 +83,7 @@ export function edit(
         forms: {
           active: {
             formId: action.id,
-            editorState: EditorState.LOADING,
+            editorState: EditorState.Loading,
             card: {},
             notes: [],
           },
@@ -101,7 +100,7 @@ export function edit(
         forms: {
           active: {
             formId: action.card._id,
-            editorState: EditorState.OK,
+            editorState: EditorState.Ok,
             card: action.card,
             notes: [],
           },
@@ -123,7 +122,7 @@ export function edit(
         forms: {
           active: {
             formId: action.formId,
-            editorState: EditorState.NOT_FOUND,
+            editorState: EditorState.NotFound,
             card: {},
             deleted,
             notes: [],
@@ -162,7 +161,7 @@ export function edit(
         forms: {
           active: {
             formId: action.formId,
-            editorState: EditorState.DIRTY,
+            editorState: EditorState.Dirty,
             card: { ...state.forms.active.card, ...action.card },
             dirtyFields,
             notes: state.forms.active.notes,
@@ -188,8 +187,8 @@ export function edit(
           !deepEqual(action.card[field], state.forms.active.card[field])
       );
       const editorState = dirtyFields.length
-        ? EditorState.DIRTY
-        : EditorState.OK;
+        ? EditorState.Dirty
+        : EditorState.Ok;
 
       const result: EditState = {
         forms: {
@@ -229,7 +228,7 @@ export function edit(
           forms: {
             active: {
               formId: state.forms.active.formId,
-              editorState: EditorState.NOT_FOUND,
+              editorState: EditorState.NotFound,
               card: {},
               deleted: true,
               notes: [],
@@ -274,7 +273,7 @@ export function edit(
           forms: {
             active: {
               formId: action.formId,
-              editorState: EditorState.EMPTY,
+              editorState: EditorState.Empty,
               card: {},
               notes: [],
             },
@@ -286,7 +285,7 @@ export function edit(
         forms: {
           active: {
             formId: action.formId,
-            editorState: EditorState.NOT_FOUND,
+            editorState: EditorState.NotFound,
             card: {},
             deleted: true,
             notes: [],
