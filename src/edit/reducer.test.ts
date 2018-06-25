@@ -596,7 +596,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      noteActions.addNote({ screen: 'edit', formId: 7 })
+      noteActions.addNote({ screen: 'edit-card', formId: 7 })
     );
 
     expect(updatedState.forms.active.notes).toHaveLength(1);
@@ -607,7 +607,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      noteActions.addNote({ screen: 'edit', formId: 6 })
+      noteActions.addNote({ screen: 'edit-card', formId: 6 })
     );
 
     expect(updatedState).toEqual(initialState);

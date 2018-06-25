@@ -293,7 +293,9 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(routeActions.followLink('/'));
   },
   onAddNote: (formId: FormId, initialKeywords: string[]) => {
-    dispatch(noteActions.addNote({ screen: 'edit', formId }, initialKeywords));
+    dispatch(
+      noteActions.addNote({ screen: 'edit-card', formId }, initialKeywords)
+    );
   },
 });
 

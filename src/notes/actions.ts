@@ -5,7 +5,7 @@ import { Note } from '../model';
 export type NoteContext = EditNoteContext | ReviewNoteContext;
 
 export interface EditNoteContext {
-  screen: 'edit';
+  screen: 'edit-card';
   formId: FormId;
 }
 

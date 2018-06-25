@@ -2,7 +2,7 @@ import { notes as subject, NoteState, NoteEditState } from './reducer';
 import * as actions from './actions';
 
 describe('reducer:notes', () => {
-  const context: actions.EditNoteContext = { screen: 'edit', formId: 7 };
+  const context: actions.EditNoteContext = { screen: 'edit-card', formId: 7 };
 
   const newNote = (newId: number, initialKeywords?: string[]): NoteState => {
     const result: NoteState = { newId, note: {}, editState: NoteEditState.Ok };

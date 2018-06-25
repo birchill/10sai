@@ -293,7 +293,7 @@ export function edit(state = initialState, action: Action): EditState {
   }
 
   const noteActionIsForEditContext = (action: NoteAction): boolean =>
-    action.context.screen === 'edit' &&
+    action.context.screen === 'edit-card' &&
     (action.context as EditNoteContext).formId === state.forms.active.formId;
 
   if (isNoteAction(action) && noteActionIsForEditContext(action)) {
