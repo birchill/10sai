@@ -47,6 +47,21 @@ export function addNote(
   };
 }
 
+// Overload for unit testing that allows us to force the ID to a particular
+// number to make tests more independent.
+export function addNoteWithNewId(
+  context: NoteContext,
+  newId: number,
+  initialKeywords?: string[]
+): AddNoteAction {
+  return {
+    type: 'ADD_NOTE',
+    context,
+    newId,
+    initialKeywords,
+  };
+}
+
 export interface NoteIdentifiers {
   newId?: number;
   noteId?: string;
