@@ -215,7 +215,7 @@ describe('sagas:route beforeScreenChange', () => {
   it('returns false if the screen-specific action does', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
+      edit: { forms: { active: { formId, editorState: EditorState.Dirty } } },
       route: {
         index: 0,
         history: [{ screen: 'edit-card' }],
@@ -237,7 +237,7 @@ describe('sagas:route beforeScreenChange', () => {
     () => {
       const formId = 'abc';
       const state = {
-        edit: { forms: { active: { formId, editorState: EditorState.DIRTY } } },
+        edit: { forms: { active: { formId, editorState: EditorState.Dirty } } },
         route: {
           index: 0,
           history: [{ screen: 'edit-card' }],
