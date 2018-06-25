@@ -150,7 +150,16 @@ export function* watchCardEdits(dataStore: DataStore) {
       'EDIT_CARD',
       'SAVE_EDIT_CARD',
       'DELETE_EDIT_CARD',
+      'FINISH_SAVE_CARD',
     ]);
+
+    // Clear the auto-save task whenever we actually complete a save as
+    // otherwise we'll end up preserving its 'done' value even when browsing new
+    // cards.
+    if (action.type === 'FINISH_SAVE_CARD') {
+      autoSaveTask = undefined;
+      continue;
+    }
 
     const activeRecord = yield select(getActiveRecord);
     // In future we'll probably need to look through the different forms
