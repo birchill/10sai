@@ -86,7 +86,7 @@ describe('reducer:notes', () => {
     // Check that we have new object identity too.
     expect(updatedState).not.toBe(initialState);
     expect(updatedState[0]).not.toBe(initialState[0]);
-    expect(updatedState.note).not.toBe(initialNoteState);
+    expect(updatedState[0].note).not.toBe(initialNoteState);
   });
 
   it('should update an existing note on EDIT_NOTE (matching on note ID)', () => {
