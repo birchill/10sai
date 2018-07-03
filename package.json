@@ -75,7 +75,7 @@
     "redux-saga-test-plan": "^3.7.0",
     "resolve-url-loader": "^2.3.0",
     "sass-loader": "^7.0.3",
-    "ts-jest": "^23.0.0",
+    "ts-jest": "^22.4.6",
     "ts-loader": "^4.4.2",
     "typescript": "^2.9.2",
     "uglifyjs-webpack-plugin": "^1.2.7",
