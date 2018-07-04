@@ -1,6 +1,7 @@
 import React, { AnchorHTMLAttributes } from 'react';
 import PropTypes from 'prop-types';
-import { Dispatch, connect } from 'react-redux';
+import { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 import { Overwrite } from '../utils/type-helpers';
 import * as routeActions from '../route/actions';
 
@@ -74,8 +75,11 @@ interface DispatchProps {
   onClick: (href: string) => void;
 }
 
+// XXX Use the actual state once we have it
+type State = any;
+
 const mapDispatchToProps = (
-  dispatch: Dispatch,
+  dispatch: Dispatch<State>,
   props: Props
 ): DispatchProps => ({
   onClick: (href: string) => {

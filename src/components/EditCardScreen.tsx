@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Dispatch, connect } from 'react-redux';
+import { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
 import { Card, Note } from '../model';
 import AddNoteButton from './AddNoteButton';
@@ -280,11 +281,13 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 }
 
-// XXX Convert to State once we've converted all reducers to TS
-const mapStateToProps = (state: any) => ({
+// XXX Use the actual state once we have it
+type State = any;
+
+const mapStateToProps = (state: State) => ({
   forms: (state.edit as EditState).forms,
 });
-const mapDispatchToProps = (dispatch: Dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch<State>) => ({
   onEdit: (formId: FormId, change: Partial<Card>) => {
     dispatch(editActions.editCard(formId, change));
   },
