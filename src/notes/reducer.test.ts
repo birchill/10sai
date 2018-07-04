@@ -1,5 +1,6 @@
 import { notes as subject, NoteState, NoteEditState } from './reducer';
 import * as actions from './actions';
+import { Note } from '../model';
 
 describe('reducer:notes', () => {
   const context: actions.EditNoteContext = { screen: 'edit-card', formId: 7 };
@@ -61,10 +62,8 @@ describe('reducer:notes', () => {
   });
 
   it('should update an existing note on EDIT_NOTE (matching on newId)', () => {
-    const initialNoteState = {
-      ...newNoteState(1),
-      content: 'Original content',
-    };
+    const initialNoteState = newNoteState(1);
+    initialNoteState.note.content = 'Original content';
     const initialState = [initialNoteState];
 
     const updatedState = subject(
@@ -76,6 +75,7 @@ describe('reducer:notes', () => {
       {
         ...initialNoteState,
         note: {
+          ...initialNoteState.note,
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
@@ -118,20 +118,106 @@ describe('reducer:notes', () => {
   });
 
   it('should do nothing on EDIT_NOTE if a matching note is not found', () => {
-    // XXX
+    const initialNoteState = newNoteState(1);
+    const initialState = [initialNoteState];
+
+    const updatedState = subject(
+      initialState,
+      actions.editNote(context, { newId: 2 }, { content: 'Updated content' })
+    );
+
+    expect(updatedState).toBe(initialState);
+    expect(updatedState[0]).toBe(initialNoteState);
   });
 
   it('should ignore identical fields on EDIT_NOTE', () => {
-    // XXX
+    const initialNoteState = newNoteState(1);
+    initialNoteState.note.content = 'Original content';
+    initialNoteState.note.keywords = ['Original', 'keywords'];
+    const initialState = [initialNoteState];
+
+    const updatedState = subject(
+      initialState,
+      actions.editNote(
+        context,
+        { newId: 1 },
+        {
+          content: 'Updated content',
+          keywords: ['Original', 'keywords'],
+        }
+      )
+    );
+
+    expect(updatedState).toEqual([
+      {
+        ...initialNoteState,
+        note: {
+          ...initialNoteState.note,
+          content: 'Updated content',
+        },
+        dirtyFields: new Set(['content']),
+        editState: NoteEditState.Dirty,
+      },
+    ]);
   });
 
   it('should extend the set of dirty fields on EDIT_NOTE', () => {
-    // XXX Include a set of dirty fields that *partially* overlaps
-    // XXX Check that the set identity changes
+    const initialNoteState = typicalNoteState();
+    initialNoteState.dirtyFields = new Set(['content']) as Set<keyof Note>;
+    const initialState = [initialNoteState];
+
+    const updatedState = subject(
+      initialState,
+      actions.editNote(
+        context,
+        { noteId: initialNoteState.note.id },
+        {
+          content: 'Updated content',
+          keywords: ['Updated', 'keywords'],
+        }
+      )
+    );
+
+    expect(updatedState).toEqual([
+      {
+        ...initialNoteState,
+        note: {
+          ...initialNoteState.note,
+          content: 'Updated content',
+          keywords: ['Updated', 'keywords'],
+        },
+        dirtyFields: new Set(['content', 'keywords']),
+        editState: NoteEditState.Dirty,
+      },
+    ]);
+    // Check the set identity has also been updated
+    expect(updatedState[0].dirtyFields).not.toBe(initialNoteState.dirtyFields);
   });
 
   it('should not include the ID in the set of dirty fields on EDIT_NOTE', () => {
-    // XXX The action should include an ID when the previous one didn't include
-    // one
+    const initialNoteState = newNoteState(1);
+    const initialState = [initialNoteState];
+
+    const updatedState = subject(
+      initialState,
+      actions.editNote(
+        context,
+        { newId: 1, noteId: 'abc' },
+        { id: 'abc', content: 'Updated content' }
+      )
+    );
+
+    expect(updatedState).toEqual([
+      {
+        ...initialNoteState,
+        note: {
+          ...initialNoteState.note,
+          id: 'abc',
+          content: 'Updated content',
+        },
+        dirtyFields: new Set(['content']),
+        editState: NoteEditState.Dirty,
+      },
+    ]);
   });
 });
