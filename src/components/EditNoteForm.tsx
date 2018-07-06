@@ -8,9 +8,15 @@ import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 
 interface Props {
   className?: string;
+  newId?: number;
   note: Partial<Note>;
   relatedKeywords: string[];
-  // onChange?: (topic: string, value: string | string[]) => void;
+  onChange?: (
+    newId: number | undefined,
+    noteId: string | undefined,
+    topic: string,
+    value: string | string[]
+  ) => void;
 }
 
 interface State {
@@ -32,35 +38,58 @@ export class EditNoteForm extends React.Component<Props, State> {
   static get propTypes() {
     return {
       className: PropTypes.string,
-      // eslint-disable-next-line react/forbid-prop-types
+      newId: PropTypes.number,
       note: PropTypes.object.isRequired,
       relatedKeywords: PropTypes.arrayOf(PropTypes.string).isRequired,
-      /*
       onChange: PropTypes.func,
-      */
     };
   }
 
-  static getDerivedStateFromProps(
-    props: Props,
-    state: State
-  ): Partial<State> | null {
-    // Setting contentEditorState can reset the selection so we should avoid
-    // doing it when the content hasn't changed (since it can interrupt typing).
-    const currentContent = getEditorContent(state.contentEditorState);
-    if (currentContent === props.note.content) {
-      return null;
+  componentDidMount() {
+    if (this.props.note.content) {
+      this.updateContent(this.props.note.content);
+    }
+  }
+
+  componentDidUpdate(previousProps: Props) {
+    // We'd like to do this in getStateFromDerivedProps but we can't since we
+    // end up with the following flow:
+    //
+    //  - User changes text
+    //  - handleContentChange
+    //  - Update editor state
+    //  - Call onChange which dispatches the appropriate action and updates the
+    //    redux state
+    //  - getStateFromDerivedProps is called for the *state* change
+    //  - getStateFromDerivedProps is called for the *props* change (as a result
+    //    of updating the redux state)
+    //
+    // So in the first call to getStateFromDerivedProps we end up with updated
+    // state, but not updated props, so we detect a change and go to update the
+    // editor state (since we can only assume that props have changed, e.g. due
+    // to a sync, since they don't match the state).
+    if (previousProps.note.content !== this.props.note.content) {
+      this.updateContent(this.props.note.content);
+    }
+  }
+
+  updateContent(content?: string) {
+    // Setting editorState can reset the selection so we should avoid doing it
+    // when the content hasn't changed (since it can interrupt typing).
+    const currentValue = getEditorContent(this.state.contentEditorState);
+    if (currentValue === content) {
+      return;
     }
 
-    const contentState = ContentState.createFromText(props.note.content || '');
+    const contentState = ContentState.createFromText(content || '');
     // Ok, so insert-characters is not quite right, but it's good enough for now
     // until we implement proper rich text editing.
     const contentEditorState = EditorState.push(
-      state.contentEditorState,
+      this.state.contentEditorState,
       contentState,
       'insert-characters'
     );
-    return { contentEditorState };
+    this.setState({ contentEditorState });
   }
 
   formRef: React.RefObject<HTMLFormElement>;
@@ -94,17 +123,15 @@ export class EditNoteForm extends React.Component<Props, State> {
 
   handleContentChange(editorState: EditorState) {
     // We defer calling |onChange| until the state is actually updated so that
-    // if that triggers a call to updateValue we can successfully recognize it
+    // if that triggers a call to updateContent we can successfully recognize it
     // as a redundant change and avoid re-setting the editor state.
     this.setState((prevState, props) => {
-      /*
       if (props.onChange) {
         const valueAsString = getEditorContent(editorState);
-        if (valueAsString !== this.props.value) {
-          props.onChange(valueAsString);
+        if (valueAsString !== this.props.note.content) {
+          props.onChange(props.newId, props.note.id, 'content', valueAsString);
         }
       }
-      */
 
       return { contentEditorState: editorState };
     });
@@ -121,11 +148,14 @@ export class EditNoteForm extends React.Component<Props, State> {
   }
 
   handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
-    /*
     if (this.props.onChange) {
-      this.props.onChange('keywords', keywords);
+      this.props.onChange(
+        this.props.newId,
+        this.props.note.id,
+        'keywords',
+        keywords
+      );
     }
-    */
   }
 
   focus() {
@@ -182,10 +212,6 @@ export class EditNoteForm extends React.Component<Props, State> {
             <Editor
               editorState={this.state.contentEditorState}
               onChange={this.handleContentChange}
-              /*
-              onFocus={this.handleFocus}
-              onBlur={this.handleBlur}
-              */
               placeholder="Note"
               stripPastedStyles
               ref={editor => {

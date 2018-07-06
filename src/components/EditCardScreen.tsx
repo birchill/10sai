@@ -24,6 +24,12 @@ interface Props {
   onEdit: (id: FormId, change: Partial<Card>) => void;
   onDelete: (id: FormId) => void;
   onAddNote: (id: FormId, initialKeywords: string[]) => void;
+  onNoteChange: (
+    id: FormId,
+    newId: number | undefined,
+    noteId: string | undefined,
+    change: Partial<Note>
+  ) => void;
 }
 
 export class EditCardScreen extends React.PureComponent<Props> {
@@ -66,6 +72,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
     this.handleFormChange = this.handleFormChange.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleAddNote = this.handleAddNote.bind(this);
+    this.handleNoteChange = this.handleNoteChange.bind(this);
   }
 
   componentDidMount() {
@@ -233,6 +240,17 @@ export class EditCardScreen extends React.PureComponent<Props> {
     this.props.onAddNote(this.props.forms.active.formId, initialKeywords);
   }
 
+  handleNoteChange<K extends keyof Note>(
+    newId: number | undefined,
+    noteId: string | undefined,
+    field: K,
+    value: Note[K]
+  ) {
+    this.props.onNoteChange(this.props.forms.active.formId, newId, noteId, {
+      [field]: value,
+    });
+  }
+
   render() {
     const relatedKeywords = this.props.forms.active.card.keywords || [];
 
@@ -258,11 +276,17 @@ export class EditCardScreen extends React.PureComponent<Props> {
                     : undefined;
                 return (
                   <EditNoteForm
-                    key={note.note.id || `new-note-${i}`}
+                    key={
+                      typeof note.newId !== 'undefined'
+                        ? note.newId
+                        : note.note.id
+                    }
                     className="noteform"
+                    newId={note.newId}
                     note={note.note}
                     relatedKeywords={relatedKeywords}
                     ref={ref}
+                    onChange={this.handleNoteChange}
                   />
                 );
               })}
@@ -298,6 +322,20 @@ const mapDispatchToProps = (dispatch: Dispatch<State>) => ({
   onAddNote: (formId: FormId, initialKeywords: string[]) => {
     dispatch(
       noteActions.addNote({ screen: 'edit-card', formId }, initialKeywords)
+    );
+  },
+  onNoteChange: (
+    formId: FormId,
+    newId: number | undefined,
+    noteId: string | undefined,
+    change: Partial<Note>
+  ) => {
+    dispatch(
+      noteActions.editNote(
+        { screen: 'edit-card', formId },
+        { newId, noteId },
+        change
+      )
     );
   },
 });
