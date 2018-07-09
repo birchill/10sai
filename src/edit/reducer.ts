@@ -28,7 +28,7 @@ import { Action } from 'redux';
 export type FormId = string | number;
 
 export interface EditFormState {
-  formId: string | number;
+  formId: FormId;
   editorState: EditorState;
   card: Partial<Card>;
   dirtyFields?: Array<keyof Card>;

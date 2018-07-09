@@ -381,13 +381,15 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('cancels autosaving when the card is deleted', () => {
     const dataStore = { deleteCard: () => {} };
-    const card = { _id: 'abc', prompt: 'Prompt', answer: 'Answer' };
+    const card = { _id: 'abc', question: 'Question', answer: 'Answer' };
     const formId = 'abc';
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withReducer(reducer)
       .withState(okState(formId, card))
-      .dispatch(editActions.editCard(formId, card))
+      .dispatch(
+        editActions.editCard(formId, { ...card, answer: 'Updated answer' })
+      )
       .dispatch(editActions.deleteEditCard(formId))
       .put({ type: 'CANCEL_AUTO_SAVE' })
       .silentRun(100);
@@ -405,8 +407,14 @@ describe('sagas:edit save', () => {
     const card = { question: 'yer' };
     const oldFormId = 17;
     const newFormId = 18;
+    const resourceState = {
+      context: {
+        newId: oldFormId,
+      },
+      resource: card,
+    };
 
-    return expectSaga(saveSaga, dataStore, oldFormId, card)
+    return expectSaga(saveSaga, dataStore, resourceState)
       .withState(emptyState(newFormId))
       .call([dataStore, 'putCard'], card)
       .put(editActions.finishSaveCard(oldFormId, { ...card, _id: '4567' }))

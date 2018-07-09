@@ -10,6 +10,12 @@ import {
 import { delay } from 'redux-saga';
 import { Store } from 'redux';
 import {
+  ResourceParams,
+  watchEdits,
+  ResourceState,
+  SaveContextBase,
+} from '../utils/autosave-saga';
+import {
   routeFromURL,
   routeFromPath,
   URLFromRoute,
@@ -79,9 +85,11 @@ export function* navigate(dataStore: DataStore, action: NavigateAction) {
 
 export function* save(
   dataStore: DataStore,
-  formId: FormId,
-  card: Partial<Card>
+  resourceState: ResourceState<Card, EditSaveContext>
 ) {
+  const formId = formIdFromSaveContext(resourceState.context);
+  const card = resourceState.resource;
+
   try {
     const savedCard = yield call([dataStore, 'putCard'], card);
 
@@ -119,127 +127,68 @@ export function* save(
   }
 }
 
-function* autoSave(dataStore: DataStore, formId: FormId, card: Partial<Card>) {
-  // Debounce -- we allow this part of the task to be cancelled
-  // eslint-disable-next-line no-unused-vars
-  const { wait, cancel } = yield race({
-    wait: call(delay, SAVE_DELAY),
-    cancel: take('CANCEL_AUTO_SAVE'),
-  });
+type EditSaveContext = SaveContextBase;
 
-  if (cancel) {
-    return formId;
-  }
-
-  // The remaining steps should not be cancelled since otherwise we risk
-  // writing the card twice with different IDs.
-  try {
-    return yield save(dataStore, formId, card);
-  } catch (error) {
-    // Nothing special to do here. We'll have already dispatched the appropriate
-    // action and that's enough for auto-saving.
-    return formId;
-  }
-}
+const formIdFromSaveContext = (saveContext: EditSaveContext): FormId => {
+  console.assert(
+    typeof saveContext.resourceId !== 'undefined' ||
+      typeof saveContext.newId !== 'undefined',
+    'Either the resource ID or new ID must be filled in'
+  );
+  return typeof saveContext.resourceId === 'string'
+    ? saveContext.resourceId
+    : saveContext.newId!;
+};
 
 export function* watchCardEdits(dataStore: DataStore) {
-  let autoSaveTask;
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const action = yield take([
-      'EDIT_CARD',
-      'SAVE_EDIT_CARD',
-      'DELETE_EDIT_CARD',
-      'FINISH_SAVE_CARD',
-    ]);
+  const params = {
+    editActionType: 'EDIT_CARD',
+    saveActionType: 'SAVE_EDIT_CARD',
+    deleteActionType: 'DELETE_EDIT_CARD',
+    cancelAutoSaveActionType: 'CANCEL_AUTO_SAVE',
+    resourceStateSelector: (
+      action:
+        | editActions.EditCardAction
+        | editActions.SaveEditCardAction
+        | editActions.DeleteEditCardAction
+    ) => {
+      return (state: State): ResourceState<Card, EditSaveContext> => ({
+        context: {
+          newId: typeof action.formId === 'number' ? action.formId : undefined,
+          resourceId:
+            typeof action.formId === 'string' ? action.formId : undefined,
+        },
+        deleted: !!state.edit.forms.active.deleted,
+        dirty:
+          !!state.edit.forms.active.dirtyFields &&
+          state.edit.forms.active.dirtyFields.length > 0,
+        resource: state.edit.forms.active.card,
+      });
+    },
+    hasDataToSave: (resource: Partial<Card>): boolean => {
+      const cardHasNonEmptyField = (field: keyof Card): boolean =>
+        typeof resource[field] === 'string' &&
+        (resource[field] as string).length !== 0;
+      return (
+        typeof resource._id !== 'undefined' ||
+        cardHasNonEmptyField('question') ||
+        cardHasNonEmptyField('answer')
+      );
+    },
+    delete: (dataStore: DataStore, resourceId: string) =>
+      call([dataStore, 'deleteCard'], resourceId),
+    save,
+    finishSaveActionCreator: (
+      saveContext: EditSaveContext,
+      resource: Partial<Card>
+    ) =>
+      editActions.finishSaveCard(formIdFromSaveContext(saveContext), resource),
+    cancelSaveActionCreator: (saveContext: EditSaveContext) => ({
+      type: 'CANCEL_AUTO_SAVE',
+    }),
+  };
 
-    // Clear the auto-save task whenever we actually complete a save as
-    // otherwise we'll end up preserving its 'done' value even when browsing new
-    // cards.
-    if (action.type === 'FINISH_SAVE_CARD') {
-      autoSaveTask = undefined;
-      continue;
-    }
-
-    const activeRecord = yield select(getActiveRecord);
-    // In future we'll probably need to look through the different forms
-    // to find the correct one, but for now this should hold.
-    console.assert(
-      !action.formId || activeRecord.formId === action.formId,
-      `Active record mismatch ${activeRecord.formId} vs ${action.formId}`
-    );
-
-    // Check if anything needs saving.
-    //
-    // The complexity here is that we don't want to auto-save if the only data
-    // in the card are keywords and tags. However, if we're modifying an
-    // existing card then we *do* want to autosave in that case.
-    const cardHasNonEmptyField = (field: keyof Card) =>
-      typeof activeRecord.card[field] !== 'undefined' &&
-      activeRecord.card[field].length;
-    const hasDataWorthSaving = () =>
-      activeRecord.card._id ||
-      cardHasNonEmptyField('question') ||
-      cardHasNonEmptyField('answer');
-    const shouldSave =
-      action.type === 'DELETE_EDIT_CARD' ||
-      (activeRecord.editorState === EditorState.Dirty && hasDataWorthSaving());
-    if (!shouldSave) {
-      // If we are responding to a save action, put the finish action anyway
-      // in case someone is waiting on either a finished or fail to indicate
-      // completion of the save.
-      if (action.type === 'SAVE_EDIT_CARD') {
-        yield put(
-          editActions.finishSaveCard(activeRecord.formId, activeRecord.card)
-        );
-      }
-      continue;
-    }
-
-    let id = action.formId || activeRecord.formId;
-    // If there is an auto save in progress, cancel it.
-    if (autoSaveTask) {
-      if (autoSaveTask.isRunning()) {
-        yield put({ type: 'CANCEL_AUTO_SAVE' });
-      }
-      // Get the possibly updated card ID.
-      try {
-        id = yield autoSaveTask.done;
-      } catch (error) {
-        // If the previous auto-save failed, just ignore it. It will have
-        // dispatched a suitable error action.
-      }
-    }
-    autoSaveTask = undefined;
-
-    switch (action.type) {
-      case 'EDIT_CARD':
-        autoSaveTask = yield fork(autoSave, dataStore, id, activeRecord.card);
-        break;
-
-      case 'SAVE_EDIT_CARD':
-        try {
-          yield save(dataStore, id, activeRecord.card);
-        } catch (error) {
-          // Don't do anything
-        }
-        break;
-
-      case 'DELETE_EDIT_CARD':
-        if (activeRecord.deleted) {
-          try {
-            yield call([dataStore, 'deleteCard'], id);
-          } catch (error) {
-            console.error(`Failed to delete card: ${JSON.stringify(error)}`);
-          }
-        }
-        break;
-
-      default:
-        console.log(`Unexpected action ${action.type}`);
-        break;
-    }
-  }
+  yield* watchEdits(dataStore, SAVE_DELAY, params);
 }
 
 export function* editSagas(dataStore: DataStore) {

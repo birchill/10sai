@@ -2,8 +2,6 @@ import deepEqual from 'deep-equal';
 import * as actions from './actions';
 import { Note } from '../model';
 
-export type FormId = string | number;
-
 export const enum NoteEditState {
   Ok = 'ok',
   Dirty = 'dirty',
