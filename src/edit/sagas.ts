@@ -22,6 +22,7 @@ import {
   routesEqual,
 } from '../route/router';
 import { EditState, EditFormState, FormId } from './reducer';
+import { getActiveRecord, isDirty } from './selectors';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
 import EditorState from './EditorState';
@@ -34,11 +35,6 @@ const SAVE_DELAY = 2000;
 interface State {
   edit: EditState;
 }
-
-// Selectors
-
-const getActiveRecord = (state: State): EditFormState =>
-  state.edit.forms.active;
 
 // Sagas
 
@@ -159,9 +155,7 @@ export function* watchCardEdits(dataStore: DataStore) {
             typeof action.formId === 'string' ? action.formId : undefined,
         },
         deleted: !!state.edit.forms.active.deleted,
-        dirty:
-          !!state.edit.forms.active.dirtyFields &&
-          state.edit.forms.active.dirtyFields.length > 0,
+        dirty: isDirty(state),
         resource: state.edit.forms.active.card,
       });
     },
@@ -199,10 +193,11 @@ export function* editSagas(dataStore: DataStore) {
 }
 
 export function* beforeEditScreenChange() {
-  const activeRecord = yield select(getActiveRecord);
-  if (activeRecord.editorState !== EditorState.Dirty) {
+  if (!(yield select(isDirty))) {
     return true;
   }
+
+  const activeRecord = yield select(getActiveRecord);
 
   yield put(editActions.saveEditCard(activeRecord.formId));
 

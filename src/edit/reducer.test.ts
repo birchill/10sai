@@ -68,7 +68,7 @@ const dirtyState = (
   forms: {
     active: {
       formId,
-      editorState: EditorState.Dirty,
+      editorState: EditorState.Ok,
       card,
       dirtyFields,
       notes: [],

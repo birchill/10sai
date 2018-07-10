@@ -157,7 +157,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             formId: editAction.formId,
-            editorState: EditorState.Dirty,
+            editorState: EditorState.Ok,
             card: { ...state.forms.active.card, ...editAction.card },
             dirtyFields,
             notes: state.forms.active.notes,
@@ -182,15 +182,12 @@ export function edit(state = initialState, action: Action): EditState {
           field !== 'modified' &&
           !deepEqual(editAction.card[field], state.forms.active.card[field])
       );
-      const editorState = dirtyFields.length
-        ? EditorState.Dirty
-        : EditorState.Ok;
 
       const result: EditState = {
         forms: {
           active: {
             formId: editAction.card._id!,
-            editorState,
+            editorState: EditorState.Ok,
             card: { ...editAction.card, ...state.forms.active.card },
             notes: state.forms.active.notes,
           },

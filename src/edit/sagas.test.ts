@@ -52,7 +52,7 @@ const dirtyState = (formId, cardToUse) => {
       forms: {
         active: {
           formId,
-          editorState: EditorState.Dirty,
+          editorState: EditorState.Ok,
           card,
           dirtyFields: ['prompt'],
         },
@@ -427,7 +427,15 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('dispatches SAVE_EDIT_CARD if the card is dirty', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editorState: EditorState.Dirty } } },
+      edit: {
+        forms: {
+          active: {
+            formId,
+            editorState: EditorState.Ok,
+            dirtyFields: ['answer'],
+          },
+        },
+      },
     };
 
     return expectSaga(beforeEditScreenChangeSaga)
@@ -454,7 +462,15 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('returns false if the card fails to save', () => {
     const formId = 'abc';
     const state = {
-      edit: { forms: { active: { formId, editorState: EditorState.Dirty } } },
+      edit: {
+        forms: {
+          active: {
+            formId,
+            editorState: EditorState.Ok,
+            dirtyFields: ['answer'],
+          },
+        },
+      },
     };
     const error = { name: 'too_bad', message: 'too bad' };
 
