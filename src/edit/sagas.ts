@@ -139,7 +139,7 @@ const formIdFromSaveContext = (saveContext: EditSaveContext): FormId => {
 export function* watchCardEdits(dataStore: DataStore) {
   const params = {
     editActionType: 'EDIT_CARD',
-    saveActionType: 'SAVE_EDIT_CARD',
+    saveActionType: 'SAVE_CARD',
     deleteActionType: 'DELETE_EDIT_CARD',
     cancelAutoSaveActionType: 'CANCEL_AUTO_SAVE',
     resourceStateSelector: (
@@ -199,7 +199,7 @@ export function* beforeEditScreenChange() {
 
   const activeRecord = yield select(getActiveRecord);
 
-  yield put(editActions.saveEditCard(activeRecord.formId));
+  yield put(editActions.saveCard(activeRecord.formId));
 
   const action = yield take(['FINISH_SAVE_CARD', 'FAIL_SAVE_CARD']);
 

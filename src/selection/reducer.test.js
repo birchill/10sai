@@ -35,7 +35,7 @@ describe('reducer:selection', () => {
       state,
       editActions.editCard(unsavedId, { prompt: 'Prompt', answer: 'Answer' })
     );
-    state = subject(state, editActions.saveEditCard(unsavedId));
+    state = subject(state, editActions.saveCard(unsavedId));
     state = subject(
       state,
       editActions.finishSaveCard(unsavedId, {

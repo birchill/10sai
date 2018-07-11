@@ -233,7 +233,7 @@ describe('sagas:route beforeScreenChange', () => {
 
     return expectSaga(beforeScreenChangeSaga)
       .withState(state)
-      .put(editActions.saveEditCard(formId))
+      .put(editActions.saveCard(formId))
       .dispatch(editActions.failSaveCard(formId, error))
       .returns(false)
       .run();
@@ -262,7 +262,7 @@ describe('sagas:route beforeScreenChange', () => {
 
       return expectSaga(beforeScreenChangeSaga)
         .withState(state)
-        .put(editActions.saveEditCard(formId))
+        .put(editActions.saveCard(formId))
         .dispatch(routeActions.navigate({ url: '/' }))
         .returns(false)
         .run();

@@ -220,7 +220,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveEditCard(formId))
+      .dispatch(editActions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
       .put(editActions.finishSaveCard(formId, card))
       .silentRun(100);
@@ -233,7 +233,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(okState(formId, card))
-      .dispatch(editActions.saveEditCard(formId))
+      .dispatch(editActions.saveCard(formId))
       .not.call([dataStore, 'putCard'], card)
       .put(editActions.finishSaveCard(formId, card))
       .silentRun(100);
@@ -245,7 +245,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(emptyState(formId))
-      .dispatch(editActions.saveEditCard(formId))
+      .dispatch(editActions.saveCard(formId))
       .not.call([dataStore, 'putCard'], {})
       .not.put(
         editActions.failSaveCard(formId, {
@@ -265,7 +265,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveEditCard(formId))
+      .dispatch(editActions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
       .put(editActions.finishSaveCard(formId, { ...card, _id: 'generated-id' }))
       .silentRun(100);
@@ -281,7 +281,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveEditCard(formId))
+      .dispatch(editActions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
       .put(editActions.finishSaveCard(formId, { ...card, _id: '1234' }))
       .put(routeActions.updateUrl('/cards/1234'))
@@ -296,7 +296,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveEditCard(formId))
+      .dispatch(editActions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
       .put(editActions.finishSaveCard(formId, card))
       .not.put(routeActions.updateUrl('/cards/1234'))
@@ -313,7 +313,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveEditCard(formId))
+      .dispatch(editActions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
       .put(editActions.finishSaveCard(formId, { ...card, _id: '2345' }))
       .not.put(routeActions.updateUrl('/cards/2345'))
@@ -333,7 +333,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveEditCard(formId))
+      .dispatch(editActions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
       .put(editActions.failSaveCard(formId, error))
       .silentRun(100);
@@ -424,7 +424,7 @@ describe('sagas:edit save', () => {
 });
 
 describe('sagas:edit beforeEditScreenChange', () => {
-  it('dispatches SAVE_EDIT_CARD if the card is dirty', () => {
+  it('dispatches SAVE_CARD if the card is dirty', () => {
     const formId = 'abc';
     const state = {
       edit: {
@@ -440,7 +440,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
 
     return expectSaga(beforeEditScreenChangeSaga)
       .withState(state)
-      .put(editActions.saveEditCard(formId))
+      .put(editActions.saveCard(formId))
       .dispatch(editActions.finishSaveCard(formId, {}))
       .returns(true)
       .run();
@@ -454,7 +454,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
 
     return expectSaga(beforeEditScreenChangeSaga)
       .withState(state)
-      .not.put(editActions.saveEditCard(formId))
+      .not.put(editActions.saveCard(formId))
       .returns(true)
       .run();
   });
@@ -476,7 +476,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
 
     return expectSaga(beforeEditScreenChangeSaga)
       .withState(state)
-      .put(editActions.saveEditCard(formId))
+      .put(editActions.saveCard(formId))
       .dispatch(editActions.failSaveCard(formId, error))
       .returns(false)
       .run();

@@ -98,13 +98,13 @@ export function editCard(formId: FormId, card: Partial<Card>): EditCardAction {
 }
 
 export interface SaveEditCardAction {
-  type: 'SAVE_EDIT_CARD';
+  type: 'SAVE_CARD';
   formId: FormId;
 }
 
-export function saveEditCard(formId: FormId): SaveEditCardAction {
+export function saveCard(formId: FormId): SaveEditCardAction {
   return {
-    type: 'SAVE_EDIT_CARD',
+    type: 'SAVE_CARD',
     formId,
   };
 }
