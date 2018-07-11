@@ -140,13 +140,13 @@ export function* watchCardEdits(dataStore: DataStore) {
   const params = {
     editActionType: 'EDIT_CARD',
     saveActionType: 'SAVE_CARD',
-    deleteActionType: 'DELETE_EDIT_CARD',
+    deleteActionType: 'DELETE_CARD',
     cancelAutoSaveActionType: 'CANCEL_AUTO_SAVE',
     resourceStateSelector: (
       action:
         | editActions.EditCardAction
         | editActions.SaveEditCardAction
-        | editActions.DeleteEditCardAction
+        | editActions.DeleteCardAction
     ) => {
       return (state: State): ResourceState<Card, EditSaveContext> => ({
         context: {

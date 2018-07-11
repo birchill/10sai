@@ -57,7 +57,7 @@ export default function selection(state, action) {
       return state;
 
     // If we deleted the active card, clear it
-    case 'DELETE_EDIT_CARD':
+    case 'DELETE_CARD':
       if (action.formId === state.selection.activeCardId) {
         return {
           ...state,

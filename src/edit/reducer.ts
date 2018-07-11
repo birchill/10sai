@@ -259,7 +259,7 @@ export function edit(state = initialState, action: Action): EditState {
       };
     }
 
-    case 'DELETE_EDIT_CARD': {
+    case 'DELETE_CARD': {
       if (editAction.formId !== state.forms.active.formId) {
         return state;
       }

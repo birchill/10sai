@@ -345,7 +345,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(notFoundState(formId, true))
-      .dispatch(editActions.deleteEditCard(formId))
+      .dispatch(editActions.deleteCard(formId))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
@@ -357,7 +357,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.deleteEditCard(formId))
+      .dispatch(editActions.deleteCard(formId))
       .not.call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
@@ -374,7 +374,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(notFoundState(formId, true))
-      .dispatch(editActions.deleteEditCard(formId))
+      .dispatch(editActions.deleteCard(formId))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
@@ -390,7 +390,7 @@ describe('sagas:edit watchCardEdits', () => {
       .dispatch(
         editActions.editCard(formId, { ...card, answer: 'Updated answer' })
       )
-      .dispatch(editActions.deleteEditCard(formId))
+      .dispatch(editActions.deleteCard(formId))
       .put({ type: 'CANCEL_AUTO_SAVE' })
       .silentRun(100);
   });

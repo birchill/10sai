@@ -22,7 +22,7 @@ export type EditAction =
   | FinishSaveCardAction
   | FailSaveCardAction
   | SyncEditCardAction
-  | DeleteEditCardAction;
+  | DeleteCardAction;
 
 export interface NewCardAction {
   type: 'NEW_CARD';
@@ -155,14 +155,14 @@ export function syncEditCard(change: CardChange): SyncEditCardAction {
   };
 }
 
-export interface DeleteEditCardAction {
-  type: 'DELETE_EDIT_CARD';
+export interface DeleteCardAction {
+  type: 'DELETE_CARD';
   formId: FormId;
 }
 
-export function deleteEditCard(formId: FormId): DeleteEditCardAction {
+export function deleteCard(formId: FormId): DeleteCardAction {
   return {
-    type: 'DELETE_EDIT_CARD',
+    type: 'DELETE_CARD',
     formId,
   };
 }

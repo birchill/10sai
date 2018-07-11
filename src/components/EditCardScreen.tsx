@@ -316,7 +316,7 @@ const mapDispatchToProps = (dispatch: Dispatch<State>) => ({
     dispatch(editActions.editCard(formId, change));
   },
   onDelete: (formId: FormId) => {
-    dispatch(editActions.deleteEditCard(formId));
+    dispatch(editActions.deleteCard(formId));
     dispatch(routeActions.followLink('/'));
   },
   onAddNote: (formId: FormId, initialKeywords: string[]) => {

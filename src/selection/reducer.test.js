@@ -71,7 +71,7 @@ describe('reducer:selection', () => {
     };
 
     state = subject(state, editActions.finishLoadCard(card._id, card));
-    state = subject(state, editActions.deleteEditCard('ghi'));
+    state = subject(state, editActions.deleteCard('ghi'));
 
     expect(state.selection.activeCardId).toBe(undefined);
   });
