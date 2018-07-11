@@ -97,12 +97,12 @@ export function editCard(formId: FormId, card: Partial<Card>): EditCardAction {
   };
 }
 
-export interface SaveEditCardAction {
+export interface SaveCardAction {
   type: 'SAVE_CARD';
   formId: FormId;
 }
 
-export function saveCard(formId: FormId): SaveEditCardAction {
+export function saveCard(formId: FormId): SaveCardAction {
   return {
     type: 'SAVE_CARD',
     formId,

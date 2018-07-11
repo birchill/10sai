@@ -145,7 +145,7 @@ export function* watchCardEdits(dataStore: DataStore) {
     resourceStateSelector: (
       action:
         | editActions.EditCardAction
-        | editActions.SaveEditCardAction
+        | editActions.SaveCardAction
         | editActions.DeleteCardAction
     ) => {
       return (state: State): ResourceState<Card, EditSaveContext> => ({
