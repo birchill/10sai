@@ -16,7 +16,7 @@ import { Action } from 'redux';
 //       formId: card ID or a sequence number (for yet-to-be-saved cards),
 //       editorState: EditorState,
 //       card: { _id: ..., question: ..., ... },
-//       dirtyFields: [ 'question', 'question' etc. ]
+//       dirtyFields: Set('question', 'question')
 //       notes: [ ...  ]
 //     }
 //     [ next: { " " } ]
@@ -31,7 +31,7 @@ export interface EditFormState {
   formId: FormId;
   editorState: EditorState;
   card: Partial<Card>;
-  dirtyFields?: Array<keyof Card>;
+  dirtyFields?: Set<keyof Card>;
   deleted?: boolean;
   notes: Array<NoteState>;
 }
@@ -137,21 +137,23 @@ export function edit(state = initialState, action: Action): EditState {
         );
       }
 
-      const dirtyFields = state.forms.active.dirtyFields || [];
-      dirtyFields.push(
-        ...(Object.keys(editAction.card) as Array<keyof Card>).filter(
-          field =>
-            field !== '_id' &&
-            field !== 'modified' &&
-            !deepEqual(
-              editAction.card[field],
-              state.forms.active.card[field]
-            ) &&
-            // This use of indexOf is not awesome but generally dirtyFields will
-            // be 0 ~ 1 items so it's probably ok.
-            dirtyFields.indexOf(field) === -1
-        )
-      );
+      const editState = state.forms.active;
+
+      // Update the dirty fields
+      const dirtyFields: Set<keyof Card> = editState.dirtyFields
+        ? new Set(editState.dirtyFields.values())
+        : new Set();
+      for (const [field, value] of Object.entries(editAction.card) as Array<
+        [keyof Card, any]
+      >) {
+        if (
+          field !== '_id' &&
+          field !== 'modified' &&
+          !deepEqual(value, editState.card[field])
+        ) {
+          dirtyFields.add(field);
+        }
+      }
 
       return {
         forms: {
@@ -174,13 +176,13 @@ export function edit(state = initialState, action: Action): EditState {
         return state;
       }
 
-      const dirtyFields = (Object.keys(editAction.card) as Array<
-        keyof Card
-      >).filter(
-        field =>
-          field !== '_id' &&
-          field !== 'modified' &&
-          !deepEqual(editAction.card[field], state.forms.active.card[field])
+      const dirtyFields: Set<keyof Card> = new Set(
+        (Object.keys(editAction.card) as Array<keyof Card>).filter(
+          field =>
+            field !== '_id' &&
+            field !== 'modified' &&
+            !deepEqual(editAction.card[field], state.forms.active.card[field])
+        )
       );
 
       const result: EditState = {
@@ -193,7 +195,7 @@ export function edit(state = initialState, action: Action): EditState {
           },
         },
       };
-      if (dirtyFields.length) {
+      if (dirtyFields.size) {
         result.forms.active.dirtyFields = dirtyFields;
       }
 
@@ -244,7 +246,7 @@ export function edit(state = initialState, action: Action): EditState {
         if (isCardField(field)) {
           card[field] =
             state.forms.active.dirtyFields &&
-            state.forms.active.dirtyFields.includes(field)
+            state.forms.active.dirtyFields.has(field)
               ? state.forms.active.card[field]
               : editAction.change[field];
         }

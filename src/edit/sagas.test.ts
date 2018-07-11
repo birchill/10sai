@@ -54,7 +54,7 @@ const dirtyState = (formId, cardToUse) => {
           formId,
           editorState: EditorState.Ok,
           card,
-          dirtyFields: ['prompt'],
+          dirtyFields: new Set(['prompt']),
         },
       },
     },
@@ -432,7 +432,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
           active: {
             formId,
             editorState: EditorState.Ok,
-            dirtyFields: ['answer'],
+            dirtyFields: new Set(['answer']),
           },
         },
       },
@@ -467,7 +467,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
           active: {
             formId,
             editorState: EditorState.Ok,
-            dirtyFields: ['answer'],
+            dirtyFields: new Set(['answer']),
           },
         },
       },

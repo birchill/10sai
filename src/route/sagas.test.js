@@ -220,7 +220,7 @@ describe('sagas:route beforeScreenChange', () => {
           active: {
             formId,
             editorState: EditorState.Ok,
-            dirtyFields: ['answer'],
+            dirtyFields: new Set(['answer']),
           },
         },
       },
@@ -250,7 +250,7 @@ describe('sagas:route beforeScreenChange', () => {
             active: {
               formId,
               editorState: EditorState.Ok,
-              dirtyFields: ['answer'],
+              dirtyFields: new Set(['answer']),
             },
           },
         },

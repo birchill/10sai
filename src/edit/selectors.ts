@@ -12,6 +12,6 @@ export const isDirty = (state: State): boolean => {
   const activeRecord = getActiveRecord(state);
   return (
     typeof activeRecord.dirtyFields !== 'undefined' &&
-    activeRecord.dirtyFields.length > 0
+    activeRecord.dirtyFields.size > 0
   );
 };

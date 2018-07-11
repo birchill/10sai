@@ -1,13 +1,7 @@
 /* global describe, expect, it */
 /* eslint arrow-body-style: [ "off" ] */
 
-import {
-  edit as subject,
-  EditNote,
-  EditNoteState,
-  EditState,
-  FormId,
-} from './reducer';
+import { edit as subject, EditState, FormId } from './reducer';
 import EditorState from './EditorState';
 import * as actions from './actions';
 import * as noteActions from '../notes/actions';
@@ -29,7 +23,7 @@ const emptyState = (formId: FormId): EditState => ({
 
 const okState = (
   card: Partial<Card>,
-  dirtyFields?: Array<keyof Card>
+  dirtyFields?: Set<keyof Card>
 ): EditState => {
   const result: EditState = {
     forms: {
@@ -63,7 +57,7 @@ const loadingState = (formId: FormId): EditState => ({
 const dirtyState = (
   formId: FormId,
   card: Partial<Card>,
-  dirtyFields: Array<keyof Card>
+  dirtyFields: Set<keyof Card>
 ): EditState => ({
   forms: {
     active: {
@@ -93,6 +87,9 @@ const withSaveError = (state: EditState, saveError: StoreError): EditState => ({
   saveError,
 });
 
+const toDirtyFields = (...fields: Array<keyof Card>): Set<keyof Card> =>
+  new Set(fields);
+
 describe('reducer:edit', () => {
   it('should return the initial state', () => {
     const updatedState = subject(undefined, {} as any);
@@ -107,7 +104,10 @@ describe('reducer:edit', () => {
   });
 
   it('should clear fields on NEW_CARD', () => {
-    const initialState = okState(generateCard('abc'), ['question', 'answer']);
+    const initialState = okState(
+      generateCard('abc'),
+      toDirtyFields('question', 'answer')
+    );
 
     const updatedState = subject(initialState, actions.newCard(2));
 
@@ -121,7 +121,10 @@ describe('reducer:edit', () => {
   });
 
   it('should clear other state on LOAD_CARD', () => {
-    const initialState = okState(generateCard('abc'), ['question', 'answer']);
+    const initialState = okState(
+      generateCard('abc'),
+      toDirtyFields('question', 'answer')
+    );
 
     const updatedState = subject(initialState, actions.loadCard('def'));
 
@@ -208,7 +211,7 @@ describe('reducer:edit', () => {
       dirtyState(
         'abc',
         { _id: 'abc', question: 'Updated question', answer: 'Answer' },
-        ['question']
+        toDirtyFields('question')
       )
     );
   });
@@ -229,7 +232,7 @@ describe('reducer:edit', () => {
         dirtyState(
           7,
           { question: 'Updated question', answer: 'Updated answer' },
-          ['question', 'answer']
+          toDirtyFields('question', 'answer')
         )
       );
     }
@@ -263,7 +266,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Updated question', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
     const change = { answer: 'Updated answer' };
 
@@ -273,7 +276,7 @@ describe('reducer:edit', () => {
       dirtyState(
         'abc',
         { _id: 'abc', question: 'Updated question', answer: 'Updated answer' },
-        ['question', 'answer']
+        toDirtyFields('question', 'answer')
       )
     );
   });
@@ -282,7 +285,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Updated question', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
     const card = {
       _id: 'abc',
@@ -307,7 +310,7 @@ describe('reducer:edit', () => {
       const initialState = dirtyState(
         'abc',
         { _id: 'abc', question: 'Updated #2', answer: 'Updated answer' },
-        ['question', 'answer']
+        toDirtyFields('question', 'answer')
       );
       const card = {
         _id: 'abc',
@@ -324,7 +327,7 @@ describe('reducer:edit', () => {
         dirtyState(
           'abc',
           { _id: 'abc', question: 'Updated #2', answer: 'Updated answer' },
-          ['question']
+          toDirtyFields('question')
         )
       );
     }
@@ -334,7 +337,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Updated question', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
     const card = {
       _id: 'def',
@@ -354,7 +357,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       12,
       { question: 'Question', answer: 'Answer' },
-      ['question', 'answer']
+      toDirtyFields('question', 'answer')
     );
     const card = {
       _id: 'abc',
@@ -379,7 +382,7 @@ describe('reducer:edit', () => {
       const initialState = dirtyState(
         17,
         { question: 'Updated #1', answer: 'Updated #2' },
-        ['question', 'answer']
+        toDirtyFields('question', 'answer')
       );
       const card = {
         _id: 'abc',
@@ -396,7 +399,7 @@ describe('reducer:edit', () => {
         dirtyState(
           'abc',
           { _id: 'abc', question: 'Updated #1', answer: 'Updated #2' },
-          ['answer']
+          toDirtyFields('answer')
         )
       );
     }
@@ -409,7 +412,7 @@ describe('reducer:edit', () => {
       const initialState = dirtyState(
         12,
         { _id: 'abc', question: 'Question', answer: 'Answer' },
-        ['question']
+        toDirtyFields('question')
       );
       const card = {
         _id: 'def',
@@ -449,7 +452,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Question', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
 
     const updatedState = subject(
@@ -462,7 +465,7 @@ describe('reducer:edit', () => {
         dirtyState(
           'abc',
           { _id: 'abc', question: 'Question', answer: 'Answer' },
-          ['question']
+          toDirtyFields('question')
         ),
         { name: 'bad', message: 'Bad bad bad' }
       )
@@ -476,7 +479,7 @@ describe('reducer:edit', () => {
       const initialState = dirtyState(
         'abc',
         { _id: 'abc', question: 'Question', answer: 'Answer' },
-        ['question']
+        toDirtyFields('question')
       );
 
       const updatedState = subject(
@@ -503,7 +506,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Question A', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
     const change = {
       ...generateCard('abc'),
@@ -514,7 +517,11 @@ describe('reducer:edit', () => {
     const updatedState = subject(initialState, actions.syncEditCard(change));
 
     expect(updatedState).toEqual(
-      dirtyState('abc', { ...change, question: 'Question A' }, ['question'])
+      dirtyState(
+        'abc',
+        { ...change, question: 'Question A' },
+        toDirtyFields('question')
+      )
     );
   });
 
@@ -522,7 +529,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Question A', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
     const change = {
       ...generateCard('def'),
@@ -542,7 +549,7 @@ describe('reducer:edit', () => {
       const initialState = dirtyState(
         'abc',
         { _id: 'abc', question: 'Question A', answer: 'Answer' },
-        ['question']
+        toDirtyFields('question')
       );
       const change: CardChange = {
         ...generateCard('abc'),
@@ -559,7 +566,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Question', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
 
     const updatedState = subject(initialState, actions.deleteEditCard('abc'));
@@ -571,7 +578,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       89,
       { question: 'Question', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
 
     const updatedState = subject(initialState, actions.deleteEditCard(89));
@@ -583,7 +590,7 @@ describe('reducer:edit', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Question', answer: 'Answer' },
-      ['question']
+      toDirtyFields('question')
     );
 
     const updatedState = subject(initialState, actions.deleteEditCard('def'));
