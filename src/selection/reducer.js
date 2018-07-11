@@ -28,7 +28,7 @@ export default function selection(state, action) {
     // If we just finished loading a card and it is still the card being edited,
     // make it the active card.
     case 'FINISH_LOAD_CARD':
-      if (editCardId && action.formId === editCardId) {
+      if (editCardId && action.cardId === editCardId) {
         return {
           ...state,
           selection: { activeCardId: editCardId },
@@ -58,6 +58,9 @@ export default function selection(state, action) {
 
     // If we deleted the active card, clear it
     case 'DELETE_CARD':
+      // XXX This is wrong --- the formId could be the new ID originally
+      // assigned to it. We need to include the cardId in the action so that
+      // we can compare it here.
       if (action.formId === state.selection.activeCardId) {
         return {
           ...state,

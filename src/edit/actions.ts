@@ -26,58 +26,58 @@ export type EditAction =
 
 export interface NewCardAction {
   type: 'NEW_CARD';
-  id: number;
+  newId: number;
 }
 
-export function newCard(id?: number): NewCardAction {
+export function newCard(newId?: number): NewCardAction {
   return {
     type: 'NEW_CARD',
-    id: typeof id === 'undefined' ? newCardId() : id,
+    newId: typeof newId === 'undefined' ? newCardId() : newId,
   };
 }
 
 export interface LoadCardAction {
   type: 'LOAD_CARD';
-  id: string;
+  cardId: string;
 }
 
-export function loadCard(id: string): LoadCardAction {
+export function loadCard(cardId: string): LoadCardAction {
   return {
     type: 'LOAD_CARD',
-    id,
+    cardId,
   };
 }
 
 export interface FinishLoadCardAction {
   type: 'FINISH_LOAD_CARD';
-  formId: FormId;
+  cardId: string;
   card: Card;
 }
 
 export function finishLoadCard(
-  formId: FormId,
+  cardId: string,
   card: Card
 ): FinishLoadCardAction {
   return {
     type: 'FINISH_LOAD_CARD',
-    formId,
+    cardId,
     card,
   };
 }
 
 export interface FailLoadCardAction {
   type: 'FAIL_LOAD_CARD';
-  formId: FormId;
+  cardId: string;
   error: StoreError;
 }
 
 export function failLoadCard(
-  formId: FormId,
+  cardId: string,
   error: StoreError
 ): FailLoadCardAction {
   return {
     type: 'FAIL_LOAD_CARD',
-    formId,
+    cardId,
     error,
   };
 }

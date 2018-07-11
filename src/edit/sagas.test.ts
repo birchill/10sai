@@ -14,6 +14,8 @@ import {
   save as saveSaga,
   beforeEditScreenChange as beforeEditScreenChangeSaga,
 } from './sagas';
+import { FormId } from './reducer';
+import { Card } from '../model';
 import reducer from '../reducer';
 import EditorState from './EditorState';
 import * as editActions from './actions';
@@ -32,11 +34,11 @@ declare global {
   }
 }
 
-const loadingState = formId => ({
+const loadingState = (cardId: string) => ({
   edit: {
     forms: {
       active: {
-        formId,
+        formId: cardId,
         editorState: EditorState.Loading,
         card: {},
       },
@@ -44,7 +46,7 @@ const loadingState = formId => ({
   },
 });
 
-const dirtyState = (formId, cardToUse) => {
+const dirtyState = (formId: FormId, cardToUse: Partial<Card>) => {
   const card = cardToUse || { prompt: 'Updated', answer: 'Answer' };
   return {
     route: { index: 0 },
@@ -100,7 +102,7 @@ describe('sagas:edit navigate', () => {
     // be the code under test (so we increment the id to match the value the
     // caller will get).
     const expectedNewAction = editActions.newCard();
-    expectedNewAction.id++;
+    expectedNewAction.newId++;
 
     return expectSaga(
       navigateSaga,

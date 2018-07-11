@@ -10,10 +10,10 @@ import { CardChange } from '../store/CardStore';
 import { StoreError } from '../store/DataStore';
 import { generateCard } from '../utils/testing';
 
-const emptyState = (formId: FormId): EditState => ({
+const emptyState = (newId: number): EditState => ({
   forms: {
     active: {
-      formId,
+      formId: newId,
       editorState: EditorState.Empty,
       card: {},
       notes: [],
@@ -22,13 +22,14 @@ const emptyState = (formId: FormId): EditState => ({
 });
 
 const okState = (
+  formId: FormId,
   card: Partial<Card>,
   dirtyFields?: Set<keyof Card>
 ): EditState => {
   const result: EditState = {
     forms: {
       active: {
-        formId: card._id,
+        formId,
         editorState: EditorState.Ok,
         card,
         notes: [],
@@ -43,10 +44,10 @@ const okState = (
   return result;
 };
 
-const loadingState = (formId: FormId): EditState => ({
+const loadingState = (cardId: string): EditState => ({
   forms: {
     active: {
-      formId,
+      formId: cardId,
       editorState: EditorState.Loading,
       card: {},
       notes: [],
@@ -70,10 +71,10 @@ const dirtyState = (
   },
 });
 
-const notFoundState = (formId, deleted): EditState => ({
+const notFoundState = (cardId: string, deleted: boolean): EditState => ({
   forms: {
     active: {
-      formId,
+      formId: cardId,
       editorState: EditorState.NotFound,
       card: {},
       deleted,
@@ -105,6 +106,7 @@ describe('reducer:edit', () => {
 
   it('should clear fields on NEW_CARD', () => {
     const initialState = okState(
+      'abc',
       generateCard('abc'),
       toDirtyFields('question', 'answer')
     );
@@ -122,6 +124,7 @@ describe('reducer:edit', () => {
 
   it('should clear other state on LOAD_CARD', () => {
     const initialState = okState(
+      'abc',
       generateCard('abc'),
       toDirtyFields('question', 'answer')
     );
@@ -140,7 +143,7 @@ describe('reducer:edit', () => {
       actions.finishLoadCard('abc', card)
     );
 
-    expect(updatedState).toEqual(okState(card));
+    expect(updatedState).toEqual(okState('abc', card));
   });
 
   it(
@@ -194,7 +197,7 @@ describe('reducer:edit', () => {
   });
 
   it('should update card and dirty fields and state on EDIT_CARD', () => {
-    const initialState = okState({
+    const initialState = okState('abc', {
       _id: 'abc',
       question: 'Question',
       answer: 'Answer',
@@ -242,7 +245,7 @@ describe('reducer:edit', () => {
     'should NOT update card and dirty fields and state on EDIT_CARD when' +
       ' formIds differ',
     () => {
-      const initialState = okState({
+      const initialState = okState('abc', {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
@@ -299,7 +302,11 @@ describe('reducer:edit', () => {
     );
 
     expect(updatedState).toEqual(
-      okState({ _id: 'abc', question: 'Updated question', answer: 'Answer' })
+      okState('abc', {
+        _id: 'abc',
+        question: 'Updated question',
+        answer: 'Answer',
+      })
     );
   });
 
@@ -371,7 +378,7 @@ describe('reducer:edit', () => {
     );
 
     expect(updatedState).toEqual(
-      okState({ _id: 'abc', question: 'Question', answer: 'Answer' })
+      okState(12, { _id: 'abc', question: 'Question', answer: 'Answer' })
     );
   });
 
@@ -397,7 +404,7 @@ describe('reducer:edit', () => {
 
       expect(updatedState).toEqual(
         dirtyState(
-          'abc',
+          17,
           { _id: 'abc', question: 'Updated #1', answer: 'Updated #2' },
           toDirtyFields('answer')
         )

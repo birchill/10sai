@@ -8,24 +8,9 @@ import { isNoteAction, NoteAction, EditNoteContext } from '../notes/actions';
 import { notes as notesReducer } from '../notes/reducer';
 import { Action } from 'redux';
 
-// (Eventual) Editing state shape:
-//
-// {
-//   forms: {
-//     active: {
-//       formId: card ID or a sequence number (for yet-to-be-saved cards),
-//       editorState: EditorState,
-//       card: { _id: ..., question: ..., ... },
-//       dirtyFields: Set('question', 'question')
-//       notes: [ ...  ]
-//     }
-//     [ next: { " " } ]
-//     [ prev: { " " } ]
-//   }
-//   [ saveError ]
-// }
-
-export type FormId = string | number;
+// This will be a number if the card was newly-created, or else a string if it
+// is an existing that was loaded.
+export type FormId = number | string;
 
 export interface EditFormState {
   formId: FormId;
@@ -62,7 +47,7 @@ export function edit(state = initialState, action: Action): EditState {
       return {
         forms: {
           active: {
-            formId: editAction.id,
+            formId: editAction.newId,
             editorState: EditorState.Empty,
             card: {},
             notes: [],
@@ -75,7 +60,7 @@ export function edit(state = initialState, action: Action): EditState {
       return {
         forms: {
           active: {
-            formId: editAction.id,
+            formId: editAction.cardId,
             editorState: EditorState.Loading,
             card: {},
             notes: [],
@@ -85,14 +70,14 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'FINISH_LOAD_CARD': {
-      if (editAction.formId !== state.forms.active.formId) {
+      if (editAction.cardId !== state.forms.active.formId) {
         return state;
       }
 
       return {
         forms: {
           active: {
-            formId: editAction.card._id,
+            formId: editAction.cardId,
             editorState: EditorState.Ok,
             card: editAction.card,
             notes: [],
@@ -102,7 +87,7 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'FAIL_LOAD_CARD': {
-      if (editAction.formId !== state.forms.active.formId) {
+      if (editAction.cardId !== state.forms.active.formId) {
         return state;
       }
 
@@ -114,7 +99,7 @@ export function edit(state = initialState, action: Action): EditState {
       return {
         forms: {
           active: {
-            formId: editAction.formId,
+            formId: editAction.cardId,
             editorState: EditorState.NotFound,
             card: {},
             deleted,
@@ -188,7 +173,7 @@ export function edit(state = initialState, action: Action): EditState {
       const result: EditState = {
         forms: {
           active: {
-            formId: editAction.card._id!,
+            formId: editAction.formId,
             editorState: EditorState.Ok,
             card: { ...editAction.card, ...state.forms.active.card },
             notes: state.forms.active.notes,

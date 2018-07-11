@@ -131,9 +131,9 @@ const formIdFromSaveContext = (saveContext: EditSaveContext): FormId => {
       typeof saveContext.newId !== 'undefined',
     'Either the resource ID or new ID must be filled in'
   );
-  return typeof saveContext.resourceId === 'string'
-    ? saveContext.resourceId
-    : saveContext.newId!;
+  return typeof saveContext.newId === 'number'
+    ? saveContext.newId
+    : saveContext.resourceId!;
 };
 
 export function* watchCardEdits(dataStore: DataStore) {
@@ -152,7 +152,9 @@ export function* watchCardEdits(dataStore: DataStore) {
         context: {
           newId: typeof action.formId === 'number' ? action.formId : undefined,
           resourceId:
-            typeof action.formId === 'string' ? action.formId : undefined,
+            typeof action.formId === 'string'
+              ? action.formId
+              : state.edit.forms.active.card._id,
         },
         deleted: !!state.edit.forms.active.deleted,
         dirty: isDirty(state),
