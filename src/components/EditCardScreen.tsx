@@ -22,7 +22,7 @@ interface Props {
   };
   active: boolean;
   onEdit: (id: FormId, change: Partial<Card>) => void;
-  onDelete: (id: FormId) => void;
+  onDelete: (id: FormId, cardId?: string) => void;
   onAddNote: (id: FormId, initialKeywords: string[]) => void;
   onNoteChange: (
     id: FormId,
@@ -219,7 +219,10 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 
   handleDelete() {
-    this.props.onDelete(this.props.forms.active.formId);
+    this.props.onDelete(
+      this.props.forms.active.formId,
+      this.props.forms.active.card._id
+    );
   }
 
   handleAddNote() {
@@ -315,8 +318,8 @@ const mapDispatchToProps = (dispatch: Dispatch<State>) => ({
   onEdit: (formId: FormId, change: Partial<Card>) => {
     dispatch(editActions.editCard(formId, change));
   },
-  onDelete: (formId: FormId) => {
-    dispatch(editActions.deleteCard(formId));
+  onDelete: (formId: FormId, cardId?: string) => {
+    dispatch(editActions.deleteCard(formId, cardId));
     dispatch(routeActions.followLink('/'));
   },
   onAddNote: (formId: FormId, initialKeywords: string[]) => {

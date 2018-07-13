@@ -576,7 +576,10 @@ describe('reducer:edit', () => {
       toDirtyFields('question')
     );
 
-    const updatedState = subject(initialState, actions.deleteCard('abc'));
+    const updatedState = subject(
+      initialState,
+      actions.deleteCard('abc', 'abc')
+    );
 
     expect(updatedState).toEqual(notFoundState('abc', true));
   });
@@ -593,14 +596,17 @@ describe('reducer:edit', () => {
     expect(updatedState).toEqual(emptyState(89));
   });
 
-  it('should do nothing on DELETE_CARD if formId does nothing', () => {
+  it('should do nothing on DELETE_CARD if formId does not match', () => {
     const initialState = dirtyState(
       'abc',
       { _id: 'abc', question: 'Question', answer: 'Answer' },
       toDirtyFields('question')
     );
 
-    const updatedState = subject(initialState, actions.deleteCard('def'));
+    const updatedState = subject(
+      initialState,
+      actions.deleteCard('def', 'abc')
+    );
 
     expect(updatedState).toEqual(initialState);
   });

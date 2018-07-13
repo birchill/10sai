@@ -71,7 +71,42 @@ describe('reducer:selection', () => {
     };
 
     state = subject(state, editActions.finishLoadCard(card._id, card));
-    state = subject(state, editActions.deleteCard('ghi'));
+    state = subject(state, editActions.deleteCard('ghi', 'ghi'));
+
+    expect(state.selection.activeCardId).toBe(undefined);
+  });
+
+  it('should clear a newly-created active card when it is deleted', () => {
+    // The important distinction in this test is that the formId of the active
+    // card ends up being the so-called "newId".
+    let state = subject(undefined, editActions.newCard(7));
+
+    const card = {
+      prompt: 'Prompt',
+      answer: 'Answer',
+    };
+    state = subject(state, editActions.editCard(7, card));
+    state = subject(state, editActions.saveCard(7));
+    state = subject(
+      state,
+      editActions.finishSaveCard(7, { ...card, _id: 'ghi' })
+    );
+
+    state = subject(state, editActions.deleteCard(7, 'ghi'));
+
+    expect(state.selection.activeCardId).toBe(undefined);
+  });
+
+  it('should clear the active card when it is deleted', () => {
+    let state = subject(undefined, editActions.loadCard('ghi'));
+    const card = {
+      _id: 'ghi',
+      prompt: 'Prompt',
+      answer: 'Answer',
+    };
+
+    state = subject(state, editActions.finishLoadCard(card._id, card));
+    state = subject(state, editActions.deleteCard('ghi', 'ghi'));
 
     expect(state.selection.activeCardId).toBe(undefined);
   });

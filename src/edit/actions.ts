@@ -155,14 +155,20 @@ export function syncEditCard(change: CardChange): SyncEditCardAction {
   };
 }
 
+// We need to pass the cardId as well as the formId since anyone dealing with
+// this action after the reducer has run (e.g. sagas) might need to know the
+// actual ID of the card that was deleted whereas the formId will be the "newId"
+// of the form, if the card was newly-created.
 export interface DeleteCardAction {
   type: 'DELETE_CARD';
   formId: FormId;
+  cardId?: string;
 }
 
-export function deleteCard(formId: FormId): DeleteCardAction {
+export function deleteCard(formId: FormId, cardId?: string): DeleteCardAction {
   return {
     type: 'DELETE_CARD',
     formId,
+    cardId,
   };
 }
