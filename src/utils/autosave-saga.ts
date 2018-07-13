@@ -78,6 +78,25 @@ export function* watchEdits<
 ) {
   const autoSaveTasks: Map<string, Task> = new Map();
 
+  // Define a method for uniquely identifying a resource and its context so that
+  // we can store state associated with it (e.g. its save progress).
+  //
+  // Importantly, if we have a newId for the resource we should prefer to use
+  // that over the resourceId. A particular resource might start life with only
+  // a newId but then gain a resourceId once it is saved. By sticking with the
+  // newId we maintain a consistent identifer for the resource-context.
+  const getContextKey = (context: SaveContext): string => {
+    return Object.entries(context)
+      .map(
+        ([field, value]) =>
+          field === 'resourceId' && typeof context.newId === 'number'
+            ? undefined
+            : value
+      )
+      .filter(value => typeof value !== 'undefined')
+      .join('-');
+  };
+
   while (true) {
     const action = yield take([
       params.editActionType,
@@ -109,12 +128,7 @@ export function* watchEdits<
       continue;
     }
 
-    const getTaskKey = () =>
-      Object.values(resourceState.context)
-        .filter(value => typeof value !== 'undefined')
-        .join('-');
-
-    let taskKey = getTaskKey();
+    const taskKey = getContextKey(resourceState.context);
 
     // If there is an auto save in progress, cancel it.
     if (autoSaveTasks.has(taskKey)) {
@@ -132,9 +146,7 @@ export function* watchEdits<
       autoSaveTasks.delete(taskKey);
     }
 
-    // Update task key since we might now have a resource ID
     resourceState.context.resourceId = resourceId;
-    taskKey = getTaskKey();
 
     switch (action.type) {
       case params.editActionType:
