@@ -118,8 +118,6 @@ export function* save(
   } catch (error) {
     console.error(`Failed to save: ${JSON.stringify(error)}`);
     yield put(editActions.failSaveCard(formId, error));
-    // Re-throw error since when saving synchronously we want to know about it
-    throw error;
   }
 }
 
@@ -141,7 +139,6 @@ export function* watchCardEdits(dataStore: DataStore) {
     editActionType: 'EDIT_CARD',
     saveActionType: 'SAVE_CARD',
     deleteActionType: 'DELETE_CARD',
-    cancelAutoSaveActionType: 'CANCEL_AUTO_SAVE',
     resourceStateSelector: (
       action:
         | editActions.EditCardAction
@@ -174,14 +171,13 @@ export function* watchCardEdits(dataStore: DataStore) {
     delete: (dataStore: DataStore, resourceId: string) =>
       call([dataStore, 'deleteCard'], resourceId),
     save,
+    saveActionCreator: (saveContext: EditSaveContext) =>
+      editActions.saveCard(formIdFromSaveContext(saveContext)),
     finishSaveActionCreator: (
       saveContext: EditSaveContext,
       resource: Partial<Card>
     ) =>
       editActions.finishSaveCard(formIdFromSaveContext(saveContext), resource),
-    cancelSaveActionCreator: (saveContext: EditSaveContext) => ({
-      type: 'CANCEL_AUTO_SAVE',
-    }),
   };
 
   yield* watchEdits(dataStore, SAVE_DELAY, params);

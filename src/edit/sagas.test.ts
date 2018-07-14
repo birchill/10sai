@@ -393,8 +393,8 @@ describe('sagas:edit watchCardEdits', () => {
         editActions.editCard(formId, { ...card, answer: 'Updated answer' })
       )
       .dispatch(editActions.deleteCard(formId))
-      .put({ type: 'CANCEL_AUTO_SAVE' })
-      .silentRun(100);
+      .not.call.fn(dataStore.putCard)
+      .silentRun(500);
   });
 });
 

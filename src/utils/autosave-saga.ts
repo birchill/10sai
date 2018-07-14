@@ -1,11 +1,13 @@
 import {
-  fork,
-  take,
-  select,
-  put,
-  CallEffect,
-  race,
   call,
+  cancel,
+  fork,
+  join,
+  take,
+  put,
+  race,
+  select,
+  CallEffect,
 } from 'redux-saga/effects';
 import DataStore from '../store/DataStore';
 import { Action } from 'redux';
@@ -27,7 +29,6 @@ export interface ResourceParams<
   EditAction extends Action,
   SaveAction extends Action,
   FinishSaveAction extends Action,
-  CancelSaveAction extends Action,
   DeleteAction extends Action,
   ReduxState,
   Resource,
@@ -36,7 +37,6 @@ export interface ResourceParams<
   editActionType: string;
   saveActionType: string;
   deleteActionType: string;
-  cancelAutoSaveActionType: string;
   resourceStateSelector: (
     action: EditAction | SaveAction | DeleteAction
   ) => ((state: ReduxState) => ResourceState<Resource, SaveContext>);
@@ -46,18 +46,17 @@ export interface ResourceParams<
     dataStore: DataStore,
     resourceState: ResourceState<Resource, SaveContext>
   ) => IterableIterator<any>; // Still waiting on typing for return values: Typescript #2983
+  saveActionCreator: (saveContext: SaveContext) => SaveAction;
   finishSaveActionCreator: (
     saveContext: SaveContext,
     resource: Partial<Resource>
   ) => FinishSaveAction;
-  cancelSaveActionCreator: (saveContext: SaveContext) => CancelSaveAction;
 }
 
 export function* watchEdits<
   EditAction extends Action,
   SaveAction extends Action,
   FinishSaveAction extends Action,
-  CancelSaveAction extends Action,
   DeleteAction extends Action,
   ReduxState,
   Resource,
@@ -69,7 +68,6 @@ export function* watchEdits<
     EditAction,
     SaveAction,
     FinishSaveAction,
-    CancelSaveAction,
     DeleteAction,
     ReduxState,
     Resource,
@@ -77,6 +75,7 @@ export function* watchEdits<
   >
 ) {
   const autoSaveTasks: Map<string, Task> = new Map();
+  const saveTasks: Map<string, Task> = new Map();
 
   // Define a method for uniquely identifying a resource and its context so that
   // we can store state associated with it (e.g. its save progress).
@@ -134,13 +133,18 @@ export function* watchEdits<
     if (autoSaveTasks.has(taskKey)) {
       const autoSaveTask = autoSaveTasks.get(taskKey)!;
       if (autoSaveTask.isRunning()) {
-        yield put(params.cancelSaveActionCreator(resourceState.context));
+        yield cancel(autoSaveTask);
       }
-      // Get the possibly updated card ID.
+      autoSaveTasks.delete(taskKey);
+    }
+
+    // If there is a save in progress, let it finish.
+    if (saveTasks.has(taskKey)) {
+      const saveTask = saveTasks.get(taskKey)!;
       try {
-        resourceId = yield autoSaveTask.done;
+        resourceId = yield join(saveTask);
       } catch (error) {
-        // If the previous auto-save failed, just ignore it. It will have
+        // If the previous save failed, just ignore it. It will have
         // dispatched a suitable error action.
       }
       autoSaveTasks.delete(taskKey);
@@ -154,21 +158,18 @@ export function* watchEdits<
           taskKey,
           yield fork(
             autoSave,
-            dataStore,
             autoSaveDelay,
-            resourceState,
-            params.save,
-            params.cancelAutoSaveActionType
+            resourceState.context,
+            params.saveActionCreator
           )
         );
         break;
 
       case params.saveActionType:
-        try {
-          yield params.save(dataStore, resourceState);
-        } catch (error) {
-          // Don't do anything
-        }
+        saveTasks.set(
+          taskKey,
+          yield fork(params.save, dataStore, resourceState)
+        );
         break;
 
       case params.deleteActionType:
@@ -191,36 +192,14 @@ export function* watchEdits<
   }
 }
 
-function* autoSave<Resource, SaveContext extends SaveContextBase>(
-  dataStore: DataStore,
+function* autoSave<
+  SaveContext extends SaveContextBase,
+  SaveAction extends Action
+>(
   autoSaveDelay: number,
-  resourceState: ResourceState<Resource, SaveContext>,
-  save: (
-    dataStore: DataStore,
-    resourceState: ResourceState<Resource, SaveContext>
-  ) => any,
-  cancelAutoSaveActionType: string
+  saveContext: SaveContext,
+  saveActionCreator: (saveContext: SaveContext) => SaveAction
 ) {
-  // Debounce -- we allow this part of the task to be cancelled
-  const { wait, cancel } = yield race({
-    wait: call(delay, autoSaveDelay),
-    cancel: take(cancelAutoSaveActionType),
-  });
-
-  // XXX This needs to test the cancelAutoSaveAction matches our context
-  // (Do a deep equal on the context stuff.)
-
-  if (cancel) {
-    return resourceState.context.resourceId;
-  }
-
-  // The remaining steps should not be canceled since otherwise we risk
-  // writing the resource twice with different IDs.
-  try {
-    return yield save(dataStore, resourceState);
-  } catch (error) {
-    // Nothing special to do here. We'll have already dispatched the appropriate
-    // action and that's enough for auto-saving.
-    return resourceState.context.resourceId;
-  }
+  yield delay(autoSaveDelay);
+  yield put(saveActionCreator(saveContext));
 }
