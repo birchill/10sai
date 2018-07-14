@@ -4,7 +4,6 @@ import { Note } from '../model';
 
 export const enum NoteEditState {
   Ok = 'ok',
-  Dirty = 'dirty',
   Deleted = 'deleted',
 }
 
@@ -71,7 +70,6 @@ export function notes(
       const updatedNoteState: NoteState = {
         ...noteState,
         note: updatedNote,
-        editState: NoteEditState.Dirty,
         dirtyFields,
       };
 

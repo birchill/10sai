@@ -79,7 +79,7 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
-        editState: NoteEditState.Dirty,
+        editState: NoteEditState.Ok,
       },
     ]);
 
@@ -111,7 +111,7 @@ describe('reducer:notes', () => {
           keywords: ['New', 'keywords'],
         },
         dirtyFields: new Set(['keywords']),
-        editState: NoteEditState.Dirty,
+        editState: NoteEditState.Ok,
       },
       newNoteState(2),
     ]);
@@ -156,7 +156,7 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
-        editState: NoteEditState.Dirty,
+        editState: NoteEditState.Ok,
       },
     ]);
   });
@@ -187,7 +187,7 @@ describe('reducer:notes', () => {
           keywords: ['Updated', 'keywords'],
         },
         dirtyFields: new Set(['content', 'keywords']),
-        editState: NoteEditState.Dirty,
+        editState: NoteEditState.Ok,
       },
     ]);
     // Check the set identity has also been updated
@@ -216,7 +216,7 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
-        editState: NoteEditState.Dirty,
+        editState: NoteEditState.Ok,
       },
     ]);
   });
