@@ -14,7 +14,6 @@ import {
   save as saveSaga,
   beforeEditScreenChange as beforeEditScreenChangeSaga,
 } from './sagas';
-import { FormId } from './reducer';
 import { Card } from '../model';
 import reducer from '../reducer';
 import EditorState from './EditorState';
@@ -34,11 +33,11 @@ declare global {
   }
 }
 
-const loadingState = (cardId: string) => ({
+const loadingState = (formId: number) => ({
   edit: {
     forms: {
       active: {
-        formId: cardId,
+        formId,
         editorState: EditorState.Loading,
         card: {},
       },
@@ -46,7 +45,7 @@ const loadingState = (cardId: string) => ({
   },
 });
 
-const dirtyState = (formId: FormId, cardToUse: Partial<Card>) => {
+const dirtyState = (formId: number, cardToUse: Partial<Card> | undefined) => {
   const card = cardToUse || { prompt: 'Updated', answer: 'Answer' };
   return {
     route: { index: 0 },
@@ -69,19 +68,24 @@ describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
     const dataStore = { getCard: id => ({ _id: id }) };
 
+    // The load action increments a global counter so we need to read where it
+    // is up to.
+    const formId = editActions.loadCard('123').newFormId + 1;
+
     return expectSaga(
       navigateSaga,
       dataStore,
       routeActions.navigate({ url: '/cards/123' })
     )
       .withState(initialState)
-      .put(editActions.loadCard('123'))
+      .put(editActions.loadCard('123', formId))
       .call([dataStore, 'getCard'], '123')
       .run();
   });
 
   it('triggers a load action if the route is for editing a card (path)', () => {
     const dataStore = { getCard: id => ({ _id: id }) };
+    const formId = editActions.loadCard('123').newFormId + 1;
 
     return expectSaga(
       navigateSaga,
@@ -89,41 +93,35 @@ describe('sagas:edit navigate', () => {
       routeActions.navigate({ path: '/cards/123' })
     )
       .withState(initialState)
-      .put(editActions.loadCard('123'))
+      .put(editActions.loadCard('123', formId))
       .call([dataStore, 'getCard'], '123')
       .run();
   });
 
   it('triggers a new action if the route is for adding a card', () => {
     const dataStore = { getCard: id => ({ _id: id }) };
-
-    // The new action increments a global counter which can be touched by other
-    // tests so we simply get the action here knowing that the next caller will
-    // be the code under test (so we increment the id to match the value the
-    // caller will get).
-    const expectedNewAction = editActions.newCard();
-    expectedNewAction.newId++;
+    const formId = editActions.newCard().newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
       routeActions.navigate({ url: '/cards/new' })
     )
-      .not.put(editActions.loadCard('123'))
-      .put(expectedNewAction)
-      .not.call([dataStore, 'getCard'], '123')
+      .put(editActions.newCard(formId))
+      .not.call.fn(dataStore.getCard)
       .run();
   });
 
   it('does not triggers a load action if the route is something else', () => {
     const dataStore = { getCard: id => ({ _id: id }) };
+    const formId = editActions.loadCard('123').newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
       routeActions.navigate({ url: '/' })
     )
-      .not.put(editActions.loadCard('123'))
+      .not.put(editActions.loadCard('123', formId))
       .not.call([dataStore, 'getCard'], '123')
       .run();
   });
@@ -131,16 +129,17 @@ describe('sagas:edit navigate', () => {
   it('dispatches a finished action if the load successfully complete', () => {
     const card = generateCard('123');
     const dataStore = { getCard: id => ({ ...card, _id: id }) };
+    const formId = editActions.loadCard('123').newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
       routeActions.navigate({ url: '/cards/123' })
     )
-      .put(editActions.loadCard('123'))
+      .put(editActions.loadCard('123', formId))
       .call([dataStore, 'getCard'], '123')
-      .withState(loadingState('123'))
-      .put(editActions.finishLoadCard('123', card))
+      .withState(loadingState(formId))
+      .put(editActions.finishLoadCard(formId, card))
       .run();
   });
 
@@ -152,21 +151,22 @@ describe('sagas:edit navigate', () => {
           reject(error);
         }),
     };
+    const formId = editActions.loadCard('123').newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
       routeActions.navigate({ url: '/cards/123' })
     )
-      .put(editActions.loadCard('123'))
+      .put(editActions.loadCard('123', formId))
       .call([dataStore, 'getCard'], '123')
-      .withState(loadingState('123'))
-      .put(editActions.failLoadCard('123', error))
+      .withState(loadingState(formId))
+      .put(editActions.failLoadCard(formId, error))
       .silentRun(100);
   });
 });
 
-const okState = (formId, cardToUse) => {
+const okState = (formId: number, cardToUse: Partial<Card> | undefined) => {
   const card = cardToUse || { prompt: 'Prompt', answer: 'Answer' };
   return {
     edit: {
@@ -181,7 +181,7 @@ const okState = (formId, cardToUse) => {
   };
 };
 
-const emptyState = formId => ({
+const emptyState = (formId: number) => ({
   edit: {
     forms: {
       active: {
@@ -193,7 +193,7 @@ const emptyState = formId => ({
   },
 });
 
-const notFoundState = (formId, deleted) => ({
+const notFoundState = (formId: number, deleted: boolean) => ({
   edit: {
     forms: {
       active: {
@@ -218,7 +218,7 @@ describe('sagas:edit watchCardEdits', () => {
   it('saves the card', () => {
     const dataStore = { putCard: card => card };
     const card = { question: 'yer' };
-    const formId = 'abc';
+    const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
@@ -231,7 +231,7 @@ describe('sagas:edit watchCardEdits', () => {
   it('does NOT save the card if it is not dirty', () => {
     const dataStore = { putCard: card => card };
     const card = { question: 'yer' };
-    const formId = 'abc';
+    const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(okState(formId, card))
@@ -243,7 +243,7 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('fails if there is no card to save', () => {
     const dataStore = { putCard: card => card };
-    const formId = 'abc';
+    const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(emptyState(formId))
@@ -263,7 +263,7 @@ describe('sagas:edit watchCardEdits', () => {
       putCard: card => ({ ...card, _id: 'generated-id' }),
     };
     const card = { question: 'yer' };
-    const formId = 'abc';
+    const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
@@ -278,7 +278,7 @@ describe('sagas:edit watchCardEdits', () => {
       putCard: card => ({ ...card, _id: '1234' }),
     };
     const card = { question: 'yer' };
-    const formId = 12;
+    const formId = 5;
     global.location.pathname = '/cards/new';
 
     return expectSaga(watchCardEditsSaga, dataStore)
@@ -293,7 +293,7 @@ describe('sagas:edit watchCardEdits', () => {
   it('does NOT update history if the card is not new', () => {
     const dataStore = { putCard: card => card };
     const card = { question: 'yer', _id: '1234' };
-    const formId = '1234';
+    const formId = 5;
     global.location.pathname = '/cards/new';
 
     return expectSaga(watchCardEditsSaga, dataStore)
@@ -343,11 +343,11 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('deletes the card when requested', () => {
     const dataStore = { deleteCard: () => {} };
-    const formId = 'abc';
+    const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(notFoundState(formId, true))
-      .dispatch(editActions.deleteCard(formId))
+      .dispatch(editActions.deleteCard(formId, 'abc'))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
@@ -355,11 +355,11 @@ describe('sagas:edit watchCardEdits', () => {
   it('does NOT delete the card if it has not been saved', () => {
     const dataStore = { deleteCard: () => {} };
     const card = { _id: 'abc', prompt: 'Prompt', answer: 'Answer' };
-    const formId = 'abc';
+    const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.deleteCard(formId))
+      .dispatch(editActions.deleteCard(formId, 'abc'))
       .not.call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
@@ -372,19 +372,19 @@ describe('sagas:edit watchCardEdits', () => {
           reject(error);
         }),
     };
-    const formId = 'abc';
+    const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(notFoundState(formId, true))
-      .dispatch(editActions.deleteCard(formId))
+      .dispatch(editActions.deleteCard(formId, 'abc'))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
 
   it('cancels autosaving when the card is deleted', () => {
-    const dataStore = { deleteCard: () => {} };
+    const dataStore = { deleteCard: () => {}, putCard: () => {} };
     const card = { _id: 'abc', question: 'Question', answer: 'Answer' };
-    const formId = 'abc';
+    const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withReducer(reducer)
@@ -392,7 +392,7 @@ describe('sagas:edit watchCardEdits', () => {
       .dispatch(
         editActions.editCard(formId, { ...card, answer: 'Updated answer' })
       )
-      .dispatch(editActions.deleteCard(formId))
+      .dispatch(editActions.deleteCard(formId, 'abc'))
       .not.call.fn(dataStore.putCard)
       .silentRun(500);
   });
@@ -409,14 +409,8 @@ describe('sagas:edit save', () => {
     const card = { question: 'yer' };
     const oldFormId = 17;
     const newFormId = 18;
-    const resourceState = {
-      context: {
-        newId: oldFormId,
-      },
-      resource: card,
-    };
 
-    return expectSaga(saveSaga, dataStore, resourceState)
+    return expectSaga(saveSaga, dataStore, oldFormId, card)
       .withState(emptyState(newFormId))
       .call([dataStore, 'putCard'], card)
       .put(editActions.finishSaveCard(oldFormId, { ...card, _id: '4567' }))
@@ -427,7 +421,7 @@ describe('sagas:edit save', () => {
 
 describe('sagas:edit beforeEditScreenChange', () => {
   it('dispatches SAVE_CARD if the card is dirty', () => {
-    const formId = 'abc';
+    const formId = 5;
     const state = {
       edit: {
         forms: {
@@ -449,7 +443,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   });
 
   it('does nothing if the card is not dirty', () => {
-    const formId = 'abc';
+    const formId = 5;
     const state = {
       edit: { forms: { active: { formId, editorState: EditorState.Ok } } },
     };
@@ -462,7 +456,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   });
 
   it('returns false if the card fails to save', () => {
-    const formId = 'abc';
+    const formId = 5;
     const state = {
       edit: {
         forms: {

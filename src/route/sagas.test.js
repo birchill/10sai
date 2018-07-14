@@ -213,7 +213,7 @@ describe('sagas:route followLink', () => {
 
 describe('sagas:route beforeScreenChange', () => {
   it('returns false if the screen-specific action does', () => {
-    const formId = 'abc';
+    const formId = 5;
     const state = {
       edit: {
         forms: {
@@ -243,7 +243,7 @@ describe('sagas:route beforeScreenChange', () => {
     'returns false if there is a navigation while the actions are' +
       ' happening',
     () => {
-      const formId = 'abc';
+      const formId = 5;
       const state = {
         edit: {
           forms: {

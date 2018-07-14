@@ -1,33 +1,27 @@
 import {
   call,
-  fork,
   put,
-  race,
   select,
   take,
   takeEvery,
+  CallEffect,
 } from 'redux-saga/effects';
-import { delay } from 'redux-saga';
 import { Store } from 'redux';
-import {
-  ResourceParams,
-  watchEdits,
-  ResourceState,
-  SaveContextBase,
-} from '../utils/autosave-saga';
+import { watchEdits, ResourceState } from '../utils/autosave-saga';
 import {
   routeFromURL,
   routeFromPath,
   URLFromRoute,
   routesEqual,
 } from '../route/router';
-import { EditState, EditFormState, FormId } from './reducer';
+import { EditState, EditFormState } from './reducer';
 import { getActiveRecord, isDirty } from './selectors';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
 import EditorState from './EditorState';
 import { DataStore, StoreError } from '../store/DataStore';
 import { Card } from '../model';
+import { DeleteCardAction } from './actions';
 
 const SAVE_DELAY = 2000;
 
@@ -35,8 +29,6 @@ const SAVE_DELAY = 2000;
 interface State {
   edit: EditState;
 }
-
-// Sagas
 
 // XXX This should move to route/actions.ts once converted to TS
 interface NavigateAction {
@@ -79,13 +71,13 @@ export function* navigate(dataStore: DataStore, action: NavigateAction) {
   }
 }
 
+type EditSaveContext = number;
+
 export function* save(
   dataStore: DataStore,
-  resourceState: ResourceState<Card, EditSaveContext>
+  formId: number,
+  card: Partial<Card>
 ) {
-  const formId = formIdFromSaveContext(resourceState.context);
-  const card = resourceState.resource;
-
   try {
     const savedCard = yield call([dataStore, 'putCard'], card);
 
@@ -114,25 +106,14 @@ export function* save(
     // trigger a NAVIGATE action.
     yield put(editActions.finishSaveCard(formId, savedCard));
 
-    return savedCard._id;
+    return savedCard;
   } catch (error) {
     console.error(`Failed to save: ${JSON.stringify(error)}`);
     yield put(editActions.failSaveCard(formId, error));
+
+    return card;
   }
 }
-
-type EditSaveContext = SaveContextBase;
-
-const formIdFromSaveContext = (saveContext: EditSaveContext): FormId => {
-  console.assert(
-    typeof saveContext.resourceId !== 'undefined' ||
-      typeof saveContext.newId !== 'undefined',
-    'Either the resource ID or new ID must be filled in'
-  );
-  return typeof saveContext.newId === 'number'
-    ? saveContext.newId
-    : saveContext.resourceId!;
-};
 
 export function* watchCardEdits(dataStore: DataStore) {
   const params = {
@@ -145,39 +126,44 @@ export function* watchCardEdits(dataStore: DataStore) {
         | editActions.SaveCardAction
         | editActions.DeleteCardAction
     ) => {
-      return (state: State): ResourceState<Card, EditSaveContext> => ({
-        context: {
-          newId: typeof action.formId === 'number' ? action.formId : undefined,
-          resourceId:
-            typeof action.formId === 'string'
-              ? action.formId
-              : state.edit.forms.active.card._id,
-        },
-        deleted: !!state.edit.forms.active.deleted,
-        dirty: isDirty(state),
-        resource: state.edit.forms.active.card,
-      });
-    },
-    hasDataToSave: (resource: Partial<Card>): boolean => {
-      const cardHasNonEmptyField = (field: keyof Card): boolean =>
-        typeof resource[field] === 'string' &&
-        (resource[field] as string).length !== 0;
       return (
-        typeof resource._id !== 'undefined' ||
-        cardHasNonEmptyField('question') ||
-        cardHasNonEmptyField('answer')
-      );
+        state: State
+      ): ResourceState<Card, EditSaveContext> | undefined => {
+        const hasDataToSave = (card: Partial<Card>): boolean => {
+          const cardHasNonEmptyField = (field: keyof Card): boolean =>
+            typeof card[field] === 'string' &&
+            (card[field] as string).length !== 0;
+          return (
+            typeof card._id !== 'undefined' ||
+            cardHasNonEmptyField('question') ||
+            cardHasNonEmptyField('answer')
+          );
+        };
+        const card = state.edit.forms.active.card;
+
+        return {
+          context: action.formId,
+          deleted: !!state.edit.forms.active.deleted,
+          needsSaving: isDirty(state) && hasDataToSave(card),
+          resource: card,
+        };
+      };
     },
-    delete: (dataStore: DataStore, resourceId: string) =>
-      call([dataStore, 'deleteCard'], resourceId),
+    delete: (
+      dataStore: DataStore,
+      action: DeleteCardAction
+    ): CallEffect | undefined => {
+      if (typeof action.cardId === 'string') {
+        return call([dataStore, 'deleteCard'], action.cardId);
+      }
+    },
     save,
     saveActionCreator: (saveContext: EditSaveContext) =>
-      editActions.saveCard(formIdFromSaveContext(saveContext)),
+      editActions.saveCard(saveContext),
     finishSaveActionCreator: (
       saveContext: EditSaveContext,
       resource: Partial<Card>
-    ) =>
-      editActions.finishSaveCard(formIdFromSaveContext(saveContext), resource),
+    ) => editActions.finishSaveCard(saveContext, resource),
   };
 
   yield* watchEdits(dataStore, SAVE_DELAY, params);

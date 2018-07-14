@@ -8,12 +8,8 @@ import { isNoteAction, NoteAction, EditNoteContext } from '../notes/actions';
 import { notes as notesReducer } from '../notes/reducer';
 import { Action } from 'redux';
 
-// This will be a number if the card was newly-created, or else a string if it
-// is an existing that was loaded.
-export type FormId = number | string;
-
 export interface EditFormState {
-  formId: FormId;
+  formId: number;
   editorState: EditorState;
   card: Partial<Card>;
   dirtyFields?: Set<keyof Card>;
@@ -47,7 +43,7 @@ export function edit(state = initialState, action: Action): EditState {
       return {
         forms: {
           active: {
-            formId: editAction.newId,
+            formId: editAction.newFormId,
             editorState: EditorState.Empty,
             card: {},
             notes: [],
@@ -60,7 +56,7 @@ export function edit(state = initialState, action: Action): EditState {
       return {
         forms: {
           active: {
-            formId: editAction.cardId,
+            formId: editAction.newFormId,
             editorState: EditorState.Loading,
             card: {},
             notes: [],
@@ -70,14 +66,14 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'FINISH_LOAD_CARD': {
-      if (editAction.cardId !== state.forms.active.formId) {
+      if (editAction.formId !== state.forms.active.formId) {
         return state;
       }
 
       return {
         forms: {
           active: {
-            formId: editAction.cardId,
+            formId: editAction.formId,
             editorState: EditorState.Ok,
             card: editAction.card,
             notes: [],
@@ -87,7 +83,7 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'FAIL_LOAD_CARD': {
-      if (editAction.cardId !== state.forms.active.formId) {
+      if (editAction.formId !== state.forms.active.formId) {
         return state;
       }
 
@@ -99,7 +95,7 @@ export function edit(state = initialState, action: Action): EditState {
       return {
         forms: {
           active: {
-            formId: editAction.cardId,
+            formId: editAction.formId,
             editorState: EditorState.NotFound,
             card: {},
             deleted,
@@ -110,7 +106,10 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'EDIT_CARD': {
-      if (editAction.formId !== state.forms.active.formId) {
+      if (
+        editAction.formId !== state.forms.active.formId ||
+        state.forms.active.deleted
+      ) {
         return state;
       }
 
@@ -199,7 +198,10 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'SYNC_EDIT_CARD': {
-      if (editAction.change._id !== state.forms.active.card._id) {
+      if (
+        editAction.change._id !== state.forms.active.card._id ||
+        state.forms.active.deleted
+      ) {
         return state;
       }
 
@@ -278,7 +280,8 @@ export function edit(state = initialState, action: Action): EditState {
 
   const noteActionIsForEditContext = (action: NoteAction): boolean =>
     action.context.screen === 'edit-card' &&
-    (action.context as EditNoteContext).formId === state.forms.active.formId;
+    (action.context as EditNoteContext).cardFormId ===
+      state.forms.active.formId;
 
   if (isNoteAction(action) && noteActionIsForEditContext(action)) {
     return {

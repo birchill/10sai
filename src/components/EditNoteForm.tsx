@@ -8,12 +8,11 @@ import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 
 interface Props {
   className?: string;
-  newId?: number;
+  formId: number;
   note: Partial<Note>;
   relatedKeywords: string[];
   onChange?: (
-    newId: number | undefined,
-    noteId: string | undefined,
+    noteFormId: number,
     topic: string,
     value: string | string[]
   ) => void;
@@ -38,7 +37,7 @@ export class EditNoteForm extends React.Component<Props, State> {
   static get propTypes() {
     return {
       className: PropTypes.string,
-      newId: PropTypes.number,
+      formId: PropTypes.number.isRequired,
       note: PropTypes.object.isRequired,
       relatedKeywords: PropTypes.arrayOf(PropTypes.string).isRequired,
       onChange: PropTypes.func,
@@ -129,7 +128,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       if (props.onChange) {
         const valueAsString = getEditorContent(editorState);
         if (valueAsString !== this.props.note.content) {
-          props.onChange(props.newId, props.note.id, 'content', valueAsString);
+          props.onChange(props.formId, 'content', valueAsString);
         }
       }
 
@@ -149,12 +148,7 @@ export class EditNoteForm extends React.Component<Props, State> {
 
   handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
     if (this.props.onChange) {
-      this.props.onChange(
-        this.props.newId,
-        this.props.note.id,
-        'keywords',
-        keywords
-      );
+      this.props.onChange(this.props.formId, 'keywords', keywords);
     }
   }
 

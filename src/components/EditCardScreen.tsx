@@ -11,7 +11,7 @@ import EditCardNotFound from './EditCardNotFound';
 import EditNoteForm from './EditNoteForm';
 import EditorState from '../edit/EditorState';
 import * as editActions from '../edit/actions';
-import { EditFormState, EditState, FormId } from '../edit/reducer';
+import { EditFormState, EditState } from '../edit/reducer';
 import { NoteState } from '../notes/reducer';
 import * as noteActions from '../notes/actions';
 import * as routeActions from '../route/actions';
@@ -21,13 +21,12 @@ interface Props {
     active: EditFormState;
   };
   active: boolean;
-  onEdit: (id: FormId, change: Partial<Card>) => void;
-  onDelete: (id: FormId, cardId?: string) => void;
-  onAddNote: (id: FormId, initialKeywords: string[]) => void;
+  onEdit: (formId: number, change: Partial<Card>) => void;
+  onDelete: (formId: number, cardId?: string) => void;
+  onAddNote: (formId: number, initialKeywords: string[]) => void;
   onNoteChange: (
-    id: FormId,
-    newId: number | undefined,
-    noteId: string | undefined,
+    cardFormId: number,
+    noteFormId: number,
     change: Partial<Note>
   ) => void;
 }
@@ -37,13 +36,13 @@ export class EditCardScreen extends React.PureComponent<Props> {
     return {
       forms: PropTypes.shape({
         active: PropTypes.shape({
-          formId: PropTypes.any,
+          formId: PropTypes.number.isRequired,
           editorState: PropTypes.string.isRequired,
           card: PropTypes.object.isRequired,
           deleted: PropTypes.bool,
           notes: PropTypes.arrayOf(
             PropTypes.shape({
-              newId: PropTypes.number,
+              formId: PropTypes.number,
               note: PropTypes.object.isRequired,
               editState: PropTypes.string.isRequired,
             })
@@ -244,12 +243,11 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 
   handleNoteChange<K extends keyof Note>(
-    newId: number | undefined,
-    noteId: string | undefined,
+    noteFormId: number,
     field: K,
-    value: Note[K]
+    value: Note[K] | Array<Note[K]>
   ) {
-    this.props.onNoteChange(this.props.forms.active.formId, newId, noteId, {
+    this.props.onNoteChange(this.props.forms.active.formId, noteFormId, {
       [field]: value,
     });
   }
@@ -279,13 +277,9 @@ export class EditCardScreen extends React.PureComponent<Props> {
                     : undefined;
                 return (
                   <EditNoteForm
-                    key={
-                      typeof note.newId !== 'undefined'
-                        ? note.newId
-                        : note.note.id
-                    }
+                    key={note.formId}
                     className="noteform"
-                    newId={note.newId}
+                    formId={note.formId}
                     note={note.note}
                     relatedKeywords={relatedKeywords}
                     ref={ref}
@@ -315,28 +309,29 @@ const mapStateToProps = (state: State) => ({
   forms: (state.edit as EditState).forms,
 });
 const mapDispatchToProps = (dispatch: Dispatch<State>) => ({
-  onEdit: (formId: FormId, change: Partial<Card>) => {
+  onEdit: (formId: number, change: Partial<Card>) => {
     dispatch(editActions.editCard(formId, change));
   },
-  onDelete: (formId: FormId, cardId?: string) => {
+  onDelete: (formId: number, cardId?: string) => {
     dispatch(editActions.deleteCard(formId, cardId));
     dispatch(routeActions.followLink('/'));
   },
-  onAddNote: (formId: FormId, initialKeywords: string[]) => {
+  onAddNote: (formId: number, initialKeywords: string[]) => {
     dispatch(
-      noteActions.addNote({ screen: 'edit-card', formId }, initialKeywords)
+      noteActions.addNote(
+        { screen: 'edit-card', cardFormId: formId },
+        initialKeywords
+      )
     );
   },
   onNoteChange: (
-    formId: FormId,
-    newId: number | undefined,
-    noteId: string | undefined,
+    cardFormId: number,
+    noteFormId: number,
     change: Partial<Note>
   ) => {
     dispatch(
       noteActions.editNote(
-        { screen: 'edit-card', formId },
-        { newId, noteId },
+        { screen: 'edit-card', cardFormId, noteFormId },
         change
       )
     );

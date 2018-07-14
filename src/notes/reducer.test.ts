@@ -1,15 +1,24 @@
 import { notes as subject, NoteState, NoteEditState } from './reducer';
 import * as actions from './actions';
 import { Note } from '../model';
+import { Omit } from '../utils/type-helpers';
+import { EditNoteContext } from './actions';
 
 describe('reducer:notes', () => {
-  const context: actions.EditNoteContext = { screen: 'edit-card', formId: 7 };
+  const baseContext: Omit<EditNoteContext, 'noteFormId'> = {
+    screen: 'edit-card',
+    cardFormId: 7,
+  };
+  const context = (formId: number): EditNoteContext => ({
+    ...baseContext,
+    noteFormId: formId,
+  });
 
   const newNoteState = (
-    newId: number,
+    formId: number,
     initialKeywords?: string[]
   ): NoteState => {
-    const result: NoteState = { newId, note: {}, editState: NoteEditState.Ok };
+    const result: NoteState = { formId, note: {}, editState: NoteEditState.Ok };
     if (initialKeywords) {
       result.note.keywords = initialKeywords;
     }
@@ -21,13 +30,14 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.addNoteWithNewId(context, 1)
+      actions.addNoteWithNewFormId(baseContext, 1)
     );
 
     expect(updatedState).toEqual([newNoteState(1)]);
   });
 
-  const typicalNoteState = (): NoteState => ({
+  const typicalNoteState = (formId: number): NoteState => ({
+    formId,
     note: {
       id: 'abc',
       keywords: ['def', 'ghi'],
@@ -40,14 +50,14 @@ describe('reducer:notes', () => {
 
   it('should append new notes on ADD_NOTE', () => {
     const initialState = [];
-    initialState.push(typicalNoteState());
+    initialState.push(typicalNoteState(5));
 
     const updatedState = subject(
       initialState,
-      actions.addNoteWithNewId(context, 2)
+      actions.addNoteWithNewFormId(baseContext, 6)
     );
 
-    expect(updatedState).toEqual([...initialState, newNoteState(2)]);
+    expect(updatedState).toEqual([...initialState, newNoteState(6)]);
   });
 
   it('should fill in initial keywords on ADD_NOTE', () => {
@@ -55,7 +65,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.addNoteWithNewId(context, 3, ['initial', 'keywords'])
+      actions.addNoteWithNewFormId(baseContext, 3, ['initial', 'keywords'])
     );
 
     expect(updatedState).toEqual([newNoteState(3, ['initial', 'keywords'])]);
@@ -68,7 +78,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.editNote(context, { newId: 1 }, { content: 'Updated content' })
+      actions.editNote(context(1), { content: 'Updated content' })
     );
 
     expect(updatedState).toEqual([
@@ -90,16 +100,12 @@ describe('reducer:notes', () => {
   });
 
   it('should update an existing note on EDIT_NOTE (matching on note ID)', () => {
-    const initialNoteState = typicalNoteState();
-    const initialState = [newNoteState(1), initialNoteState, newNoteState(2)];
+    const initialNoteState = typicalNoteState(2);
+    const initialState = [newNoteState(1), initialNoteState, newNoteState(3)];
 
     const updatedState = subject(
       initialState,
-      actions.editNote(
-        context,
-        { noteId: initialNoteState.note.id },
-        { keywords: ['New', 'keywords'] }
-      )
+      actions.editNote(context(2), { keywords: ['New', 'keywords'] })
     );
 
     expect(updatedState).toEqual([
@@ -113,7 +119,7 @@ describe('reducer:notes', () => {
         dirtyFields: new Set(['keywords']),
         editState: NoteEditState.Ok,
       },
-      newNoteState(2),
+      newNoteState(3),
     ]);
   });
 
@@ -123,7 +129,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.editNote(context, { newId: 2 }, { content: 'Updated content' })
+      actions.editNote(context(2), { content: 'Updated content' })
     );
 
     expect(updatedState).toBe(initialState);
@@ -138,14 +144,10 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.editNote(
-        context,
-        { newId: 1 },
-        {
-          content: 'Updated content',
-          keywords: ['Original', 'keywords'],
-        }
-      )
+      actions.editNote(context(1), {
+        content: 'Updated content',
+        keywords: ['Original', 'keywords'],
+      })
     );
 
     expect(updatedState).toEqual([
@@ -162,20 +164,16 @@ describe('reducer:notes', () => {
   });
 
   it('should extend the set of dirty fields on EDIT_NOTE', () => {
-    const initialNoteState = typicalNoteState();
+    const initialNoteState = typicalNoteState(1);
     initialNoteState.dirtyFields = new Set(['content']) as Set<keyof Note>;
     const initialState = [initialNoteState];
 
     const updatedState = subject(
       initialState,
-      actions.editNote(
-        context,
-        { noteId: initialNoteState.note.id },
-        {
-          content: 'Updated content',
-          keywords: ['Updated', 'keywords'],
-        }
-      )
+      actions.editNote(context(1), {
+        content: 'Updated content',
+        keywords: ['Updated', 'keywords'],
+      })
     );
 
     expect(updatedState).toEqual([
@@ -200,11 +198,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.editNote(
-        context,
-        { newId: 1, noteId: 'abc' },
-        { id: 'abc', content: 'Updated content' }
-      )
+      actions.editNote(context(1), { id: 'abc', content: 'Updated content' })
     );
 
     expect(updatedState).toEqual([

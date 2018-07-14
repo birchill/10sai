@@ -16,29 +16,30 @@ describe('reducer:selection', () => {
 
   it('should update the active card when a card finishes loading', () => {
     let state = subject(undefined, editActions.loadCard('abc'));
+    const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'abc',
       prompt: 'Prompt',
       answer: 'Answer',
     };
 
-    state = subject(state, editActions.finishLoadCard(card._id, card));
+    state = subject(state, editActions.finishLoadCard(formId, card));
 
     expect(state.selection.activeCardId).toBe('abc');
   });
 
   it('should update the active card when a card finishes saving', () => {
     let state = subject(undefined, editActions.newCard());
-    const unsavedId = state.edit.forms.active.formId;
+    const formId = state.edit.forms.active.formId;
 
     state = subject(
       state,
-      editActions.editCard(unsavedId, { prompt: 'Prompt', answer: 'Answer' })
+      editActions.editCard(formId, { prompt: 'Prompt', answer: 'Answer' })
     );
-    state = subject(state, editActions.saveCard(unsavedId));
+    state = subject(state, editActions.saveCard(formId));
     state = subject(
       state,
-      editActions.finishSaveCard(unsavedId, {
+      editActions.finishSaveCard(formId, {
         _id: 'def',
         prompt: 'Prompt',
         answer: 'Answer',
@@ -50,13 +51,14 @@ describe('reducer:selection', () => {
 
   it('should clear the active card when a new card is started', () => {
     let state = subject(undefined, editActions.loadCard('tuv'));
+    const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'tuv',
       prompt: 'Prompt',
       answer: 'Answer',
     };
 
-    state = subject(state, editActions.finishLoadCard(card._id, card));
+    state = subject(state, editActions.finishLoadCard(formId, card));
     state = subject(state, editActions.newCard());
 
     expect(state.selection.activeCardId).toBe(undefined);
@@ -64,21 +66,20 @@ describe('reducer:selection', () => {
 
   it('should clear the active card when it is deleted', () => {
     let state = subject(undefined, editActions.loadCard('ghi'));
+    const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'ghi',
       prompt: 'Prompt',
       answer: 'Answer',
     };
 
-    state = subject(state, editActions.finishLoadCard(card._id, card));
-    state = subject(state, editActions.deleteCard('ghi', 'ghi'));
+    state = subject(state, editActions.finishLoadCard(formId, card));
+    state = subject(state, editActions.deleteCard(formId, 'ghi'));
 
     expect(state.selection.activeCardId).toBe(undefined);
   });
 
   it('should clear a newly-created active card when it is deleted', () => {
-    // The important distinction in this test is that the formId of the active
-    // card ends up being the so-called "newId".
     let state = subject(undefined, editActions.newCard(7));
 
     const card = {
@@ -99,27 +100,29 @@ describe('reducer:selection', () => {
 
   it('should clear the active card when it is deleted', () => {
     let state = subject(undefined, editActions.loadCard('ghi'));
+    const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'ghi',
       prompt: 'Prompt',
       answer: 'Answer',
     };
 
-    state = subject(state, editActions.finishLoadCard(card._id, card));
-    state = subject(state, editActions.deleteCard('ghi', 'ghi'));
+    state = subject(state, editActions.finishLoadCard(formId, card));
+    state = subject(state, editActions.deleteCard(formId, 'ghi'));
 
     expect(state.selection.activeCardId).toBe(undefined);
   });
 
   it('should clear the active card when it is deleted through sync', () => {
     let state = subject(undefined, editActions.loadCard('xyz'));
+    const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'xyz',
       prompt: 'Prompt',
       answer: 'Answer',
     };
 
-    state = subject(state, editActions.finishLoadCard(card._id, card));
+    state = subject(state, editActions.finishLoadCard(formId, card));
     state = subject(
       state,
       editActions.syncEditCard({ ...card, _deleted: true })

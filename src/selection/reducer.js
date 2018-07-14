@@ -28,7 +28,7 @@ export default function selection(state, action) {
     // If we just finished loading a card and it is still the card being edited,
     // make it the active card.
     case 'FINISH_LOAD_CARD':
-      if (editCardId && action.cardId === editCardId) {
+      if (editCardId && action.formId === state.edit.forms.active.formId) {
         return {
           ...state,
           selection: { activeCardId: editCardId },

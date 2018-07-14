@@ -8,12 +8,7 @@ export const enum NoteEditState {
 }
 
 export interface NoteState {
-  // Until a new note gets saved, we need to identify it so we assign it
-  // a number.
-  //
-  // This number only needs to be unique within the set of notes associated with
-  // the same EditForm.
-  newId?: number;
+  formId: number;
   note: Partial<Note>;
   editState: NoteEditState;
   dirtyFields?: Set<keyof Note>;
@@ -33,7 +28,7 @@ export function notes(
       return [
         ...state,
         {
-          newId: action.newId,
+          formId: action.context.noteFormId,
           note: newNote,
           editState: NoteEditState.Ok,
         },
@@ -42,7 +37,7 @@ export function notes(
 
     case 'EDIT_NOTE': {
       // Find the note to update
-      const noteStateIndex = findNoteIndex(state, action.newId, action.noteId);
+      const noteStateIndex = findNoteIndex(state, action.context.noteFormId);
       if (noteStateIndex === -1) {
         return state;
       }
@@ -84,16 +79,8 @@ export function notes(
   }
 }
 
-function findNoteIndex(
-  notes: Array<NoteState>,
-  newId?: number,
-  noteId?: string
-): number {
-  return notes.findIndex(
-    (note: NoteState) =>
-      (typeof note.newId !== 'undefined' && note.newId === newId) ||
-      (typeof noteId !== 'undefined' && note.note.id === noteId)
-  );
+function findNoteIndex(notes: Array<NoteState>, formId: number): number {
+  return notes.findIndex((noteState: NoteState) => noteState.formId === formId);
 }
 
 export default notes;
