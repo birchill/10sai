@@ -421,8 +421,29 @@ export class TokenList extends React.PureComponent<Props> {
   handleTextCompositionEnd(e: React.CompositionEvent<HTMLInputElement>) {
     this.composing = false;
 
+    //
+    // This should not be necessary but there is a difference between the order
+    // of composition and input events as described here:
+    //
+    //  https://bugzilla.mozilla.org/show_bug.cgi?id=1305387#c8
+    //
+    // and:
+    //
+    //  https://github.com/w3c/uievents/issues/202
+    //
+    // As a result, on Fennec at this point this.state.text won't have been
+    // updated yet and if we call props.onTextChange without updating it we
+    // might re-render and clobber the incomplete input (or something like
+    // that).
+    //
+    // If that bug ever gets resolved to match Chrome, then we can drop the
+    // following two lines and use `this.props.onTextChange(this.state.text)`
+    // below.
+    const value = (e.target as HTMLInputElement).value;
+    this.updateText(value);
+
     if (this.props.onTextChange) {
-      this.props.onTextChange(this.state.text);
+      this.props.onTextChange(value);
     }
   }
 
