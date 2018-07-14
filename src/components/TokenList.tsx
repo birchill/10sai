@@ -342,20 +342,8 @@ export class TokenList extends React.PureComponent<Props> {
   }
 
   handleBlur(e: React.FocusEvent<HTMLElement>) {
-    const isPartOfComponent = (elem: Element | null): boolean => {
-      if (!elem) {
-        return false;
-      }
-
-      do {
-        if (elem.parentElement === this.rootElem) {
-          return true;
-        }
-        elem = elem.parentElement;
-      } while (elem);
-
-      return false;
-    };
+    const isPartOfComponent = (elem: Element | null): boolean =>
+      !!elem && !!this.rootElem && this.rootElem.contains(elem);
 
     // If the focus is still within this component we can just ignore the event.
     if (isPartOfComponent(e.relatedTarget as Element | null)) {
