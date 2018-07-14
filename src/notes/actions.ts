@@ -1,6 +1,7 @@
 import { FormId } from '../edit/reducer';
 import { Action } from 'redux';
 import { Note } from '../model';
+import { StoreError } from '../store/DataStore';
 
 export type NoteContext = EditNoteContext | ReviewNoteContext;
 
@@ -84,5 +85,62 @@ export function editNote(
     newId: note.newId,
     noteId: note.noteId,
     change,
+  };
+}
+
+export interface SaveNoteAction extends NoteIdentifiers {
+  type: 'SAVE_NOTE';
+  context: NoteContext;
+}
+
+export function saveNote(
+  context: NoteContext,
+  note: NoteIdentifiers
+): SaveNoteAction {
+  return {
+    type: 'SAVE_NOTE',
+    context,
+    newId: note.newId,
+    noteId: note.noteId,
+  };
+}
+
+export interface FinishSaveNoteAction extends NoteIdentifiers {
+  type: 'FINISH_SAVE_NOTE';
+  context: NoteContext;
+  note: Partial<Note>;
+}
+
+export function finishSaveNote(
+  context: NoteContext,
+  note: NoteIdentifiers,
+  savedNote: Partial<Note>
+): FinishSaveNoteAction {
+  return {
+    type: 'FINISH_SAVE_NOTE',
+    context,
+    newId: note.newId,
+    noteId: note.noteId,
+    note: savedNote,
+  };
+}
+
+export interface FailSaveNoteAction extends NoteIdentifiers {
+  type: 'FAIL_SAVE_NOTE';
+  context: NoteContext;
+  error: StoreError;
+}
+
+export function failSaveNote(
+  context: NoteContext,
+  note: NoteIdentifiers,
+  error: StoreError
+): FailSaveNoteAction {
+  return {
+    type: 'FAIL_SAVE_NOTE',
+    context,
+    newId: note.newId,
+    noteId: note.noteId,
+    error,
   };
 }

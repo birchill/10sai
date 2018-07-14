@@ -1,16 +1,6 @@
-import {
-  call,
-  fork,
-  put,
-  race,
-  select,
-  take,
-  takeEvery,
-} from 'redux-saga/effects';
-import { delay } from 'redux-saga';
+import { call, put, select, take, takeEvery } from 'redux-saga/effects';
 import { Store } from 'redux';
 import {
-  ResourceParams,
   watchEdits,
   ResourceState,
   SaveContextBase,
@@ -79,6 +69,19 @@ export function* navigate(dataStore: DataStore, action: NavigateAction) {
   }
 }
 
+type EditSaveContext = SaveContextBase;
+
+const formIdFromSaveContext = (saveContext: EditSaveContext): FormId => {
+  console.assert(
+    typeof saveContext.resourceId !== 'undefined' ||
+      typeof saveContext.newId !== 'undefined',
+    'Either the resource ID or new ID must be filled in'
+  );
+  return typeof saveContext.newId === 'number'
+    ? saveContext.newId
+    : saveContext.resourceId!;
+};
+
 export function* save(
   dataStore: DataStore,
   resourceState: ResourceState<Card, EditSaveContext>
@@ -120,19 +123,6 @@ export function* save(
     yield put(editActions.failSaveCard(formId, error));
   }
 }
-
-type EditSaveContext = SaveContextBase;
-
-const formIdFromSaveContext = (saveContext: EditSaveContext): FormId => {
-  console.assert(
-    typeof saveContext.resourceId !== 'undefined' ||
-      typeof saveContext.newId !== 'undefined',
-    'Either the resource ID or new ID must be filled in'
-  );
-  return typeof saveContext.newId === 'number'
-    ? saveContext.newId
-    : saveContext.resourceId!;
-};
 
 export function* watchCardEdits(dataStore: DataStore) {
   const params = {
