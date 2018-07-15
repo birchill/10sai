@@ -17,8 +17,6 @@ export const getNoteStateSelector = (context: NoteContext) => {
     //     : ....
     //
     const notes = state.edit.forms.active.notes;
-    console.log(JSON.stringify(notes));
-    console.log(`Searching for ${context.noteFormId}`);
     return notes.find(
       (noteState: NoteState) => noteState.formId === context.noteFormId
     );
