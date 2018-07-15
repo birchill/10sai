@@ -8,6 +8,7 @@ import { all } from 'redux-saga/effects';
 import reducer from './reducer';
 
 import { editSagas, syncEditChanges } from './edit/sagas.ts';
+import noteSagas from './notes/sagas.ts';
 import reviewSagas from './review/sagas.ts';
 import routeSagas from './route/sagas';
 import syncSagas from './sync/sagas';
@@ -84,6 +85,7 @@ settingsStore.onUpdate(dispatchSettingUpdates);
 sagaMiddleware.run(function* allSagas() {
   yield all([
     editSagas(dataStore),
+    noteSagas(dataStore),
     reviewSagas(dataStore),
     syncSagas(dataStore, settingsStore, store.dispatch.bind(store)),
     routeSagas(),
