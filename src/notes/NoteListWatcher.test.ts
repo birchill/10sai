@@ -70,7 +70,7 @@ describe('NoteListWatcher', () => {
     const calls = await finished;
 
     expect(calls[0]).toEqual([note1, note2]);
-    expect(await subject.notes).toEqual([note1, note2]);
+    expect(await subject.getNotes()).toEqual([note1, note2]);
   });
 
   // Test: A newly-added card that matches

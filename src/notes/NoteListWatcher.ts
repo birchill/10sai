@@ -14,8 +14,8 @@ type EventType = Note & { _deleted?: boolean };
 
 export class NoteListWatcher {
   dataStore: DataStore;
-  _notes: Note[];
-  _keywords: string[];
+  notes: Note[];
+  keywords: string[];
   listener: NoteListListener;
   initDone: Promise<void>;
 
@@ -26,57 +26,57 @@ export class NoteListWatcher {
   ) {
     this.dataStore = dataStore;
 
-    this._notes = [];
+    this.notes = [];
     this.listener = onUpdate;
 
     this.updateKeywords(keywords);
 
     this.dataStore.changes.on('note', (change: EventType) => {
-      const [found, index] = findNote(change.id, this._notes);
+      const [found, index] = findNote(change.id, this.notes);
       let changedNotes = false;
 
       const matchesKeywords = () =>
         change.keywords
           .map(keyword => keyword.toLowerCase())
-          .some(keyword => this._keywords.includes(keyword));
+          .some(keyword => this.keywords.includes(keyword));
 
       if (found) {
         // The changed note was one of our notes, but should it still be?
         if (change._deleted || !matchesKeywords()) {
-          this._notes.splice(index, 1);
+          this.notes.splice(index, 1);
         } else {
           // The changed note is on of our notes (and still is). Did something
           // change that we might care about?
           // Assume something this.
-          if (!deepEqual(this._notes[index], change)) {
-            this._notes[index] = change;
+          if (!deepEqual(this.notes[index], change)) {
+            this.notes[index] = change;
           }
         }
       } else if (!change._deleted && matchesKeywords()) {
         // The changed note wasn't found in our notes, but it should be there.
-        this._notes.splice(index, 0, change);
+        this.notes.splice(index, 0, change);
         changedNotes = true;
       }
 
       if (changedNotes) {
         // Update object identity to make it easier on call sites to do
         // simple object-identity comparisons.
-        this._notes = this._notes.slice();
-        this.listener(this._notes);
+        this.notes = this.notes.slice();
+        this.listener(this.notes);
       }
     });
   }
 
-  get notes(): Promise<Note[]> {
-    return this.initDone.then(() => this._notes);
+  getNotes(): Promise<Note[]> {
+    return this.initDone.then(() => this.notes);
   }
 
-  get keywords(): string[] {
-    return this._keywords;
+  getKeywords(): string[] {
+    return this.keywords;
   }
 
-  set keywords(keywords: string[]) {
-    if (deepEqual(keywords, this._keywords)) {
+  setKeywords(keywords: string[]) {
+    if (deepEqual(keywords, this.keywords)) {
       return;
     }
 
@@ -84,18 +84,18 @@ export class NoteListWatcher {
   }
 
   updateKeywords(keywords: string[]) {
-    this._keywords = keywords;
+    this.keywords = keywords;
 
-    this.initDone = this._keywords.length
+    this.initDone = this.keywords.length
       ? this.dataStore.getNotesForKeywords(keywords).then(notes => {
           // Check that the keywords have not been updated while we were
           // fetching notes.
-          if (this._keywords !== keywords) {
+          if (this.keywords !== keywords) {
             return;
           }
 
           if (!deepEqual(this.notes, notes)) {
-            this._notes = notes;
+            this.notes = notes;
             this.listener(notes);
           }
         })
