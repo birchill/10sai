@@ -21,7 +21,7 @@ export const isDirty = (state: State): boolean => {
 //
 // This is used to:
 //
-// - Determine if we should trigger a SAVE_CARD when, changing screens,
+// - Determine if we should trigger a SAVE_CARD when changing screens,
 //   auto-saving, etc.
 // - Decide if it makes sense to enable the "Delete" button (it doesn't if the
 //   card doesn't have any useful data and isn't already saved)
