@@ -76,6 +76,10 @@ export class NoteListWatcher {
   }
 
   set keywords(keywords: string[]) {
+    if (deepEqual(keywords, this._keywords)) {
+      return;
+    }
+
     this.updateKeywords(keywords);
   }
 
