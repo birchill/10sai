@@ -15,13 +15,13 @@ export interface EditFormState {
   dirtyFields?: Set<keyof Card>;
   deleted?: boolean;
   notes: Array<NoteState>;
+  saveError?: StoreError;
 }
 
 export interface EditState {
   forms: {
     active: EditFormState;
   };
-  saveError?: StoreError;
 }
 
 const initialState: EditState = {
@@ -152,6 +152,23 @@ export function edit(state = initialState, action: Action): EditState {
       };
     }
 
+    case 'SAVE_CARD': {
+      if (
+        editAction.formId !== state.forms.active.formId ||
+        state.forms.active.deleted
+      ) {
+        return state;
+      }
+
+      if (typeof state.forms.active.saveError === 'undefined') {
+        return state;
+      }
+
+      const updatedState = { ...state };
+      delete updatedState.forms.active.saveError;
+      return updatedState;
+    }
+
     case 'FINISH_SAVE_CARD': {
       if (
         editAction.formId !== state.forms.active.formId ||
@@ -194,7 +211,14 @@ export function edit(state = initialState, action: Action): EditState {
         return state;
       }
 
-      return { forms: state.forms, saveError: editAction.error };
+      return {
+        forms: {
+          active: {
+            ...state.forms.active,
+            saveError: editAction.error,
+          },
+        },
+      };
     }
 
     case 'SYNC_EDIT_CARD': {

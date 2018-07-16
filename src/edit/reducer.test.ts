@@ -83,8 +83,12 @@ const notFoundState = (formId: number, deleted: boolean): EditState => ({
 });
 
 const withSaveError = (state: EditState, saveError: StoreError): EditState => ({
-  ...state,
-  saveError,
+  forms: {
+    active: {
+      ...state.forms.active,
+      saveError,
+    },
+  },
 });
 
 const toDirtyFields = (...fields: Array<keyof Card>): Set<keyof Card> =>
@@ -274,6 +278,22 @@ describe('reducer:edit', () => {
     );
   });
 
+  it('should clear the saveError on SAVE_CARD', () => {
+    const withoutErrorState = dirtyState(
+      11,
+      { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+      toDirtyFields('question')
+    );
+    const initialState = withSaveError(withoutErrorState, {
+      name: 'bad',
+      message: 'Bad bad bad',
+    });
+
+    const updatedState = subject(initialState, actions.saveCard(11));
+
+    expect(updatedState).toEqual(withoutErrorState);
+  });
+
   it('should update state on FINISH_SAVE_CARD', () => {
     const initialState = dirtyState(
       11,
@@ -458,14 +478,7 @@ describe('reducer:edit', () => {
     );
 
     expect(updatedState).toEqual(
-      withSaveError(
-        dirtyState(
-          15,
-          { _id: 'abc', question: 'Question', answer: 'Answer' },
-          toDirtyFields('question')
-        ),
-        { name: 'bad', message: 'Bad bad bad' }
-      )
+      withSaveError(initialState, { name: 'bad', message: 'Bad bad bad' })
     );
   });
 

@@ -24,6 +24,7 @@ export type EditAction =
   | FinishLoadCardAction
   | FailLoadCardAction
   | EditCardAction
+  | SaveCardAction
   | FinishSaveCardAction
   | FailSaveCardAction
   | SyncEditCardAction
