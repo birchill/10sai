@@ -1,7 +1,7 @@
 /* global describe, expect, it */
 
 import { edit as subject, EditState } from './reducer';
-import EditorState from './EditorState';
+import { FormState } from './FormState';
 import * as actions from './actions';
 import * as noteActions from '../notes/actions';
 import { Card } from '../model';
@@ -13,7 +13,7 @@ const emptyState = (newFormId: number): EditState => ({
   forms: {
     active: {
       formId: newFormId,
-      editorState: EditorState.Empty,
+      formState: FormState.Ok,
       card: {},
       notes: [],
     },
@@ -29,7 +29,7 @@ const okState = (
     forms: {
       active: {
         formId,
-        editorState: EditorState.Ok,
+        formState: FormState.Ok,
         card,
         notes: [],
       },
@@ -47,7 +47,7 @@ const loadingState = (newFormId: number): EditState => ({
   forms: {
     active: {
       formId: newFormId,
-      editorState: EditorState.Loading,
+      formState: FormState.Loading,
       card: {},
       notes: [],
     },
@@ -62,7 +62,7 @@ const dirtyState = (
   forms: {
     active: {
       formId,
-      editorState: EditorState.Ok,
+      formState: FormState.Ok,
       card,
       dirtyFields,
       notes: [],
@@ -74,7 +74,7 @@ const notFoundState = (formId: number): EditState => ({
   forms: {
     active: {
       formId,
-      editorState: EditorState.NotFound,
+      formState: FormState.NotFound,
       card: {},
       notes: [],
     },
@@ -85,7 +85,7 @@ const deletedState = (formId: number): EditState => ({
   forms: {
     active: {
       formId,
-      editorState: EditorState.Deleted,
+      formState: FormState.Deleted,
       card: {},
       notes: [],
     },

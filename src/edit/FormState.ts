@@ -2,11 +2,8 @@
 //
 //   https://github.com/kulshekhar/ts-jest/issues/112
 //
-export enum EditorState {
-  // Form is empty
-  Empty = 'empty',
-
-  // Card is loaded and all edits have been saved
+export enum FormState {
+  // Card is ready
   Ok = 'ok',
 
   // Loading a card from the DB
@@ -19,4 +16,4 @@ export enum EditorState {
   Deleted = 'deleted',
 }
 
-export default EditorState;
+export default FormState;

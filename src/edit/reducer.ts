@@ -1,5 +1,5 @@
 import deepEqual from 'deep-equal';
-import EditorState from './EditorState';
+import { FormState } from './FormState';
 import { Card } from '../model';
 import { NoteState } from '../notes/reducer';
 import * as actions from './actions';
@@ -10,7 +10,7 @@ import { Action } from 'redux';
 
 export interface EditFormState {
   formId: number;
-  editorState: EditorState;
+  formState: FormState;
   card: Partial<Card>;
   dirtyFields?: Set<keyof Card>;
   notes: Array<NoteState>;
@@ -27,7 +27,7 @@ const initialState: EditState = {
   forms: {
     active: {
       formId: 0,
-      editorState: EditorState.Empty,
+      formState: FormState.Ok,
       card: {},
       notes: [],
     },
@@ -43,7 +43,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             formId: editAction.newFormId,
-            editorState: EditorState.Empty,
+            formState: FormState.Ok,
             card: {},
             notes: [],
           },
@@ -56,7 +56,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             formId: editAction.newFormId,
-            editorState: EditorState.Loading,
+            formState: FormState.Loading,
             card: {},
             notes: [],
           },
@@ -73,7 +73,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             formId: editAction.formId,
-            editorState: EditorState.Ok,
+            formState: FormState.Ok,
             card: editAction.card,
             notes: [],
           },
@@ -95,7 +95,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             formId: editAction.formId,
-            editorState: deleted ? EditorState.Deleted : EditorState.NotFound,
+            formState: deleted ? FormState.Deleted : FormState.NotFound,
             card: {},
             notes: [],
           },
@@ -106,7 +106,7 @@ export function edit(state = initialState, action: Action): EditState {
     case 'EDIT_CARD': {
       if (
         editAction.formId !== state.forms.active.formId ||
-        state.forms.active.editorState === EditorState.Deleted
+        state.forms.active.formState === FormState.Deleted
       ) {
         return state;
       }
@@ -141,7 +141,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             formId: editAction.formId,
-            editorState: EditorState.Ok,
+            formState: FormState.Ok,
             card: { ...state.forms.active.card, ...editAction.card },
             dirtyFields,
             notes: state.forms.active.notes,
@@ -153,7 +153,7 @@ export function edit(state = initialState, action: Action): EditState {
     case 'SAVE_CARD': {
       if (
         editAction.formId !== state.forms.active.formId ||
-        state.forms.active.editorState === EditorState.Deleted
+        state.forms.active.formState === FormState.Deleted
       ) {
         return state;
       }
@@ -170,7 +170,7 @@ export function edit(state = initialState, action: Action): EditState {
     case 'FINISH_SAVE_CARD': {
       if (
         editAction.formId !== state.forms.active.formId ||
-        state.forms.active.editorState === EditorState.Deleted
+        state.forms.active.formState === FormState.Deleted
       ) {
         return state;
       }
@@ -188,7 +188,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             formId: editAction.formId,
-            editorState: EditorState.Ok,
+            formState: FormState.Ok,
             card: { ...editAction.card, ...state.forms.active.card },
             notes: state.forms.active.notes,
           },
@@ -204,7 +204,7 @@ export function edit(state = initialState, action: Action): EditState {
     case 'FAIL_SAVE_CARD': {
       if (
         editAction.formId !== state.forms.active.formId ||
-        state.forms.active.editorState === EditorState.Deleted
+        state.forms.active.formState === FormState.Deleted
       ) {
         return state;
       }
@@ -222,7 +222,7 @@ export function edit(state = initialState, action: Action): EditState {
     case 'SYNC_EDIT_CARD': {
       if (
         editAction.change._id !== state.forms.active.card._id ||
-        state.forms.active.editorState === EditorState.Deleted
+        state.forms.active.formState === FormState.Deleted
       ) {
         return state;
       }
@@ -232,7 +232,7 @@ export function edit(state = initialState, action: Action): EditState {
           forms: {
             active: {
               formId: state.forms.active.formId,
-              editorState: EditorState.Deleted,
+              formState: FormState.Deleted,
               card: {},
               notes: [],
             },
@@ -277,7 +277,7 @@ export function edit(state = initialState, action: Action): EditState {
           forms: {
             active: {
               formId: editAction.formId,
-              editorState: EditorState.Empty,
+              formState: FormState.Ok,
               card: {},
               notes: [],
             },
@@ -289,7 +289,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             formId: editAction.formId,
-            editorState: EditorState.Deleted,
+            formState: FormState.Deleted,
             card: {},
             notes: [],
           },

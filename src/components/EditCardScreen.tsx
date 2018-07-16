@@ -9,9 +9,10 @@ import EditCardToolbar from './EditCardToolbar';
 import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound';
 import EditNoteForm from './EditNoteForm';
-import EditorState from '../edit/EditorState';
+import { FormState } from '../edit/FormState';
 import * as editActions from '../edit/actions';
 import { EditFormState, EditState } from '../edit/reducer';
+import { hasDataToSave } from '../edit/selectors';
 import { NoteState } from '../notes/reducer';
 import * as noteActions from '../notes/actions';
 import * as routeActions from '../route/actions';
@@ -37,9 +38,8 @@ export class EditCardScreen extends React.PureComponent<Props> {
       forms: PropTypes.shape({
         active: PropTypes.shape({
           formId: PropTypes.number.isRequired,
-          editorState: PropTypes.string.isRequired,
+          formState: PropTypes.string.isRequired,
           card: PropTypes.object.isRequired,
-          deleted: PropTypes.bool,
           notes: PropTypes.arrayOf(
             PropTypes.shape({
               formId: PropTypes.number,
@@ -47,6 +47,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
               editState: PropTypes.string.isRequired,
             })
           ),
+          saveError: PropTypes.object,
         }).isRequired,
       }),
       active: PropTypes.bool.isRequired,
@@ -108,12 +109,20 @@ export class EditCardScreen extends React.PureComponent<Props> {
     }
   }
 
+  isFormEmpty(): boolean {
+    return (
+      this.props.forms.active.formState === FormState.Ok &&
+      !hasDataToSave(this.props.forms.active.card)
+    );
+  }
+
   activate() {
     if (
-      this.props.forms.active.editorState === EditorState.Empty &&
+      this.isFormEmpty() &&
       this.activeFormRef.current &&
       this.activeFormRef.current.questionTextBoxRef.current
     ) {
+      console.log('Autofocusing!');
       this.activeFormRef.current.questionTextBoxRef.current.focus();
     }
   }
@@ -255,14 +264,14 @@ export class EditCardScreen extends React.PureComponent<Props> {
   render() {
     const relatedKeywords = this.props.forms.active.card.keywords || [];
 
+    const canDelete =
+      this.props.forms.active.formState === FormState.Ok && !this.isFormEmpty();
+
     return (
       <section className="edit-screen" aria-hidden={!this.props.active}>
-        <EditCardToolbar
-          editorState={this.props.forms.active.editorState}
-          onDelete={this.handleDelete}
-        />
-        {this.props.forms.active.editorState !== EditorState.NotFound &&
-        this.props.forms.active.editorState !== EditorState.Deleted ? (
+        <EditCardToolbar canDelete={canDelete} onDelete={this.handleDelete} />
+        {this.props.forms.active.formState !== FormState.NotFound &&
+        this.props.forms.active.formState !== FormState.Deleted ? (
           <>
             <EditCardForm
               onChange={this.handleFormChange}
@@ -297,9 +306,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
           </>
         ) : (
           <EditCardNotFound
-            deleted={
-              this.props.forms.active.editorState === EditorState.Deleted
-            }
+            deleted={this.props.forms.active.formState === FormState.Deleted}
           />
         )}
       </section>

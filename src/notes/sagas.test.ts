@@ -10,7 +10,7 @@ import { watchNoteEdits as watchNoteEditsSaga } from './sagas';
 import { Note } from '../model';
 import * as noteActions from './actions';
 import { EditNoteContext } from './actions';
-import EditorState from '../edit/EditorState';
+import { FormState } from '../edit/FormState';
 
 const noteState = (
   cardFormId: number,
@@ -24,7 +24,7 @@ const noteState = (
       forms: {
         active: {
           formId: cardFormId,
-          editorState: EditorState.Ok,
+          formState: FormState.Ok,
           card: {},
           dirtyFields: new Set(['prompt']),
           notes: [

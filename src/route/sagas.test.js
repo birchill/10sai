@@ -17,7 +17,7 @@ import {
   followLink as followLinkSaga,
   beforeScreenChange as beforeScreenChangeSaga,
 } from './sagas';
-import EditorState from '../edit/EditorState';
+import { FormState } from '../edit/FormState';
 import * as routeActions from './actions';
 import * as editActions from '../edit/actions';
 
@@ -219,7 +219,7 @@ describe('sagas:route beforeScreenChange', () => {
         forms: {
           active: {
             formId,
-            editorState: EditorState.Ok,
+            formState: FormState.Ok,
             dirtyFields: new Set(['answer']),
           },
         },
@@ -249,7 +249,7 @@ describe('sagas:route beforeScreenChange', () => {
           forms: {
             active: {
               formId,
-              editorState: EditorState.Ok,
+              formState: FormState.Ok,
               dirtyFields: new Set(['answer']),
             },
           },

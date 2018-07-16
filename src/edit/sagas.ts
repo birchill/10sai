@@ -15,10 +15,10 @@ import {
   routesEqual,
 } from '../route/router';
 import { EditState, EditFormState } from './reducer';
-import { getActiveRecord, isDirty } from './selectors';
+import { getActiveRecord, isDirty, hasDataToSave } from './selectors';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
-import EditorState from './EditorState';
+import { FormState } from './FormState';
 import { DataStore, StoreError } from '../store/DataStore';
 import { Card } from '../model';
 import { DeleteCardAction } from './actions';
@@ -129,21 +129,10 @@ export function* watchCardEdits(dataStore: DataStore) {
       return (
         state: State
       ): ResourceState<Card, EditSaveContext> | undefined => {
-        const hasDataToSave = (card: Partial<Card>): boolean => {
-          const cardHasNonEmptyField = (field: keyof Card): boolean =>
-            typeof card[field] === 'string' &&
-            (card[field] as string).length !== 0;
-          return (
-            typeof card._id !== 'undefined' ||
-            cardHasNonEmptyField('question') ||
-            cardHasNonEmptyField('answer')
-          );
-        };
         const card = state.edit.forms.active.card;
-
         return {
           context: action.formId,
-          deleted: state.edit.forms.active.editorState === EditorState.Deleted,
+          deleted: state.edit.forms.active.formState === FormState.Deleted,
           needsSaving: isDirty(state) && hasDataToSave(card),
           resource: card,
         };

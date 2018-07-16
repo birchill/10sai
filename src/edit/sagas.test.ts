@@ -16,7 +16,7 @@ import {
 } from './sagas';
 import { Card } from '../model';
 import reducer from '../reducer';
-import EditorState from './EditorState';
+import { FormState } from './FormState';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
 import { generateCard } from '../utils/testing';
@@ -38,7 +38,7 @@ const loadingState = (formId: number) => ({
     forms: {
       active: {
         formId,
-        editorState: EditorState.Loading,
+        formState: FormState.Loading,
         card: {},
       },
     },
@@ -53,7 +53,7 @@ const dirtyState = (formId: number, cardToUse: Partial<Card> | undefined) => {
       forms: {
         active: {
           formId,
-          editorState: EditorState.Ok,
+          formState: FormState.Ok,
           card,
           dirtyFields: new Set(['prompt']),
         },
@@ -173,7 +173,7 @@ const okState = (formId: number, cardToUse: Partial<Card> | undefined) => {
       forms: {
         active: {
           formId,
-          editorState: EditorState.Ok,
+          formState: FormState.Ok,
           card,
         },
       },
@@ -186,7 +186,7 @@ const emptyState = (formId: number) => ({
     forms: {
       active: {
         formId,
-        editorState: EditorState.Empty,
+        formState: FormState.Ok,
         card: {},
       },
     },
@@ -198,7 +198,7 @@ const deletedState = (formId: number) => ({
     forms: {
       active: {
         formId,
-        editorState: EditorState.Deleted,
+        formState: FormState.Deleted,
         card: {},
       },
     },
@@ -426,7 +426,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
         forms: {
           active: {
             formId,
-            editorState: EditorState.Ok,
+            formState: FormState.Ok,
             dirtyFields: new Set(['answer']),
           },
         },
@@ -444,7 +444,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('does nothing if the card is not dirty', () => {
     const formId = 5;
     const state = {
-      edit: { forms: { active: { formId, editorState: EditorState.Ok } } },
+      edit: { forms: { active: { formId, formState: FormState.Ok } } },
     };
 
     return expectSaga(beforeEditScreenChangeSaga)
@@ -461,7 +461,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
         forms: {
           active: {
             formId,
-            editorState: EditorState.Ok,
+            formState: FormState.Ok,
             dirtyFields: new Set(['answer']),
           },
         },
