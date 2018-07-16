@@ -1,8 +1,9 @@
-import { notes as subject, NoteState } from './reducer';
+import { notes as subject, NoteState, SaveState } from './reducer';
 import * as actions from './actions';
 import { Note } from '../model';
 import { Omit } from '../utils/type-helpers';
 import { EditNoteContext } from './actions';
+import { StoreError } from '../store/DataStore';
 
 describe('reducer:notes', () => {
   const baseContext: Omit<EditNoteContext, 'noteFormId'> = {
@@ -18,7 +19,7 @@ describe('reducer:notes', () => {
     formId: number,
     initialKeywords?: string[]
   ): NoteState => {
-    const result: NoteState = { formId, note: {} };
+    const result: NoteState = { formId, note: {}, saveState: SaveState.New };
     if (initialKeywords) {
       result.note.keywords = initialKeywords;
     }
@@ -45,6 +46,7 @@ describe('reducer:notes', () => {
       created: Date.now(),
       modified: Date.now(),
     },
+    saveState: SaveState.Ok,
   });
 
   it('should append new notes on ADD_NOTE', () => {
@@ -209,6 +211,23 @@ describe('reducer:notes', () => {
     ]);
   });
 
+  it('should update the save state on SAVE_NOTE', () => {
+    const initialNoteState = newNoteState(1);
+    // Set a save error just so we can check it is cleared
+    initialNoteState.saveError = new StoreError(500, 'error', 'error');
+
+    const initialState = [initialNoteState];
+    const updatedState = subject(initialState, actions.saveNote(context(1)));
+
+    expect(updatedState).toEqual([
+      {
+        ...initialNoteState,
+        saveState: SaveState.InProgress,
+        saveError: undefined,
+      },
+    ]);
+  });
+
   it('should update state on FINISH_SAVE_NOTE', () => {
     // Setup a note with a dirty content field
     const initialNoteState = newNoteState(1);
@@ -230,6 +249,7 @@ describe('reducer:notes', () => {
       {
         ...initialNoteState,
         note: savedNote,
+        saveState: SaveState.Ok,
       },
     ]);
   });
@@ -267,12 +287,39 @@ describe('reducer:notes', () => {
           ...initialNoteState,
           note: { ...savedNote, content: 'Updated again' },
           dirtyFields: new Set<keyof Note>(['content']),
+          saveState: SaveState.Ok,
         },
       ]);
     }
   );
 
-  // TODO: If we decide to keep representing deleted notes (as opposed to simply
-  // dropping them from the array) we should check that FINISH_SAVE_NOTE does
-  // not update a deleted note.
+  it('should update the state on FAIL_SAVE_NOTE', () => {
+    const initialNoteState = newNoteState(1);
+    const initialState = [initialNoteState];
+
+    // Make a change and try to save
+    const change = { content: 'Updated content' };
+    let updatedState = subject(
+      initialState,
+      actions.editNote(context(1), change)
+    );
+    updatedState = subject(updatedState, actions.saveNote(context(1)));
+    const stateWhenBeginningToSave = updatedState[0];
+
+    // Fail to save it
+    const error = new StoreError(500, 'error', 'error');
+    updatedState = subject(
+      updatedState,
+      actions.failSaveNote(context(1), error)
+    );
+    console.log(JSON.stringify(updatedState));
+
+    expect(updatedState).toEqual([
+      {
+        ...stateWhenBeginningToSave,
+        saveState: SaveState.Error,
+        saveError: error,
+      },
+    ]);
+  });
 });

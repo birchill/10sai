@@ -1,11 +1,21 @@
 import deepEqual from 'deep-equal';
 import * as actions from './actions';
 import { Note } from '../model';
+import { StoreError } from '../store/DataStore';
+
+export const enum SaveState {
+  New = 'new',
+  Ok = 'ok',
+  InProgress = 'in-progress',
+  Error = 'error',
+}
 
 export interface NoteState {
   formId: number;
   note: Partial<Note>;
   dirtyFields?: Set<keyof Note>;
+  saveState: SaveState;
+  saveError?: StoreError;
 }
 
 export function notes(
@@ -23,6 +33,7 @@ export function notes(
         ...state,
         {
           formId: action.context.noteFormId,
+          saveState: SaveState.New,
           note: newNote,
         },
       ];
@@ -61,10 +72,23 @@ export function notes(
         dirtyFields,
       };
 
-      // Put the updated thing in the right place in the array
-      const updatedState = state.slice();
-      updatedState.splice(noteStateIndex, 1, updatedNoteState);
-      return updatedState;
+      return updateState(state, updatedNoteState, noteStateIndex);
+    }
+
+    case 'SAVE_NOTE': {
+      const noteStateIndex = findNoteIndex(state, action.context.noteFormId);
+      if (noteStateIndex === -1) {
+        return state;
+      }
+      const noteState = state[noteStateIndex];
+
+      const updatedNoteState: NoteState = {
+        ...noteState,
+        saveState: SaveState.InProgress,
+      };
+      delete updatedNoteState.saveError;
+
+      return updateState(state, updatedNoteState, noteStateIndex);
     }
 
     case 'FINISH_SAVE_NOTE': {
@@ -87,19 +111,29 @@ export function notes(
       const updatedNoteState: NoteState = {
         formId: action.context.noteFormId,
         note: { ...action.note, ...noteState.note },
+        saveState: SaveState.Ok,
       };
       if (dirtyFields.size) {
         updatedNoteState.dirtyFields = dirtyFields;
       }
 
-      const updatedState = state.slice();
-      updatedState.splice(noteStateIndex, 1, updatedNoteState);
-      return updatedState;
+      return updateState(state, updatedNoteState, noteStateIndex);
     }
 
     case 'FAIL_SAVE_NOTE': {
-      // XXX
-      return state;
+      const noteStateIndex = findNoteIndex(state, action.context.noteFormId);
+      if (noteStateIndex === -1) {
+        return state;
+      }
+      const noteState = state[noteStateIndex];
+
+      const updatedNoteState: NoteState = {
+        ...noteState,
+        saveState: SaveState.Error,
+        saveError: action.error,
+      };
+
+      return updateState(state, updatedNoteState, noteStateIndex);
     }
 
     default:
@@ -109,6 +143,16 @@ export function notes(
 
 function findNoteIndex(notes: Array<NoteState>, formId: number): number {
   return notes.findIndex((noteState: NoteState) => noteState.formId === formId);
+}
+
+function updateState(
+  state: NoteState[],
+  updatedNoteState: NoteState,
+  noteStateIndex: number
+): NoteState[] {
+  const updatedState = state.slice();
+  updatedState.splice(noteStateIndex, 1, updatedNoteState);
+  return updatedState;
 }
 
 export default notes;
