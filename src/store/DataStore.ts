@@ -13,6 +13,7 @@ import { NoteStore, NOTE_PREFIX } from './NoteStore';
 import { ReviewStore, REVIEW_PREFIX } from './ReviewStore';
 
 PouchDB.plugin(require('pouchdb-upsert'));
+PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouch-resolve-conflicts'));
 
 // The way the typings for PouchDB-adapter-idb are set up, if you want to
@@ -138,8 +139,8 @@ export class DataStore {
   deleteNote(id: string): Promise<void> {
     return this.noteStore.deleteNote(id);
   }
-  getNotesForKeyword(keyword: string): Promise<Note[]> {
-    return this.noteStore.getNotesForKeyword(keyword);
+  getNotesForKeywords(keywords: string[]): Promise<Note[]> {
+    return this.noteStore.getNotesForKeywords(keywords);
   }
 
   // Review API

@@ -250,7 +250,7 @@ describe('NoteStore', () => {
   });
 
   it('keyword lookup: returns an empty array when there are no matches', async () => {
-    const result = await dataStore.getNotesForKeyword('ABC');
+    const result = await dataStore.getNotesForKeywords(['ABC']);
 
     expect(result).toEqual([]);
   });
@@ -270,18 +270,49 @@ describe('NoteStore', () => {
     });
     const note4 = await dataStore.putNote({
       ...typicalNewNote,
-      keywords: ['abc'],
+      keywords: ['ABC'],
     });
 
-    const result = await dataStore.getNotesForKeyword('ABC');
+    const result = await dataStore.getNotesForKeywords(['ABC']);
 
     expect(result).toEqual([note1, note3, note4]);
   });
 
-  it('keyword lookup: returns nothing for an empty key', async () => {
+  it('keyword lookup: returns matches on any of the keywords', async () => {
+    const note1 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['ABC'],
+    });
+    const note2 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['DEF'],
+    });
+    const note3 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['BCD', 'ABC'],
+    });
+    const note4 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['BCD', 'unrelated'],
+    });
+
+    const result = await dataStore.getNotesForKeywords(['ABC', 'BCD']);
+
+    expect(result).toEqual([note1, note3, note4]);
+  });
+
+  it('keyword lookup: returns nothing for an empty array', async () => {
     await dataStore.putNote({ ...typicalNewNote, keywords: ['ABC'] });
 
-    const result = await dataStore.getNotesForKeyword('');
+    const result = await dataStore.getNotesForKeywords([]);
+
+    expect(result).toEqual([]);
+  });
+
+  it('keyword lookup: returns nothing for an empty string', async () => {
+    await dataStore.putNote({ ...typicalNewNote, keywords: ['ABC'] });
+
+    const result = await dataStore.getNotesForKeywords(['']);
 
     expect(result).toEqual([]);
   });

@@ -2,6 +2,7 @@ import { Note } from '../model';
 import * as views from './views';
 import { generateUniqueTimestampId, updateView, stubbornDelete } from './utils';
 import { Omit, stripFields } from '../utils/type-helpers';
+import { collate } from 'pouchdb-collate';
 
 export interface NoteContent {
   keywords?: string[];
@@ -57,19 +58,20 @@ type EmitFunction = (type: string, ...args: any[]) => void;
 
 export class NoteStore {
   db: PouchDB.Database;
-  keywordsViewReady: Promise<void>;
+  keywordsViewReady: Promise<PouchDB.Find.CreateIndexResponse<NoteContent>>;
 
   constructor(db: PouchDB.Database) {
     this.db = db;
-    this.keywordsViewReady = updateView({
-      db,
-      view: 'notes_by_keyword',
-      mapFunction: views.keywordToNoteMapFunction(NOTE_PREFIX),
-      prefetch: false,
+    this.keywordsViewReady = this.db.createIndex({
+      index: {
+        fields: ['keywords'],
+        name: 'keywords_index',
+        ddoc: 'notes_by_keyword',
+      },
     });
   }
 
-  async destroy(): Promise<void> {
+  async destroy(): Promise<any> {
     return this.keywordsViewReady;
   }
 
@@ -208,26 +210,34 @@ export class NoteStore {
     });
   }
 
-  async getNotesForKeyword(keyword: string): Promise<Note[]> {
-    await this.keywordsViewReady;
-
-    const queryOptions: PouchDB.Query.Options<NoteContent, ExistingNoteDoc> = {
-      startkey: keyword.toLowerCase(),
-      endkey: keyword.toLowerCase(),
-      include_docs: true,
-      // XXX We want to use stale: 'update_after' here but it causes unit tests
-      // to timeout.
-      // -- We should also work out how to update after the update occurs
+  async getNotesForKeywords(keywords: string[]): Promise<Note[]> {
+    /*
+     * This should be a case-insensitive comparison but pouchdb-find doesn't
+     * (yet) support case-insensitive indices or some of the other query
+     * operators from MongoDB that let you do case-insensitive comparisons.
+     *
+     * We can actually work around this using RegExps but since that doesn't
+     * work with $in we'd need to iterate over every item in |keywords| and then
+     * build up a suitable escaped case-insensitive RegExp and run that over
+     * each keyword in the candidate. That doesn't sound very scalable so
+     * instead we just make this case-sensitive for the time being and hope that
+     * users are carefully to follow the autocomplete prompts that guide them to
+     * matchin the casing of previous keywords.
+     *
+     * If we need to support this and pouchdb-find can't help then perhaps we
+     * can just save two copies of the keywords: original case plus lower case,
+     * and then create the index on the lower case version.
+     */
+    const request: PouchDB.Find.FindRequest<NoteContent> = {
+      selector: {
+        _id: { $gt: NOTE_PREFIX, $lt: `${NOTE_PREFIX}\ufff0` },
+        keywords: { $elemMatch: { $in: keywords } },
+      },
     };
-
-    const result = await this.db.query<NoteContent>(
-      'notes_by_keyword',
-      queryOptions
-    );
-
-    return result.rows
-      .filter(row => row.doc)
-      .map(row => parseNote(row.doc as ExistingNoteDocWithChanges));
+    const result = (await this.db.find(request)) as PouchDB.Find.FindResponse<
+      NoteContent
+    >;
+    return result.docs.map(doc => parseNote(doc));
   }
 }
 

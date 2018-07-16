@@ -118,17 +118,3 @@ export const tagMapFunction = (cardPrefix: string) => `function(doc) {
       emit([tag.toLowerCase(), tag], 1);
     }
   }`;
-
-export const keywordToNoteMapFunction = (notePrefix: string) => `function(doc) {
-    if (!doc._id.startsWith('${notePrefix}')) {
-      return;
-    }
-
-    if (!Array.isArray(doc.keywords) || !doc.keywords.length) {
-      return;
-    }
-
-    for (const keyword of doc.keywords) {
-      emit(keyword.toLowerCase(), { _id: doc._id });
-    }
-  }`;
