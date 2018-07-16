@@ -21,7 +21,8 @@ export class EditCardToolbar extends React.PureComponent<Props> {
     const disabled =
       this.props.editorState === EditorState.Empty ||
       this.props.editorState === EditorState.Loading ||
-      this.props.editorState === EditorState.NotFound;
+      this.props.editorState === EditorState.NotFound ||
+      this.props.editorState === EditorState.Deleted;
     return (
       <nav className="buttons tool-bar editcard-toolbar">
         <div>
