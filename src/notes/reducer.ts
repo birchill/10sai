@@ -2,15 +2,9 @@ import deepEqual from 'deep-equal';
 import * as actions from './actions';
 import { Note } from '../model';
 
-export const enum NoteEditState {
-  Ok = 'ok',
-  Deleted = 'deleted',
-}
-
 export interface NoteState {
   formId: number;
   note: Partial<Note>;
-  editState: NoteEditState;
   dirtyFields?: Set<keyof Note>;
 }
 
@@ -30,7 +24,6 @@ export function notes(
         {
           formId: action.context.noteFormId,
           note: newNote,
-          editState: NoteEditState.Ok,
         },
       ];
     }
@@ -94,7 +87,6 @@ export function notes(
       const updatedNoteState: NoteState = {
         formId: action.context.noteFormId,
         note: { ...action.note, ...noteState.note },
-        editState: NoteEditState.Ok,
       };
       if (dirtyFields.size) {
         updatedNoteState.dirtyFields = dirtyFields;

@@ -7,7 +7,6 @@
 import { expectSaga } from 'redux-saga-test-plan';
 
 import { watchNoteEdits as watchNoteEditsSaga } from './sagas';
-import { NoteEditState } from './reducer';
 import { Note } from '../model';
 import * as noteActions from './actions';
 import { EditNoteContext } from './actions';
@@ -32,7 +31,6 @@ const noteState = (
             {
               formId: noteFormId,
               note,
-              editState: NoteEditState.Ok,
               dirtyFields,
             },
           ],

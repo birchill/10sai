@@ -1,4 +1,4 @@
-import { notes as subject, NoteState, NoteEditState } from './reducer';
+import { notes as subject, NoteState } from './reducer';
 import * as actions from './actions';
 import { Note } from '../model';
 import { Omit } from '../utils/type-helpers';
@@ -18,7 +18,7 @@ describe('reducer:notes', () => {
     formId: number,
     initialKeywords?: string[]
   ): NoteState => {
-    const result: NoteState = { formId, note: {}, editState: NoteEditState.Ok };
+    const result: NoteState = { formId, note: {} };
     if (initialKeywords) {
       result.note.keywords = initialKeywords;
     }
@@ -45,7 +45,6 @@ describe('reducer:notes', () => {
       created: Date.now(),
       modified: Date.now(),
     },
-    editState: NoteEditState.Ok,
   });
 
   it('should append new notes on ADD_NOTE', () => {
@@ -89,7 +88,6 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
-        editState: NoteEditState.Ok,
       },
     ]);
 
@@ -117,7 +115,6 @@ describe('reducer:notes', () => {
           keywords: ['New', 'keywords'],
         },
         dirtyFields: new Set(['keywords']),
-        editState: NoteEditState.Ok,
       },
       newNoteState(3),
     ]);
@@ -158,7 +155,6 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
-        editState: NoteEditState.Ok,
       },
     ]);
   });
@@ -185,7 +181,6 @@ describe('reducer:notes', () => {
           keywords: ['Updated', 'keywords'],
         },
         dirtyFields: new Set(['content', 'keywords']),
-        editState: NoteEditState.Ok,
       },
     ]);
     // Check the set identity has also been updated
@@ -210,7 +205,6 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
-        editState: NoteEditState.Ok,
       },
     ]);
   });
@@ -236,7 +230,6 @@ describe('reducer:notes', () => {
       {
         ...initialNoteState,
         note: savedNote,
-        editState: NoteEditState.Ok,
       },
     ]);
   });
@@ -273,7 +266,6 @@ describe('reducer:notes', () => {
         {
           ...initialNoteState,
           note: { ...savedNote, content: 'Updated again' },
-          editState: NoteEditState.Ok,
           dirtyFields: new Set<keyof Note>(['content']),
         },
       ]);
