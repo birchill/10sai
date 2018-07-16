@@ -70,5 +70,20 @@ describe('NoteListWatcher', () => {
     const calls = await finished;
 
     expect(calls[0]).toEqual([note1, note2]);
+    expect(await subject.notes).toEqual([note1, note2]);
   });
+
+  // Test: A newly-added card that matches
+  // Test: A newly-added card that does not match
+  // Test: A deleted card that did match
+  // Test: A deleted card that does not match
+  // Test: A content change to a card that does match
+  // Test: A content change to a card that does not match
+  // Test: A keyword change to a card so that it begins to matches
+  // Test: A keyword change to a card so that it no longer matches
+  // Test: A keyword change to a card so that it continues to match
+  // Test: A keyword change to a card so that it continues to not match
+  // Test: A redundant change on a card that does match
+  // Test: An empty array of keywords to match
+  // Test: An empty string
 });
