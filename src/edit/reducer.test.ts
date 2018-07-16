@@ -143,7 +143,7 @@ describe('reducer:edit', () => {
   });
 
   it(
-    'should NOT update card info and state on FINISH_SAVE_CARD if formIds' +
+    'should NOT update card info and state on FINISH_LOAD_CARD if formIds' +
       ' differ',
     () => {
       const initialState = loadingState(7);

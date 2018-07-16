@@ -21,7 +21,13 @@ export type EditNoteContext = BareEditNoteContext & NoteContextCommon;
 export type ReviewNoteContext = BareReviewNoteContext & NoteContextCommon;
 export type NoteContext = EditNoteContext | ReviewNoteContext;
 
-export type NoteAction = AddNoteAction | EditNoteAction | DeleteNoteAction;
+export type NoteAction =
+  | AddNoteAction
+  | EditNoteAction
+  | DeleteNoteAction
+  | SaveNoteAction
+  | FinishSaveNoteAction
+  | FailSaveNoteAction;
 
 export const isNoteAction = (action: Action): action is NoteAction =>
   ['ADD_NOTE', 'EDIT_NOTE', 'DELETE_NOTE'].includes(action.type);

@@ -74,6 +74,42 @@ export function notes(
       return updatedState;
     }
 
+    case 'FINISH_SAVE_NOTE': {
+      const noteStateIndex = findNoteIndex(state, action.context.noteFormId);
+      if (noteStateIndex === -1) {
+        return state;
+      }
+      const noteState = state[noteStateIndex];
+
+      const dirtyFields: Set<keyof Note> = new Set(
+        (Object.keys(action.note) as Array<keyof Note>).filter(
+          field =>
+            field !== 'id' &&
+            field !== 'created' &&
+            field !== 'modified' &&
+            !deepEqual(action.note[field], noteState.note[field])
+        )
+      );
+
+      const updatedNoteState: NoteState = {
+        formId: action.context.noteFormId,
+        note: { ...action.note, ...noteState.note },
+        editState: NoteEditState.Ok,
+      };
+      if (dirtyFields.size) {
+        updatedNoteState.dirtyFields = dirtyFields;
+      }
+
+      const updatedState = state.slice();
+      updatedState.splice(noteStateIndex, 1, updatedNoteState);
+      return updatedState;
+    }
+
+    case 'FAIL_SAVE_NOTE': {
+      // XXX
+      return state;
+    }
+
     default:
       return state;
   }

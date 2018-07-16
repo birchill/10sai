@@ -214,4 +214,73 @@ describe('reducer:notes', () => {
       },
     ]);
   });
+
+  it('should update state on FINISH_SAVE_NOTE', () => {
+    // Setup a note with a dirty content field
+    const initialNoteState = newNoteState(1);
+    const initialState = [initialNoteState];
+    const change = { content: 'Updated content' };
+    let updatedState = subject(
+      initialState,
+      actions.editNote(context(1), change)
+    );
+
+    // Save it
+    const savedNote = { ...initialNoteState.note, ...change, id: 'abc' };
+    updatedState = subject(
+      updatedState,
+      actions.finishSaveNote(context(1), savedNote)
+    );
+
+    expect(updatedState).toEqual([
+      {
+        ...initialNoteState,
+        note: savedNote,
+        editState: NoteEditState.Ok,
+      },
+    ]);
+  });
+
+  it(
+    'should only update dirty-ness for fields that have not since changed' +
+      ' on FINISH_SAVE_NOTE',
+    () => {
+      // Setup a note with a dirty content field
+      const initialNoteState = newNoteState(1);
+      const initialState = [initialNoteState];
+      const change = { content: 'Updated content' };
+      let updatedState = subject(
+        initialState,
+        actions.editNote(context(1), change)
+      );
+
+      // Prepare the saved version
+      const savedNote = { ...initialNoteState.note, ...change, id: 'abc' };
+
+      // Now do a subsequent change
+      updatedState = subject(
+        updatedState,
+        actions.editNote(context(1), { content: 'Updated again' })
+      );
+
+      // And finish the save with the previous values
+      updatedState = subject(
+        updatedState,
+        actions.finishSaveNote(context(1), savedNote)
+      );
+
+      expect(updatedState).toEqual([
+        {
+          ...initialNoteState,
+          note: { ...savedNote, content: 'Updated again' },
+          editState: NoteEditState.Ok,
+          dirtyFields: new Set<keyof Note>(['content']),
+        },
+      ]);
+    }
+  );
+
+  // TODO: If we decide to keep representing deleted notes (as opposed to simply
+  // dropping them from the array) we should check that FINISH_SAVE_NOTE does
+  // not update a deleted note.
 });
