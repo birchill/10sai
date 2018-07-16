@@ -14,6 +14,9 @@ export enum EditorState {
 
   // Card not found in the DB
   NotFound = 'not found',
+
+  // Card not found because it was deleted
+  Deleted = 'deleted',
 }
 
 export default EditorState;

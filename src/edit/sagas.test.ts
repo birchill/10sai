@@ -193,14 +193,13 @@ const emptyState = (formId: number) => ({
   },
 });
 
-const notFoundState = (formId: number, deleted: boolean) => ({
+const deletedState = (formId: number) => ({
   edit: {
     forms: {
       active: {
         formId,
-        editorState: EditorState.NotFound,
+        editorState: EditorState.Deleted,
         card: {},
-        deleted,
       },
     },
   },
@@ -346,7 +345,7 @@ describe('sagas:edit watchCardEdits', () => {
     const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
-      .withState(notFoundState(formId, true))
+      .withState(deletedState(formId))
       .dispatch(editActions.deleteCard(formId, 'abc'))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
@@ -375,7 +374,7 @@ describe('sagas:edit watchCardEdits', () => {
     const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
-      .withState(notFoundState(formId, true))
+      .withState(deletedState(formId))
       .dispatch(editActions.deleteCard(formId, 'abc'))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);

@@ -70,13 +70,23 @@ const dirtyState = (
   },
 });
 
-const notFoundState = (formId: number, deleted: boolean): EditState => ({
+const notFoundState = (formId: number): EditState => ({
   forms: {
     active: {
       formId,
       editorState: EditorState.NotFound,
       card: {},
-      deleted,
+      notes: [],
+    },
+  },
+});
+
+const deletedState = (formId: number): EditState => ({
+  forms: {
+    active: {
+      formId,
+      editorState: EditorState.Deleted,
+      card: {},
       notes: [],
     },
   },
@@ -170,7 +180,7 @@ describe('reducer:edit', () => {
       actions.failLoadCard(7, { name: 'Error', message: 'Error' })
     );
 
-    expect(updatedState).toEqual(notFoundState(7, false));
+    expect(updatedState).toEqual(notFoundState(7));
   });
 
   it('should NOT update state on FAIL_LOAD_CARD if formIds differ', () => {
@@ -184,13 +194,13 @@ describe('reducer:edit', () => {
     expect(updatedState).toEqual(initialState);
   });
 
-  it('should update to NOT_FOUND (deleted) state on FAIL_LOAD_CARD (deleted)', () => {
+  it('should update to deleted state on FAIL_LOAD_CARD (deleted)', () => {
     const initialState = loadingState(8);
     const error = { name: 'Error', message: 'Error', reason: 'deleted' };
 
     const updatedState = subject(initialState, actions.failLoadCard(8, error));
 
-    expect(updatedState).toEqual(notFoundState(8, true));
+    expect(updatedState).toEqual(deletedState(8));
   });
 
   it('should update card and dirty fields and state on EDIT_CARD', () => {
@@ -450,7 +460,7 @@ describe('reducer:edit', () => {
     // (This can happen if we have a stray auto-save task. In that case the
     // watchCardEdits saga needs to see that the card is deleted so that it goes
     // ahead and deletes the newly-saved card.)
-    const initialState = notFoundState(15, true);
+    const initialState = deletedState(15);
     const card = {
       _id: 'abc',
       question: 'Question',
@@ -502,7 +512,7 @@ describe('reducer:edit', () => {
   );
 
   it('should NOT update state on FAIL_SAVE_CARD if the card is deleted', () => {
-    const initialState = notFoundState(15, true);
+    const initialState = deletedState(15);
 
     const updatedState = subject(
       initialState,
@@ -568,7 +578,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(initialState, actions.syncEditCard(change));
 
-      expect(updatedState).toEqual(notFoundState(15, true));
+      expect(updatedState).toEqual(deletedState(15));
     }
   );
 
@@ -581,7 +591,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(initialState, actions.deleteCard(15, 'abc'));
 
-    expect(updatedState).toEqual(notFoundState(15, true));
+    expect(updatedState).toEqual(deletedState(15));
   });
 
   it('should update to EMPTY state on DELETE_CARD for unsaved card', () => {

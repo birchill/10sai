@@ -59,7 +59,7 @@ export function* watchNoteEdits(dataStore: DataStore) {
 
         return {
           context: action.context,
-          deleted: !!state.edit.forms.active.deleted,
+          deleted: false,
           needsSaving: isDirty(noteState) && hasDataToSave(noteState.note),
           resource: noteState.note,
         };

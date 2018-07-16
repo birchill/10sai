@@ -143,7 +143,7 @@ export function* watchCardEdits(dataStore: DataStore) {
 
         return {
           context: action.formId,
-          deleted: !!state.edit.forms.active.deleted,
+          deleted: state.edit.forms.active.editorState === EditorState.Deleted,
           needsSaving: isDirty(state) && hasDataToSave(card),
           resource: card,
         };

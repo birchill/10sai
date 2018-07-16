@@ -261,7 +261,8 @@ export class EditCardScreen extends React.PureComponent<Props> {
           editorState={this.props.forms.active.editorState}
           onDelete={this.handleDelete}
         />
-        {this.props.forms.active.editorState !== EditorState.NotFound ? (
+        {this.props.forms.active.editorState !== EditorState.NotFound &&
+        this.props.forms.active.editorState !== EditorState.Deleted ? (
           <>
             <EditCardForm
               onChange={this.handleFormChange}
@@ -295,7 +296,11 @@ export class EditCardScreen extends React.PureComponent<Props> {
             />
           </>
         ) : (
-          <EditCardNotFound deleted={!!this.props.forms.active.deleted} />
+          <EditCardNotFound
+            deleted={
+              this.props.forms.active.editorState === EditorState.Deleted
+            }
+          />
         )}
       </section>
     );
