@@ -33,35 +33,33 @@ export class NoteListWatcher {
 
     this.dataStore.changes.on('note', (change: EventType) => {
       const [found, index] = findNote(change.id, this.notes);
-      let changedNotes = false;
+      let updatedNotes: Notes[] | undefined;
 
       const matchesKeywords = () =>
-        change.keywords
-          .map(keyword => keyword.toLowerCase())
-          .some(keyword => this.keywords.includes(keyword));
+        change.keywords.some(keyword => this.keywords.includes(keyword));
 
       if (found) {
         // The changed note was one of our notes, but should it still be?
         if (change._deleted || !matchesKeywords()) {
-          this.notes.splice(index, 1);
+          updatedNotes = this.notes.slice();
+          updatedNotes.splice(index, 1);
         } else {
           // The changed note is on of our notes (and still is). Did something
           // change that we might care about?
           // Assume something this.
           if (!deepEqual(this.notes[index], change)) {
-            this.notes[index] = change;
+            updatedNotes = this.notes.slice();
+            updatedNotes[index] = change;
           }
         }
       } else if (!change._deleted && matchesKeywords()) {
         // The changed note wasn't found in our notes, but it should be there.
-        this.notes.splice(index, 0, change);
-        changedNotes = true;
+        updatedNotes = this.notes.slice();
+        updatedNotes.splice(index, 0, change);
       }
 
-      if (changedNotes) {
-        // Update object identity to make it easier on call sites to do
-        // simple object-identity comparisons.
-        this.notes = this.notes.slice();
+      if (typeof updatedNotes !== 'undefined') {
+        this.notes = updatedNotes;
         this.listener(this.notes);
       }
     });
@@ -123,7 +121,7 @@ const findNote = (id: string, notes: Note[]): [boolean, number] => {
       return [true, guess];
     }
 
-    if (result > 0) {
+    if (result < 0) {
       min = guess + 1;
     } else {
       max = guess - 1;

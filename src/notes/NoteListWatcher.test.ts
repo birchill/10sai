@@ -73,6 +73,32 @@ describe('NoteListWatcher', () => {
     expect(await subject.getNotes()).toEqual([note1, note2]);
   });
 
+  it('reports a newly-added card that matches', async () => {
+    const note1 = await dataStore.putNote({
+      content: 'Note 1',
+      keywords: ['ABC', 'DEF'],
+    });
+
+    const result: Array<Note> = [];
+
+    const [callback, finished] = waitForCalls(2);
+    const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
+
+    // Wait for the initial set of notes to be fetched
+    await subject.getNotes();
+
+    const note2 = await dataStore.putNote({
+      content: 'Note 2',
+      keywords: ['ABC'],
+    });
+
+    const calls = await finished;
+
+    expect(calls[0]).toEqual([note1]);
+    expect(calls[1]).toEqual([note1, note2]);
+    expect(await subject.getNotes()).toEqual([note1, note2]);
+  });
+
   // Test: A newly-added card that matches
   // Test: A newly-added card that does not match
   // Test: A deleted card that did match
