@@ -55,17 +55,17 @@ describe('NoteListWatcher', () => {
     });
     const note2 = await dataStore.putNote({
       content: 'Note 2',
-      keywords: ['DEF', 'GHI'],
+      keywords: ['Def', 'GHI'],
     });
     const note3 = await dataStore.putNote({
       content: 'Note 3',
-      keywords: ['ABC'],
+      keywords: ['Abc'],
     });
 
     const result: Array<Note> = [];
 
     const [callback, finished] = waitForCalls(1);
-    const subject = new NoteListWatcher(dataStore, callback, ['DEF']);
+    const subject = new NoteListWatcher(dataStore, callback, ['def']);
 
     const calls = await finished;
 
@@ -89,7 +89,7 @@ describe('NoteListWatcher', () => {
 
     const note2 = await dataStore.putNote({
       content: 'Note 2',
-      keywords: ['ABC'],
+      keywords: ['Abc'],
     });
 
     const calls = await finished;

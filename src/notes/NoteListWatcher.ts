@@ -29,14 +29,17 @@ export class NoteListWatcher {
     this.notes = [];
     this.listener = onUpdate;
 
-    this.updateKeywords(keywords);
+    const keywordsLowercase = keywords.map(keyword => keyword.toLowerCase());
+    this.updateKeywords(keywordsLowercase);
 
     this.dataStore.changes.on('note', (change: EventType) => {
       const [found, index] = findNote(change.id, this.notes);
       let updatedNotes: Note[] | undefined;
 
       const matchesKeywords = () =>
-        change.keywords.some(keyword => this.keywords.includes(keyword));
+        change.keywords.some(keyword =>
+          this.keywords.includes(keyword.toLowerCase())
+        );
 
       if (found) {
         // The changed note was one of our notes, but should it still be?
@@ -69,19 +72,30 @@ export class NoteListWatcher {
     return this.initDone.then(() => this.notes);
   }
 
+  // Note that this will be the lowercased version of the keywords.
   getKeywords(): string[] {
     return this.keywords;
   }
 
   setKeywords(keywords: string[]) {
-    if (deepEqual(keywords, this.keywords)) {
+    // All keyword comparisons are case-insensitive and we store the keywords
+    // in lowercase to avoid having to do it every time we get a callback.
+    // As a result we should be careful to lowercase the input case before
+    // comparing old and new.
+    const keywordsLowercase = keywords.map(keyword => keyword.toLowerCase());
+    if (deepEqual(keywordsLowercase, this.keywords)) {
       return;
     }
 
-    this.updateKeywords(keywords);
+    this.updateKeywords(keywordsLowercase);
   }
 
   updateKeywords(keywords: string[]) {
+    // The input to this method should already have lowercased all the keywords.
+    console.assert(
+      !keywords.some(keyword => keyword !== keyword.toLowerCase()),
+      'Keywords should already be lowercased'
+    );
     this.keywords = keywords;
 
     this.initDone = this.keywords.length
