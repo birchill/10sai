@@ -33,7 +33,7 @@ export class NoteListWatcher {
 
     this.dataStore.changes.on('note', (change: EventType) => {
       const [found, index] = findNote(change.id, this.notes);
-      let updatedNotes: Notes[] | undefined;
+      let updatedNotes: Note[] | undefined;
 
       const matchesKeywords = () =>
         change.keywords.some(keyword => this.keywords.includes(keyword));
