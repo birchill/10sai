@@ -490,6 +490,19 @@ export class CardStore {
         return 1;
       }
 
+      // Sort by case-insensitive complete matches next
+      const lcValueA = valueA.toLowerCase();
+      const lcValueB = valueB.toLowerCase();
+      if (lcValueA !== lcValueB) {
+        const lcPrefix = prefix.toLowerCase();
+        if (lcValueA === lcPrefix) {
+          return -1;
+        }
+        if (lcValueB === lcPrefix) {
+          return -1;
+        }
+      }
+
       // Then sort by frequency
       if (a.value !== b.value) {
         return b.value - a.value;

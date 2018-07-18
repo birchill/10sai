@@ -188,17 +188,17 @@ describe('NoteStore', () => {
   });
 
   it('keyword search: returns matching keywords', async () => {
-    await dataStore.putNote({ ...typicalNewNote, keywords: ['ABCDEF'] });
-    await dataStore.putNote({ ...typicalNewNote, keywords: ['BCD', 'ABC'] });
+    await dataStore.putNote({ ...typicalNewNote, keywords: ['abcdef'] });
+    await dataStore.putNote({ ...typicalNewNote, keywords: ['BCD', 'Abc'] });
     await dataStore.putNote({
       ...typicalNewNote,
-      keywords: ['ABCDEFGHI', 'ABCDEF'],
+      keywords: ['ABCDEFGHI', 'abcdef'],
     });
     await dataStore.putNote({ ...typicalNewNote, keywords: ['ABCD'] });
 
     const result = await dataStore.getKeywords('ABC', 10);
 
-    expect(result).toEqual(['ABC', 'ABCDEF', 'ABCD', 'ABCDEFGHI']);
+    expect(result).toEqual(['Abc', 'abcdef', 'ABCD', 'ABCDEFGHI']);
   });
 
   it('keyword search: respects the limit for matched keywords', async () => {
