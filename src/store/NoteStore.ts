@@ -66,7 +66,7 @@ export class NoteStore {
       index: {
         fields: ['keywords'],
         name: 'keywords_index',
-        ddoc: 'notes_by_keyword',
+        ddoc: 'notes_by_keywords',
       },
     });
   }

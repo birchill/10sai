@@ -1,4 +1,5 @@
 import PouchDB from 'pouchdb';
+import PouchDBFind from 'pouchdb-find';
 import EventEmitter from 'event-emitter';
 
 import { AvailableCards, Card, Note, Review } from '../model';
@@ -13,7 +14,7 @@ import { NoteStore, NOTE_PREFIX } from './NoteStore';
 import { ReviewStore, REVIEW_PREFIX } from './ReviewStore';
 
 PouchDB.plugin(require('pouchdb-upsert'));
-PouchDB.plugin(require('pouchdb-find'));
+PouchDB.plugin(PouchDBFind);
 PouchDB.plugin(require('pouch-resolve-conflicts'));
 
 // The way the typings for PouchDB-adapter-idb are set up, if you want to
