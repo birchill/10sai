@@ -43,6 +43,9 @@ describe('NoteListWatcher', () => {
       if (++recordedChanges === num) {
         resolver(calls);
       }
+      if (recordedChanges > num) {
+        throw `Got ${recordedChanges} calls, but only expected ${num}`;
+      }
     };
 
     return [callback, promise];
@@ -99,8 +102,27 @@ describe('NoteListWatcher', () => {
     expect(await subject.getNotes()).toEqual([note1, note2]);
   });
 
-  // Test: A newly-added card that matches
-  // Test: A newly-added card that does not match
+  it('does NOT report a newly-added card that does NOT matches', async () => {
+    const note1 = await dataStore.putNote({
+      content: 'Note 1',
+      keywords: ['ABC', 'DEF'],
+    });
+
+    const result: Array<Note> = [];
+
+    const [callback] = waitForCalls(1);
+    const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
+
+    await subject.getNotes();
+
+    const note2 = await dataStore.putNote({
+      content: 'Note 2',
+      keywords: ['def'],
+    });
+
+    expect(await subject.getNotes()).toEqual([note1]);
+  });
+
   // Test: A deleted card that did match
   // Test: A deleted card that does not match
   // Test: A content change to a card that does match
