@@ -6,6 +6,11 @@ import { collate } from 'pouchdb-collate';
 
 export interface NoteContent {
   keywords?: string[];
+  // A copy of keywords suitable for indexing. Currently this is just
+  // a lowercased version but it might, in future, be useful to store other
+  // variants like hiragana version of kanji keywords, normalized versions of
+  // hangul, etc.
+  keywords_idx?: string[];
   content: string;
   created: number;
   modified: number;
@@ -21,7 +26,7 @@ export const NOTE_PREFIX = 'note-';
 
 const parseNote = (note: ExistingNoteDoc | NoteDoc): Note => {
   const result: Note = {
-    ...stripFields(note as ExistingNoteDoc, ['_id', '_rev']),
+    ...stripFields(note as ExistingNoteDoc, ['_id', '_rev', 'keywords_idx']),
     id: note._id.substr(NOTE_PREFIX.length),
     keywords: note.keywords || [],
   };
@@ -64,8 +69,8 @@ export class NoteStore {
     this.db = db;
     this.keywordsViewReady = this.db.createIndex({
       index: {
-        fields: ['keywords'],
-        name: 'keywords_index',
+        fields: ['keywords_idx'],
+        name: 'keywords_idx',
         ddoc: 'notes_by_keywords',
       },
     });
@@ -97,6 +102,13 @@ export class NoteStore {
       // Drop empty optional fields
       if (noteToPut.keywords && !noteToPut.keywords.length) {
         delete noteToPut.keywords;
+      }
+
+      // Store lower-case version of keywords
+      if (noteToPut.keywords) {
+        noteToPut.keywords_idx = noteToPut.keywords.map(keyword =>
+          keyword.toLowerCase()
+        );
       }
 
       noteDoc = await (async function tryToPutNewNote(
@@ -211,27 +223,18 @@ export class NoteStore {
   }
 
   async getNotesForKeywords(keywords: string[]): Promise<Note[]> {
-    /*
-     * This should be a case-insensitive comparison but pouchdb-find doesn't
-     * (yet) support case-insensitive indices or some of the other query
-     * operators from MongoDB that let you do case-insensitive comparisons.
-     *
-     * We can actually work around this using RegExps but since that doesn't
-     * work with $in we'd need to iterate over every item in |keywords| and then
-     * build up a suitable escaped case-insensitive RegExp and run that over
-     * each keyword in the candidate. That doesn't sound very scalable so
-     * instead we just make this case-sensitive for the time being and hope that
-     * users are carefully to follow the autocomplete prompts that guide them to
-     * matchin the casing of previous keywords.
-     *
-     * If we need to support this and pouchdb-find can't help then perhaps we
-     * can just save two copies of the keywords: original case plus lower case,
-     * and then create the index on the lower case version.
-     */
+    // We store a lowercased version of the keywords as keyword_idx so that we
+    // can create an index on that and compare to that.
+    //
+    // Although PouchDB lets us create views where we could achieve the same
+    // effect, those views are quite expensive to warm up. Furthermore, ideally
+    // in future we'd like to use IndexedDB native indices and they don't
+    // support changing case.
+    const keywordsToMatch = keywords.map(keyword => keyword.toLowerCase());
     const request: PouchDB.Find.FindRequest<NoteContent> = {
       selector: {
         _id: { $gt: NOTE_PREFIX, $lt: `${NOTE_PREFIX}\ufff0` },
-        keywords: { $elemMatch: { $in: keywords } },
+        keywords_idx: { $elemMatch: { $in: keywordsToMatch } },
       },
     };
     const result = (await this.db.find(request)) as PouchDB.Find.FindResponse<

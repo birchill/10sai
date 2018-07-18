@@ -289,14 +289,14 @@ describe('NoteStore', () => {
     });
     const note3 = await dataStore.putNote({
       ...typicalNewNote,
-      keywords: ['BCD', 'ABC'],
+      keywords: ['Bcd', 'Abc'],
     });
     const note4 = await dataStore.putNote({
       ...typicalNewNote,
       keywords: ['BCD', 'unrelated'],
     });
 
-    const result = await dataStore.getNotesForKeywords(['ABC', 'BCD']);
+    const result = await dataStore.getNotesForKeywords(['ABC', 'bcd']);
 
     expect(result).toEqual([note1, note3, note4]);
   });
