@@ -124,7 +124,6 @@ export class EditCardScreen extends React.PureComponent<Props> {
       this.activeFormRef.current &&
       this.activeFormRef.current.questionTextBoxRef.current
     ) {
-      console.log('Autofocusing!');
       this.activeFormRef.current.questionTextBoxRef.current.focus();
     }
   }
