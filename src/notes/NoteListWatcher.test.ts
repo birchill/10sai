@@ -48,6 +48,10 @@ describe('NoteListWatcher', () => {
       }
     };
 
+    if (num === 0) {
+      resolver([]);
+    }
+
     return [callback, promise];
   };
 
@@ -274,9 +278,135 @@ describe('NoteListWatcher', () => {
     expect(await subject.getNotes()).toEqual([note1]);
   });
 
-  // Test: A keyword change to a card so that it continues to match
-  // Test: A keyword change to a card so that it continues to not match
-  // Test: A redundant change on a card that does match
+  it('reports a keyword change to a card that matches (and continues to match)', async () => {
+    const note = await dataStore.putNote({
+      content: 'Content',
+      keywords: ['ABC'],
+    });
+
+    const result: Array<Note> = [];
+
+    const [callback, finished] = waitForCalls(2);
+    const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
+    await subject.getNotes();
+
+    const updatedNote = await dataStore.putNote({
+      ...note,
+      keywords: ['abc', 'def'],
+    });
+
+    const calls = await finished;
+
+    expect(calls[0]).toEqual([note]);
+    expect(calls[1]).toEqual([updatedNote]);
+    expect(await subject.getNotes()).toEqual([updatedNote]);
+  });
+
+  it('does NOT report a keyword change to a card that does NOT match (and continues to NOT match)', async () => {
+    const note1 = await dataStore.putNote({
+      content: 'Note 1',
+      keywords: ['ABC'],
+    });
+    const note2 = await dataStore.putNote({
+      content: 'Note 2',
+      keywords: ['DEF'],
+    });
+
+    const result: Array<Note> = [];
+
+    const [callback, finished] = waitForCalls(1);
+    const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
+    await subject.getNotes();
+
+    const updatedNote2 = await dataStore.putNote({
+      ...note2,
+      keywords: ['def', 'AB'],
+    });
+
+    const calls = await finished;
+
+    expect(calls[0]).toEqual([note1]);
+    expect(await subject.getNotes()).toEqual([note1]);
+  });
+
+  it('does NOT report a redundant change to a card that matches', async () => {
+    const note = await dataStore.putNote({
+      content: 'Note',
+      keywords: ['ABC'],
+    });
+
+    const result: Array<Note> = [];
+
+    const [callback, finished] = waitForCalls(1);
+    const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
+    await subject.getNotes();
+
+    await dataStore.putNote({ ...note });
+
+    const calls = await finished;
+
+    expect(calls[0]).toEqual([note]);
+    expect(await subject.getNotes()).toEqual([note]);
+  });
+
+  it('does NOT report a redundant change to a card that matches', async () => {
+    const note = await dataStore.putNote({
+      content: 'Note',
+      keywords: ['ABC'],
+    });
+
+    const result: Array<Note> = [];
+
+    const [callback, finished] = waitForCalls(1);
+    const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
+    await subject.getNotes();
+
+    await dataStore.putNote({ ...note });
+
+    const calls = await finished;
+
+    expect(calls[0]).toEqual([note]);
+    expect(await subject.getNotes()).toEqual([note]);
+  });
+
+  it('does not return any results when given an empty string as the only keyword', async () => {
+    const note1 = await dataStore.putNote({
+      content: 'Note 1',
+      keywords: ['ABC'],
+    });
+    // Make sure to include a note that actually has an empty string has one of
+    // its keywords.
+    //
+    // (Hopefully the UI would prevent users from actually entering this but
+    // it's always possible for it to find its way into the database by other
+    // means.)
+    const note2 = await dataStore.putNote({
+      content: 'Note 2',
+      keywords: [''],
+    });
+
+    const result: Array<Note> = [];
+
+    const [callback, finished] = waitForCalls(0);
+    const subject = new NoteListWatcher(dataStore, callback, ['']);
+    expect(await subject.getNotes()).toEqual([]);
+
+    // Make the first note have an empty string keyword.
+    await dataStore.putNote({
+      ...note1,
+      keywords: [''],
+    });
+    // Make a change to the second note (which already has an empty string
+    // keyword).
+    await dataStore.putNote({
+      ...note2,
+      content: 'Updated content',
+    });
+
+    const calls = await finished;
+
+    expect(await subject.getNotes()).toEqual([]);
+  });
+
   // Test: An empty array of keywords to match
-  // Test: An empty string
 });

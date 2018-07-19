@@ -230,7 +230,10 @@ export class NoteStore {
     // effect, those views are quite expensive to warm up. Furthermore, ideally
     // in future we'd like to use IndexedDB native indices and they don't
     // support changing case.
-    const keywordsToMatch = keywords.map(keyword => keyword.toLowerCase());
+    const keywordsToMatch = keywords
+      .map(keyword => keyword.toLowerCase())
+      // Skip any empty keywords
+      .filter(keyword => keyword.length > 0);
     const request: PouchDB.Find.FindRequest<NoteContent> = {
       selector: {
         _id: { $gt: NOTE_PREFIX, $lt: `${NOTE_PREFIX}\ufff0` },

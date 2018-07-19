@@ -12,6 +12,11 @@ type NoteListListener = (notes: Note[]) => void;
 // makes the 'deleted' member separate.
 type EventType = Note & { _deleted?: boolean };
 
+const normalizeKeywords = (keywords: string[]): string[] =>
+  keywords
+    .map(keyword => keyword.toLowerCase())
+    .filter(keyword => keyword.length > 0);
+
 export class NoteListWatcher {
   dataStore: DataStore;
   notes: Note[];
@@ -29,8 +34,7 @@ export class NoteListWatcher {
     this.notes = [];
     this.listener = onUpdate;
 
-    const keywordsLowercase = keywords.map(keyword => keyword.toLowerCase());
-    this.updateKeywords(keywordsLowercase);
+    this.updateKeywords(normalizeKeywords(keywords));
 
     this.dataStore.changes.on('note', (change: EventType) => {
       const [found, index] = findNote(change.id, this.notes);
@@ -78,28 +82,25 @@ export class NoteListWatcher {
   }
 
   setKeywords(keywords: string[]) {
-    // All keyword comparisons are case-insensitive and we store the keywords
-    // in lowercase to avoid having to do it every time we get a callback.
-    // As a result we should be careful to lowercase the input case before
-    // comparing old and new.
-    const keywordsLowercase = keywords.map(keyword => keyword.toLowerCase());
-    if (deepEqual(keywordsLowercase, this.keywords)) {
+    const normalizedKeywords = normalizeKeywords(keywords);
+    if (deepEqual(normalizedKeywords, this.keywords)) {
       return;
     }
 
-    this.updateKeywords(keywordsLowercase);
+    this.updateKeywords(normalizedKeywords);
   }
 
   updateKeywords(keywords: string[]) {
-    // The input to this method should already have lowercased all the keywords.
     console.assert(
-      !keywords.some(keyword => keyword !== keyword.toLowerCase()),
-      'Keywords should already be lowercased'
+      deepEqual(keywords, normalizeKeywords(keywords)),
+      'Keywords should already be normalized'
     );
     this.keywords = keywords;
 
-    this.initDone = this.keywords.length
-      ? this.dataStore.getNotesForKeywords(keywords).then(notes => {
+    if (this.keywords.length) {
+      this.initDone = this.dataStore
+        .getNotesForKeywords(keywords)
+        .then(notes => {
           // Check that the keywords have not been updated while we were
           // fetching notes.
           if (this.keywords !== keywords) {
@@ -110,8 +111,15 @@ export class NoteListWatcher {
             this.notes = notes;
             this.listener(notes);
           }
-        })
-      : Promise.resolve();
+        });
+    } else {
+      // If we had notes, but no longer do, we need to update.
+      if (this.notes.length) {
+        this.notes = [];
+        this.listener([]);
+      }
+      this.initDone = Promise.resolve();
+    }
   }
 }
 
