@@ -408,5 +408,37 @@ describe('NoteListWatcher', () => {
     expect(await subject.getNotes()).toEqual([]);
   });
 
-  // Test: An empty array of keywords to match
+  it('does not return any results when given an empty keywords array', async () => {
+    const note1 = await dataStore.putNote({
+      content: 'Note 1',
+      keywords: ['ABC'],
+    });
+    // Include a note that actually has an empty keywords array.
+    const note2 = await dataStore.putNote({
+      content: 'Note 2',
+      keywords: [],
+    });
+
+    const result: Array<Note> = [];
+
+    const [callback, finished] = waitForCalls(0);
+    const subject = new NoteListWatcher(dataStore, callback, []);
+    expect(await subject.getNotes()).toEqual([]);
+
+    // Make the first note have an empty keywords array.
+    await dataStore.putNote({
+      ...note1,
+      keywords: [],
+    });
+    // Make a change to the second note (which already has an empty keywords
+    // array).
+    await dataStore.putNote({
+      ...note2,
+      content: 'Updated content',
+    });
+
+    const calls = await finished;
+
+    expect(await subject.getNotes()).toEqual([]);
+  });
 });
