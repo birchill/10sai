@@ -44,7 +44,9 @@ export class EditCardScreen extends React.PureComponent<Props> {
             PropTypes.shape({
               formId: PropTypes.number,
               note: PropTypes.object.isRequired,
-              editState: PropTypes.string.isRequired,
+              dirtyFields: PropTypes.instanceOf(Set),
+              saveState: PropTypes.string.isRequired,
+              saveError: PropTypes.object,
             })
           ),
           saveError: PropTypes.object,
