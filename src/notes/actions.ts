@@ -2,23 +2,23 @@ import { Action } from 'redux';
 import { Note } from '../model';
 import { StoreError } from '../store/DataStore';
 
-interface BareEditNoteContext {
+interface EditScreenContext {
   screen: 'edit-card';
   cardFormId: number;
 }
 
-interface BareReviewNoteContext {
+interface ReviewScreenContext {
   screen: 'review';
 }
 
-type BareNoteContext = BareEditNoteContext | BareReviewNoteContext;
+type NoteListContext = EditScreenContext | ReviewScreenContext;
 
 interface NoteContextCommon {
   noteFormId: number;
 }
 
-export type EditNoteContext = BareEditNoteContext & NoteContextCommon;
-export type ReviewNoteContext = BareReviewNoteContext & NoteContextCommon;
+export type EditNoteContext = EditScreenContext & NoteContextCommon;
+export type ReviewNoteContext = ReviewScreenContext & NoteContextCommon;
 export type NoteContext = EditNoteContext | ReviewNoteContext;
 
 export type NoteAction =
@@ -27,10 +27,19 @@ export type NoteAction =
   | DeleteNoteAction
   | SaveNoteAction
   | FinishSaveNoteAction
-  | FailSaveNoteAction;
+  | FailSaveNoteAction
+  | UpdateNoteListAction;
 
 export const isNoteAction = (action: Action): action is NoteAction =>
-  ['ADD_NOTE', 'EDIT_NOTE', 'DELETE_NOTE'].includes(action.type);
+  [
+    'ADD_NOTE',
+    'EDIT_NOTE',
+    'DELETE_NOTE',
+    'SAVE_NOTE',
+    'FINISH_SAVE_NOTE',
+    'FAIL_SAVE_NOTE',
+    'UPDATE_NOTE_LIST',
+  ].includes(action.type);
 
 let id = 0;
 
@@ -49,7 +58,7 @@ export interface AddNoteAction {
 }
 
 export function addNote(
-  context: BareNoteContext,
+  context: NoteListContext,
   initialKeywords?: string[]
 ): AddNoteAction {
   return {
@@ -65,7 +74,7 @@ export function addNote(
 // Overload for unit testing that allows us to force the ID to a particular
 // number to make tests more independent.
 export function addNoteWithNewFormId(
-  context: BareNoteContext,
+  context: NoteListContext,
   noteFormId: number,
   initialKeywords?: string[]
 ): AddNoteAction {
@@ -156,5 +165,42 @@ export function deleteNote(
     type: 'DELETE_NOTE',
     context,
     noteId,
+  };
+}
+
+export interface UpdateNoteListAction {
+  type: 'UPDATE_NOTE_LIST';
+  context: NoteListContext;
+  notes: Array<Note>;
+  // An array of form IDs to use should this action produce new note forms.
+  // There should be at least as many items in this array as in |notes|.
+  noteFormIds: Array<number>;
+}
+
+export function updateNoteList(
+  context: NoteListContext,
+  notes: Array<Notes>
+): UpdateNoteListAction {
+  const noteFormIds = notes.map(() => newFormId());
+  return {
+    type: 'UPDATE_NOTE_LIST',
+    context,
+    notes,
+    noteFormIds,
+  };
+}
+
+// Overload for unit testing that allows us to force the IDs to a particular
+// values to make tests more independent.
+export function updateNoteListWithNewFormIds(
+  context: NoteListContext,
+  notes: Array<Notes>,
+  noteFormIds: Array<number>
+): UpdateNoteListAction {
+  return {
+    type: 'UPDATE_NOTE_LIST',
+    context,
+    notes,
+    noteFormIds,
   };
 }

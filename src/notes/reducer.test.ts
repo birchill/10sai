@@ -39,14 +39,16 @@ describe('reducer:notes', () => {
 
   const typicalNoteState = (formId: number): NoteState => ({
     formId,
-    note: {
-      id: 'abc',
-      keywords: ['def', 'ghi'],
-      content: 'Noterifictastical!',
-      created: Date.now(),
-      modified: Date.now(),
-    },
+    note: typicalNote(),
     saveState: SaveState.Ok,
+  });
+
+  const typicalNote = (): Note => ({
+    id: 'abc',
+    keywords: ['def', 'ghi'],
+    content: 'Noterifictastical!',
+    created: Date.now(),
+    modified: Date.now(),
   });
 
   it('should append new notes on ADD_NOTE', () => {
@@ -312,7 +314,6 @@ describe('reducer:notes', () => {
       updatedState,
       actions.failSaveNote(context(1), error)
     );
-    console.log(JSON.stringify(updatedState));
 
     expect(updatedState).toEqual([
       {
@@ -321,5 +322,71 @@ describe('reducer:notes', () => {
         saveError: error,
       },
     ]);
+  });
+
+  it('should update the note list on UPDATE_NOTE_LIST', () => {
+    const noteState1 = typicalNoteState(1);
+    const noteState2 = typicalNoteState(2);
+    noteState2.note = { ...noteState2.note, id: 'def', content: 'Note 2' };
+    const initialState = [noteState1, noteState2];
+
+    const note3 = { ...typicalNote(), id: 'ghi', content: 'Note 3' };
+    const updatedState = subject(
+      initialState,
+      // Use a different object identity for note1 to make sure we do a
+      // comparison before updating anything.
+      actions.updateNoteListWithNewFormIds(
+        context(1),
+        [{ ...noteState1.note }, note3],
+        [3, 4, 5]
+      )
+    );
+
+    expect(updatedState).toEqual([
+      noteState1,
+      {
+        formId: 3,
+        note: note3,
+        saveState: SaveState.Ok,
+      },
+    ]);
+    // Furthermore, the object identity of the first note should be the same.
+    expect(updatedState[0]).toBe(noteState1);
+  });
+
+  it('should update individual note fields on UPDATE_NOTE_LIST', () => {
+    // XXX
+  });
+
+  it('should NOT make update the note list if there are no change on UPDATE_NOTE_LIST', () => {
+    // XXX
+  });
+
+  it('should NOT make redundant changes to note state on UPDATE_NOTE_LIST', () => {
+    // XXX
+  });
+
+  it('should NOT update dirty fields or save state on UPDATE_NOTE_LIST', () => {
+    // XXX
+  });
+
+  it('should NOT drop notes still being saved on UPDATE_NOTE_LIST', () => {
+    // XXX
+  });
+
+  it('should NOT drop dirty notes on UPDATE_NOTE_LIST', () => {
+    // XXX
+  });
+
+  it('should mark notes as being created on ADD_NOTE', () => {
+    // XXX
+  });
+
+  it('should NOT created notes on UPDATE_NOTE_LIST', () => {
+    // XXX
+  });
+
+  it('should drop notes that no longer match on FINISH_SAVE_NOTE', () => {
+    // XXX
   });
 });
