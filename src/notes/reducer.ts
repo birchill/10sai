@@ -176,28 +176,27 @@ export function notes(
       //
       // - A match for |id|, OR
       // - A NoteState for a note that comes BEFORE |id| but we need to keep
-      //   because it is still dirty / being saved.
+      //   because it is still new / dirty / being saved.
       //
       // If no NoteStates match the above conditions, returns undefined.
-      const getNextFromOldList = (id: string): NoteState | undefined => {
+      const getNextFromOldList = (id?: string): NoteState | undefined => {
         let foundSomething = false;
-        while (
-          oldListIndex < state.length &&
-          typeof state[oldListIndex].note.id !== 'undefined'
-        ) {
+        while (oldListIndex < state.length) {
           const oldNoteState = state[oldListIndex];
+          const collateResult = id
+            ? collate(oldNoteState.note.id || '/ufff0', id)
+            : 0;
+          if (collateResult >= 0) {
+            foundSomething = collateResult === 0;
+            break;
+          }
+
           if (
             oldNoteState.saveState !== SaveState.Ok ||
             (typeof oldNoteState.dirtyFields !== 'undefined' &&
               oldNoteState.dirtyFields.size !== 0)
           ) {
             foundSomething = true;
-            break;
-          }
-
-          const collateResult = collate(oldNoteState.note.id, id);
-          if (collateResult >= 0) {
-            foundSomething = collateResult === 0;
             break;
           }
 

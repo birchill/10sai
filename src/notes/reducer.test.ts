@@ -495,6 +495,27 @@ describe('reducer:notes', () => {
     expect(updatedState[2]).toBe(noteState3);
   });
 
+  it('should NOT drop new notes on UPDATE_NOTE_LIST', () => {
+    const noteState1 = typicalNoteState(1);
+    const noteState2 = typicalNoteState(2);
+    noteState2.note = {
+      ...noteState2.note,
+      content: 'Note 2',
+    };
+    delete noteState2.note.id;
+    noteState2.saveState = SaveState.New;
+    const initialState = [noteState1, noteState2];
+
+    const updatedState = subject(
+      initialState,
+      actions.updateNoteList(context(1), [noteState1.note as Note])
+    );
+
+    expect(updatedState).toEqual([noteState1, noteState2]);
+    expect(updatedState[0]).toBe(noteState1);
+    expect(updatedState[1]).toBe(noteState2);
+  });
+
   it('should mark notes as being created on ADD_NOTE', () => {
     // XXX
   });
