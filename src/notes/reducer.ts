@@ -17,6 +17,11 @@ export interface NoteState {
   dirtyFields?: Set<keyof Note>;
   saveState: SaveState;
   saveError?: StoreError;
+  // We need to make sure any notes we've edited stick around. Otherwise we can
+  // end up with odd situations where, for example, as the user drops one
+  // keyword from the note and an auto-save / sync happens, the note disappears
+  // and they can no longer continuing to edit it.
+  touched?: boolean;
 }
 
 export function notes(
@@ -34,8 +39,9 @@ export function notes(
         ...state,
         {
           formId: action.context.noteFormId,
-          saveState: SaveState.New,
           note: newNote,
+          saveState: SaveState.New,
+          touched: true,
         },
       ];
     }
@@ -66,11 +72,12 @@ export function notes(
         }
       }
 
-      // Prepare the updated note staet
+      // Prepare the updated note state
       const updatedNoteState: NoteState = {
         ...noteState,
         note: updatedNote,
         dirtyFields,
+        touched: true,
       };
 
       return updateState(state, updatedNoteState, noteStateIndex);
@@ -113,6 +120,7 @@ export function notes(
         formId: action.context.noteFormId,
         note: { ...action.note, ...noteState.note },
         saveState: SaveState.Ok,
+        touched: true,
       };
       if (dirtyFields.size) {
         updatedNoteState.dirtyFields = dirtyFields;
@@ -192,6 +200,7 @@ export function notes(
           }
 
           if (
+            oldNoteState.touched ||
             oldNoteState.saveState !== SaveState.Ok ||
             (typeof oldNoteState.dirtyFields !== 'undefined' &&
               oldNoteState.dirtyFields.size !== 0)
@@ -240,6 +249,9 @@ export function notes(
             }
             if (typeof match.saveError !== 'undefined') {
               noteState.saveError = match.saveError;
+            }
+            if (typeof match.touched !== 'undefined' && match.touched) {
+              noteState.touched = true;
             }
             updatedState.push(noteState);
             madeChange = true;

@@ -19,7 +19,12 @@ describe('reducer:notes', () => {
     formId: number,
     initialKeywords?: string[]
   ): NoteState => {
-    const result: NoteState = { formId, note: {}, saveState: SaveState.New };
+    const result: NoteState = {
+      formId,
+      note: {},
+      saveState: SaveState.New,
+      touched: true,
+    };
     if (initialKeywords) {
       result.note.keywords = initialKeywords;
     }
@@ -92,6 +97,7 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
+        touched: true,
       },
     ]);
 
@@ -119,6 +125,7 @@ describe('reducer:notes', () => {
           keywords: ['New', 'keywords'],
         },
         dirtyFields: new Set(['keywords']),
+        touched: true,
       },
       newNoteState(3),
     ]);
@@ -159,6 +166,7 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
+        touched: true,
       },
     ]);
   });
@@ -185,6 +193,7 @@ describe('reducer:notes', () => {
           keywords: ['Updated', 'keywords'],
         },
         dirtyFields: new Set(['content', 'keywords']),
+        touched: true,
       },
     ]);
     // Check the set identity has also been updated
@@ -209,6 +218,7 @@ describe('reducer:notes', () => {
           content: 'Updated content',
         },
         dirtyFields: new Set(['content']),
+        touched: true,
       },
     ]);
   });
@@ -252,6 +262,7 @@ describe('reducer:notes', () => {
         ...initialNoteState,
         note: savedNote,
         saveState: SaveState.Ok,
+        touched: true,
       },
     ]);
   });
@@ -290,6 +301,7 @@ describe('reducer:notes', () => {
           note: { ...savedNote, content: 'Updated again' },
           dirtyFields: new Set<keyof Note>(['content']),
           saveState: SaveState.Ok,
+          touched: true,
         },
       ]);
     }
@@ -336,7 +348,7 @@ describe('reducer:notes', () => {
       // Use a different object identity for note1 to make sure we do a
       // comparison before updating anything.
       actions.updateNoteListWithNewFormIds(
-        context(1),
+        baseContext,
         [{ ...(noteState1.note as Note) }, note3],
         [3, 4, 5]
       )
@@ -366,7 +378,7 @@ describe('reducer:notes', () => {
       initialState,
       // Use a different object identity for note1 to make sure we do a
       // comparison before updating anything.
-      actions.updateNoteList(context(1), [updatedNote])
+      actions.updateNoteList(baseContext, [updatedNote])
     );
 
     expect(updatedState).toEqual([
@@ -390,7 +402,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.updateNoteList(context(1), [
+      actions.updateNoteList(baseContext, [
         { ...(noteState1.note as Note) },
         { ...(noteState2.note as Note) },
       ])
@@ -415,7 +427,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.updateNoteList(context(1), [
+      actions.updateNoteList(baseContext, [
         noteState1.note as Note,
         {
           ...(noteState2.note as Note),
@@ -454,7 +466,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.updateNoteList(context(1), [
+      actions.updateNoteList(baseContext, [
         noteState1.note as Note,
         noteState3.note as Note,
       ])
@@ -486,7 +498,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.updateNoteList(context(1), [noteState1.note as Note])
+      actions.updateNoteList(baseContext, [noteState1.note as Note])
     );
 
     expect(updatedState).toEqual([noteState1, noteState2, noteState3]);
@@ -508,7 +520,7 @@ describe('reducer:notes', () => {
 
     const updatedState = subject(
       initialState,
-      actions.updateNoteList(context(1), [noteState1.note as Note])
+      actions.updateNoteList(baseContext, [noteState1.note as Note])
     );
 
     expect(updatedState).toEqual([noteState1, noteState2]);
@@ -516,15 +528,42 @@ describe('reducer:notes', () => {
     expect(updatedState[1]).toBe(noteState2);
   });
 
-  it('should mark notes as being created on ADD_NOTE', () => {
-    // XXX
-  });
+  it('should NOT drop touched notes on UPDATE_NOTE_LIST', () => {
+    const noteState1 = typicalNoteState(1);
+    const noteState2 = typicalNoteState(2);
+    noteState2.note = {
+      ...noteState2.note,
+      id: 'def',
+      content: 'Note 2',
+    };
+    const initialState = [noteState1, noteState2];
 
-  it('should NOT drop created notes on UPDATE_NOTE_LIST', () => {
-    // XXX
-  });
+    // Touch one of the notes
+    let updatedState = subject(
+      initialState,
+      actions.editNote(context(1), { content: 'Updated content' })
+    );
 
-  it('should drop notes that no longer match on FINISH_SAVE_NOTE', () => {
-    // XXX
+    // Finish saving it
+    const updatedNote = { ...noteState1.note, content: 'Updated content' };
+    updatedState = subject(
+      updatedState,
+      actions.finishSaveNote(context(1), updatedNote)
+    );
+
+    // But then drop it from the list
+    updatedState = subject(
+      updatedState,
+      actions.updateNoteList(baseContext, [noteState2.note as Note])
+    );
+
+    expect(updatedState).toEqual([
+      {
+        ...noteState1,
+        note: updatedNote,
+        touched: true,
+      },
+      noteState2,
+    ]);
   });
 });
