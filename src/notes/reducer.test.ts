@@ -520,7 +520,7 @@ describe('reducer:notes', () => {
     // XXX
   });
 
-  it('should NOT created notes on UPDATE_NOTE_LIST', () => {
+  it('should NOT drop created notes on UPDATE_NOTE_LIST', () => {
     // XXX
   });
 
