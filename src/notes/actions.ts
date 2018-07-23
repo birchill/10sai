@@ -179,7 +179,7 @@ export interface UpdateNoteListAction {
 
 export function updateNoteList(
   context: NoteListContext,
-  notes: Array<Notes>
+  notes: Array<Note>
 ): UpdateNoteListAction {
   const noteFormIds = notes.map(() => newFormId());
   return {
@@ -194,7 +194,7 @@ export function updateNoteList(
 // values to make tests more independent.
 export function updateNoteListWithNewFormIds(
   context: NoteListContext,
-  notes: Array<Notes>,
+  notes: Array<Note>,
   noteFormIds: Array<number>
 ): UpdateNoteListAction {
   return {

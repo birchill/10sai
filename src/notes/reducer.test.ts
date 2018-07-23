@@ -337,7 +337,7 @@ describe('reducer:notes', () => {
       // comparison before updating anything.
       actions.updateNoteListWithNewFormIds(
         context(1),
-        [{ ...noteState1.note }, note3],
+        [{ ...(noteState1.note as Note) }, note3],
         [3, 4, 5]
       )
     );
@@ -355,19 +355,84 @@ describe('reducer:notes', () => {
   });
 
   it('should update individual note fields on UPDATE_NOTE_LIST', () => {
-    // XXX
+    const noteState = typicalNoteState(1);
+    const initialState = [noteState];
+
+    const updatedNote = {
+      ...(noteState.note as Note),
+      content: 'Updated content',
+    };
+    const updatedState = subject(
+      initialState,
+      // Use a different object identity for note1 to make sure we do a
+      // comparison before updating anything.
+      actions.updateNoteList(context(1), [updatedNote])
+    );
+
+    expect(updatedState).toEqual([
+      {
+        ...noteState,
+        note: {
+          ...updatedNote,
+        },
+      },
+    ]);
+    // The object identity of the note state and its note should differ
+    expect(updatedState[0]).not.toBe(noteState);
+    expect(updatedState[0].note).not.toBe(noteState.note);
   });
 
-  it('should NOT make update the note list if there are no change on UPDATE_NOTE_LIST', () => {
-    // XXX
-  });
+  it('should NOT make update the note list if there are no changes on UPDATE_NOTE_LIST', () => {
+    const noteState1 = typicalNoteState(1);
+    const noteState2 = typicalNoteState(2);
+    noteState2.note = { ...noteState2.note, id: 'def', content: 'Note 2' };
+    const initialState = [noteState1, noteState2];
 
-  it('should NOT make redundant changes to note state on UPDATE_NOTE_LIST', () => {
-    // XXX
+    const updatedState = subject(
+      initialState,
+      actions.updateNoteList(context(1), [
+        { ...(noteState1.note as Note) },
+        { ...(noteState2.note as Note) },
+      ])
+    );
+
+    expect(updatedState).toBe(initialState);
+    expect(updatedState[0]).toBe(noteState1);
+    expect(updatedState[1]).toBe(noteState2);
   });
 
   it('should NOT update dirty fields or save state on UPDATE_NOTE_LIST', () => {
-    // XXX
+    const noteState1 = typicalNoteState(1);
+    const noteState2 = typicalNoteState(2);
+    noteState2.note = {
+      ...noteState2.note,
+      id: 'def',
+      content: 'Change in progress',
+    };
+    noteState2.dirtyFields = new Set<keyof Note>(['content']);
+    noteState2.saveState = SaveState.InProgress;
+    const initialState = [noteState1, noteState2];
+
+    const updatedState = subject(
+      initialState,
+      actions.updateNoteList(context(1), [
+        noteState1.note as Note,
+        {
+          ...(noteState2.note as Note),
+          content: 'Note 2',
+        },
+      ])
+    );
+
+    expect(updatedState).toEqual([
+      noteState1,
+      {
+        ...noteState2,
+        note: noteState2.note,
+        dirtyFields: new Set<keyof Note>(['content']),
+        saveState: SaveState.InProgress,
+      },
+    ]);
   });
 
   it('should NOT drop notes still being saved on UPDATE_NOTE_LIST', () => {

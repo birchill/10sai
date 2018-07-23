@@ -204,7 +204,11 @@ export function notes(
             };
             if (typeof match.dirtyFields !== 'undefined') {
               noteState.dirtyFields = match.dirtyFields;
-              // XXX Preserve the value of dirtyFields
+              // Keep the dirty (unsaved) values rather than clobbering them
+              // with whatever we got from the database.
+              for (const field of match.dirtyFields) {
+                noteState.note[field] = match.note[field];
+              }
             }
             if (typeof match.saveError !== 'undefined') {
               noteState.saveError = match.saveError;
