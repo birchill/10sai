@@ -172,17 +172,33 @@ export function notes(
       let newListIndex = 0;
       let oldListIndex = 0;
 
-      const findMatchInOldList = (id: string): NoteState | undefined => {
+      // Return the next NoteState that is _either_:
+      //
+      // - A match for |id|, OR
+      // - A NoteState for a note that comes BEFORE |id| but we need to keep
+      //   because it is still dirty / being saved.
+      //
+      // If no NoteStates match the above conditions, returns undefined.
+      const getNextFromOldList = (id: string): NoteState | undefined => {
+        let foundSomething = false;
         while (
           oldListIndex < state.length &&
-          collate(state[oldListIndex].note.id, id) < 0
+          typeof state[oldListIndex].note.id !== 'undefined'
         ) {
+          if (state[oldListIndex].saveState !== SaveState.Ok) {
+            foundSomething = true;
+            break;
+          }
+
+          const collateResult = collate(state[oldListIndex].note.id, id);
+          if (collateResult >= 0) {
+            foundSomething = collateResult === 0;
+            break;
+          }
+
           oldListIndex++;
         }
-        return oldListIndex < state.length &&
-          collate(state[oldListIndex].note.id, id) === 0
-          ? state[oldListIndex]
-          : undefined;
+        return foundSomething ? state[oldListIndex++] : undefined;
       };
 
       for (
@@ -191,7 +207,15 @@ export function notes(
         newListIndex++
       ) {
         const newNote = action.notes[newListIndex];
-        const match = findMatchInOldList(newNote.id);
+        let match: NoteState | undefined;
+        let oldNoteState;
+        while ((oldNoteState = getNextFromOldList(newNote.id))) {
+          if (oldNoteState.note.id === newNote.id) {
+            match = oldNoteState;
+            break;
+          }
+          updatedState.push(oldNoteState);
+        }
 
         if (match) {
           if (deepEqual(match.note, newNote)) {

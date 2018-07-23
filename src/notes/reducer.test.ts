@@ -436,7 +436,31 @@ describe('reducer:notes', () => {
   });
 
   it('should NOT drop notes still being saved on UPDATE_NOTE_LIST', () => {
-    // XXX
+    const noteState1 = typicalNoteState(1);
+    const noteState2 = typicalNoteState(2);
+    noteState2.note = {
+      ...noteState2.note,
+      id: 'def',
+      content: 'Note 2',
+    };
+    noteState2.saveState = SaveState.InProgress;
+    const noteState3 = typicalNoteState(3);
+    noteState3.note = {
+      ...noteState3.note,
+      id: 'ghi',
+      content: 'Note 3',
+    };
+    const initialState = [noteState1, noteState2, noteState3];
+
+    const updatedState = subject(
+      initialState,
+      actions.updateNoteList(context(1), [
+        noteState1.note as Note,
+        noteState3.note as Note,
+      ])
+    );
+
+    expect(updatedState).toEqual([noteState1, noteState2, noteState3]);
   });
 
   it('should NOT drop dirty notes on UPDATE_NOTE_LIST', () => {
