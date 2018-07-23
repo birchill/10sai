@@ -185,12 +185,17 @@ export function notes(
           oldListIndex < state.length &&
           typeof state[oldListIndex].note.id !== 'undefined'
         ) {
-          if (state[oldListIndex].saveState !== SaveState.Ok) {
+          const oldNoteState = state[oldListIndex];
+          if (
+            oldNoteState.saveState !== SaveState.Ok ||
+            (typeof oldNoteState.dirtyFields !== 'undefined' &&
+              oldNoteState.dirtyFields.size !== 0)
+          ) {
             foundSomething = true;
             break;
           }
 
-          const collateResult = collate(state[oldListIndex].note.id, id);
+          const collateResult = collate(oldNoteState.note.id, id);
           if (collateResult >= 0) {
             foundSomething = collateResult === 0;
             break;
@@ -250,7 +255,11 @@ export function notes(
           madeChange = true;
         }
       }
-      // XXX Preserve created cards somehow
+
+      let oldNoteState;
+      while ((oldNoteState = getNextFromOldList('\ufff0'))) {
+        updatedState.push(oldNoteState);
+      }
 
       return madeChange ? updatedState : state;
     }
