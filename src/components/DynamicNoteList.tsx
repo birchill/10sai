@@ -32,8 +32,11 @@ export class NoteListWatcherWrapper extends React.PureComponent<WatcherProps> {
   }
 
   componentDidUpdate(previousProps: WatcherProps) {
-    if (!shallowEqual(this.props.keywords, previousProps.keywords)) {
+    if (!shallowEqual(previousProps.keywords, this.props.keywords)) {
       this.watcher.setKeywords(this.props.keywords);
+    }
+    if (previousProps.onUpdate !== this.props.onUpdate) {
+      this.watcher.listener = this.props.onUpdate;
     }
   }
 
@@ -80,8 +83,6 @@ interface Props {
 // XXX Use the actual state once we have it
 type State = any;
 
-// XXX Something is not right here... for some reason we keep using the old
-// context.
 const mapDispatchToProps = (dispatch: Dispatch<State>, ownProps: Props) => ({
   onAddNote: (initialKeywords: string[]) => {
     dispatch(noteActions.addNote(ownProps.context, initialKeywords));
