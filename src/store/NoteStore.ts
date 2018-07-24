@@ -239,6 +239,7 @@ export class NoteStore {
         _id: { $gt: NOTE_PREFIX, $lt: `${NOTE_PREFIX}\ufff0` },
         keywords_idx: { $elemMatch: { $in: keywordsToMatch } },
       },
+      // XXX Try using use_index here
     };
     const result = (await this.db.find(request)) as PouchDB.Find.FindResponse<
       NoteContent

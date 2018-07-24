@@ -111,6 +111,9 @@ export class NoteListWatcher {
             this.notes = notes;
             this.listener(notes);
           }
+        })
+        .catch(e => {
+          console.error(e);
         });
     } else {
       // If we had notes, but no longer do, we need to update.

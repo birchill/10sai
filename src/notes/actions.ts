@@ -2,7 +2,7 @@ import { Action } from 'redux';
 import { Note } from '../model';
 import { StoreError } from '../store/DataStore';
 
-interface EditScreenContext {
+export interface EditScreenContext {
   screen: 'edit-card';
   cardFormId: number;
 }
@@ -11,7 +11,7 @@ interface ReviewScreenContext {
   screen: 'review';
 }
 
-type NoteListContext = EditScreenContext | ReviewScreenContext;
+export type NoteListContext = EditScreenContext | ReviewScreenContext;
 
 interface NoteContextCommon {
   noteFormId: number;

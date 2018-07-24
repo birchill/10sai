@@ -7,13 +7,13 @@ import { Card, Note } from '../model';
 import EditCardToolbar from './EditCardToolbar';
 import EditCardForm from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound';
-import NoteList from './NoteList';
+import DynamicNoteList from './DynamicNoteList';
 import { FormState } from '../edit/FormState';
 import * as editActions from '../edit/actions';
 import { EditFormState, EditState } from '../edit/reducer';
 import { hasDataToSave } from '../edit/selectors';
-import * as noteActions from '../notes/actions';
 import * as routeActions from '../route/actions';
+import { EditScreenContext } from '../notes/actions';
 
 interface Props {
   forms: {
@@ -22,12 +22,6 @@ interface Props {
   active: boolean;
   onEdit: (formId: number, change: Partial<Card>) => void;
   onDelete: (formId: number, cardId?: string) => void;
-  onAddNote: (formId: number, initialKeywords: string[]) => void;
-  onNoteChange: (
-    cardFormId: number,
-    noteFormId: number,
-    change: Partial<Note>
-  ) => void;
 }
 
 export class EditCardScreen extends React.PureComponent<Props> {
@@ -53,7 +47,6 @@ export class EditCardScreen extends React.PureComponent<Props> {
       active: PropTypes.bool.isRequired,
       onEdit: PropTypes.func.isRequired,
       onDelete: PropTypes.func.isRequired,
-      onAddNote: PropTypes.func.isRequired,
     };
   }
 
@@ -66,8 +59,6 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
     this.handleFormChange = this.handleFormChange.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
-    this.handleAddNote = this.handleAddNote.bind(this);
-    this.handleNoteChange = this.handleNoteChange.bind(this);
   }
 
   componentDidMount() {
@@ -110,16 +101,8 @@ export class EditCardScreen extends React.PureComponent<Props> {
     );
   }
 
-  handleAddNote(initialKeywords: Array<string>) {
-    this.props.onAddNote(this.props.forms.active.formId, initialKeywords);
-  }
-
-  handleNoteChange(noteFormId: number, change: Partial<Note>) {
-    this.props.onNoteChange(this.props.forms.active.formId, noteFormId, change);
-  }
-
   render() {
-    const relatedKeywords = this.props.forms.active.card.keywords || [];
+    const keywords = this.props.forms.active.card.keywords || [];
 
     const canDelete =
       this.props.forms.active.formState === FormState.Ok && !this.isFormEmpty();
@@ -136,11 +119,15 @@ export class EditCardScreen extends React.PureComponent<Props> {
               ref={this.activeFormRef}
             />
             <hr className="note-divider divider" />
-            <NoteList
+            <DynamicNoteList
+              context={
+                {
+                  screen: 'edit-card',
+                  cardFormId: this.props.forms.active.formId,
+                } as EditScreenContext
+              }
               notes={this.props.forms.active.notes}
-              relatedKeywords={relatedKeywords}
-              onAddNote={this.handleAddNote}
-              onNoteChange={this.handleNoteChange}
+              keywords={keywords}
             />
           </>
         ) : (
@@ -166,26 +153,6 @@ const mapDispatchToProps = (dispatch: Dispatch<State>) => ({
   onDelete: (formId: number, cardId?: string) => {
     dispatch(editActions.deleteCard(formId, cardId));
     dispatch(routeActions.followLink('/'));
-  },
-  onAddNote: (formId: number, initialKeywords: string[]) => {
-    dispatch(
-      noteActions.addNote(
-        { screen: 'edit-card', cardFormId: formId },
-        initialKeywords
-      )
-    );
-  },
-  onNoteChange: (
-    cardFormId: number,
-    noteFormId: number,
-    change: Partial<Note>
-  ) => {
-    dispatch(
-      noteActions.editNote(
-        { screen: 'edit-card', cardFormId, noteFormId },
-        change
-      )
-    );
   },
 });
 

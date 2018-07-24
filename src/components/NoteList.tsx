@@ -7,7 +7,7 @@ import EditNoteForm from './EditNoteForm';
 
 interface Props {
   notes: Array<NoteState>;
-  relatedKeywords: Array<string>;
+  keywords: Array<string>;
   onAddNote: (initialKeywords: Array<string>) => void;
   onNoteChange: (noteFormId: number, change: Partial<Note>) => void;
 }
@@ -161,8 +161,8 @@ export class NoteList extends React.PureComponent<Props> {
   handleAddNote() {
     const initialKeywords = [];
     // Make the first keyword in the list the initial keyword.
-    if (this.props.relatedKeywords.length) {
-      initialKeywords.push(this.props.relatedKeywords[0]);
+    if (this.props.keywords.length) {
+      initialKeywords.push(this.props.keywords[0]);
     }
 
     // Record the position of the Add Note button so we can animate it later.
@@ -194,7 +194,7 @@ export class NoteList extends React.PureComponent<Props> {
                 className="noteform"
                 formId={note.formId}
                 note={note.note}
-                relatedKeywords={this.props.relatedKeywords}
+                relatedKeywords={this.props.keywords}
                 ref={ref}
                 onChange={this.handleNoteChange}
               />
