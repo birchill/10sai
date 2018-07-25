@@ -69,8 +69,6 @@ describe('NoteListWatcher', () => {
       keywords: ['Abc'],
     });
 
-    const result: Array<Note> = [];
-
     const [callback, finished] = waitForCalls(1);
     const subject = new NoteListWatcher(dataStore, callback, ['def']);
 
@@ -85,8 +83,6 @@ describe('NoteListWatcher', () => {
       content: 'Note 1',
       keywords: ['ABC', 'DEF'],
     });
-
-    const result: Array<Note> = [];
 
     const [callback, finished] = waitForCalls(2);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
@@ -112,8 +108,6 @@ describe('NoteListWatcher', () => {
       keywords: ['ABC', 'DEF'],
     });
 
-    const result: Array<Note> = [];
-
     const [callback] = waitForCalls(1);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
     await subject.getNotes();
@@ -131,8 +125,6 @@ describe('NoteListWatcher', () => {
       content: 'Note',
       keywords: ['abc', 'def'],
     });
-
-    const result: Array<Note> = [];
 
     const [callback, finished] = waitForCalls(2);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
@@ -157,8 +149,6 @@ describe('NoteListWatcher', () => {
       keywords: ['def'],
     });
 
-    const result: Array<Note> = [];
-
     const [callback, finished] = waitForCalls(1);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
     await subject.getNotes();
@@ -176,8 +166,6 @@ describe('NoteListWatcher', () => {
       content: 'Content',
       keywords: ['ABC', 'DEF'],
     });
-
-    const result: Array<Note> = [];
 
     const [callback, finished] = waitForCalls(2);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
@@ -205,8 +193,6 @@ describe('NoteListWatcher', () => {
       keywords: ['DEF'],
     });
 
-    const result: Array<Note> = [];
-
     const [callback, finished] = waitForCalls(1);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
     await subject.getNotes();
@@ -231,8 +217,6 @@ describe('NoteListWatcher', () => {
       content: 'Note 2',
       keywords: ['DEF'],
     });
-
-    const result: Array<Note> = [];
 
     const [callback, finished] = waitForCalls(2);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
@@ -260,8 +244,6 @@ describe('NoteListWatcher', () => {
       keywords: ['ABC', 'DEF'],
     });
 
-    const result: Array<Note> = [];
-
     const [callback, finished] = waitForCalls(2);
     const subject = new NoteListWatcher(dataStore, callback, ['abc']);
     await subject.getNotes();
@@ -283,8 +265,6 @@ describe('NoteListWatcher', () => {
       content: 'Content',
       keywords: ['ABC'],
     });
-
-    const result: Array<Note> = [];
 
     const [callback, finished] = waitForCalls(2);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
@@ -312,8 +292,6 @@ describe('NoteListWatcher', () => {
       keywords: ['DEF'],
     });
 
-    const result: Array<Note> = [];
-
     const [callback, finished] = waitForCalls(1);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
     await subject.getNotes();
@@ -335,8 +313,6 @@ describe('NoteListWatcher', () => {
       keywords: ['ABC'],
     });
 
-    const result: Array<Note> = [];
-
     const [callback, finished] = waitForCalls(1);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
     await subject.getNotes();
@@ -354,8 +330,6 @@ describe('NoteListWatcher', () => {
       content: 'Note',
       keywords: ['ABC'],
     });
-
-    const result: Array<Note> = [];
 
     const [callback, finished] = waitForCalls(1);
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
@@ -384,8 +358,6 @@ describe('NoteListWatcher', () => {
       content: 'Note 2',
       keywords: [''],
     });
-
-    const result: Array<Note> = [];
 
     const [callback, finished] = waitForCalls(0);
     const subject = new NoteListWatcher(dataStore, callback, ['']);
@@ -419,8 +391,6 @@ describe('NoteListWatcher', () => {
       keywords: [],
     });
 
-    const result: Array<Note> = [];
-
     const [callback, finished] = waitForCalls(0);
     const subject = new NoteListWatcher(dataStore, callback, []);
     expect(await subject.getNotes()).toEqual([]);
@@ -439,6 +409,25 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
+    expect(await subject.getNotes()).toEqual([]);
+  });
+
+  it('allows disconnecting from updates', async () => {
+    const [callback, finished] = waitForCalls(0);
+    const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
+
+    await subject.getNotes();
+
+    subject.disconnect();
+
+    const note = await dataStore.putNote({
+      content: 'Note',
+      keywords: ['ABC', 'DEF'],
+    });
+
+    const calls = await finished;
+
+    expect(calls).toEqual([]);
     expect(await subject.getNotes()).toEqual([]);
   });
 });

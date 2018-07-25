@@ -35,41 +35,48 @@ export class NoteListWatcher {
     this.listener = onUpdate;
 
     this.updateKeywords(normalizeKeywords(keywords));
+    this.handleChange = this.handleChange.bind(this);
 
-    this.dataStore.changes.on('note', (change: EventType) => {
-      const [found, index] = findNote(change.id, this.notes);
-      let updatedNotes: Note[] | undefined;
+    this.dataStore.changes.on('note', this.handleChange);
+  }
 
-      const matchesKeywords = () =>
-        change.keywords.some(keyword =>
-          this.keywords.includes(keyword.toLowerCase())
-        );
+  disconnect() {
+    this.dataStore.changes.off('note', this.handleChange);
+  }
 
-      if (found) {
-        // The changed note was one of our notes, but should it still be?
-        if (change._deleted || !matchesKeywords()) {
-          updatedNotes = this.notes.slice();
-          updatedNotes.splice(index, 1);
-        } else {
-          // The changed note is on of our notes (and still is). Did something
-          // change that we might care about?
-          // Assume something this.
-          if (!deepEqual(this.notes[index], change)) {
-            updatedNotes = this.notes.slice();
-            updatedNotes[index] = change;
-          }
-        }
-      } else if (!change._deleted && matchesKeywords()) {
-        // The changed note wasn't found in our notes, but it should be there.
+  handleChange(change: EventType) {
+    const [found, index] = findNote(change.id, this.notes);
+    let updatedNotes: Note[] | undefined;
+
+    const matchesKeywords = () =>
+      change.keywords.some(keyword =>
+        this.keywords.includes(keyword.toLowerCase())
+      );
+
+    if (found) {
+      // The changed note was one of our notes, but should it still be?
+      if (change._deleted || !matchesKeywords()) {
         updatedNotes = this.notes.slice();
-        updatedNotes.splice(index, 0, change);
+        updatedNotes.splice(index, 1);
+      } else {
+        // The changed note is on of our notes (and still is). Did something
+        // change that we might care about?
+        // Assume something this.
+        if (!deepEqual(this.notes[index], change)) {
+          updatedNotes = this.notes.slice();
+          updatedNotes[index] = change;
+        }
       }
+    } else if (!change._deleted && matchesKeywords()) {
+      // The changed note wasn't found in our notes, but it should be there.
+      updatedNotes = this.notes.slice();
+      updatedNotes.splice(index, 0, change);
+    }
 
-      if (typeof updatedNotes !== 'undefined') {
-        this.notes = updatedNotes;
-        this.listener(this.notes);
-      }
-    });
+    if (typeof updatedNotes !== 'undefined') {
+      this.notes = updatedNotes;
+      this.listener(this.notes);
+    }
   }
 
   getNotes(): Promise<Note[]> {
