@@ -40,6 +40,10 @@ export class NoteListWatcherWrapper extends React.PureComponent<WatcherProps> {
     }
   }
 
+  componentWillUnmount() {
+    this.watcher.disconnect();
+  }
+
   // XXX This probably suggests this component should be a wrapper??
   render() {
     return null;
