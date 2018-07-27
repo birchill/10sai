@@ -237,9 +237,17 @@ export class NoteStore {
     const request: PouchDB.Find.FindRequest<NoteContent> = {
       selector: {
         _id: { $gt: NOTE_PREFIX, $lt: `${NOTE_PREFIX}\ufff0` },
-        keywords_idx: { $elemMatch: { $in: keywordsToMatch } },
+        // The $gt: '' here is weird. I really have no idea what I'm doing.
+        // Without it, however, specifying use_index: 'notes_by_keywords' won't
+        // work since when pouch-db looks at the index it won't find a logical
+        // selector (only $elemMatch) and will reject the index.
+        //
+        // It _seems_ like persuading pouchdb-find to use the index we created
+        // would be faster but I've no idea if it actually is. In my very
+        // unscientific observation it seems slower if anything.
+        keywords_idx: { $elemMatch: { $in: keywordsToMatch }, $gt: '' },
       },
-      // XXX Try using use_index here
+      use_index: 'notes_by_keywords',
     };
     const result = (await this.db.find(request)) as PouchDB.Find.FindResponse<
       NoteContent
