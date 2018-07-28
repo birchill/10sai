@@ -6,7 +6,8 @@ function getScrollContainer(elem) {
     return null;
   }
 
-  return elem.scrollHeight > elem.clientHeight
+  // The + 1 is a fudge factor needed for Chrome on Linux.
+  return elem.scrollHeight > elem.clientHeight + 1
     ? elem
     : getScrollContainer(elem.parentNode);
 }
@@ -544,8 +545,10 @@ export class VirtualGrid extends React.Component {
       // of range because we clamp endIndex to the number of items.
       const inDeletedRange =
         previousIndex >= items.length && endIndex === items.length;
-      if (!inDeletedRange &&
-          (previousIndex < startIndex || previousIndex >= endIndex)) {
+      if (
+        !inDeletedRange &&
+        (previousIndex < startIndex || previousIndex >= endIndex)
+      ) {
         continue;
       }
 
@@ -639,10 +642,12 @@ export class VirtualGrid extends React.Component {
       <div
         className={`${this.props.className || ''} virtual-grid`}
         ref={this.assignGrid}
-        style={gridStyle}>
+        style={gridStyle}
+      >
         <div
           style={{ opacity: 0, pointerEvents: 'none' }}
-          ref={this.assignItemTemplate}>
+          ref={this.assignItemTemplate}
+        >
           {this.props.renderTemplateItem()}
         </div>
         {this.state.slots.map((data, i) => {
@@ -696,7 +701,8 @@ export class VirtualGrid extends React.Component {
               className={classes.join(' ')}
               // eslint-disable-next-line react/no-array-index-key
               key={i}
-              data-item-id={item._id}>
+              data-item-id={item._id}
+            >
               <div className="scalewrapper">{this.props.renderItem(item)}</div>
             </div>
           );
