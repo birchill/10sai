@@ -67,6 +67,10 @@ export class NoteStore {
 
   constructor(db: PouchDB.Database) {
     this.db = db;
+    // I'm not sure if this index is actually necessary. Our call to find()
+    // doesn't actually use it (because the keywords_idx selector there doesn't
+    // have an logical operators for the keywords_idx field and because it
+    // doesn't seem to handle array-type fields properly anyway).
     this.keywordsViewReady = this.db.createIndex({
       index: {
         fields: ['keywords_idx'],
@@ -237,17 +241,8 @@ export class NoteStore {
     const request: PouchDB.Find.FindRequest<NoteContent> = {
       selector: {
         _id: { $gt: NOTE_PREFIX, $lt: `${NOTE_PREFIX}\ufff0` },
-        // The $gt: '' here is weird. I really have no idea what I'm doing.
-        // Without it, however, specifying use_index: 'notes_by_keywords' won't
-        // work since when pouch-db looks at the index it won't find a logical
-        // selector (only $elemMatch) and will reject the index.
-        //
-        // It _seems_ like persuading pouchdb-find to use the index we created
-        // would be faster but I've no idea if it actually is. In my very
-        // unscientific observation it seems slower if anything.
-        keywords_idx: { $elemMatch: { $in: keywordsToMatch }, $gt: '' },
+        keywords_idx: { $elemMatch: { $in: keywordsToMatch } },
       },
-      use_index: 'notes_by_keywords',
     };
     const result = (await this.db.find(request)) as PouchDB.Find.FindResponse<
       NoteContent
