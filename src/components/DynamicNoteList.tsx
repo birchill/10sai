@@ -5,7 +5,13 @@ import { connect } from 'react-redux';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
 import DataStoreContext from './DataStoreContext';
-import NoteList from './NoteList';
+// This is really weird, but if we write the following as:
+//
+//   import NoteList from './NoteList';
+//
+// then _in_production_builds_only_ React will end up destroying and
+// re-constructing the NoteList component every time it re-renders.
+import { NoteList } from './NoteList';
 import { NoteListContext } from '../notes/actions';
 import { NoteListWatcher } from '../notes/NoteListWatcher';
 import * as noteActions from '../notes/actions';
