@@ -8,6 +8,7 @@ export const enum SaveState {
   New = 'new',
   Ok = 'ok',
   InProgress = 'in-progress',
+  Deleted = 'deleted',
   Error = 'error',
 }
 
@@ -150,10 +151,14 @@ export function notes(
       if (noteStateIndex === -1) {
         return state;
       }
+      const noteState = state[noteStateIndex];
 
-      const updatedState = state.slice();
-      updatedState.splice(noteStateIndex, 1);
-      return updatedState;
+      const updatedNoteState: NoteState = {
+        ...noteState,
+        saveState: SaveState.Deleted,
+      };
+
+      return updateState(state, updatedNoteState, noteStateIndex);
     }
 
     case 'UPDATE_NOTE_LIST': {
@@ -208,6 +213,11 @@ export function notes(
           if (collateResult >= 0) {
             foundSomething = collateResult === 0;
             break;
+          }
+
+          if (oldNoteState.saveState === SaveState.Deleted) {
+            oldListIndex++;
+            continue;
           }
 
           if (

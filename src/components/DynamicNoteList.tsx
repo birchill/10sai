@@ -60,7 +60,8 @@ interface InnerProps {
   notes: Array<NoteState>;
   keywords: Array<string>;
   onAddNote: (initialKeywords: Array<string>) => void;
-  onNoteChange: (noteFormId: number, change: Partial<Note>) => void;
+  onEditNote: (noteFormId: number, change: Partial<Note>) => void;
+  onDeleteNote: (noteFormId: number, noteId?: string) => void;
   onUpdateNoteList: (notes: Array<Note>) => void;
 }
 
@@ -79,7 +80,8 @@ const DynamicNoteListInner = (props: InnerProps) => (
       notes={props.notes}
       keywords={props.keywords}
       onAddNote={props.onAddNote}
-      onNoteChange={props.onNoteChange}
+      onEditNote={props.onEditNote}
+      onDeleteNote={props.onDeleteNote}
     />
   </>
 );
@@ -97,8 +99,13 @@ const mapDispatchToProps = (dispatch: Dispatch<State>, ownProps: Props) => ({
   onAddNote: (initialKeywords: string[]) => {
     dispatch(noteActions.addNote(ownProps.context, initialKeywords));
   },
-  onNoteChange: (noteFormId: number, change: Partial<Note>) => {
+  onEditNote: (noteFormId: number, change: Partial<Note>) => {
     dispatch(noteActions.editNote({ ...ownProps.context, noteFormId }, change));
+  },
+  onDeleteNote: (noteFormId: number, noteId?: string) => {
+    dispatch(
+      noteActions.deleteNote({ ...ownProps.context, noteFormId }, noteId)
+    );
   },
   onUpdateNoteList: (notes: Array<Note>) => {
     dispatch(noteActions.updateNoteList(ownProps.context, notes));

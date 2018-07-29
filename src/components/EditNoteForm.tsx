@@ -16,6 +16,7 @@ interface Props {
     topic: string,
     value: string | string[]
   ) => void;
+  onDelete?: (noteFormId: number, noteId?: string) => void;
 }
 
 interface State {
@@ -41,6 +42,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       note: PropTypes.object.isRequired,
       relatedKeywords: PropTypes.arrayOf(PropTypes.string).isRequired,
       onChange: PropTypes.func,
+      onDelete: PropTypes.func,
     };
   }
 
@@ -112,6 +114,8 @@ export class EditNoteForm extends React.Component<Props, State> {
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
+
+    this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
   handleContentClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -149,6 +153,12 @@ export class EditNoteForm extends React.Component<Props, State> {
   handleKeywordsChange(keywords: string[], addedKeywords: string[]) {
     if (this.props.onChange) {
       this.props.onChange(this.props.formId, 'keywords', keywords);
+    }
+  }
+
+  handleDeleteClick(e: React.MouseEvent<HTMLButtonElement>) {
+    if (this.props.onDelete) {
+      this.props.onDelete(this.props.formId, this.props.note.id);
     }
   }
 
@@ -214,7 +224,11 @@ export class EditNoteForm extends React.Component<Props, State> {
             />
           </div>
           <div className="controls">
-            <button className="delete -icon -delete -link -yellow">
+            <button
+              type="button"
+              className="delete -icon -delete -link -yellow"
+              onClick={this.handleDeleteClick}
+            >
               Discard
             </button>
           </div>

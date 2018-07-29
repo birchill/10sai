@@ -9,7 +9,8 @@ interface Props {
   notes: Array<NoteState>;
   keywords: Array<string>;
   onAddNote: (initialKeywords: Array<string>) => void;
-  onNoteChange: (noteFormId: number, change: Partial<Note>) => void;
+  onEditNote: (noteFormId: number, change: Partial<Note>) => void;
+  onDeleteNote: (noteFormId: number, noteId?: string) => void;
 }
 
 export class NoteList extends React.PureComponent<Props> {
@@ -26,7 +27,8 @@ export class NoteList extends React.PureComponent<Props> {
       ),
       keywords: PropTypes.arrayOf(PropTypes.string),
       onAddNote: PropTypes.func.isRequired,
-      onNoteChange: PropTypes.func.isRequired,
+      onEditNote: PropTypes.func.isRequired,
+      onDeleteNote: PropTypes.func.isRequired,
     };
   }
 
@@ -178,7 +180,7 @@ export class NoteList extends React.PureComponent<Props> {
     field: K,
     value: Note[K] | Array<Note[K]>
   ) {
-    this.props.onNoteChange(noteFormId, { [field]: value });
+    this.props.onEditNote(noteFormId, { [field]: value });
   }
 
   render() {
@@ -197,6 +199,7 @@ export class NoteList extends React.PureComponent<Props> {
                 relatedKeywords={this.props.keywords}
                 ref={ref}
                 onChange={this.handleNoteChange}
+                onDelete={this.props.onDeleteNote}
               />
             );
           })}

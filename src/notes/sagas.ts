@@ -5,6 +5,7 @@ import { getNoteStateSelector, isDirty } from './selectors';
 import { DataStore } from '../store/DataStore';
 import { Note } from '../model';
 import { NoteContext } from './actions';
+import { SaveState } from './reducer';
 import { EditState } from '../edit/reducer';
 
 const SAVE_DELAY = 2000;
@@ -59,7 +60,7 @@ export function* watchNoteEdits(dataStore: DataStore) {
 
         return {
           context: action.context,
-          deleted: false,
+          deleted: noteState.saveState === SaveState.Deleted,
           needsSaving: isDirty(noteState) && hasDataToSave(noteState.note),
           resource: noteState.note,
         };

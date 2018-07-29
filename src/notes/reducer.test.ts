@@ -336,7 +336,7 @@ describe('reducer:notes', () => {
     ]);
   });
 
-  it('should remove a saved note on DELETE_NOTE', () => {
+  it('should mark a saved note as deleted on DELETE_NOTE', () => {
     const initialState = [
       typicalNoteState(5),
       typicalNoteState(6),
@@ -348,18 +348,26 @@ describe('reducer:notes', () => {
       actions.deleteNote(context(6), initialState[1].note.id)
     );
 
-    expect(updatedState).toEqual([initialState[0], initialState[2]]);
+    expect(updatedState).toEqual([
+      initialState[0],
+      { ...initialState[1], saveState: SaveState.Deleted },
+      initialState[2],
+    ]);
   });
 
-  it('should remove a new note on DELETE_NOTE', () => {
+  it('should mark a new note as deleted on DELETE_NOTE', () => {
     const initialState = [newNoteState(5), newNoteState(6), newNoteState(7)];
 
     const updatedState = subject(initialState, actions.deleteNote(context(6)));
 
-    expect(updatedState).toEqual([initialState[0], initialState[2]]);
+    expect(updatedState).toEqual([
+      initialState[0],
+      { ...initialState[1], saveState: SaveState.Deleted },
+      initialState[2],
+    ]);
   });
 
-  it("should NOT remove a note on DELETE_NOTE when formIds don't match", () => {
+  it("should NOT mark a note as deleted on DELETE_NOTE when formIds don't match", () => {
     const initialState = [];
     initialState.push(typicalNoteState(5));
 
@@ -600,5 +608,43 @@ describe('reducer:notes', () => {
       },
       noteState2,
     ]);
+  });
+
+  it('should drop touched notes on UPDATE_NOTE_LIST if they are deleted', () => {
+    const noteState1 = typicalNoteState(1);
+    const noteState2 = typicalNoteState(2);
+    noteState2.note = {
+      ...noteState2.note,
+      id: 'def',
+      content: 'Note 2',
+    };
+    const initialState = [noteState1, noteState2];
+
+    // Touch one of the notes
+    let updatedState = subject(
+      initialState,
+      actions.editNote(context(1), { content: 'Updated content' })
+    );
+
+    // Finish saving it
+    const updatedNote = { ...noteState1.note, content: 'Updated content' };
+    updatedState = subject(
+      updatedState,
+      actions.finishSaveNote(context(1), updatedNote)
+    );
+
+    // Delete it
+    updatedState = subject(
+      updatedState,
+      actions.deleteNote(context(1), updatedNote.id)
+    );
+
+    // Then drop it from the list
+    updatedState = subject(
+      updatedState,
+      actions.updateNoteList(baseContext, [noteState2.note as Note])
+    );
+
+    expect(updatedState).toEqual([noteState2]);
   });
 });
