@@ -24,20 +24,20 @@ export type NoteContext = EditNoteContext | ReviewNoteContext;
 export type NoteAction =
   | AddNoteAction
   | EditNoteAction
-  | DeleteNoteAction
   | SaveNoteAction
   | FinishSaveNoteAction
   | FailSaveNoteAction
+  | DeleteNoteAction
   | UpdateNoteListAction;
 
 export const isNoteAction = (action: Action): action is NoteAction =>
   [
     'ADD_NOTE',
     'EDIT_NOTE',
-    'DELETE_NOTE',
     'SAVE_NOTE',
     'FINISH_SAVE_NOTE',
     'FAIL_SAVE_NOTE',
+    'DELETE_NOTE',
     'UPDATE_NOTE_LIST',
   ].includes(action.type);
 

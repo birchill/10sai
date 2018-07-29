@@ -145,6 +145,17 @@ export function notes(
       return updateState(state, updatedNoteState, noteStateIndex);
     }
 
+    case 'DELETE_NOTE': {
+      const noteStateIndex = findNoteIndex(state, action.context.noteFormId);
+      if (noteStateIndex === -1) {
+        return state;
+      }
+
+      const updatedState = state.slice();
+      updatedState.splice(noteStateIndex, 1);
+      return updatedState;
+    }
+
     case 'UPDATE_NOTE_LIST': {
       // Check both lists use the same sorting so that we can iterate them in
       // tandem.

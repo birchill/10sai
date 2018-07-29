@@ -336,6 +336,41 @@ describe('reducer:notes', () => {
     ]);
   });
 
+  it('should remove a saved note on DELETE_NOTE', () => {
+    const initialState = [
+      typicalNoteState(5),
+      typicalNoteState(6),
+      typicalNoteState(7),
+    ];
+
+    const updatedState = subject(
+      initialState,
+      actions.deleteNote(context(6), initialState[1].note.id)
+    );
+
+    expect(updatedState).toEqual([initialState[0], initialState[2]]);
+  });
+
+  it('should remove a new note on DELETE_NOTE', () => {
+    const initialState = [newNoteState(5), newNoteState(6), newNoteState(7)];
+
+    const updatedState = subject(initialState, actions.deleteNote(context(6)));
+
+    expect(updatedState).toEqual([initialState[0], initialState[2]]);
+  });
+
+  it("should NOT remove a note on DELETE_NOTE when formIds don't match", () => {
+    const initialState = [];
+    initialState.push(typicalNoteState(5));
+
+    const updatedState = subject(
+      initialState,
+      actions.deleteNote(context(6), initialState[0].note.id)
+    );
+
+    expect(updatedState).toBe(initialState);
+  });
+
   it('should update the note list on UPDATE_NOTE_LIST', () => {
     const noteState1 = typicalNoteState(1);
     const noteState2 = typicalNoteState(2);
