@@ -166,6 +166,9 @@ export function syncEditCard(change: CardChange): SyncEditCardAction {
 // We need to pass the cardId as well since anyone dealing with this action
 // after the reducer has run (e.g. sagas) might need to know the
 // actual ID of the card that was deleted.
+//
+// (Note that even still we need to take care to check if there is a pending
+// save and use the ID from that if there is.)
 export interface DeleteCardAction {
   type: 'DELETE_CARD';
   formId: number;

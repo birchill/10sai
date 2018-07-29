@@ -68,10 +68,11 @@ export function* watchNoteEdits(dataStore: DataStore) {
     },
     delete: (
       dataStore: DataStore,
-      action: noteActions.DeleteNoteAction
+      action: noteActions.DeleteNoteAction,
+      note: Partial<Note>
     ): CallEffect | undefined => {
-      if (typeof action.noteId === 'string') {
-        return call([dataStore, 'deleteNote'], action.noteId);
+      if (typeof note.id === 'string' || typeof action.noteId === 'string') {
+        return call([dataStore, 'deleteNote'], note.id || action.noteId);
       }
     },
     save,

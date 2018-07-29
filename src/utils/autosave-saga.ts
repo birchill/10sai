@@ -39,7 +39,8 @@ export interface ResourceParams<
   ) => ResourceState<Resource, SaveContext> | undefined);
   delete: (
     dataStore: DataStore,
-    action: DeleteAction
+    action: DeleteAction,
+    resource: Partial<Resource>
   ) => CallEffect | undefined;
   save: (
     dataStore: DataStore,
@@ -189,7 +190,7 @@ export function* watchEdits<
         // action.
         if (resourceState.deleted) {
           try {
-            yield params.delete(dataStore, action);
+            yield params.delete(dataStore, action, resource);
           } catch (error) {
             console.error(
               `Failed to delete resource: ${JSON.stringify(error)}`

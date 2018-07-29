@@ -140,10 +140,11 @@ export function* watchCardEdits(dataStore: DataStore) {
     },
     delete: (
       dataStore: DataStore,
-      action: DeleteCardAction
+      action: DeleteCardAction,
+      card: Partial<Card>
     ): CallEffect | undefined => {
-      if (typeof action.cardId === 'string') {
-        return call([dataStore, 'deleteCard'], action.cardId);
+      if (typeof card._id === 'string' || typeof action.cardId === 'string') {
+        return call([dataStore, 'deleteCard'], card._id || action.cardId);
       }
     },
     save,
