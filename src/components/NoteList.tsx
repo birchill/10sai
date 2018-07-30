@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Note } from '../model';
 import { NoteState } from '../notes/reducer';
+import { NoteSorter } from '../notes/NoteSorter';
 import AddNoteButton from './AddNoteButton';
 import EditNoteForm from './EditNoteForm';
 
@@ -184,10 +185,15 @@ export class NoteList extends React.PureComponent<Props> {
   }
 
   render() {
+    // We shouldn't mutate props so copy it first before sorting.
+    const sortedNotes = this.props.notes
+      .slice()
+      .sort(NoteSorter(this.props.keywords));
+
     return (
       <>
         <div className="notes">
-          {this.props.notes.map((note, i) => {
+          {sortedNotes.map((note, i) => {
             const ref =
               i === this.props.notes.length - 1 ? this.lastNoteRef : undefined;
             return (

@@ -22,6 +22,11 @@ export interface NoteState {
   // keyword from the note and an auto-save / sync happens, the note disappears
   // and they can no longer continuing to edit it.
   touched?: boolean;
+  // The keywords at the point when the note was originally loaded. This is used
+  // for sorting within a NoteList so that the order of notes doesn't change as
+  // edits are made to the keywords in notes (although they will still shuffle
+  // if the keywords on the card are changed).
+  originalKeywords: Set<string>;
 }
 
 export function notes(
@@ -42,6 +47,7 @@ export function notes(
           note: newNote,
           saveState: SaveState.New,
           touched: true,
+          originalKeywords: new Set<string>(),
         },
       ];
     }
@@ -121,6 +127,7 @@ export function notes(
         note: { ...action.note, ...noteState.note },
         saveState: SaveState.Ok,
         touched: true,
+        originalKeywords: noteState.originalKeywords,
       };
       if (dirtyFields.size) {
         updatedNoteState.dirtyFields = dirtyFields;
@@ -257,6 +264,7 @@ export function notes(
               formId: match.formId,
               note: newNote,
               saveState: match.saveState,
+              originalKeywords: match.originalKeywords,
             };
             if (typeof match.dirtyFields !== 'undefined') {
               noteState.dirtyFields = match.dirtyFields;
@@ -280,6 +288,7 @@ export function notes(
             formId: action.noteFormIds.shift()!,
             note: newNote,
             saveState: SaveState.Ok,
+            originalKeywords: new Set<string>(newNote.keywords),
           };
           updatedState.push(noteState);
           madeChange = true;

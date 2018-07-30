@@ -24,6 +24,7 @@ describe('reducer:notes', () => {
       note: {},
       saveState: SaveState.New,
       touched: true,
+      originalKeywords: new Set<string>(),
     };
     if (initialKeywords) {
       result.note.keywords = initialKeywords;
@@ -46,6 +47,7 @@ describe('reducer:notes', () => {
     formId,
     note: typicalNote(),
     saveState: SaveState.Ok,
+    originalKeywords: new Set(['def', 'ghi']),
   });
 
   const typicalNote = (): Note => ({
@@ -395,6 +397,7 @@ describe('reducer:notes', () => {
         formId: 3,
         note: note3,
         saveState: SaveState.Ok,
+        originalKeywords: new Set<string>(note3.keywords),
       },
     ]);
     // Furthermore, the object identity of the first note should be the same.
