@@ -639,4 +639,40 @@ describe('reducer:notes', () => {
 
     expect(updatedState).toEqual([noteState2]);
   });
+
+  it('should drop touched notes on UPDATE_NOTE_LIST if they are deleted by sync', () => {
+    const noteState1 = typicalNoteState(1);
+    const noteState2 = typicalNoteState(2);
+    noteState2.note = {
+      ...noteState2.note,
+      id: 'def',
+      content: 'Note 2',
+    };
+    const initialState = [noteState1, noteState2];
+
+    // Touch one of the notes
+    let updatedState = subject(
+      initialState,
+      actions.editNote(context(1), { content: 'Updated content' })
+    );
+
+    // Finish saving it
+    const updatedNote = { ...noteState1.note, content: 'Updated content' };
+    updatedState = subject(
+      updatedState,
+      actions.finishSaveNote(context(1), updatedNote)
+    );
+
+    // Then drop it from the list but mark it as deleted
+    updatedState = subject(
+      updatedState,
+      actions.updateNoteList(
+        baseContext,
+        [noteState2.note as Note],
+        [noteState1.note.id]
+      )
+    );
+
+    expect(updatedState).toEqual([noteState2]);
+  });
 });

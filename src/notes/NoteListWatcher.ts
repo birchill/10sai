@@ -7,7 +7,7 @@ import deepEqual from 'deep-equal';
 // A wrapper around a Store that watches for Notes that match a given set of
 // keywords.
 
-type NoteListListener = (notes: Note[]) => void;
+type NoteListListener = (notes: Array<Note>, deletedIds: Array<string>) => void;
 
 const normalizeKeywords = (keywords: string[]): string[] =>
   keywords
@@ -44,6 +44,7 @@ export class NoteListWatcher {
   handleChange(change: NoteChange) {
     const [found, index] = findNote(change.note.id, this.notes);
     let updatedNotes: Note[] | undefined;
+    let deletedNotes: Array<string> = [];
 
     const matchesKeywords = () =>
       change.note.keywords.some(keyword =>
@@ -55,6 +56,9 @@ export class NoteListWatcher {
       if (change.deleted || !matchesKeywords()) {
         updatedNotes = this.notes.slice();
         updatedNotes.splice(index, 1);
+        if (change.deleted) {
+          deletedNotes.push(change.note.id);
+        }
       } else {
         // The changed note is on of our notes (and still is). Did something
         // change that we might care about?
@@ -72,7 +76,7 @@ export class NoteListWatcher {
 
     if (typeof updatedNotes !== 'undefined') {
       this.notes = updatedNotes;
-      this.listener(this.notes);
+      this.listener(this.notes, deletedNotes);
     }
   }
 
@@ -113,7 +117,7 @@ export class NoteListWatcher {
 
           if (!deepEqual(this.notes, notes)) {
             this.notes = notes;
-            this.listener(notes);
+            this.listener(notes, []);
           }
         })
         .catch(e => {
@@ -123,7 +127,7 @@ export class NoteListWatcher {
       // If we had notes, but no longer do, we need to update.
       if (this.notes.length) {
         this.notes = [];
-        this.listener([]);
+        this.listener([], []);
       }
       this.initDone = Promise.resolve();
     }

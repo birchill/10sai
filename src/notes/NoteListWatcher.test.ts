@@ -21,6 +21,11 @@ describe('NoteListWatcher', () => {
 
   afterEach(() => dataStore.destroy());
 
+  type UpdateCall = {
+    notes: Array<Note>;
+    deletedIds: Array<string>;
+  };
+
   // Helper to produce:
   //
   // - a callback to pass to the NoteListWatcher constructor
@@ -29,17 +34,20 @@ describe('NoteListWatcher', () => {
   //
   const waitForCalls = (
     num: number
-  ): [(notes: Note[]) => void, Promise<Note[][]>] => {
-    const calls: Note[][] = [];
+  ): [
+    (notes: Array<Note>, deletedIds: Array<string>) => void,
+    Promise<Array<UpdateCall>>
+  ] => {
+    const calls: Array<UpdateCall> = [];
 
-    let resolver: (calls: Note[][]) => void;
-    const promise = new Promise<Note[][]>(resolve => {
+    let resolver: (calls: Array<UpdateCall>) => void;
+    const promise = new Promise<Array<UpdateCall>>(resolve => {
       resolver = resolve;
     });
 
     let recordedChanges = 0;
-    const callback = (notes: Note[]) => {
-      calls.push(notes);
+    const callback = (notes: Array<Note>, deletedIds: Array<string>) => {
+      calls.push({ notes, deletedIds });
       if (++recordedChanges === num) {
         resolver(calls);
       }
@@ -74,7 +82,7 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note1, note2]);
+    expect(calls[0].notes).toEqual([note1, note2]);
     expect(await subject.getNotes()).toEqual([note1, note2]);
   });
 
@@ -97,8 +105,8 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note1]);
-    expect(calls[1]).toEqual([note1, note2]);
+    expect(calls[0].notes).toEqual([note1]);
+    expect(calls[1].notes).toEqual([note1, note2]);
     expect(await subject.getNotes()).toEqual([note1, note2]);
   });
 
@@ -112,7 +120,7 @@ describe('NoteListWatcher', () => {
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
     await subject.getNotes();
 
-    const note2 = await dataStore.putNote({
+    await dataStore.putNote({
       content: 'Note 2',
       keywords: ['def'],
     });
@@ -134,8 +142,10 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note]);
-    expect(calls[1]).toEqual([]);
+    expect(calls[0].notes).toEqual([note]);
+    expect(calls[0].deletedIds).toEqual([]);
+    expect(calls[1].notes).toEqual([]);
+    expect(calls[1].deletedIds).toEqual([note.id]);
     expect(await subject.getNotes()).toEqual([]);
   });
 
@@ -157,7 +167,8 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note1]);
+    expect(calls[0].notes).toEqual([note1]);
+    expect(calls[0].deletedIds).toEqual([]);
     expect(await subject.getNotes()).toEqual([note1]);
   });
 
@@ -178,8 +189,8 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note]);
-    expect(calls[1]).toEqual([updatedNote]);
+    expect(calls[0].notes).toEqual([note]);
+    expect(calls[1].notes).toEqual([updatedNote]);
     expect(await subject.getNotes()).toEqual([updatedNote]);
   });
 
@@ -204,7 +215,7 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note1]);
+    expect(calls[0].notes).toEqual([note1]);
     expect(await subject.getNotes()).toEqual([note1]);
   });
 
@@ -229,8 +240,8 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note1]);
-    expect(calls[1]).toEqual([note1, updatedNote2]);
+    expect(calls[0].notes).toEqual([note1]);
+    expect(calls[1].notes).toEqual([note1, updatedNote2]);
     expect(await subject.getNotes()).toEqual([note1, updatedNote2]);
   });
 
@@ -255,8 +266,8 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note1, note2]);
-    expect(calls[1]).toEqual([note1]);
+    expect(calls[0].notes).toEqual([note1, note2]);
+    expect(calls[1].notes).toEqual([note1]);
     expect(await subject.getNotes()).toEqual([note1]);
   });
 
@@ -277,8 +288,8 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note]);
-    expect(calls[1]).toEqual([updatedNote]);
+    expect(calls[0].notes).toEqual([note]);
+    expect(calls[1].notes).toEqual([updatedNote]);
     expect(await subject.getNotes()).toEqual([updatedNote]);
   });
 
@@ -303,7 +314,7 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note1]);
+    expect(calls[0].notes).toEqual([note1]);
     expect(await subject.getNotes()).toEqual([note1]);
   });
 
@@ -321,7 +332,7 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note]);
+    expect(calls[0].notes).toEqual([note]);
     expect(await subject.getNotes()).toEqual([note]);
   });
 
@@ -339,7 +350,7 @@ describe('NoteListWatcher', () => {
 
     const calls = await finished;
 
-    expect(calls[0]).toEqual([note]);
+    expect(calls[0].notes).toEqual([note]);
     expect(await subject.getNotes()).toEqual([note]);
   });
 
@@ -375,7 +386,7 @@ describe('NoteListWatcher', () => {
       content: 'Updated content',
     });
 
-    const calls = await finished;
+    await finished;
 
     expect(await subject.getNotes()).toEqual([]);
   });
@@ -407,7 +418,7 @@ describe('NoteListWatcher', () => {
       content: 'Updated content',
     });
 
-    const calls = await finished;
+    await finished;
 
     expect(await subject.getNotes()).toEqual([]);
   });

@@ -172,6 +172,17 @@ export interface UpdateNoteListAction {
   type: 'UPDATE_NOTE_LIST';
   context: NoteListContext;
   notes: Array<Note>;
+  // The notes which were deleted in this update. There is a difference between
+  // a note disappearing from |notes| and also appearing in |deletedNoteIds|.
+  //
+  // A note that no longer matches the keywords will be dropped from |notes| and
+  // will not be displayed unless it has been touched in the current edit
+  // session.
+  //
+  // On the other hand, a note that is dropped from |notes| but also appears in
+  // |deletedNoteIds| has actually been deleted (either remotely or locally) and
+  // should not be displayed even if it has been touched.
+  deletedNoteIds: Set<string>;
   // An array of form IDs to use should this action produce new note forms.
   // There should be at least as many items in this array as in |notes|.
   noteFormIds: Array<number>;
@@ -179,13 +190,15 @@ export interface UpdateNoteListAction {
 
 export function updateNoteList(
   context: NoteListContext,
-  notes: Array<Note>
+  notes: Array<Note>,
+  deletedNoteIds: Array<string> = []
 ): UpdateNoteListAction {
   const noteFormIds = notes.map(() => newFormId());
   return {
     type: 'UPDATE_NOTE_LIST',
     context,
     notes,
+    deletedNoteIds: new Set<string>(deletedNoteIds),
     noteFormIds,
   };
 }
@@ -201,6 +214,7 @@ export function updateNoteListWithNewFormIds(
     type: 'UPDATE_NOTE_LIST',
     context,
     notes,
+    deletedNoteIds: new Set<string>(),
     noteFormIds,
   };
 }

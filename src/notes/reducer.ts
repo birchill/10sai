@@ -211,6 +211,14 @@ export function notes(
           }
 
           if (
+            typeof oldNoteState.note.id === 'string' &&
+            action.deletedNoteIds.has(oldNoteState.note.id)
+          ) {
+            oldListIndex++;
+            continue;
+          }
+
+          if (
             oldNoteState.touched ||
             oldNoteState.saveState !== SaveState.Ok ||
             (typeof oldNoteState.dirtyFields !== 'undefined' &&

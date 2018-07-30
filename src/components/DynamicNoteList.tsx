@@ -21,7 +21,7 @@ import DataStore from '../store/DataStore';
 
 interface WatcherProps {
   dataStore: DataStore;
-  onUpdate: (notes: Array<Note>) => void;
+  onUpdate: (notes: Array<Note>, deletedIds: Array<string>) => void;
   keywords: Array<string>;
 }
 
@@ -62,7 +62,7 @@ interface InnerProps {
   onAddNote: (initialKeywords: Array<string>) => void;
   onEditNote: (noteFormId: number, change: Partial<Note>) => void;
   onDeleteNote: (noteFormId: number, noteId?: string) => void;
-  onUpdateNoteList: (notes: Array<Note>) => void;
+  onUpdateNoteList: (notes: Array<Note>, deletedIds: Array<string>) => void;
 }
 
 const DynamicNoteListInner = (props: InnerProps) => (
@@ -107,8 +107,8 @@ const mapDispatchToProps = (dispatch: Dispatch<State>, ownProps: Props) => ({
       noteActions.deleteNote({ ...ownProps.context, noteFormId }, noteId)
     );
   },
-  onUpdateNoteList: (notes: Array<Note>) => {
-    dispatch(noteActions.updateNoteList(ownProps.context, notes));
+  onUpdateNoteList: (notes: Array<Note>, deletedIds: Array<string>) => {
+    dispatch(noteActions.updateNoteList(ownProps.context, notes, deletedIds));
   },
 });
 
