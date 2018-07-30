@@ -351,7 +351,7 @@ describe('sagas:edit watchCardEdits', () => {
       .silentRun(100);
   });
 
-  it('does NOT delete the card if it has not been saved', () => {
+  it('deletes the card even if it has not been saved', () => {
     const dataStore = { deleteCard: () => {} };
     const card = { _id: 'abc', prompt: 'Prompt', answer: 'Answer' };
     const formId = 5;
@@ -359,7 +359,7 @@ describe('sagas:edit watchCardEdits', () => {
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
       .dispatch(editActions.deleteCard(formId, 'abc'))
-      .not.call([dataStore, 'deleteCard'], 'abc')
+      .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
 
@@ -394,6 +394,34 @@ describe('sagas:edit watchCardEdits', () => {
       .dispatch(editActions.deleteCard(formId, 'abc'))
       .not.call.fn(dataStore.putCard)
       .silentRun(500);
+  });
+
+  it('deletes the card even if the initial save is in progress', () => {
+    const dataStore = {
+      putCard: async card => {
+        // This needs to take a tick or two so that the delete runs before we
+        // finish saving.
+        return new Promise(resolve => {
+          setImmediate(() => {
+            resolve({ ...card, _id: 'abc' });
+          });
+        });
+      },
+      deleteCard: () => {},
+    };
+    const card = { question: 'Question', answer: 'Answer' };
+    const formId = 5;
+
+    return expectSaga(watchCardEditsSaga, dataStore)
+      .withReducer(reducer, okState(formId, card))
+      .dispatch(
+        editActions.editCard(formId, { ...card, answer: 'Updated answer' })
+      )
+      .dispatch(editActions.saveCard(formId))
+      .dispatch(editActions.deleteCard(formId))
+      .call([dataStore, 'putCard'], { ...card, answer: 'Updated answer' })
+      .call([dataStore, 'deleteCard'], 'abc')
+      .silentRun(100);
   });
 });
 
