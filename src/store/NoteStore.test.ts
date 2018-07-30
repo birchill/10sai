@@ -4,7 +4,7 @@
 import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
-import { NoteStore, NoteContent, NOTE_PREFIX } from './NoteStore';
+import { NoteStore, NoteContent, NoteChange, NOTE_PREFIX } from './NoteStore';
 import { Note } from '../model';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 import { waitForEvents } from '../utils/testing';
@@ -137,37 +137,53 @@ describe('NoteStore', () => {
   });
 
   it('reports added notes', async () => {
-    const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 1);
+    const changesPromise = waitForChangeEvents<NoteChange>(
+      dataStore,
+      'note',
+      1
+    );
 
     const putNote = await subject.putNote(typicalNewNote);
 
     const changes = await changesPromise;
-    expect(changes[0]).toMatchObject(putNote);
+    expect(changes[0].note).toMatchObject(putNote);
   });
 
   it('reports deleted notes', async () => {
-    const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 2);
+    const changesPromise = waitForChangeEvents<NoteChange>(
+      dataStore,
+      'note',
+      2
+    );
     const putNote = await subject.putNote(typicalNewNote);
 
     await subject.deleteNote(putNote.id);
 
     const changes = await changesPromise;
-    expect(changes[1].id).toBe(putNote.id);
-    expect(changes[1]._deleted).toBeTruthy();
+    expect(changes[1].note.id).toBe(putNote.id);
+    expect(changes[1].deleted).toBeTruthy();
   });
 
   it('reports changes to notes', async () => {
-    const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 2);
+    const changesPromise = waitForChangeEvents<NoteChange>(
+      dataStore,
+      'note',
+      2
+    );
     const putNote = await subject.putNote(typicalNewNote);
 
     await subject.putNote({ ...putNote, content: 'Updated' });
 
     const changes = await changesPromise;
-    expect(changes[1].content).toBe('Updated');
+    expect(changes[1].note.content).toBe('Updated');
   });
 
   it('does not report redundant changes', async () => {
-    const changesPromise = waitForChangeEvents<Note>(dataStore, 'note', 1);
+    const changesPromise = waitForChangeEvents<NoteChange>(
+      dataStore,
+      'note',
+      1
+    );
     const putNote = await subject.putNote(typicalNewNote);
     await changesPromise;
 

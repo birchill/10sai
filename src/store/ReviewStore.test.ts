@@ -7,7 +7,10 @@ import DataStore from './DataStore';
 import { ReviewContent, ReviewStore } from './ReviewStore';
 import { Review } from '../model';
 import { waitForEvents } from '../utils/testing';
-import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
+import {
+  syncWithWaitableRemote,
+  waitForHackilyTypedChangeEvents,
+} from './test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
@@ -186,7 +189,11 @@ describe('ReviewStore', () => {
   });
 
   it('reports new review docs', async () => {
-    const changesPromise = waitForChangeEvents(dataStore, 'review', 1);
+    const changesPromise = waitForHackilyTypedChangeEvents(
+      dataStore,
+      'review',
+      1
+    );
     await subject.putReview({ ...typicalReview, completed: 7 });
     const changes = await changesPromise;
     expect(changes[0]).toMatchObject({
@@ -196,7 +203,11 @@ describe('ReviewStore', () => {
 
   it('reports deleted review docs', async () => {
     await subject.putReview(typicalReview);
-    const changesPromise = waitForChangeEvents(dataStore, 'review', 1);
+    const changesPromise = waitForHackilyTypedChangeEvents(
+      dataStore,
+      'review',
+      1
+    );
     await subject.deleteReview();
     const changes = await changesPromise;
     expect(changes[0]).toBeNull();
@@ -204,7 +215,11 @@ describe('ReviewStore', () => {
 
   it('does not report new review docs older than current', async () => {
     // Create regular review and wait for it to be reported
-    const changesPromise = waitForChangeEvents(dataStore, 'review', 1);
+    const changesPromise = waitForHackilyTypedChangeEvents(
+      dataStore,
+      'review',
+      1
+    );
     await subject.putReview(typicalReview);
     await changesPromise;
 

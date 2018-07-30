@@ -20,12 +20,23 @@ export const syncWithWaitableRemote = async (
   };
 };
 
-export const waitForChangeEvents = <Type>(
+export const waitForHackilyTypedChangeEvents = <Type>(
   dataStore: DataStore,
   type: string,
   num: number
 ) => {
-  type EventType = Partial<Type> & { _deleted?: boolean };
+  return waitForChangeEvents<Partial<Type> & { _deleted?: boolean }>(
+    dataStore,
+    type,
+    num
+  );
+};
+
+export const waitForChangeEvents = <EventType>(
+  dataStore: DataStore,
+  type: string,
+  num: number
+): Promise<Array<EventType>> => {
   const events: EventType[] = [];
 
   let resolver: (e: typeof events) => void;

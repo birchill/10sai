@@ -16,6 +16,11 @@ export interface NoteContent {
   modified: number;
 }
 
+export interface NoteChange {
+  note: Note;
+  deleted?: boolean;
+}
+
 type ExistingNoteDoc = PouchDB.Core.ExistingDocument<NoteContent>;
 type NoteDoc = PouchDB.Core.Document<NoteContent>;
 type ExistingNoteDocWithChanges = PouchDB.Core.ExistingDocument<
@@ -196,7 +201,15 @@ export class NoteStore {
       return;
     }
 
-    emit('note', parseNote(change.doc));
+    const result: NoteChange = {
+      note: parseNote(
+        stripFields(change.doc, ['_conflicts', '_deleted', '_attachments'])
+      ),
+    };
+    if (change.deleted) {
+      result.deleted = true;
+    }
+    emit('note', result);
   }
 
   async onSyncChange(

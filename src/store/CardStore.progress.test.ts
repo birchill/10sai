@@ -5,7 +5,7 @@ import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
 import CardStore from './CardStore';
-import { waitForChangeEvents } from './test-utils';
+import { waitForHackilyTypedChangeEvents } from './test-utils';
 import { Card } from '../model';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -86,7 +86,11 @@ describe('CardStore progress reporting', () => {
   });
 
   it('returns the progress when reporting added cards', async () => {
-    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 1);
+    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+      dataStore,
+      'card',
+      1
+    );
 
     await subject.putCard({ question: 'Q1', answer: 'A1' });
 
@@ -194,7 +198,11 @@ describe('CardStore progress reporting', () => {
   });
 
   it('reports changes to the progress', async () => {
-    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 2);
+    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+      dataStore,
+      'card',
+      2
+    );
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
     await subject.putCard({
@@ -210,7 +218,11 @@ describe('CardStore progress reporting', () => {
   });
 
   it('only reports once when a card and its progress are deleted', async () => {
-    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 2);
+    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+      dataStore,
+      'card',
+      2
+    );
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
     await subject.deleteCard(card._id);

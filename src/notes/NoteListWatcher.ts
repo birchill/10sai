@@ -1,16 +1,13 @@
 import { collate } from 'pouchdb-collate';
 import { Note } from '../model';
 import { DataStore } from '../store/DataStore';
+import { NoteChange } from '../store/NoteStore';
 import deepEqual from 'deep-equal';
 
 // A wrapper around a Store that watches for Notes that match a given set of
 // keywords.
 
 type NoteListListener = (notes: Note[]) => void;
-
-// XXX We should fix this and invent a proper type for representing changes that
-// makes the 'deleted' member separate.
-type EventType = Note & { _deleted?: boolean };
 
 const normalizeKeywords = (keywords: string[]): string[] =>
   keywords
@@ -44,33 +41,33 @@ export class NoteListWatcher {
     this.dataStore.changes.off('note', this.handleChange);
   }
 
-  handleChange(change: EventType) {
-    const [found, index] = findNote(change.id, this.notes);
+  handleChange(change: NoteChange) {
+    const [found, index] = findNote(change.note.id, this.notes);
     let updatedNotes: Note[] | undefined;
 
     const matchesKeywords = () =>
-      change.keywords.some(keyword =>
+      change.note.keywords.some(keyword =>
         this.keywords.includes(keyword.toLowerCase())
       );
 
     if (found) {
       // The changed note was one of our notes, but should it still be?
-      if (change._deleted || !matchesKeywords()) {
+      if (change.deleted || !matchesKeywords()) {
         updatedNotes = this.notes.slice();
         updatedNotes.splice(index, 1);
       } else {
         // The changed note is on of our notes (and still is). Did something
         // change that we might care about?
         // Assume something this.
-        if (!deepEqual(this.notes[index], change)) {
+        if (!deepEqual(this.notes[index], change.note)) {
           updatedNotes = this.notes.slice();
-          updatedNotes[index] = change;
+          updatedNotes[index] = change.note;
         }
       }
-    } else if (!change._deleted && matchesKeywords()) {
+    } else if (!change.deleted && matchesKeywords()) {
       // The changed note wasn't found in our notes, but it should be there.
       updatedNotes = this.notes.slice();
-      updatedNotes.splice(index, 0, change);
+      updatedNotes.splice(index, 0, change.note);
     }
 
     if (typeof updatedNotes !== 'undefined') {

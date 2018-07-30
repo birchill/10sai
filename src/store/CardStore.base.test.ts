@@ -7,7 +7,10 @@ import DataStore from './DataStore';
 import { CardStore, CardContent } from './CardStore';
 import { Card } from '../model';
 import { generateUniqueTimestampId } from './utils';
-import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
+import {
+  syncWithWaitableRemote,
+  waitForHackilyTypedChangeEvents,
+} from './test-utils';
 import '../../jest/customMatchers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -155,7 +158,11 @@ describe('CardStore', () => {
   });
 
   it('reports added cards', async () => {
-    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 1);
+    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+      dataStore,
+      'card',
+      1
+    );
 
     const addedCard = await subject.putCard({ question: 'Q1', answer: 'A1' });
 
@@ -245,7 +252,11 @@ describe('CardStore', () => {
   });
 
   it('reports deleted cards', async () => {
-    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 2);
+    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+      dataStore,
+      'card',
+      2
+    );
 
     const addedCard = await subject.putCard({
       question: 'Question',
@@ -409,7 +420,11 @@ describe('CardStore', () => {
   });
 
   it('reports changes to cards', async () => {
-    const changesPromise = waitForChangeEvents<Card>(dataStore, 'card', 2);
+    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+      dataStore,
+      'card',
+      2
+    );
 
     const card = await subject.putCard({
       question: 'Question',

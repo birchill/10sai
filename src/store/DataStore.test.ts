@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
 import { generateUniqueTimestampId } from './utils';
-import { waitForChangeEvents } from './test-utils';
+import { waitForHackilyTypedChangeEvents } from './test-utils';
 import { Card } from '../model';
 import { waitForEvents } from '../utils/testing';
 
@@ -166,7 +166,11 @@ describe('DataStore remote sync', () => {
 
     const expectedCards = [firstCard, secondCard];
 
-    const changesPromise = waitForChangeEvents<Card>(subject, 'card', 2);
+    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+      subject,
+      'card',
+      2
+    );
 
     await testRemote.put(cardForDirectPut(firstCard));
     await testRemote.put({
