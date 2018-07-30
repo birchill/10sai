@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import memoize from 'memoize-one';
+
 import { Note } from '../model';
 import { NoteState } from '../notes/reducer';
 import { sortNotesByKeywordMatches } from '../notes/sorting';
@@ -36,6 +38,10 @@ export class NoteList extends React.PureComponent<Props> {
   addNoteButtonRef: React.RefObject<AddNoteButton>;
   addNoteButtonBbox?: ClientRect;
   lastNoteRef: React.RefObject<EditNoteForm>;
+  sortNotes: (
+    notes: Array<NoteState>,
+    keywords: Array<string>
+  ) => Array<NoteState>;
 
   constructor(props: Props) {
     super(props);
@@ -45,6 +51,11 @@ export class NoteList extends React.PureComponent<Props> {
 
     this.handleAddNote = this.handleAddNote.bind(this);
     this.handleNoteChange = this.handleNoteChange.bind(this);
+
+    this.sortNotes = memoize(
+      (notes: Array<NoteState>, keywords: Array<string>): Array<NoteState> =>
+        sortNotesByKeywordMatches(notes, keywords)
+    );
   }
 
   componentDidUpdate(previousProps: Props) {
@@ -185,12 +196,8 @@ export class NoteList extends React.PureComponent<Props> {
   }
 
   render() {
-    // (sortNotesByKeywordMatches returns a copy of the array so the following
-    // will not mutate props.)
-    const sortedNotes = sortNotesByKeywordMatches(
-      this.props.notes,
-      this.props.keywords
-    );
+    // Returns a copy of the array (i.e. props are not mutated).
+    const sortedNotes = this.sortNotes(this.props.notes, this.props.keywords);
 
     return (
       <>
