@@ -49,6 +49,16 @@ export function* watchNoteEdits(dataStore: DataStore) {
       const noteStateSelector = getNoteStateSelector(action.context);
 
       return (state: State): ResourceState<Note, NoteContext> | undefined => {
+        // If we are deleting a note, we won't have any resource left
+        if (action.type === 'DELETE_NOTE') {
+          return {
+            context: action.context,
+            deleted: true,
+            needsSaving: false,
+            resource: {},
+          };
+        }
+
         const noteState = noteStateSelector(state);
         if (!noteState) {
           return undefined;
@@ -60,7 +70,7 @@ export function* watchNoteEdits(dataStore: DataStore) {
 
         return {
           context: action.context,
-          deleted: noteState.saveState === SaveState.Deleted,
+          deleted: false,
           needsSaving: isDirty(noteState) && hasDataToSave(noteState.note),
           resource: noteState.note,
         };

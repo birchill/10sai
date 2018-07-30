@@ -336,7 +336,7 @@ describe('reducer:notes', () => {
     ]);
   });
 
-  it('should mark a saved note as deleted on DELETE_NOTE', () => {
+  it('should remove a saved note on DELETE_NOTE', () => {
     const initialState = [
       typicalNoteState(5),
       typicalNoteState(6),
@@ -348,26 +348,18 @@ describe('reducer:notes', () => {
       actions.deleteNote(context(6), initialState[1].note.id)
     );
 
-    expect(updatedState).toEqual([
-      initialState[0],
-      { ...initialState[1], saveState: SaveState.Deleted },
-      initialState[2],
-    ]);
+    expect(updatedState).toEqual([initialState[0], initialState[2]]);
   });
 
-  it('should mark a new note as deleted on DELETE_NOTE', () => {
+  it('should remove a new note on DELETE_NOTE', () => {
     const initialState = [newNoteState(5), newNoteState(6), newNoteState(7)];
 
     const updatedState = subject(initialState, actions.deleteNote(context(6)));
 
-    expect(updatedState).toEqual([
-      initialState[0],
-      { ...initialState[1], saveState: SaveState.Deleted },
-      initialState[2],
-    ]);
+    expect(updatedState).toEqual([initialState[0], initialState[2]]);
   });
 
-  it("should NOT mark a note as deleted on DELETE_NOTE when formIds don't match", () => {
+  it("should NOT remove a note on DELETE_NOTE when formIds don't match", () => {
     const initialState = [];
     initialState.push(typicalNoteState(5));
 
