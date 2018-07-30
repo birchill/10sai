@@ -1,7 +1,7 @@
-import { NoteSorter } from './NoteSorter';
+import { sortNotesByKeywordMatches as subject } from './NoteSorter';
 import { NoteState, SaveState } from './reducer';
 
-describe('NoteSorter', () => {
+describe('sortNotesByKeywordMatches', () => {
   const getRandomString = (len: number): string =>
     (
       Array(len).join('0') +
@@ -31,11 +31,10 @@ describe('NoteSorter', () => {
     const b = noteState(['def'], 2);
     const c = noteState(['abc', 'xyz'], 3);
     const notes = [a, b, c];
-    const sorter = NoteSorter(['abc', 'def', 'ghi']);
 
-    notes.sort(sorter);
+    const result = subject(notes, ['abc', 'def', 'ghi']);
 
-    expect(notes).toEqual([c, a, b]);
+    expect(result).toEqual([c, a, b]);
   });
 
   it('sorts by formId secondly', () => {
@@ -44,11 +43,10 @@ describe('NoteSorter', () => {
     const c = noteState(['def'], 3);
     const d = noteState([], 4);
     const notes = [a, b, c, d];
-    const sorter = NoteSorter(['abc', 'def', 'ghi']);
 
-    notes.sort(sorter);
+    const result = subject(notes, ['abc', 'def', 'ghi']);
 
-    expect(notes).toEqual([b, c, a, d]);
+    expect(result).toEqual([b, c, a, d]);
   });
 
   it('does a case-insensitive comparison of keywords', () => {
@@ -56,10 +54,9 @@ describe('NoteSorter', () => {
     const b = noteState(['def'], 2);
     const c = noteState(['Abc', 'xyz'], 3);
     const notes = [a, b, c];
-    const sorter = NoteSorter(['AbC', 'dEf', 'GHI']);
 
-    notes.sort(sorter);
+    const result = subject(notes, ['AbC', 'dEf', 'GHI']);
 
-    expect(notes).toEqual([c, a, b]);
+    expect(result).toEqual([c, a, b]);
   });
 });

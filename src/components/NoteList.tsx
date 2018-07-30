@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Note } from '../model';
 import { NoteState } from '../notes/reducer';
-import { NoteSorter } from '../notes/NoteSorter';
+import { sortNotesByKeywordMatches } from '../notes/NoteSorter';
 import AddNoteButton from './AddNoteButton';
 import EditNoteForm from './EditNoteForm';
 
@@ -185,10 +185,12 @@ export class NoteList extends React.PureComponent<Props> {
   }
 
   render() {
-    // We shouldn't mutate props so copy it first before sorting.
-    const sortedNotes = this.props.notes
-      .slice()
-      .sort(NoteSorter(this.props.keywords));
+    // (sortNotesByKeywordMatches returns a copy of the array so the following
+    // will not mutate props.)
+    const sortedNotes = sortNotesByKeywordMatches(
+      this.props.notes,
+      this.props.keywords
+    );
 
     return (
       <>

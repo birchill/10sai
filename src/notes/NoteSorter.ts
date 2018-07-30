@@ -1,24 +1,40 @@
 import { NoteState } from './reducer';
 
-export const NoteSorter = (keywords: Array<string>) => {
-  return (a: NoteState, b: NoteState): number => {
-    // Calculate a score based on keyword matches such that matches closer to
-    // the start of props.keywords trump those later.
-    let aScore = 0;
-    let bScore = 0;
+// Returns a *copy* of the sorted notes.
+export const sortNotesByKeywordMatches = (
+  notes: Array<NoteState>,
+  keywords: Array<string>
+): Array<NoteState> => {
+  type NoteAndScore = {
+    noteState: NoteState;
+    score: number;
+  };
+
+  // First iterate through each of the notes and assign a score.
+  const notesWithScores = notes.map(noteState => {
+    let score = 0;
     for (let i = 0; i < keywords.length; i++) {
       const keyword = keywords[i].toLowerCase();
-      if (a.originalKeywords.has(keyword)) {
-        aScore |= 1 << (keywords.length - i - 1);
-      }
-      if (b.originalKeywords.has(keyword)) {
-        bScore |= 1 << (keywords.length - i - 1);
+      if (noteState.originalKeywords.has(keyword)) {
+        score |= 1 << (keywords.length - i - 1);
       }
     }
+    return {
+      noteState: noteState,
+      score,
+    };
+  });
 
-    // Sort by keyword matches and then by formId
-    return aScore === bScore ? a.formId - b.formId : bScore - aScore;
-  };
+  // Sort in place
+  notesWithScores.sort(
+    (a: NoteAndScore, b: NoteAndScore) =>
+      a.score === b.score
+        ? a.noteState.formId - b.noteState.formId
+        : b.score - a.score
+  );
+
+  // Unwrap
+  return notesWithScores.map(noteAndScore => noteAndScore.noteState);
 };
 
-export default NoteSorter;
+export default sortNotesByKeywordMatches;
