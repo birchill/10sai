@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Note } from '../model';
 import { NoteState } from '../notes/reducer';
-import { sortNotesByKeywordMatches } from '../notes/NoteSorter';
+import { sortNotesByKeywordMatches } from '../notes/sorting';
 import AddNoteButton from './AddNoteButton';
 import EditNoteForm from './EditNoteForm';
 

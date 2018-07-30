@@ -1,4 +1,4 @@
-import { sortNotesByKeywordMatches as subject } from './NoteSorter';
+import { sortNotesByKeywordMatches as subject } from './sorting';
 import { NoteState, SaveState } from './reducer';
 
 describe('sortNotesByKeywordMatches', () => {
