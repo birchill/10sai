@@ -53,7 +53,6 @@ export function* watchNoteEdits(dataStore: DataStore) {
         if (action.type === 'DELETE_NOTE') {
           return {
             context: action.context,
-            deleted: true,
             needsSaving: false,
             resource: {},
           };
@@ -70,7 +69,6 @@ export function* watchNoteEdits(dataStore: DataStore) {
 
         return {
           context: action.context,
-          deleted: false,
           needsSaving: isDirty(noteState) && hasDataToSave(noteState.note),
           resource: noteState.note,
         };

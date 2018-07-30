@@ -15,7 +15,6 @@ import { Task, delay } from 'redux-saga';
 
 export interface ResourceState<Resource, SaveContext> {
   context: SaveContext;
-  deleted: boolean;
   needsSaving: boolean;
   resource: Partial<Resource>;
 }
@@ -184,18 +183,10 @@ export function* watchEdits<
         break;
 
       case params.deleteActionType:
-        // It might seem like the following should test for !deleted but bear in
-        // mind that this saga runs *after* the reducer and the reducer will
-        // mark the card as deleted as soon as it received the DELETE_CARD
-        // action.
-        if (resourceState.deleted) {
-          try {
-            yield params.delete(dataStore, action, resource);
-          } catch (error) {
-            console.error(
-              `Failed to delete resource: ${JSON.stringify(error)}`
-            );
-          }
+        try {
+          yield params.delete(dataStore, action, resource);
+        } catch (error) {
+          console.error(`Failed to delete resource: ${JSON.stringify(error)}`);
         }
         break;
 

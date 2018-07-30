@@ -130,12 +130,8 @@ export function* watchCardEdits(dataStore: DataStore) {
         state: State
       ): ResourceState<Card, EditSaveContext> | undefined => {
         const card = state.edit.forms.active.card;
-        const deleted =
-          state.edit.forms.active.formState === FormState.Deleted ||
-          action.type === 'DELETE_CARD';
         return {
           context: action.formId,
-          deleted,
           needsSaving: isDirty(state) && hasDataToSave(card),
           resource: card,
         };
