@@ -288,7 +288,9 @@ export function notes(
             formId: action.noteFormIds.shift()!,
             note: newNote,
             saveState: SaveState.Ok,
-            originalKeywords: new Set<string>(newNote.keywords),
+            originalKeywords: new Set<string>(
+              newNote.keywords.map(keyword => keyword.toLowerCase())
+            ),
           };
           updatedState.push(noteState);
           madeChange = true;

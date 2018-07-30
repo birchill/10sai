@@ -21,7 +21,9 @@ describe('NoteSorter', () => {
       modified: Date.now(),
     },
     saveState: SaveState.Ok,
-    originalKeywords: new Set(originalKeywords),
+    originalKeywords: new Set(
+      originalKeywords.map(keyword => keyword.toLowerCase())
+    ),
   });
 
   it('sorts based on the order of matches against the list of keywords', () => {
@@ -49,5 +51,15 @@ describe('NoteSorter', () => {
     expect(notes).toEqual([b, c, a, d]);
   });
 
-  // XXX It needs to do lowercase matching
+  it('does a case-insensitive comparison of keywords', () => {
+    const a = noteState(['gHi', 'Def'], 1);
+    const b = noteState(['def'], 2);
+    const c = noteState(['Abc', 'xyz'], 3);
+    const notes = [a, b, c];
+    const sorter = NoteSorter(['AbC', 'dEf', 'GHI']);
+
+    notes.sort(sorter);
+
+    expect(notes).toEqual([c, a, b]);
+  });
 });

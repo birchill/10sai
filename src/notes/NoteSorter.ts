@@ -7,7 +7,7 @@ export const NoteSorter = (keywords: Array<string>) => {
     let aScore = 0;
     let bScore = 0;
     for (let i = 0; i < keywords.length; i++) {
-      const keyword = keywords[i];
+      const keyword = keywords[i].toLowerCase();
       if (a.originalKeywords.has(keyword)) {
         aScore |= 1 << (keywords.length - i - 1);
       }
