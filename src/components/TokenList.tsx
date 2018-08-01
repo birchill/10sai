@@ -678,7 +678,10 @@ export class TokenList extends React.PureComponent<Props> {
       >
         {this.state.tokens.map((token, i) => {
           const linked =
-            this.props.linkedTokens && this.props.linkedTokens.includes(token);
+            this.props.linkedTokens &&
+            this.props.linkedTokens
+              .map(token => token.toLowerCase())
+              .includes(token.toLowerCase());
           let chipClassName = 'chip';
           if (linked) {
             chipClassName += ' -linked';
