@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import memoize from 'memoize-one';
+
 import { Note } from '../model';
 import NoteFrame from './NoteFrame';
 import TokenList from './TokenList';
@@ -30,10 +32,29 @@ const getEditorContent = (editorState: EditorState): string => {
   return editorState.getCurrentContent().getPlainText();
 };
 
+const hasCommonKeyword = (
+  keywordsA: Array<string>,
+  keywordsB: Array<string>
+): boolean => {
+  const toLower = (keywords: Array<string>): Array<string> =>
+    keywords.map(keyword => keyword.toLowerCase());
+  const keywordSet = new Set<string>(toLower(keywordsA));
+  for (const keyword of toLower(keywordsB)) {
+    if (keywordSet.has(keyword)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export class EditNoteForm extends React.Component<Props, State> {
   state: State;
   editor?: Editor;
   keywordsTokenList?: TokenList;
+  hasCommonKeyword: (
+    keywordsA: Array<string>,
+    keywordsB: Array<string>
+  ) => boolean;
 
   static get propTypes() {
     return {
@@ -116,6 +137,8 @@ export class EditNoteForm extends React.Component<Props, State> {
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
 
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
+
+    this.hasCommonKeyword = memoize(hasCommonKeyword);
   }
 
   handleContentClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -190,16 +213,12 @@ export class EditNoteForm extends React.Component<Props, State> {
         'This note has no keywords. It will be lost unless some keywords are added.';
       className += ' -nokeywords';
     } else {
-      // XXX: Memo-ize this
-      let hasMatchingKeyword = false;
-      const relatedKeywordSet = new Set<string>(this.props.relatedKeywords);
-      for (const keyword of this.props.note.keywords) {
-        if (relatedKeywordSet.has(keyword)) {
-          hasMatchingKeyword = true;
-          break;
-        }
-      }
-      if (!hasMatchingKeyword) {
+      if (
+        !this.hasCommonKeyword(
+          this.props.relatedKeywords,
+          this.props.note.keywords
+        )
+      ) {
         statusMessage =
           'This note has no keywords that match the card. It will not be shown next time this card is viewed.';
         className += ' -nomatch';
