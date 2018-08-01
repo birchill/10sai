@@ -184,6 +184,28 @@ export class EditNoteForm extends React.Component<Props, State> {
       className += ' ' + this.props.className;
     }
 
+    let statusMessage: string | undefined;
+    if (!this.props.note.keywords || !this.props.note.keywords.length) {
+      statusMessage =
+        'This note has no keywords. It will be lost unless some keywords are added.';
+      className += ' -nokeywords';
+    } else {
+      // XXX: Memo-ize this
+      let hasMatchingKeyword = false;
+      const relatedKeywordSet = new Set<string>(this.props.relatedKeywords);
+      for (const keyword of this.props.note.keywords) {
+        if (relatedKeywordSet.has(keyword)) {
+          hasMatchingKeyword = true;
+          break;
+        }
+      }
+      if (!hasMatchingKeyword) {
+        statusMessage =
+          'This note has no keywords that match the card. It will not be shown next time this card is viewed.';
+        className += ' -nomatch';
+      }
+    }
+
     return (
       <form className={className} autoComplete="off" ref={this.formRef}>
         <NoteFrame>
@@ -235,6 +257,7 @@ export class EditNoteForm extends React.Component<Props, State> {
               Discard
             </button>
           </div>
+          {statusMessage ? <div className="status">{statusMessage}</div> : null}
         </NoteFrame>
       </form>
     );

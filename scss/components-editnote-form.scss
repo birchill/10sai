@@ -29,6 +29,15 @@
     border-top: 1px dotted $keyword-yellow-dark;
   }
 
+  &.-nomatch .body {
+    opacity: 0.5;
+  }
+
+  &.-nokeywords .body {
+    opacity: 0.5;
+    filter: hue-rotate(310deg);
+  }
+
   .content {
     padding: 1rem;
     min-height: 5rem;
@@ -61,5 +70,11 @@
     justify-content: flex-end;
 
     padding: .5rem 1rem;
+  }
+
+  .status {
+    font-size: 0.8rem;
+    font-style: italic;
+    padding: 0.5rem 1rem;
   }
 }
