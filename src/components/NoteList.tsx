@@ -8,11 +8,6 @@ import { sortNotesByKeywordMatches } from '../notes/sorting';
 import AddNoteButton from './AddNoteButton';
 import EditNoteForm from './EditNoteForm';
 
-declare global {
-  // Once again, TypeScript's DOM definitions are woeful
-  interface Animation extends EventTarget {}
-}
-
 interface Props {
   notes: Array<NoteState>;
   keywords: Array<string>;
@@ -74,22 +69,17 @@ export class NoteList extends React.PureComponent<Props> {
       typeof newNotesList[newNotesList.length - 1].note.id === 'undefined';
 
     if (hasNewNote(previousProps.notes, this.props.notes)) {
-      this.animateNewNote().then(() => {
-        // Focus the note
-        if (this.lastNoteRef.current) {
-          this.lastNoteRef.current.focus();
-        }
-      });
+      this.animateNewNote();
 
-      // Scroll (we need to do this _after_ calling animateNewNote or else on
-      // Chrome the rendering is glitchy).
+      // Focus the new note and scroll it into view.
       if (this.lastNoteRef.current) {
+        this.lastNoteRef.current.focus();
         this.lastNoteRef.current.scrollIntoView();
       }
     }
   }
 
-  async animateNewNote(): Promise<any> {
+  animateNewNote() {
     // First, check we have a button to animate.
     if (!this.addNoteButtonRef.current || !this.addNoteButtonRef.current.elem) {
       return;
@@ -162,7 +152,7 @@ export class NoteList extends React.PureComponent<Props> {
     );
 
     // Fade in the actual note
-    const fadeNoteAnim = newNote.animate(
+    newNote.animate(
       { opacity: [0, 1] },
       {
         delay: stretchDuration * 0.6,
@@ -182,21 +172,6 @@ export class NoteList extends React.PureComponent<Props> {
         delay: stretchDuration + fadeDuration,
       }
     );
-
-    // Return a Promise that resolves when the note has faded in (so that the
-    // caller can focus the textbox then--if we wait until the add button fades
-    // in it will seem too slow).
-    //
-    // Browser support for the 'finished' Promise is not consistent so polyfill
-    // if necessary.
-    if (fadeNoteAnim.finished) {
-      return fadeNoteAnim.finished;
-    }
-
-    return new Promise((resolve, reject) => {
-      fadeNoteAnim.addEventListener('finish', resolve);
-      fadeNoteAnim.addEventListener('cancel', reject);
-    });
   }
 
   handleAddNote() {
