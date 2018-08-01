@@ -51,6 +51,7 @@ export class EditNoteForm extends React.Component<Props, State> {
   state: State;
   editor?: Editor;
   keywordsTokenList?: TokenList;
+  formRef: React.RefObject<HTMLFormElement>;
   hasCommonKeyword: (
     keywordsA: Array<string>,
     keywordsB: Array<string>
@@ -65,6 +66,30 @@ export class EditNoteForm extends React.Component<Props, State> {
       onChange: PropTypes.func,
       onDelete: PropTypes.func,
     };
+  }
+
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      contentEditorState: EditorState.createEmpty(),
+      keywordText: '',
+      keywordSuggestions: [],
+      loadingSuggestions: false,
+    };
+    this.formRef = React.createRef<HTMLFormElement>();
+    this.hasCommonKeyword = memoize(hasCommonKeyword);
+
+    // Content editor
+    this.handleContentClick = this.handleContentClick.bind(this);
+    this.handleContentChange = this.handleContentChange.bind(this);
+
+    // Keyword suggestion feature
+    this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
+    this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
+    this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
+
+    this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
   componentDidMount() {
@@ -112,33 +137,6 @@ export class EditNoteForm extends React.Component<Props, State> {
       'insert-characters'
     );
     this.setState({ contentEditorState });
-  }
-
-  formRef: React.RefObject<HTMLFormElement>;
-
-  constructor(props: Props) {
-    super(props);
-
-    this.formRef = React.createRef<HTMLFormElement>();
-
-    // Content editor
-    this.state = {
-      contentEditorState: EditorState.createEmpty(),
-      keywordText: '',
-      keywordSuggestions: [],
-      loadingSuggestions: false,
-    };
-    this.handleContentClick = this.handleContentClick.bind(this);
-    this.handleContentChange = this.handleContentChange.bind(this);
-
-    // Keyword suggestion feature
-    this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
-    this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
-    this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
-
-    this.handleDeleteClick = this.handleDeleteClick.bind(this);
-
-    this.hasCommonKeyword = memoize(hasCommonKeyword);
   }
 
   handleContentClick(e: React.MouseEvent<HTMLDivElement>) {
