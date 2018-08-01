@@ -162,12 +162,15 @@ export class EditNoteForm extends React.Component<Props, State> {
     }
   }
 
+  scrollIntoView() {
+    if (this.formRef.current) {
+      this.formRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
   focus() {
     if (this.editor) {
       this.editor.focus();
-    }
-    if (this.formRef.current) {
-      this.formRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }
 
