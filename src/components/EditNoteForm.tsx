@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 
 import { Note } from '../model';
+import { SaveState } from '../notes/reducer';
 import NoteFrame from './NoteFrame';
 import TokenList from './TokenList';
 import { ContentState, Editor, EditorState } from 'draft-js';
@@ -12,6 +13,7 @@ interface Props {
   className?: string;
   formId: number;
   note: Partial<Note>;
+  saveState: SaveState;
   relatedKeywords: string[];
   onChange?: (
     noteFormId: number,
@@ -62,6 +64,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       className: PropTypes.string,
       formId: PropTypes.number.isRequired,
       note: PropTypes.object.isRequired,
+      saveState: PropTypes.string.isRequired,
       relatedKeywords: PropTypes.arrayOf(PropTypes.string).isRequired,
       onChange: PropTypes.func,
       onDelete: PropTypes.func,
@@ -273,11 +276,37 @@ export class EditNoteForm extends React.Component<Props, State> {
             >
               Discard
             </button>
+            {this.renderSaveStatus()}
           </div>
           {statusMessage ? <div className="status">{statusMessage}</div> : null}
         </NoteFrame>
       </form>
     );
+  }
+
+  renderSaveStatus() {
+    let saveStateClass = 'savestate';
+    let saveStateMessage = '';
+    switch (this.props.saveState) {
+      case SaveState.New:
+        // Just leave it empty
+        break;
+
+      case SaveState.Ok:
+        saveStateMessage = 'Saved';
+        break;
+
+      case SaveState.InProgress:
+        saveStateClass += ' -inprogress';
+        saveStateMessage = 'Saving…';
+        break;
+
+      case SaveState.Error:
+        saveStateClass += ' -error';
+        saveStateMessage = 'Error saving';
+        break;
+    }
+    return <div className={saveStateClass}>{saveStateMessage}</div>;
   }
 }
 
