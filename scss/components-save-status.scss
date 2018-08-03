@@ -1,0 +1,61 @@
+.save-status {
+  $height: 1.4 * 18px;
+  height: $height;
+  overflow: hidden;
+
+  > .label {
+    display: block;
+    text-align: end;
+    font-style: italic;
+    // The short delay here is to avoid showing one label (typically the
+    // in-progress one) for only a short time.
+    transition: opacity 0.8s 0.05s;
+    opacity: 0;
+
+    &.inprogress {
+      transform: translateY(-$height);
+    }
+    &.error {
+      color: $warning-red;
+      transform: translateY(-2 * $height);
+    }
+
+    &::after {
+      content: "";
+      display: inline-block;
+      position: relative;
+
+      width: 1em;
+      height: 1em;
+      margin-inline-start: 0.5rem;
+      vertical-align: middle;
+
+      background-image: url('img/icons.svg');
+      background-position-y: -1em;
+      background-position-x: -22em;
+      background-size: $icon-columns+em $icon-rows+em;
+      background-repeat: no-repeat;
+    }
+    &.inprogress::after {
+      background-position-x: -21em;
+      animation: fade-in 0.6s alternate ease-in-out infinite;
+    }
+    &.error::after {
+      background-position-x: -23em;
+      background-position-y: -5em;
+    }
+  }
+
+  &.-inprogress > .label.inprogress {
+    opacity: 1;
+  }
+
+  &.-error > .label.error {
+    opacity: 1;
+  }
+
+  &.-ok > .label.ok {
+    animation: fade-ok 2s forwards;
+  }
+  @keyframes fade-ok { 30% { opacity: 1 } 80% { opacity: 1 } }
+}

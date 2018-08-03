@@ -283,7 +283,7 @@
       <path d="M50 5a45 45 0 1 0 0 90 45 45 0 0 0 0-90zm25 30.3a148.4 148.4 0 0 0-28.2 37.6c-.4.7-.9 1.2-1.6 1.7-.8.5-1.5.8-2.4.8h-.3a5 5 0 0 1-2.2-.5l-.6-.4a3 3 0 0 1-1-1l-.4-.4s-4.9-7.4-12.5-12.3a5 5 0 1 1 5.3-8.4c4.4 2.8 8 6.2 10.6 9a162 162 0 0 1 26.4-33.3 5 5 0 0 1 7 .1 5 5 0 0 1 0 7z"/>
     </g>
     <!-- Error circle -->
-    <g transform="translate(2300 0)" fill="currentColor">
+    <g transform="translate(2300 0)" fill="currentColor" id="error-circle">
       <path d="M43.1 56.2c.2 4 3.7 7.3 7.7 7.3s7.5-3.3 7.7-7.3L60 26c.2-4-4-7.3-9.2-7.3-5.3 0-9.4 3.3-9.2 7.3M5.5 50.5a45 45 0 1 1 90 0 45 45 0 0 1-90 0zm45.3 32.4a7.1 7.1 0 1 0 0-14.2 7.1 7.1 0 0 0 0 14.2z"/>
     </g>
     <!-- Future: Back arrow -->
@@ -360,6 +360,7 @@
   <use x="0" y="500" xlink:href="#link" color="#cdb900"/>
   <!-- Red icons (this also uses the same row) -->
   <use x="0" y="500" xlink:href="#bin" color="#e14700"/>
+  <use x="0" y="500" xlink:href="#error-circle" color="#e14700"/>
 
   <!-- Viewboxes used for textboxes (which can't use pseudo elements for the
        background -->

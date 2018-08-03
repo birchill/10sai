@@ -5,6 +5,7 @@ import memoize from 'memoize-one';
 import { Note } from '../model';
 import { SaveState } from '../notes/reducer';
 import NoteFrame from './NoteFrame';
+import SaveStatus from './SaveStatus';
 import TokenList from './TokenList';
 import { ContentState, Editor, EditorState } from 'draft-js';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
@@ -276,37 +277,15 @@ export class EditNoteForm extends React.Component<Props, State> {
             >
               Discard
             </button>
-            {this.renderSaveStatus()}
+            <SaveStatus
+              className="savestate"
+              saveState={this.props.saveState}
+            />
           </div>
           {statusMessage ? <div className="status">{statusMessage}</div> : null}
         </NoteFrame>
       </form>
     );
-  }
-
-  renderSaveStatus() {
-    let saveStateClass = 'savestate';
-    let saveStateMessage = '';
-    switch (this.props.saveState) {
-      case SaveState.New:
-        // Just leave it empty
-        break;
-
-      case SaveState.Ok:
-        saveStateMessage = 'Saved';
-        break;
-
-      case SaveState.InProgress:
-        saveStateClass += ' -inprogress';
-        saveStateMessage = 'Saving…';
-        break;
-
-      case SaveState.Error:
-        saveStateClass += ' -error';
-        saveStateMessage = 'Error saving';
-        break;
-    }
-    return <div className={saveStateClass}>{saveStateMessage}</div>;
   }
 }
 

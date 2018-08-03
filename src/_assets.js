@@ -6,6 +6,7 @@ import 'main.scss'; // eslint-disable-line
 import CardPreview from './components/CardPreview.jsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
 import LoadingIndicator from './components/LoadingIndicator.tsx';
+import SaveStatus from './components/SaveStatus.tsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
 import TextRegion from './components/TextRegion.jsx';
@@ -289,3 +290,28 @@ for (const container of progressBars) {
     container
   );
 }
+
+const saveStatuses = document.getElementById('save-statuses-container');
+(function renderSaveStatus(oldStatus = '') {
+  let status;
+  do {
+    status = ['ok', 'in-progress', 'error', 'new'][
+      Math.floor(Math.random() * 4)
+    ];
+  } while (status === oldStatus);
+
+  ReactDOM.render(
+    <>
+      <SaveStatus saveState={status} />
+      <button
+        onClick={() => {
+          renderSaveStatus(status);
+        }}
+      >
+        Update
+      </button>
+      <span className="currentstatus">{`Current: ${status}`}</span>
+    </>,
+    saveStatuses
+  );
+})();
