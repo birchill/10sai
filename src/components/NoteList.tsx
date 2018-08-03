@@ -214,6 +214,7 @@ export class NoteList extends React.PureComponent<Props> {
                 formId={note.formId}
                 note={note.note}
                 saveState={note.saveState}
+                saveError={note.saveError ? note.saveError.message : undefined}
                 relatedKeywords={this.props.keywords}
                 ref={ref}
                 onChange={this.handleNoteChange}

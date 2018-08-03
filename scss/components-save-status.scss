@@ -52,10 +52,14 @@
 
   &.-error > .label.error {
     opacity: 1;
+    &[title] {
+      text-decoration: underline;
+      text-decoration-style: dotted;
+    }
   }
 
   &.-ok > .label.ok {
-    animation: fade-ok 2s forwards;
+    animation: fade-ok 2.2s forwards;
   }
   @keyframes fade-ok { 30% { opacity: 1 } 80% { opacity: 1 } }
 }

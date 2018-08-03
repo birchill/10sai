@@ -15,6 +15,7 @@ interface Props {
   formId: number;
   note: Partial<Note>;
   saveState: SaveState;
+  saveError?: string;
   relatedKeywords: string[];
   onChange?: (
     noteFormId: number,
@@ -66,6 +67,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       formId: PropTypes.number.isRequired,
       note: PropTypes.object.isRequired,
       saveState: PropTypes.string.isRequired,
+      saveError: PropTypes.string,
       relatedKeywords: PropTypes.arrayOf(PropTypes.string).isRequired,
       onChange: PropTypes.func,
       onDelete: PropTypes.func,
@@ -280,6 +282,7 @@ export class EditNoteForm extends React.Component<Props, State> {
             <SaveStatus
               className="savestate"
               saveState={this.props.saveState}
+              saveError={this.props.saveError}
             />
           </div>
           {statusMessage ? <div className="status">{statusMessage}</div> : null}

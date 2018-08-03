@@ -302,7 +302,7 @@ const saveStatuses = document.getElementById('save-statuses-container');
 
   ReactDOM.render(
     <>
-      <SaveStatus saveState={status} />
+      <SaveStatus saveState={status} errorMessage={'Error message'} />
       <button
         onClick={() => {
           renderSaveStatus(status);

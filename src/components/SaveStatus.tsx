@@ -5,6 +5,7 @@ import { SaveState } from '../notes/reducer';
 
 interface Props {
   saveState: SaveState;
+  saveError?: string;
   className?: string;
 }
 
@@ -17,6 +18,7 @@ export class SaveStatus extends React.PureComponent<Props, State> {
   static get propTypes() {
     return {
       saveState: PropTypes.string.isRequired,
+      saveError: PropTypes.string,
       className: PropTypes.string,
     };
   }
@@ -75,7 +77,9 @@ export class SaveStatus extends React.PureComponent<Props, State> {
       <div className={className}>
         <span className="label ok">Saved</span>
         <span className="label inprogress">Saving…</span>
-        <span className="label error">Error</span>
+        <span className="label error" title={this.props.saveError}>
+          Error
+        </span>
       </div>
     );
   }
