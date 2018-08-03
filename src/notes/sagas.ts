@@ -1,10 +1,14 @@
-import { call, put, select, CallEffect } from 'redux-saga/effects';
+import { call, put, select, CallEffect, take } from 'redux-saga/effects';
 import { watchEdits, ResourceState } from '../utils/autosave-saga';
 import * as noteActions from './actions';
-import { getNoteStateSelector, isDirty } from './selectors';
+import {
+  getNoteListSelector,
+  getNoteStateSelector,
+  isDirty,
+} from './selectors';
 import { DataStore } from '../store/DataStore';
 import { Note } from '../model';
-import { NoteContext } from './actions';
+import { NoteContext, NoteListContext } from './actions';
 import { SaveState } from './reducer';
 import { EditState } from '../edit/reducer';
 
@@ -94,6 +98,43 @@ export function* watchNoteEdits(dataStore: DataStore) {
 
 export function* noteSagas(dataStore: DataStore) {
   yield* [watchNoteEdits(dataStore)];
+}
+
+export function* beforeNotesScreenChange(context: NoteListContext) {
+  const noteList = yield select(getNoteListSelector(context));
+
+  const keyFromContext = (context: NoteContext): string =>
+    Object.values(context).join('-');
+  const notesBeingSaved = new Set<string>();
+  for (const note of noteList) {
+    if (!isDirty(note)) {
+      continue;
+    }
+
+    const noteContext: NoteContext = { ...context, noteFormId: note.formId };
+    yield put(noteActions.saveNote(noteContext));
+
+    notesBeingSaved.add(keyFromContext(noteContext));
+  }
+
+  while (notesBeingSaved.size) {
+    const action:
+      | noteActions.FinishSaveNoteAction
+      | noteActions.FailSaveNoteAction = yield take([
+      'FINISH_SAVE_NOTE',
+      'FAIL_SAVE_NOTE',
+    ]);
+
+    const key = keyFromContext(action.context);
+    if (notesBeingSaved.has(key)) {
+      if (action.type === 'FAIL_SAVE_NOTE') {
+        return false;
+      }
+      notesBeingSaved.delete(key);
+    }
+  }
+
+  return true;
 }
 
 export default noteSagas;
