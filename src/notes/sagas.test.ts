@@ -13,6 +13,7 @@ import * as noteActions from './actions';
 import { EditNoteContext, EditScreenContext } from './actions';
 import { FormState } from '../edit/FormState';
 import { SaveState, NoteState } from '../notes/reducer';
+import { StoreError } from '../store/DataStore';
 
 const noteState = (
   cardFormId: number,
@@ -154,11 +155,11 @@ describe('sagas:notes beforeNotesScreenChange', () => {
       secondNote,
       thirdNote,
     ]);
+
     const screenContext: EditScreenContext = {
       screen: 'edit-card',
       cardFormId,
     };
-
     const firstNoteContext: EditNoteContext = {
       ...screenContext,
       noteFormId: 1,
@@ -178,19 +179,35 @@ describe('sagas:notes beforeNotesScreenChange', () => {
       .run();
   });
 
-  /*
   it('does nothing if note of the notes are dirty', () => {
     const cardFormId = 5;
     const state = multiNoteState(cardFormId, [
       {
         formId: 1,
         note: typicalNote('abc'),
+        saveState: SaveState.Ok,
+        originalKeywords: new Set(['def', 'ghi']),
       },
       {
         formId: 2,
         note: typicalNote('def'),
+        saveState: SaveState.Ok,
+        originalKeywords: new Set(['def', 'ghi']),
       },
     ]);
+
+    const screenContext: EditScreenContext = {
+      screen: 'edit-card',
+      cardFormId,
+    };
+    const firstNoteContext: EditNoteContext = {
+      ...screenContext,
+      noteFormId: 1,
+    };
+    const secondNoteContext: EditNoteContext = {
+      ...screenContext,
+      noteFormId: 2,
+    };
 
     return expectSaga(beforeNotesScreenChange, screenContext)
       .withState(state)
@@ -201,26 +218,48 @@ describe('sagas:notes beforeNotesScreenChange', () => {
   });
 
   it('returns false if any of the notes fails to save', () => {
-    const formId = 5;
-    const state = {
-      edit: {
-        forms: {
-          active: {
-            formId,
-            formState: FormState.Ok,
-            dirtyFields: new Set(['answer']),
-          },
-        },
-      },
+    const cardFormId = 5;
+    const firstNote: NoteState = {
+      formId: 1,
+      note: typicalNote('abc'),
+      saveState: SaveState.Ok,
+      originalKeywords: new Set(['def', 'ghi']),
+      dirtyFields: new Set<keyof Note>(['keywords']),
     };
-    const error = { name: 'too_bad', message: 'too bad' };
+    const secondNote: NoteState = {
+      formId: 2,
+      note: typicalNote('def'),
+      saveState: SaveState.Ok,
+      originalKeywords: new Set(['def', 'ghi']),
+      dirtyFields: new Set<keyof Note>(['content']),
+    };
+    const state = multiNoteState(cardFormId, [firstNote, secondNote]);
+
+    const screenContext: EditScreenContext = {
+      screen: 'edit-card',
+      cardFormId,
+    };
+    const firstNoteContext: EditNoteContext = {
+      ...screenContext,
+      noteFormId: 1,
+    };
+    const secondNoteContext: EditNoteContext = {
+      ...screenContext,
+      noteFormId: 2,
+    };
 
     return expectSaga(beforeNotesScreenChange, screenContext)
       .withState(state)
-      .put(editActions.saveCard(formId))
-      .dispatch(editActions.failSaveCard(formId, error))
+      .put(noteActions.saveNote(firstNoteContext))
+      .put(noteActions.saveNote(secondNoteContext))
+      .dispatch(noteActions.finishSaveNote(firstNoteContext, firstNote.note))
+      .dispatch(
+        noteActions.failSaveNote(
+          secondNoteContext,
+          new StoreError(400, 'bad', 'This is bad')
+        )
+      )
       .returns(false)
       .run();
   });
-   */
 });
