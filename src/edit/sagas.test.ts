@@ -456,6 +456,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
             formId,
             formState: FormState.Ok,
             dirtyFields: new Set(['answer']),
+            notes: [],
           },
         },
       },
@@ -472,7 +473,9 @@ describe('sagas:edit beforeEditScreenChange', () => {
   it('does nothing if the card is not dirty', () => {
     const formId = 5;
     const state = {
-      edit: { forms: { active: { formId, formState: FormState.Ok } } },
+      edit: {
+        forms: { active: { formId, formState: FormState.Ok, notes: [] } },
+      },
     };
 
     return expectSaga(beforeEditScreenChangeSaga)
@@ -491,6 +494,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
             formId,
             formState: FormState.Ok,
             dirtyFields: new Set(['answer']),
+            notes: [],
           },
         },
       },

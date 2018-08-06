@@ -1,4 +1,5 @@
 import {
+  all,
   call,
   put,
   select,
@@ -8,6 +9,7 @@ import {
 } from 'redux-saga/effects';
 import { Store } from 'redux';
 import { watchEdits, ResourceState } from '../utils/autosave-saga';
+import { beforeNotesScreenChange } from '../notes/sagas';
 import {
   routeFromURL,
   routeFromPath,
@@ -166,13 +168,25 @@ export function* editSagas(dataStore: DataStore) {
 }
 
 export function* beforeEditScreenChange() {
+  const activeRecord = yield select(getActiveRecord);
+
+  const [saveCardResult, saveNotesResult] = yield all([
+    saveBeforeScreenChange(activeRecord.formId),
+    beforeNotesScreenChange({
+      screen: 'edit-card',
+      cardFormId: activeRecord.formId,
+    }),
+  ]);
+
+  return saveCardResult && saveNotesResult;
+}
+
+function* saveBeforeScreenChange(formId: number) {
   if (!(yield select(isDirty))) {
     return true;
   }
 
-  const activeRecord = yield select(getActiveRecord);
-
-  yield put(editActions.saveCard(activeRecord.formId));
+  yield put(editActions.saveCard(formId));
 
   const action = yield take(['FINISH_SAVE_CARD', 'FAIL_SAVE_CARD']);
 
