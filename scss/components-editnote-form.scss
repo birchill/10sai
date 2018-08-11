@@ -41,7 +41,8 @@
   }
 
   .content {
-    padding: 1rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
     min-height: 5rem;
     font-size: 1.2rem;
     cursor: text;
@@ -67,7 +68,7 @@
 
   .controls {
     display: flex;
-    padding: .5rem 1rem;
+    padding: .4rem;
 
     .delete {
       color: $warning-red;
@@ -75,7 +76,10 @@
 
     .savestate {
       flex: 1;
-      padding: .4em;
+      padding: .4rem;
+      // This is to match the equivalent padding on the buttons on the right.
+      // It'll do for now.
+      padding-right: 1em;
     }
   }
 

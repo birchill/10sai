@@ -1,4 +1,5 @@
 .save-status {
+  // 1.4 is the line-height, but I have no idea what 18px is about.
   $height: 1.4 * 18px;
   height: $height;
   overflow: hidden;
