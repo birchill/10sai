@@ -48,7 +48,10 @@
     // long text.
     min-height: calc(3rem - (0.4em * 2));
     margin: 0 .5em .4em 0;
-    padding: .2em 0 .2em .4em;
+
+    // We move most of the padding to the label/button so its easier to click
+    // the clear button.
+    padding-left: .4em;
 
     vertical-align: middle;
     cursor: default;
@@ -67,12 +70,26 @@
       border-style: dashed;
     }
 
+    // Arrange the padding so that the .clear button gets as much of it as
+    // possible (and hence is a bigger hit target).
+    > .label, > .clear {
+      padding-top: .2em;
+      padding-bottom: .2em;
+    }
+
+    > .label {
+      padding-right: 0;
+    }
+
+    > .clear {
+      padding-left: .4em;
+      padding-right: .4em;
+    }
+
     > .clear {
       color: var(--chip-fgcolor);
       background: none;
       border: 0;
-      // Give the button some padding so it's easier to click
-      padding: 0 .4em;
 
       // Drop filter so we don't get double highlight
       &:hover {
