@@ -1,8 +1,6 @@
 import { Note } from '../model';
-import * as views from './views';
-import { generateUniqueTimestampId, updateView, stubbornDelete } from './utils';
-import { Omit, stripFields } from '../utils/type-helpers';
-import { collate } from 'pouchdb-collate';
+import { generateUniqueTimestampId, stubbornDelete } from './utils';
+import { stripFields } from '../utils/type-helpers';
 
 export interface NoteContent {
   keywords?: string[];

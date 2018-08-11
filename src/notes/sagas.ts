@@ -9,7 +9,6 @@ import {
 import { DataStore } from '../store/DataStore';
 import { Note } from '../model';
 import { NoteContext, NoteListContext } from './actions';
-import { SaveState } from './reducer';
 import { EditState } from '../edit/reducer';
 
 const SAVE_DELAY = 2000;
