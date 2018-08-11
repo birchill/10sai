@@ -266,9 +266,13 @@ export class NoteList extends React.PureComponent<Props, State> {
     const newButtonPosition = addNoteButtonElem.getBoundingClientRect();
 
     // Get the position of the new note.
-    const newNotePosition: ClientRect = newNote.getBoundingClientRect();
+    const newNotePosition = newNote.getBoundingClientRect();
 
     // Streth the button to the size of the new note.
+    //
+    // (Note this currently assumes that both notes and the add note are
+    // centered. If that ceases to be the case we'll need to pass the x position
+    // too.)
     addNoteButton.stretchTo({
       width: newNotePosition.width,
       height: newNotePosition.height,
