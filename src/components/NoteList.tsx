@@ -117,19 +117,30 @@ export class NoteList extends React.PureComponent<Props, State> {
     );
   }
 
+  getForm(formId: number): HTMLDivElement | null {
+    return this.notesContainerRef.current
+      ? this.notesContainerRef.current.querySelector(
+          `[data-form-id="${formId}"]`
+        )
+      : null;
+  }
+
+  getDeletingForm(formId: number): HTMLDivElement | null {
+    return this.deletingNotesContainerRef.current
+      ? this.deletingNotesContainerRef.current.querySelector(
+          `[data-form-id="${formId}"]`
+        )
+      : null;
+  }
+
   getSnapshotBeforeUpdate(previousProps: Props) {
     // Common case
     if (previousProps.notes === this.props.notes) {
       return null;
     }
 
-    if (!this.notesContainerRef.current) {
-      return null;
-    }
-
-    const notesContainer: HTMLDivElement = this.notesContainerRef.current;
     const getTopOfForm = (formId: number): number | null => {
-      const form = notesContainer.querySelector(`[data-form-id="${formId}"]`);
+      const form = this.getForm(formId);
       return form ? form.getBoundingClientRect().top : null;
     };
 
@@ -215,128 +226,8 @@ export class NoteList extends React.PureComponent<Props, State> {
         this.lastNoteRef.current.focus();
         this.lastNoteRef.current.scrollIntoView();
       }
-      return;
-    }
-
-    if (
-      !this.notesContainerRef.current ||
-      !this.deletingNotesContainerRef.current
-    ) {
-      return;
-    }
-
-    const notesContainer: HTMLDivElement = this.notesContainerRef.current;
-    const deletingNotesContainer: HTMLDivElement = this
-      .deletingNotesContainerRef.current;
-
-    // XXX This could be a lot lot neater
-    let lastAnimation: Animation | undefined;
-
-    // First animate-out any deleting notes
-    let delay = 0;
-    const deletePromises: Array<Promise<Animation>> = [];
-    for (const noteRef of snapshot.deletedNotes) {
-      const form: HTMLDivElement | null = deletingNotesContainer.querySelector(
-        `[data-form-id="${noteRef.formId}"]`
-      );
-      if (form) {
-        const yOffset = form.getBoundingClientRect().top - noteRef.top;
-        lastAnimation = form.animate(
-          {
-            transform: [
-              `translateY(${-yOffset}px) scale(1)`,
-              `translateY(${-yOffset}px) scale(0)`,
-            ],
-          },
-          {
-            duration: DELETE_DURATION,
-            easing: DELETE_EASING,
-            delay,
-            fill: 'both',
-          }
-        );
-        deletePromises.push(getFinishedPromise(lastAnimation));
-        delay += ANIMATION_STAGGER;
-      }
-    }
-
-    if (snapshot.deletedNotes.length) {
-      // Allow a bit of overlap between stages
-      delay += DELETE_DURATION - ANIMATION_STAGGER * 2;
-    }
-
-    // Then shuffle any notes that need shuffling
-    for (const noteRef of snapshot.movedNotes) {
-      const form: HTMLDivElement | null = notesContainer.querySelector(
-        `[data-form-id="${noteRef.formId}"]`
-      );
-      if (form) {
-        const yOffset = form.getBoundingClientRect().top - noteRef.top;
-        form.animate(
-          { transform: [`translateY(${-yOffset}px)`, 'translateY(0px)'] },
-          { duration: MOVE_DURATION, easing: 'ease', delay, fill: 'backwards' }
-        );
-        delay += ANIMATION_STAGGER;
-      }
-    }
-
-    // Move add button too
-    let movedAddButton = false;
-    if (snapshot.addedNotes.length - snapshot.deletedNotes.length !== 0) {
-      const addNoteButton = this.addNoteButtonRef.current;
-      if (addNoteButton && addNoteButton.elem && snapshot.addNoteButtonBbox) {
-        const yOffset =
-          addNoteButton.elem.getBoundingClientRect().top -
-          snapshot.addNoteButtonBbox.top;
-        addNoteButton.elem.animate(
-          { transform: [`translateY(${-yOffset}px)`, 'translateY(0px)'] },
-          { duration: MOVE_DURATION, easing: 'ease', delay, fill: 'backwards' }
-        );
-        movedAddButton = true;
-        delay += ANIMATION_STAGGER;
-      }
-    }
-
-    if (snapshot.movedNotes.length || movedAddButton) {
-      // Allow a bit of overlap between stages
-      delay += MOVE_DURATION - ANIMATION_STAGGER * 2;
-    }
-
-    // Add new notes
-    for (const formId of snapshot.addedNotes) {
-      const form: HTMLDivElement | null = notesContainer.querySelector(
-        `[data-form-id="${formId}"]`
-      );
-      if (form) {
-        form.animate(
-          { transform: ['scale(0)', 'scale(1)'] },
-          {
-            duration: STRETCH_DURATION,
-            easing: STRETCH_EASING,
-            delay,
-            fill: 'backwards',
-          }
-        );
-        delay += ANIMATION_STAGGER;
-      }
-    }
-
-    // Make sure to properly remove any deleting notes from state once the
-    // delete animations have finished.
-    if (lastAnimation && snapshot.deletedNotes.length) {
-      getFinishedPromise(lastAnimation).then(() => {
-        const deletingNotes = this.state.deletingNotes.slice();
-        const toDelete = new Set<number>(
-          snapshot.deletedNotes.map(ref => ref.formId)
-        );
-        for (let i = deletingNotes.length - 1; i >= 0; i--) {
-          if (toDelete.has(deletingNotes[i].formId)) {
-            deletingNotes.splice(i, 1);
-          }
-        }
-
-        this.setState({ deletingNotes });
-      });
+    } else {
+      this.animateExistingNotes(snapshot);
     }
   }
 
@@ -345,9 +236,11 @@ export class NoteList extends React.PureComponent<Props, State> {
     if (!this.addNoteButtonRef.current || !this.addNoteButtonRef.current.elem) {
       return;
     }
+    const addNoteButton = this.addNoteButtonRef.current;
+    const addNoteButtonElem = this.addNoteButtonRef.current.elem;
 
     // Next check for animations support.
-    if (typeof this.addNoteButtonRef.current.elem.animate !== 'function') {
+    if (typeof addNoteButtonElem.animate !== 'function') {
       return;
     }
 
@@ -369,14 +262,14 @@ export class NoteList extends React.PureComponent<Props, State> {
     const fadeOffset = STRETCH_DURATION / (STRETCH_DURATION + FADE_DURATION);
 
     // Get the button positions
-    const prevButtonPosition: ClientRect = snapshot.addNoteButtonBbox;
-    const newButtonPosition: ClientRect = this.addNoteButtonRef.current.elem.getBoundingClientRect();
+    const prevButtonPosition = snapshot.addNoteButtonBbox;
+    const newButtonPosition = addNoteButtonElem.getBoundingClientRect();
 
     // Get the position of the new note.
     const newNotePosition: ClientRect = newNote.getBoundingClientRect();
 
     // Streth the button to the size of the new note.
-    this.addNoteButtonRef.current.stretchTo({
+    addNoteButton.stretchTo({
       width: newNotePosition.width,
       height: newNotePosition.height,
       duration: STRETCH_DURATION,
@@ -389,7 +282,7 @@ export class NoteList extends React.PureComponent<Props, State> {
     const initialYShift = prevButtonPosition.top - newButtonPosition.top;
     const finalYShift =
       initialYShift + (newNotePosition.height - prevButtonPosition.height) / 2;
-    this.addNoteButtonRef.current.elem.animate(
+    addNoteButtonElem.animate(
       [
         {
           transform: `translateY(${initialYShift}px)`,
@@ -420,7 +313,7 @@ export class NoteList extends React.PureComponent<Props, State> {
     );
 
     // Stretch in add button
-    this.addNoteButtonRef.current.elem.animate(
+    addNoteButtonElem.animate(
       {
         transform: ['scale(0)', 'scale(0)', 'scale(0.6, 0.5)', 'scale(1)'],
       },
@@ -430,6 +323,118 @@ export class NoteList extends React.PureComponent<Props, State> {
         delay: STRETCH_DURATION + FADE_DURATION,
       }
     );
+  }
+
+  animateExistingNotes(snapshot: AnimationSnapshot) {
+    if (
+      !this.notesContainerRef.current ||
+      !this.deletingNotesContainerRef.current
+    ) {
+      return;
+    }
+
+    let lastAnimation: Animation | undefined;
+
+    // First animate-out any deleting notes
+    let delay = 0;
+    const deletePromises: Array<Promise<Animation>> = [];
+    for (const noteRef of snapshot.deletedNotes) {
+      const form = this.getDeletingForm(noteRef.formId);
+      if (form) {
+        const yOffset = form.getBoundingClientRect().top - noteRef.top;
+        lastAnimation = form.animate(
+          {
+            transform: [
+              `translateY(${-yOffset}px) scale(1)`,
+              `translateY(${-yOffset}px) scale(0)`,
+            ],
+          },
+          {
+            duration: DELETE_DURATION,
+            easing: DELETE_EASING,
+            delay,
+            fill: 'both',
+          }
+        );
+        deletePromises.push(getFinishedPromise(lastAnimation));
+        delay += ANIMATION_STAGGER;
+      }
+    }
+
+    if (snapshot.deletedNotes.length) {
+      // Allow a bit of overlap between stages
+      delay += DELETE_DURATION - ANIMATION_STAGGER * 2;
+    }
+
+    // Then shuffle any notes that need shuffling
+    for (const noteRef of snapshot.movedNotes) {
+      const form = this.getForm(noteRef.formId);
+      if (form) {
+        const yOffset = form.getBoundingClientRect().top - noteRef.top;
+        lastAnimation = form.animate(
+          { transform: [`translateY(${-yOffset}px)`, 'translateY(0px)'] },
+          { duration: MOVE_DURATION, easing: 'ease', delay, fill: 'backwards' }
+        );
+        delay += ANIMATION_STAGGER;
+      }
+    }
+
+    // Move add button too
+    let movedAddButton = false;
+    if (snapshot.addedNotes.length - snapshot.deletedNotes.length !== 0) {
+      const addNoteButton = this.addNoteButtonRef.current;
+      if (addNoteButton && addNoteButton.elem && snapshot.addNoteButtonBbox) {
+        const yOffset =
+          addNoteButton.elem.getBoundingClientRect().top -
+          snapshot.addNoteButtonBbox.top;
+        lastAnimation = addNoteButton.elem.animate(
+          { transform: [`translateY(${-yOffset}px)`, 'translateY(0px)'] },
+          { duration: MOVE_DURATION, easing: 'ease', delay, fill: 'backwards' }
+        );
+        movedAddButton = true;
+        delay += ANIMATION_STAGGER;
+      }
+    }
+
+    if (snapshot.movedNotes.length || movedAddButton) {
+      // Allow a bit of overlap between stages
+      delay += MOVE_DURATION - ANIMATION_STAGGER * 2;
+    }
+
+    // Add new notes
+    for (const formId of snapshot.addedNotes) {
+      const form = this.getForm(formId);
+      if (form) {
+        lastAnimation = form.animate(
+          { transform: ['scale(0)', 'scale(1)'] },
+          {
+            duration: STRETCH_DURATION,
+            easing: STRETCH_EASING,
+            delay,
+            fill: 'backwards',
+          }
+        );
+        delay += ANIMATION_STAGGER;
+      }
+    }
+
+    // Make sure to properly remove any deleting notes from state once the
+    // delete animations have finished.
+    if (lastAnimation && snapshot.deletedNotes.length) {
+      getFinishedPromise(lastAnimation).then(() => {
+        const deletingNotes = this.state.deletingNotes.slice();
+        const toDelete = new Set<number>(
+          snapshot.deletedNotes.map(ref => ref.formId)
+        );
+        for (let i = deletingNotes.length - 1; i >= 0; i--) {
+          if (toDelete.has(deletingNotes[i].formId)) {
+            deletingNotes.splice(i, 1);
+          }
+        }
+
+        this.setState({ deletingNotes });
+      });
+    }
   }
 
   handleAddNote() {
