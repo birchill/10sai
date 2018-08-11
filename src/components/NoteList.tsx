@@ -20,6 +20,7 @@ interface Props {
 interface State {
   previousNotes: Array<NoteState>;
   deletingNotes: Array<NoteState>;
+  doAnimation: boolean;
 }
 
 interface AnimationSnapshot {
@@ -70,7 +71,9 @@ export class NoteList extends React.PureComponent<Props, State> {
   }
 
   static getDerivedStateFromProps(props: Props, state: State) {
-    // XXX Skip this if we don't support animation
+    if (!state.doAnimation) {
+      return null;
+    }
 
     if (props.notes === state.previousNotes) {
       return null;
@@ -101,7 +104,16 @@ export class NoteList extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
-    this.state = { previousNotes: [], deletingNotes: [] };
+    // Only do animation if we have Web Animation support AND the user has not
+    // disabled animations.
+    const doAnimation =
+      'animate' in HTMLElement.prototype &&
+      !matchMedia('(prefers-reduced-motion)').matches;
+    this.state = {
+      previousNotes: [],
+      deletingNotes: [],
+      doAnimation,
+    };
 
     this.notesContainerRef = React.createRef<HTMLDivElement>();
     this.deletingNotesContainerRef = React.createRef<HTMLDivElement>();
@@ -134,6 +146,10 @@ export class NoteList extends React.PureComponent<Props, State> {
   }
 
   getSnapshotBeforeUpdate(previousProps: Props) {
+    if (!this.state.doAnimation) {
+      return null;
+    }
+
     // Common case
     if (previousProps.notes === this.props.notes) {
       return null;
