@@ -35,7 +35,10 @@ export function notes(
 ): NoteState[] {
   switch (action.type) {
     case 'ADD_NOTE': {
-      const newNote: Partial<Note> = {};
+      const newNote: Partial<Note> = {
+        content: '',
+        keywords: [],
+      };
       if (action.initialKeywords) {
         newNote.keywords = action.initialKeywords.slice();
       }
@@ -60,23 +63,29 @@ export function notes(
       }
       const noteState = state[noteStateIndex];
 
-      // Update the note
-      const updatedNote: Partial<Note> = {
-        ...noteState.note,
-        ...action.change,
-      };
-
       // Update the dirty fields
       const dirtyFields: Set<keyof Note> = noteState.dirtyFields
         ? new Set(noteState.dirtyFields.values())
         : new Set();
+      let madeChange = false;
       for (const [field, value] of Object.entries(action.change) as Array<
         [keyof Note, any]
       >) {
         if (field !== 'id' && !deepEqual(value, noteState.note[field])) {
           dirtyFields.add(field);
+          madeChange = true;
         }
       }
+
+      if (!madeChange) {
+        return state;
+      }
+
+      // Update the note
+      const updatedNote: Partial<Note> = {
+        ...noteState.note,
+        ...action.change,
+      };
 
       // Prepare the updated note state
       const updatedNoteState: NoteState = {

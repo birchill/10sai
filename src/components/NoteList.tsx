@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 
 import { Note } from '../model';
-import { NoteState } from '../notes/reducer';
+import { getFinishedPromise } from '../utils/animation';
+import { NoteState, SaveState } from '../notes/reducer';
 import { sortNotesByKeywordMatches } from '../notes/sorting';
 import AddNoteButton from './AddNoteButton';
 import EditNoteForm from './EditNoteForm';
@@ -16,7 +17,40 @@ interface Props {
   onDeleteNote: (noteFormId: number, noteId?: string) => void;
 }
 
-export class NoteList extends React.PureComponent<Props> {
+interface State {
+  previousNotes: Array<NoteState>;
+  deletingNotes: Array<NoteState>;
+}
+
+interface AnimationSnapshot {
+  deletedNotes: Array<{
+    formId: number;
+    top: number;
+  }>;
+  movedNotes: Array<{
+    formId: number;
+    top: number;
+  }>;
+  addedNotes: Array<number>;
+  addNoteButtonBbox?: ClientRect;
+}
+
+// Animation parameters
+
+const DELETE_EASING = 'ease-in';
+const DELETE_DURATION = 200;
+
+const STRETCH_EASING = 'cubic-bezier(.43,1.17,.88,1.1)';
+const STRETCH_DURATION = 250;
+
+const MOVE_EASING = 'ease';
+const MOVE_DURATION = 250;
+
+const FADE_DURATION = 150;
+
+const ANIMATION_STAGGER = 50;
+
+export class NoteList extends React.PureComponent<Props, State> {
   static get propTypes() {
     return {
       notes: PropTypes.arrayOf(
@@ -35,19 +69,44 @@ export class NoteList extends React.PureComponent<Props> {
     };
   }
 
-  addNoteButtonRef: React.RefObject<AddNoteButton>;
-  addNoteButtonBbox?: ClientRect;
+  static getDerivedStateFromProps(props: Props, state: State) {
+    // XXX Skip this if we don't support animation
+
+    if (props.notes === state.previousNotes) {
+      return null;
+    }
+
+    const nextNotes = new Set<number>(props.notes.map(note => note.formId));
+    const deletingNotes = state.deletingNotes.slice();
+
+    for (const note of state.previousNotes) {
+      if (!nextNotes.has(note.formId)) {
+        deletingNotes.push(note);
+      }
+    }
+
+    return { deletingNotes, previousNotes: props.notes };
+  }
+
+  notesContainerRef: React.RefObject<HTMLDivElement>;
+  deletingNotesContainerRef: React.RefObject<HTMLDivElement>;
   lastNoteRef: React.RefObject<EditNoteForm>;
+  addNoteButtonRef: React.RefObject<AddNoteButton>;
   sortNotes: (
     notes: Array<NoteState>,
     keywords: Array<string>
   ) => Array<NoteState>;
+  state: State;
 
   constructor(props: Props) {
     super(props);
 
-    this.addNoteButtonRef = React.createRef<AddNoteButton>();
+    this.state = { previousNotes: [], deletingNotes: [] };
+
+    this.notesContainerRef = React.createRef<HTMLDivElement>();
+    this.deletingNotesContainerRef = React.createRef<HTMLDivElement>();
     this.lastNoteRef = React.createRef<EditNoteForm>();
+    this.addNoteButtonRef = React.createRef<AddNoteButton>();
 
     this.handleAddNote = this.handleAddNote.bind(this);
     this.handleNoteChange = this.handleNoteChange.bind(this);
@@ -58,28 +117,230 @@ export class NoteList extends React.PureComponent<Props> {
     );
   }
 
-  componentDidUpdate(previousProps: Props) {
-    // If we just added a new note, animate it in.
-    const hasNewNote = (
-      prevNotesList: Array<NoteState>,
-      newNotesList: Array<NoteState>
-    ) =>
-      prevNotesList.length + 1 === newNotesList.length &&
-      prevNotesList.every((note, i) => note.note === newNotesList[i].note) &&
-      typeof newNotesList[newNotesList.length - 1].note.id === 'undefined';
+  getSnapshotBeforeUpdate(previousProps: Props) {
+    // Common case
+    if (previousProps.notes === this.props.notes) {
+      return null;
+    }
 
-    if (hasNewNote(previousProps.notes, this.props.notes)) {
-      this.animateNewNote();
+    if (!this.notesContainerRef.current) {
+      return null;
+    }
+
+    const notesContainer: HTMLDivElement = this.notesContainerRef.current;
+    const getTopOfForm = (formId: number): number | null => {
+      const form = notesContainer.querySelector(`[data-form-id="${formId}"]`);
+      return form ? form.getBoundingClientRect().top : null;
+    };
+
+    const snapshot: AnimationSnapshot = {
+      // Note that the deletedNotes here differs from deletingNotes in State.
+      // The ones in State represent _all_ the currently deleting notes where as
+      // deletedNotes represents only the ones that were deleted as part of this
+      // update.
+      deletedNotes: [],
+      addedNotes: [],
+      movedNotes: [],
+    };
+
+    const previousNotes = new Map<number, number>(
+      previousProps.notes.map((note, i) => [note.formId, i] as [number, number])
+    );
+
+    for (let i = 0; i < this.props.notes.length; i++) {
+      const note = this.props.notes[i];
+
+      if (!previousNotes.has(note.formId)) {
+        snapshot.addedNotes.push(note.formId);
+      } else {
+        const previousPosition = previousNotes.get(note.formId)!;
+        if (previousPosition !== i) {
+          const top = getTopOfForm(note.formId);
+          // If we can't find the form, don't add it to the forms to animate.
+          if (typeof top === 'number') {
+            snapshot.movedNotes.push({ formId: note.formId, top });
+          }
+        }
+        previousNotes.delete(note.formId);
+      }
+    }
+
+    // Any remaining notes must have now been deleted
+    for (const formId of previousNotes.keys()) {
+      const top = getTopOfForm(formId);
+      if (typeof top === 'number') {
+        snapshot.deletedNotes.push({ formId, top });
+      }
+    }
+
+    // Check we got a change
+    if (
+      !snapshot.addedNotes.length &&
+      !snapshot.movedNotes.length &&
+      !snapshot.deletedNotes.length
+    ) {
+      return null;
+    }
+
+    // Record the position of the Add Note button so we can animate it later.
+    const addNoteButton = this.addNoteButtonRef.current;
+    if (addNoteButton && addNoteButton.elem) {
+      snapshot.addNoteButtonBbox = addNoteButton.elem.getBoundingClientRect();
+    }
+
+    return snapshot;
+  }
+
+  componentDidUpdate(
+    previousProps: Props,
+    previousState: State,
+    snapshot: AnimationSnapshot | null
+  ) {
+    if (!snapshot) {
+      return;
+    }
+
+    // If we're adding a new note, then we use a different animation where we
+    // enlarge the addNote button and fade the button in its place.
+    if (
+      snapshot.addedNotes.length === 1 &&
+      !snapshot.movedNotes.length &&
+      !snapshot.deletedNotes.length &&
+      this.props.notes[this.props.notes.length - 1].saveState === SaveState.New
+    ) {
+      this.animateNewNote(snapshot);
 
       // Focus the new note and scroll it into view.
       if (this.lastNoteRef.current) {
         this.lastNoteRef.current.focus();
         this.lastNoteRef.current.scrollIntoView();
       }
+      return;
+    }
+
+    if (
+      !this.notesContainerRef.current ||
+      !this.deletingNotesContainerRef.current
+    ) {
+      return;
+    }
+
+    const notesContainer: HTMLDivElement = this.notesContainerRef.current;
+    const deletingNotesContainer: HTMLDivElement = this
+      .deletingNotesContainerRef.current;
+
+    // XXX This could be a lot lot neater
+    let lastAnimation: Animation | undefined;
+
+    // First animate-out any deleting notes
+    let delay = 0;
+    const deletePromises: Array<Promise<Animation>> = [];
+    for (const noteRef of snapshot.deletedNotes) {
+      const form: HTMLDivElement | null = deletingNotesContainer.querySelector(
+        `[data-form-id="${noteRef.formId}"]`
+      );
+      if (form) {
+        const yOffset = form.getBoundingClientRect().top - noteRef.top;
+        lastAnimation = form.animate(
+          {
+            transform: [
+              `translateY(${-yOffset}px) scale(1)`,
+              `translateY(${-yOffset}px) scale(0)`,
+            ],
+          },
+          {
+            duration: DELETE_DURATION,
+            easing: DELETE_EASING,
+            delay,
+            fill: 'both',
+          }
+        );
+        deletePromises.push(getFinishedPromise(lastAnimation));
+        delay += ANIMATION_STAGGER;
+      }
+    }
+
+    if (snapshot.deletedNotes.length) {
+      // Allow a bit of overlap between stages
+      delay += DELETE_DURATION - ANIMATION_STAGGER * 2;
+    }
+
+    // Then shuffle any notes that need shuffling
+    for (const noteRef of snapshot.movedNotes) {
+      const form: HTMLDivElement | null = notesContainer.querySelector(
+        `[data-form-id="${noteRef.formId}"]`
+      );
+      if (form) {
+        const yOffset = form.getBoundingClientRect().top - noteRef.top;
+        form.animate(
+          { transform: [`translateY(${-yOffset}px)`, 'translateY(0px)'] },
+          { duration: MOVE_DURATION, easing: 'ease', delay, fill: 'backwards' }
+        );
+        delay += ANIMATION_STAGGER;
+      }
+    }
+
+    // Move add button too
+    let movedAddButton = false;
+    if (snapshot.addedNotes.length - snapshot.deletedNotes.length !== 0) {
+      const addNoteButton = this.addNoteButtonRef.current;
+      if (addNoteButton && addNoteButton.elem && snapshot.addNoteButtonBbox) {
+        const yOffset =
+          addNoteButton.elem.getBoundingClientRect().top -
+          snapshot.addNoteButtonBbox.top;
+        addNoteButton.elem.animate(
+          { transform: [`translateY(${-yOffset}px)`, 'translateY(0px)'] },
+          { duration: MOVE_DURATION, easing: 'ease', delay, fill: 'backwards' }
+        );
+        movedAddButton = true;
+        delay += ANIMATION_STAGGER;
+      }
+    }
+
+    if (snapshot.movedNotes.length || movedAddButton) {
+      // Allow a bit of overlap between stages
+      delay += MOVE_DURATION - ANIMATION_STAGGER * 2;
+    }
+
+    // Add new notes
+    for (const formId of snapshot.addedNotes) {
+      const form: HTMLDivElement | null = notesContainer.querySelector(
+        `[data-form-id="${formId}"]`
+      );
+      if (form) {
+        form.animate(
+          { transform: ['scale(0)', 'scale(1)'] },
+          {
+            duration: STRETCH_DURATION,
+            easing: STRETCH_EASING,
+            delay,
+            fill: 'backwards',
+          }
+        );
+        delay += ANIMATION_STAGGER;
+      }
+    }
+
+    // Make sure to properly remove any deleting notes from state once the
+    // delete animations have finished.
+    if (lastAnimation && snapshot.deletedNotes.length) {
+      getFinishedPromise(lastAnimation).then(() => {
+        const deletingNotes = this.state.deletingNotes.slice();
+        const toDelete = new Set<number>(
+          snapshot.deletedNotes.map(ref => ref.formId)
+        );
+        for (let i = deletingNotes.length - 1; i >= 0; i--) {
+          if (toDelete.has(deletingNotes[i].formId)) {
+            deletingNotes.splice(i, 1);
+          }
+        }
+
+        this.setState({ deletingNotes });
+      });
     }
   }
 
-  animateNewNote() {
+  animateNewNote(snapshot: AnimationSnapshot) {
     // First, check we have a button to animate.
     if (!this.addNoteButtonRef.current || !this.addNoteButtonRef.current.elem) {
       return;
@@ -91,7 +352,7 @@ export class NoteList extends React.PureComponent<Props> {
     }
 
     // And check we have the necessary geometry information.
-    if (!this.addNoteButtonBbox) {
+    if (!snapshot.addNoteButtonBbox) {
       return;
     }
 
@@ -105,13 +366,10 @@ export class NoteList extends React.PureComponent<Props> {
     }
 
     // Timing
-    const stretchDuration: number = 250;
-    const stretchEasing: string = 'cubic-bezier(.43,1.17,.88,1.1)';
-    const fadeDuration: number = 150;
-    const fadeOffset = stretchDuration / (stretchDuration + fadeDuration);
+    const fadeOffset = STRETCH_DURATION / (STRETCH_DURATION + FADE_DURATION);
 
     // Get the button positions
-    const prevButtonPosition: ClientRect = this.addNoteButtonBbox;
+    const prevButtonPosition: ClientRect = snapshot.addNoteButtonBbox;
     const newButtonPosition: ClientRect = this.addNoteButtonRef.current.elem.getBoundingClientRect();
 
     // Get the position of the new note.
@@ -121,9 +379,9 @@ export class NoteList extends React.PureComponent<Props> {
     this.addNoteButtonRef.current.stretchTo({
       width: newNotePosition.width,
       height: newNotePosition.height,
-      duration: stretchDuration,
-      holdDuration: fadeDuration,
-      easing: stretchEasing,
+      duration: STRETCH_DURATION,
+      holdDuration: FADE_DURATION,
+      easing: STRETCH_EASING,
     });
 
     // Shift the button up from its new position so that it lines up with the
@@ -136,7 +394,7 @@ export class NoteList extends React.PureComponent<Props> {
         {
           transform: `translateY(${initialYShift}px)`,
           opacity: 1,
-          easing: stretchEasing,
+          easing: STRETCH_EASING,
         },
         {
           transform: `translateY(${finalYShift}px)`,
@@ -148,16 +406,16 @@ export class NoteList extends React.PureComponent<Props> {
           opacity: 0,
         },
       ],
-      { duration: stretchDuration + fadeDuration }
+      { duration: STRETCH_DURATION + FADE_DURATION }
     );
 
     // Fade in the actual note
     newNote.animate(
       { opacity: [0, 1] },
       {
-        delay: stretchDuration * 0.6,
+        delay: STRETCH_DURATION * 0.6,
         fill: 'backwards',
-        duration: fadeDuration,
+        duration: FADE_DURATION,
       }
     );
 
@@ -167,9 +425,9 @@ export class NoteList extends React.PureComponent<Props> {
         transform: ['scale(0)', 'scale(0)', 'scale(0.6, 0.5)', 'scale(1)'],
       },
       {
-        duration: stretchDuration,
-        easing: stretchEasing,
-        delay: stretchDuration + fadeDuration,
+        duration: STRETCH_DURATION,
+        easing: STRETCH_EASING,
+        delay: STRETCH_DURATION + FADE_DURATION,
       }
     );
   }
@@ -179,11 +437,6 @@ export class NoteList extends React.PureComponent<Props> {
     // Make the first keyword in the list the initial keyword.
     if (this.props.keywords.length) {
       initialKeywords.push(this.props.keywords[0]);
-    }
-
-    // Record the position of the Add Note button so we can animate it later.
-    if (this.addNoteButtonRef.current && this.addNoteButtonRef.current.elem) {
-      this.addNoteButtonBbox = this.addNoteButtonRef.current.elem.getBoundingClientRect();
     }
 
     this.props.onAddNote(initialKeywords);
@@ -199,14 +452,18 @@ export class NoteList extends React.PureComponent<Props> {
 
   render() {
     // Returns a copy of the array (i.e. props are not mutated).
+    //
+    // It's also really important note to mutate sortedNotes itself since
+    // this.sortNotes is memo-ized and will return the same object, namely
+    // |sortedNotes|, next time for the same input.
     const sortedNotes = this.sortNotes(this.props.notes, this.props.keywords);
+    const lastRealNoteIndex = this.props.notes.length - 1;
 
     return (
       <>
-        <div className="notes">
+        <div className="notes" ref={this.notesContainerRef}>
           {sortedNotes.map((note, i) => {
-            const ref =
-              i === this.props.notes.length - 1 ? this.lastNoteRef : undefined;
+            const ref = i === lastRealNoteIndex ? this.lastNoteRef : undefined;
             return (
               <EditNoteForm
                 key={note.formId}
@@ -228,6 +485,23 @@ export class NoteList extends React.PureComponent<Props> {
           ref={this.addNoteButtonRef}
           onClick={this.handleAddNote}
         />
+        <div className="notes" ref={this.deletingNotesContainerRef}>
+          {this.state.deletingNotes.map((note, i) => {
+            return (
+              <EditNoteForm
+                key={note.formId}
+                className="noteform"
+                formId={note.formId}
+                note={note.note}
+                saveState={note.saveState}
+                saveError={note.saveError ? note.saveError.message : undefined}
+                relatedKeywords={this.props.keywords}
+                onChange={this.handleNoteChange}
+                onDelete={this.props.onDeleteNote}
+              />
+            );
+          })}
+        </div>
       </>
     );
   }

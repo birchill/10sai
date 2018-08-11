@@ -21,7 +21,10 @@ describe('reducer:notes', () => {
   ): NoteState => {
     const result: NoteState = {
       formId,
-      note: {},
+      note: {
+        content: '',
+        keywords: [],
+      },
       saveState: SaveState.New,
       touched: true,
       originalKeywords: new Set<string>(),

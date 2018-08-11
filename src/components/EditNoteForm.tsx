@@ -230,7 +230,12 @@ export class EditNoteForm extends React.Component<Props, State> {
     }
 
     return (
-      <form className={className} autoComplete="off" ref={this.formRef}>
+      <form
+        className={className}
+        autoComplete="off"
+        ref={this.formRef}
+        data-form-id={this.props.formId}
+      >
         <NoteFrame>
           <div
             className="keywords -yellow"
