@@ -4,8 +4,11 @@
 
   // Textboxes have uneven vertical and horizonal padding so we make the
   // vertical padding equal here.
-  padding-top: .6em;
-  // For the bottom, however, we incorporate it in the suggestions part.
+  padding-top: .4em;
+
+  // We drop the 0.4em from the padding-bottom and put it on the chip and text's
+  // margin-bottom instead so that there is a gap between chips when the
+  // control wraps
   padding-bottom: 0;
 
   // Text boxes have a fixed height but we want to stretch to fit in the
@@ -32,18 +35,18 @@
   // we expect this to wrap.
   box-sizing: border-box;
 
-  // We drop 0.4em from the padding-bottom and put it on the chip and text's
-  // margin-bottom instead so that there is a gap between chips when the
-  // control wraps
-  padding-bottom: 0.6em - 0.4em;
-
   > .chip {
     display: inline-flex;
     align-items: center;
 
     box-sizing: border-box;
-    // 0.4em is the vertical padding of the text box
-    height: calc(3rem - (0.4em * 2));
+    // The whole control should be 3rem high, but we drop 0.4em spacing from
+    // either side (.4em padding-top on the token-list, and .4em margin-bottom
+    // on the chip).
+    //
+    // We use a min-height, however, so that the chip can wrap if it has really
+    // long text.
+    min-height: calc(3rem - (0.4em * 2));
     margin: 0 .5em .4em 0;
     padding: .2em 0 .2em .4em;
 
@@ -68,7 +71,8 @@
       color: var(--chip-fgcolor);
       background: none;
       border: 0;
-      padding: .3em .4em;
+      // Give the button some padding so it's easier to click
+      padding: 0 .4em;
 
       // Drop filter so we don't get double highlight
       &:hover {
@@ -99,17 +103,17 @@
 
   > .textentry, > .textentry:focus {
     flex: 1;
-    min-width: 150px;
+    min-width: 80px;
     outline: none;
 
     border: none;
     box-shadow: none;
-    // 0.4em is the vertical padding of the text box
+    // See description of the calculation of .chip's height
     height: calc(3rem - (0.4em * 2));
     padding: 0;
 
     // See above
-    margin-bottom: .4rem;
+    margin-bottom: .4em;
 
     color: var(--text-color);
   }
@@ -185,7 +189,7 @@
     > .loading-indicator {
       display: inline-block;
       width: 50px;
-      // 0.4em is the vertical padding of the text box
+      // See above
       min-height: calc(3rem - (0.4em * 2));
       box-sizing: border-box;
       vertical-align: top;

@@ -26,9 +26,11 @@
   > .tags, > .keywords {
     display: flex;
     border-top: 1px dotted transparent;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
 
     > .icon {
-      margin-top: 1.2rem;
+      margin-top: 1rem;
       margin-left: .9rem;
     }
 
