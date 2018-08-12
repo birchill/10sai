@@ -1,6 +1,10 @@
+import { Action } from 'redux';
+
 import ReviewPhase from './ReviewPhase';
 import { AvailableCards, Card } from '../model';
-import { ReviewAction } from './actions';
+import * as actions from './actions';
+import { notes as notesReducer, NoteState } from '../notes/reducer';
+import { isNoteAction, NoteAction } from '../notes/actions';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -64,6 +68,9 @@ export interface ReviewState {
 
   // True if we are currently refreshing the set of available cards.
   loadingAvailableCards: boolean;
+
+  // Notes relevant to the current card
+  notes: Array<NoteState>;
 }
 
 const initialState: ReviewState = {
@@ -82,6 +89,7 @@ const initialState: ReviewState = {
   availableCards: undefined,
   savingProgress: false,
   loadingAvailableCards: false,
+  notes: [],
 };
 
 // When we update the current / next cards there are two modes:
@@ -97,16 +105,18 @@ const Update = {
 
 export function review(
   state: ReviewState = initialState,
-  action: ReviewAction
+  action: Action
 ): ReviewState {
-  switch (action.type) {
+  const reviewAction = action as actions.ReviewAction;
+
+  switch (reviewAction.type) {
     case 'NEW_REVIEW': {
       return {
         ...initialState,
         phase: ReviewPhase.LOADING,
         reviewTime: state.reviewTime,
-        maxCards: action.maxCards,
-        maxNewCards: action.maxNewCards,
+        maxCards: reviewAction.maxCards,
+        maxNewCards: reviewAction.maxNewCards,
         availableCards: undefined,
       };
     }
@@ -115,15 +125,15 @@ export function review(
       return {
         ...state,
         phase: ReviewPhase.LOADING,
-        maxCards: action.maxCards,
-        maxNewCards: action.maxNewCards,
+        maxCards: reviewAction.maxCards,
+        maxNewCards: reviewAction.maxNewCards,
       };
     }
 
     case 'SET_REVIEW_TIME': {
       return {
         ...state,
-        reviewTime: action.reviewTime,
+        reviewTime: reviewAction.reviewTime,
       };
     }
 
@@ -134,7 +144,7 @@ export function review(
       // there should no longer be a next card.
       let updatedState = {
         ...state,
-        heap: action.cards,
+        heap: reviewAction.cards,
       };
 
       // Fill in extra fields (only set when doing a sync)
@@ -143,15 +153,15 @@ export function review(
         'failedCardsLevel1',
         'failedCardsLevel2',
       ] as ('history' | 'failedCardsLevel1' | 'failedCardsLevel2')[]) {
-        if (typeof action[field] !== 'undefined') {
-          updatedState[field] = action[field]!;
+        if (typeof reviewAction[field] !== 'undefined') {
+          updatedState[field] = reviewAction[field]!;
         }
       }
 
       // Update the next card
       updatedState = updateNextCard(
         updatedState,
-        action.nextCardSeed,
+        reviewAction.nextCardSeed,
         Update.ReplaceNextCard
       );
 
@@ -162,7 +172,7 @@ export function review(
       if (updatedState.nextCard && !updatedState.currentCard) {
         updatedState = updateNextCard(
           updatedState,
-          action.currentCardSeed,
+          reviewAction.currentCardSeed,
           Update.UpdateCurrentCard
         );
       }
@@ -179,7 +189,10 @@ export function review(
 
       // If we are complete but this is the initial load, then it makes more
       // sense to show the user the idle state.
-      if (updatedState.phase === ReviewPhase.COMPLETE && action.initialReview) {
+      if (
+        updatedState.phase === ReviewPhase.COMPLETE &&
+        reviewAction.initialReview
+      ) {
         updatedState.phase = ReviewPhase.IDLE;
       }
 
@@ -267,7 +280,7 @@ export function review(
 
       return updateNextCard(
         intermediateState,
-        action.nextCardSeed,
+        reviewAction.nextCardSeed,
         Update.UpdateCurrentCard
       );
     }
@@ -342,7 +355,7 @@ export function review(
 
       return updateNextCard(
         intermediateState,
-        action.nextCardSeed,
+        reviewAction.nextCardSeed,
         Update.UpdateCurrentCard
       );
     }
@@ -379,7 +392,7 @@ export function review(
 
       return {
         ...state,
-        availableCards: action.availableCards,
+        availableCards: reviewAction.availableCards,
         loadingAvailableCards: false,
       };
     }
@@ -406,9 +419,9 @@ export function review(
         if (isArrayOfCards(value)) {
           let found = false;
           const updatedArray = value.map(card => {
-            if (card._id === action.card._id) {
+            if (card._id === reviewAction.card._id) {
               found = true;
-              return action.card;
+              return reviewAction.card;
             }
             return card;
           });
@@ -416,8 +429,8 @@ export function review(
           if (found) {
             update[field] = updatedArray;
           }
-        } else if (isCard(value) && value._id === action.card._id) {
-          update[field] = action.card;
+        } else if (isCard(value) && value._id === reviewAction.card._id) {
+          update[field] = reviewAction.card;
         }
       }
 
@@ -448,7 +461,9 @@ export function review(
           continue;
         }
 
-        const index = state[field].findIndex(card => card._id === action.id);
+        const index = state[field].findIndex(
+          card => card._id === reviewAction.id
+        );
         if (index === -1) {
           continue;
         }
@@ -459,18 +474,18 @@ export function review(
         update[field]!.splice(index, 1);
       }
 
-      if (state.nextCard && state.nextCard._id === action.id) {
+      if (state.nextCard && state.nextCard._id === reviewAction.id) {
         return updateNextCard(
           { ...state, ...update },
-          action.nextCardSeed,
+          reviewAction.nextCardSeed,
           Update.ReplaceNextCard
         );
       }
 
-      if (state.currentCard && state.currentCard._id === action.id) {
+      if (state.currentCard && state.currentCard._id === reviewAction.id) {
         return updateNextCard(
           { ...state, ...update, currentCard: null },
-          action.nextCardSeed,
+          reviewAction.nextCardSeed,
           Update.UpdateCurrentCard
         );
       }
@@ -489,10 +504,10 @@ export function review(
       return {
         ...state,
         phase: ReviewPhase.LOADING,
-        maxCards: action.review.maxCards,
-        maxNewCards: action.review.maxNewCards,
-        completed: action.review.completed,
-        newCardsInPlay: action.review.newCardsCompleted,
+        maxCards: reviewAction.review.maxCards,
+        maxNewCards: reviewAction.review.maxNewCards,
+        completed: reviewAction.review.completed,
+        newCardsInPlay: reviewAction.review.newCardsCompleted,
         // We set the current card to null simply to reflect the fact that
         // newCardsInPlay will not count the current card if it was a new card.
         currentCard: null,
@@ -523,10 +538,16 @@ export function review(
         nextCard: null,
       };
     }
-
-    default:
-      return state;
   }
+
+  if (isNoteAction(action) && action.context.screen === 'review') {
+    return {
+      ...state,
+      notes: notesReducer(state.notes, action),
+    };
+  }
+
+  return state;
 }
 
 // TODO: I'm sure I can factor this out better---perhaps into two methods? One

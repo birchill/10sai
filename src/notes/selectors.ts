@@ -1,19 +1,24 @@
 import { EditState } from '../edit/reducer';
+import { ReviewState } from '../review/reducer';
 import { NoteState } from '../notes/reducer';
 import { NoteContext, NoteListContext } from './actions';
 
 // XXX Move this to root reducer once it gets converted to TS.
 interface State {
   edit: EditState;
+  review: ReviewState;
 }
 
 export const getNoteListSelector = (context: NoteListContext) => {
   return (state: State): Array<NoteState> => {
-    console.assert(
-      context.screen === 'edit-card',
-      "We don't support notes in the review screen yet"
-    );
-    return state.edit.forms.active.notes;
+    if (context.screen === 'edit-card') {
+      return state.edit.forms.active.notes;
+    }
+    if (context.screen === 'review') {
+      return state.review.notes;
+    }
+    console.error(`Unrecognized note list context ${JSON.stringify(context)}`);
+    return [];
   };
 };
 

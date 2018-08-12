@@ -10,12 +10,14 @@ import { DataStore } from '../store/DataStore';
 import { Note } from '../model';
 import { NoteContext, NoteListContext } from './actions';
 import { EditState } from '../edit/reducer';
+import { ReviewState } from '../review/reducer';
 
 const SAVE_DELAY = 2000;
 
 // XXX This doesn't belong here
 interface State {
   edit: EditState;
+  review: ReviewState;
 }
 
 export function* save(

@@ -4,10 +4,10 @@
 import { review as subject, ReviewState } from './reducer';
 import ReviewPhase from './ReviewPhase';
 import * as actions from './actions';
+import * as noteActions from '../notes/actions';
 import { getReviewSummary } from './selectors';
 import { generateCards } from '../utils/testing';
 import { Card, Review } from '../model';
-import { stripFields } from '../utils/type-helpers';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -656,5 +656,16 @@ describe('reducer:review', () => {
       completed: 1,
       newCardsInPlay: 1,
     });
+  });
+
+  it('should update notes when the context matches', () => {
+    const [initialState] = newReview(1, 3);
+
+    const updatedState = subject(
+      initialState,
+      noteActions.addNote({ screen: 'review' })
+    );
+
+    expect(updatedState.notes).toHaveLength(1);
   });
 });

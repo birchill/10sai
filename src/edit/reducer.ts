@@ -1,12 +1,12 @@
 import deepEqual from 'deep-equal';
+import { Action } from 'redux';
+
 import { FormState } from './FormState';
 import { Card } from '../model';
-import { NoteState } from '../notes/reducer';
+import { notes as notesReducer, NoteState } from '../notes/reducer';
 import * as actions from './actions';
 import { StoreError } from '../store/DataStore';
 import { isNoteAction, NoteAction, EditNoteContext } from '../notes/actions';
-import { notes as notesReducer } from '../notes/reducer';
-import { Action } from 'redux';
 
 export interface EditFormState {
   formId: number;
