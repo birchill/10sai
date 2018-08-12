@@ -12,6 +12,7 @@ import EditNoteForm from './EditNoteForm';
 interface Props {
   notes: Array<NoteState>;
   keywords: Array<string>;
+  priority: 'reading' | 'writing';
   onAddNote: (initialKeywords: Array<string>) => void;
   onEditNote: (noteFormId: number, change: Partial<Note>) => void;
   onDeleteNote: (noteFormId: number, noteId?: string) => void;
@@ -484,6 +485,11 @@ export class NoteList extends React.PureComponent<Props, State> {
     const sortedNotes = this.sortNotes(this.props.notes, this.props.keywords);
     const lastRealNoteIndex = this.props.notes.length - 1;
 
+    let noteFormClassName = 'noteform';
+    if (this.props.priority === 'reading') {
+      noteFormClassName += ' -hideeditcontrols';
+    }
+
     return (
       <>
         <div className="notes" ref={this.notesContainerRef}>
@@ -492,7 +498,7 @@ export class NoteList extends React.PureComponent<Props, State> {
             return (
               <EditNoteForm
                 key={note.formId}
-                className="noteform"
+                className={noteFormClassName}
                 formId={note.formId}
                 note={note.note}
                 saveState={note.saveState}
@@ -511,21 +517,19 @@ export class NoteList extends React.PureComponent<Props, State> {
           onClick={this.handleAddNote}
         />
         <div className="notes" ref={this.deletingNotesContainerRef}>
-          {this.state.deletingNotes.map((note, i) => {
-            return (
-              <EditNoteForm
-                key={note.formId}
-                className="noteform"
-                formId={note.formId}
-                note={note.note}
-                saveState={note.saveState}
-                saveError={note.saveError ? note.saveError.message : undefined}
-                relatedKeywords={this.props.keywords}
-                onChange={this.handleNoteChange}
-                onDelete={this.props.onDeleteNote}
-              />
-            );
-          })}
+          {this.state.deletingNotes.map((note, i) => (
+            <EditNoteForm
+              key={note.formId}
+              className={noteFormClassName}
+              formId={note.formId}
+              note={note.note}
+              saveState={note.saveState}
+              saveError={note.saveError ? note.saveError.message : undefined}
+              relatedKeywords={this.props.keywords}
+              onChange={this.handleNoteChange}
+              onDelete={this.props.onDeleteNote}
+            />
+          ))}
         </div>
       </>
     );

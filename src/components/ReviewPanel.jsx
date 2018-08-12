@@ -113,6 +113,7 @@ function ReviewPanel(props) {
           }}
           notes={props.notes}
           keywords={props.currentCard.keywords}
+          priority="reading"
         />
       </div>
       {answerButtons}

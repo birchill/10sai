@@ -59,6 +59,7 @@ export class NoteListWatcherWrapper extends React.PureComponent<WatcherProps> {
 interface InnerProps {
   notes: Array<NoteState>;
   keywords: Array<string>;
+  priority: 'reading' | 'writing';
   onAddNote: (initialKeywords: Array<string>) => void;
   onEditNote: (noteFormId: number, change: Partial<Note>) => void;
   onDeleteNote: (noteFormId: number, noteId?: string) => void;
@@ -79,6 +80,7 @@ const DynamicNoteListInner = (props: InnerProps) => (
     <NoteList
       notes={props.notes}
       keywords={props.keywords}
+      priority={props.priority}
       onAddNote={props.onAddNote}
       onEditNote={props.onEditNote}
       onDeleteNote={props.onDeleteNote}
@@ -90,6 +92,7 @@ interface Props {
   context: NoteListContext;
   notes: Array<NoteState>;
   keywords: Array<string>;
+  priority: 'reading' | 'writing';
 }
 
 // XXX Use the actual state once we have it

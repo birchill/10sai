@@ -128,6 +128,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
               }
               notes={this.props.forms.active.notes}
               keywords={keywords}
+              priority="writing"
             />
           </>
         ) : (
