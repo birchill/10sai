@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import DynamicNoteList from './DynamicNoteList';
 import ReviewCard from './ReviewCard.jsx';
 
 function ReviewPanel(props) {
@@ -63,7 +64,8 @@ function ReviewPanel(props) {
       <button
         className="fail"
         aria-label="Incorrect"
-        onClick={props.onFailCard}>
+        onClick={props.onFailCard}
+      >
         <span className="buttonface">
           <svg className="icon" viewBox="0 0 100 100">
             <circle cx="15" cy="10" r="10" fill="white" />
@@ -104,6 +106,14 @@ function ReviewPanel(props) {
           {currentCard}
           {nextCard}
         </div>
+        <hr className="note-divider divider" />
+        <DynamicNoteList
+          context={{
+            screen: 'review',
+          }}
+          notes={props.notes}
+          keywords={props.currentCard.keywords}
+        />
       </div>
       {answerButtons}
     </div>
@@ -120,17 +130,29 @@ ReviewPanel.propTypes = {
     _id: PropTypes.string.isRequired,
     question: PropTypes.string.isRequired,
     answer: PropTypes.string,
+    keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
   }),
   currentCard: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     question: PropTypes.string.isRequired,
     answer: PropTypes.string,
+    keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
   }).isRequired,
   nextCard: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     question: PropTypes.string.isRequired,
     answer: PropTypes.string,
+    keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
   }),
+  notes: PropTypes.arrayOf(
+    PropTypes.shape({
+      formId: PropTypes.number,
+      note: PropTypes.object.isRequired,
+      dirtyFields: PropTypes.instanceOf(Set),
+      saveState: PropTypes.string.isRequired,
+      saveError: PropTypes.object,
+    })
+  ).isRequired,
 };
 
 export default ReviewPanel;

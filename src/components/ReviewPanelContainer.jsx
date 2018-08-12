@@ -14,6 +14,7 @@ const mapStateToProps = state => {
     previousCard,
     currentCard: state.review.currentCard,
     nextCard: state.review.nextCard,
+    notes: state.review.notes,
   };
 };
 
@@ -29,8 +30,9 @@ const mapDispatchToProps = dispatch => ({
   },
 });
 
-const ReviewPanelContainer = connect(mapStateToProps, mapDispatchToProps)(
-  ReviewPanel
-);
+const ReviewPanelContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ReviewPanel);
 
 export default ReviewPanelContainer;
