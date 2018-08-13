@@ -95,22 +95,33 @@
   }
 
   &.-hideeditcontrols {
-    .tokens > .textentry, .tokens > .suggestions, .body > .controls {
-      transition: opacity 0.2s;
-      opacity: 0;
+    .keywords {
+      height: 0;
+      overflow: hidden;
     }
 
     .body {
       border-top-color: transparent;
     }
 
-    &:hover, &:focus-within {
-      .tokens > .textentry, .tokens > .suggestions, .body > .controls {
-        opacity: 1;
+    .controls {
+      height: 0;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+
+    &:focus-within {
+      .keywords {
+        height: auto;
       }
 
       .body {
         border-top-color: $keyword-yellow-dark;
+      }
+
+      .controls {
+        height: auto;
+        margin-top: 0;
       }
     }
   }
