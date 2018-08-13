@@ -27,6 +27,14 @@
     }
   }
 
+  .heading {
+    display: none;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem 0.2rem;
+  }
+
   .body {
     border-top: 1px dotted $keyword-yellow-dark;
   }
@@ -95,9 +103,14 @@
   }
 
   &.-hideeditcontrols {
-    .keywords {
-      height: 0;
-      overflow: hidden;
+    .header {
+      .keywords {
+        display: none;
+      }
+
+      > .heading {
+        display: block;
+      }
     }
 
     .body {
@@ -108,11 +121,19 @@
       height: 0;
       overflow: hidden;
       margin-top: 1rem;
+      /* This one's for you Edge */
+      opacity: 0;
     }
 
     &:focus-within {
-      .keywords {
-        height: auto;
+      .header {
+        .keywords {
+          display: flex;
+        }
+
+        > .heading {
+          display: none;
+        }
       }
 
       .body {
@@ -122,6 +143,7 @@
       .controls {
         height: auto;
         margin-top: 0;
+        opacity: 1;
       }
     }
   }

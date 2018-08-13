@@ -237,34 +237,39 @@ export class EditNoteForm extends React.Component<Props, State> {
         data-form-id={this.props.formId}
       >
         <NoteFrame>
-          <div
-            className="keywords -yellow"
-            onClick={this.handleKeywordsClick}
-            title="Add words here to cross-reference with cards."
-          >
-            <span className="icon -key" />
-            <KeywordSuggestionProvider
-              text={this.state.keywordText}
-              defaultSuggestions={this.props.relatedKeywords}
+          <>
+            <div className="heading">
+              {(this.props.note.keywords || []).join(', ')}
+            </div>
+            <div
+              className="keywords -yellow"
+              onClick={this.handleKeywordsClick}
+              title="Add words here to cross-reference with cards."
             >
-              {(suggestions: string[], loading: boolean) => (
-                <TokenList
-                  className="tokens -yellow -seamless -inline"
-                  tokens={this.props.note.keywords || ['屯所']}
-                  placeholder="Keywords"
-                  linkedTokens={this.props.relatedKeywords}
-                  linkedTooltip="This keyword links the note to the card"
-                  onTokensChange={this.handleKeywordsChange}
-                  onTextChange={this.handleKeywordsTextChange}
-                  suggestions={suggestions}
-                  loadingSuggestions={loading}
-                  ref={e => {
-                    this.keywordsTokenList = e || undefined;
-                  }}
-                />
-              )}
-            </KeywordSuggestionProvider>
-          </div>
+              <span className="icon -key" />
+              <KeywordSuggestionProvider
+                text={this.state.keywordText}
+                defaultSuggestions={this.props.relatedKeywords}
+              >
+                {(suggestions: string[], loading: boolean) => (
+                  <TokenList
+                    className="tokens -yellow -seamless -inline"
+                    tokens={this.props.note.keywords}
+                    placeholder="Keywords"
+                    linkedTokens={this.props.relatedKeywords}
+                    linkedTooltip="This keyword links the note to the card"
+                    onTokensChange={this.handleKeywordsChange}
+                    onTextChange={this.handleKeywordsTextChange}
+                    suggestions={suggestions}
+                    loadingSuggestions={loading}
+                    ref={e => {
+                      this.keywordsTokenList = e || undefined;
+                    }}
+                  />
+                )}
+              </KeywordSuggestionProvider>
+            </div>
+          </>
           <div className="content" onClick={this.handleContentClick}>
             <Editor
               editorState={this.state.contentEditorState}
