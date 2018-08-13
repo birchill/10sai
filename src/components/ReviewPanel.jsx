@@ -106,15 +106,19 @@ function ReviewPanel(props) {
           {currentCard}
           {nextCard}
         </div>
-        <hr className="note-divider divider" />
-        <DynamicNoteList
-          context={{
-            screen: 'review',
-          }}
-          notes={props.notes}
-          keywords={props.currentCard.keywords}
-          priority="reading"
-        />
+        {props.showAnswer ? (
+          <>
+            <hr className="note-divider divider" />
+            <DynamicNoteList
+              context={{
+                screen: 'review',
+              }}
+              notes={props.notes}
+              keywords={props.currentCard.keywords}
+              priority="reading"
+            />
+          </>
+        ) : null}
       </div>
       {answerButtons}
     </div>
