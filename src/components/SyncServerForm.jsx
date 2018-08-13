@@ -128,10 +128,13 @@ export class SyncServerForm extends React.PureComponent {
       <form
         className={`${this.props.className || ''} server-settings`}
         name="sync-server-settings"
-        onSubmit={this.handleSubmit}>
+        method="post"
+        onSubmit={this.handleSubmit}
+      >
         <CancelableTextbox
-          name="server"
           type="text"
+          name="server"
+          autocomplete="url"
           placeholder="Server name"
           className="server"
           size="40"
@@ -143,6 +146,7 @@ export class SyncServerForm extends React.PureComponent {
           <input
             type="text"
             name="username"
+            autocomplete="username"
             placeholder="Username"
             className="username -icon -user"
             size="40"
@@ -153,6 +157,7 @@ export class SyncServerForm extends React.PureComponent {
           <input
             type="password"
             name="password"
+            autocomplete="current-password"
             placeholder="Password"
             className="password -icon -lock"
             size="40"
