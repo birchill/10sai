@@ -2,6 +2,7 @@ import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import * as reviewActions from './actions';
 import { getReviewSummary } from './selectors';
 import ReviewPhase from './ReviewPhase';
+import { beforeNotesScreenChange } from '../notes/sagas';
 import { DataStore } from '../store/DataStore';
 import { ReviewState } from './reducer';
 import { GetCardsOptions } from '../store/CardStore';
@@ -245,6 +246,10 @@ function* reviewSagas(dataStore: DataStore) {
     takeLatest(['LOAD_REVIEW'], loadReview, dataStore),
     takeLatest(['CANCEL_REVIEW'], cancelReview, dataStore),
   ];
+}
+
+export function* beforeReviewScreenChange() {
+  return yield* beforeNotesScreenChange({ screen: 'review' });
 }
 
 export default reviewSagas;

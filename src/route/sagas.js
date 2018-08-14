@@ -1,6 +1,7 @@
 import { takeEvery, call, put, race, select, take } from 'redux-saga/effects';
 import { routeFromURL, routesEqual } from './router';
 import { beforeEditScreenChange } from '../edit/sagas.ts';
+import { beforeReviewScreenChange } from '../review/sagas.ts';
 import * as routeActions from './actions';
 
 // Selectors
@@ -113,6 +114,11 @@ export function* beforeScreenChange() {
   const currentRoute = yield select(getCurrentRoute);
 
   if (currentRoute.screen === 'edit-card') {
+    // I don't recall what the following setup is about but I think the idea is
+    // that if while we're saving we trigger a navigate (e.g. to update the URL)
+    // then we should return false so we know _not_ to navigate... for some
+    // reason.
+
     // eslint-disable-next-line no-unused-vars
     const { beforeChangeResult, navigate } = yield race({
       beforeChangeResult: call(beforeEditScreenChange),
@@ -123,6 +129,8 @@ export function* beforeScreenChange() {
       return false;
     }
     return beforeChangeResult;
+  } else if (currentRoute.screen === 'review') {
+    return yield call(beforeReviewScreenChange);
   }
 
   return true;

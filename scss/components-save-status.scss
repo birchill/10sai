@@ -1,7 +1,6 @@
 .save-status {
-  // 1.4 is the line-height, but I have no idea what 18px is about.
-  $height: 1.4 * 18px;
-  height: $height;
+  // 1.4 is the line-height
+  height: 1.4em;
   overflow: hidden;
 
   > .label {
@@ -14,11 +13,11 @@
     opacity: 0;
 
     &.inprogress {
-      transform: translateY(-$height);
+      transform: translateY(-1.4em);
     }
     &.error {
       color: $warning-red;
-      transform: translateY(-2 * $height);
+      transform: translateY(-2.8em);
     }
 
     &::after {

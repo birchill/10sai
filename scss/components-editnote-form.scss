@@ -102,7 +102,7 @@
     padding: 0.5rem 1rem;
   }
 
-  &.-hideeditcontrols {
+  &.-hideeditcontrols:not(:focus-within) {
     .header {
       .keywords {
         display: none;
@@ -115,35 +115,17 @@
 
     .body {
       border-top-color: transparent;
-    }
 
-    .controls {
-      height: 0;
-      overflow: hidden;
-      margin-top: 1rem;
-      /* This one's for you Edge */
-      opacity: 0;
-    }
-
-    &:focus-within {
-      .header {
-        .keywords {
-          display: flex;
-        }
-
-        > .heading {
-          display: none;
-        }
+      > .content {
+        padding-bottom: 0;
       }
+      > .controls {
+        padding-top: 0;
 
-      .body {
-        border-top-color: $keyword-yellow-dark;
-      }
-
-      .controls {
-        height: auto;
-        margin-top: 0;
-        opacity: 1;
+        > .delete {
+          opacity: 0;
+          pointer-events: none;
+        }
       }
     }
   }
