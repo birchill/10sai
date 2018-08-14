@@ -191,7 +191,10 @@ export class EditNoteForm extends React.Component<Props, State> {
 
   scrollIntoView() {
     if (this.formRef.current) {
-      this.formRef.current.scrollIntoView({ behavior: 'smooth' });
+      this.formRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
     }
   }
 
