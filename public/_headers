@@ -1,5 +1,6 @@
 /*
-  Content-Security-Policy: frame-ancestors 'none'; default-src 'none'; img-src https:; script-src 'self'; style-src 'self'; connect-src https:;
+  Content-Security-Policy: frame-ancestors 'none'; default-src 'none'; img-src https:; script-src 'unsafe-inline' 'self'; style-src 'unsafe-inline' 'self'; connect-src https:;
+  Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   X-XSS-Protection: 1; mode=block
