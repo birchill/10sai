@@ -159,7 +159,7 @@ export function* watchEdits<
         // If the previous save failed, just ignore it. It will have
         // dispatched a suitable error action.
       }
-      autoSaveTasks.delete(taskKey);
+      saveTasks.delete(taskKey);
     }
 
     switch (action.type) {
@@ -176,10 +176,17 @@ export function* watchEdits<
         break;
 
       case params.saveActionType:
-        saveTasks.set(
-          taskKey,
-          yield fork(params.save, dataStore, saveContext, resource)
-        );
+        const saveTask = function*() {
+          const result: Partial<Resource> = yield call(
+            params.save,
+            dataStore,
+            saveContext,
+            resource
+          );
+          saveTasks.delete(taskKey);
+          return result;
+        };
+        saveTasks.set(taskKey, yield fork(saveTask));
         break;
 
       case params.deleteActionType:
