@@ -60,17 +60,18 @@
       color: $text-color;
     }
 
-    .public-DraftEditorPlaceholder-root {
-      color: $keyword-yellow-dark;
-      opacity: 0.7;
-    }
-
-    &:hover .public-DraftEditorPlaceholder-root {
-      opacity: 1;
-    }
-
-    .public-DraftEditorPlaceholder-hasFocus {
-      display: none;
+    // Style placeholder consistently
+    > [data-slate-editor] {
+      span[contenteditable=false] {
+        color: $keyword-yellow-dark;
+        opacity: 0.7 !important;
+      }
+      &:focus span[contenteditable=false] {
+        display: none !important;
+      }
+      &:hover span[contenteditable=false] {
+        opacity: 1 !important;
+      }
     }
   }
 
