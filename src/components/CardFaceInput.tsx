@@ -70,12 +70,9 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   }
 
   updateValue(value?: string) {
-    console.log('updateValue');
-    console.log(`value: ${value}`);
     // Setting editorState can reset the selection so we should avoid doing it
     // when the content hasn't changed (since it can interrupt typing).
     const currentValue = PlainText.serialize(this.state.editorState);
-    console.log(`currentValue: ${currentValue}`);
     if (currentValue === value) {
       return;
     }
