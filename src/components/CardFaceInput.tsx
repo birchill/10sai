@@ -1,10 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ContentState, Editor, EditorState } from 'draft-js';
-
-function getEditorContent(editorState: EditorState): string {
-  return editorState.getCurrentContent().getPlainText();
-}
+import { Change, Value } from 'slate';
+import { Editor, Plugin } from 'slate-react';
+import PlainText from 'slate-plain-serializer';
 
 interface Props {
   value?: string;
@@ -15,20 +13,21 @@ interface Props {
 }
 
 interface State {
-  editorState: EditorState;
+  editorState: Value;
   hasFocus: boolean;
 }
 
-export class CardFaceInput extends React.PureComponent<Props> {
+export class CardFaceInput extends React.PureComponent<Props, State> {
   state: State;
   editor?: Editor;
+  focusHandler: Plugin;
+  plugins: Array<Plugin>;
 
   static get propTypes() {
     return {
       value: PropTypes.string,
       className: PropTypes.string,
       placeholder: PropTypes.string,
-      // eslint-disable-next-line react/no-unused-prop-types
       onChange: PropTypes.func,
       onBlur: PropTypes.func,
     };
@@ -38,13 +37,24 @@ export class CardFaceInput extends React.PureComponent<Props> {
     super(props);
 
     this.state = {
-      editorState: EditorState.createEmpty(),
+      editorState: PlainText.deserialize(props.value || ''),
       hasFocus: false,
     };
     this.handleChange = this.handleChange.bind(this);
-    this.handleFocus = this.handleFocus.bind(this);
-    this.handleBlur = this.handleBlur.bind(this);
     this.handleContainerFocus = this.handleContainerFocus.bind(this);
+
+    this.focusHandler = {
+      onFocus: () => {
+        this.setState({ hasFocus: true });
+      },
+      onBlur: () => {
+        this.setState({ hasFocus: false });
+        if (this.props.onBlur) {
+          this.props.onBlur();
+        }
+      },
+    };
+    this.plugins = [this.focusHandler];
   }
 
   componentWillMount() {
@@ -60,49 +70,39 @@ export class CardFaceInput extends React.PureComponent<Props> {
   }
 
   updateValue(value?: string) {
+    console.log('updateValue');
+    console.log(`value: ${value}`);
     // Setting editorState can reset the selection so we should avoid doing it
     // when the content hasn't changed (since it can interrupt typing).
-    const currentValue = getEditorContent(this.state.editorState);
+    const currentValue = PlainText.serialize(this.state.editorState);
+    console.log(`currentValue: ${currentValue}`);
     if (currentValue === value) {
       return;
     }
 
-    const contentState = ContentState.createFromText(value || '');
-    // Ok, so insert-characters is not quite right, but it's good enough for now
-    // until we implement proper rich text editing.
-    const editorState = EditorState.push(
-      this.state.editorState,
-      contentState,
-      'insert-characters'
-    );
-    this.setState({ editorState });
+    const change = this.state.editorState
+      .change()
+      .selectAll()
+      .delete()
+      .insertText(value || '');
+
+    this.setState({ editorState: change.value });
   }
 
-  handleChange(editorState: EditorState) {
+  handleChange(change: Change) {
     // We defer calling |onChange| until the state is actually updated so that
     // if that triggers a call to updateValue we can successfully recognize it
     // as a redundant change and avoid re-setting the editor state.
     this.setState((prevState, props) => {
       if (props.onChange) {
-        const valueAsString = getEditorContent(editorState);
+        const valueAsString = PlainText.serialize(change.value);
         if (valueAsString !== this.props.value) {
           props.onChange(valueAsString);
         }
       }
 
-      return { editorState };
+      return { editorState: change.value };
     });
-  }
-
-  handleFocus() {
-    this.setState({ hasFocus: true });
-  }
-
-  handleBlur() {
-    this.setState({ hasFocus: false });
-    if (this.props.onBlur) {
-      this.props.onBlur();
-    }
   }
 
   handleContainerFocus() {
@@ -126,16 +126,12 @@ export class CardFaceInput extends React.PureComponent<Props> {
     }
 
     return (
-      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <div className={classes.join(' ')} onClick={this.handleContainerFocus}>
         <Editor
-          editorState={this.state.editorState}
+          value={this.state.editorState}
+          plugins={this.plugins}
           onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
           placeholder={this.props.placeholder}
-          textAlignment="center"
-          stripPastedStyles
           ref={editor => {
             this.editor = editor || undefined;
           }}
