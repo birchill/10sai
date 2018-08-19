@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Change, Value } from 'slate';
-import { Editor, Plugin } from 'slate-react';
+import { Editor, Plugin, RenderMarkProps } from 'slate-react';
 import PlainText from 'slate-plain-serializer';
 
 interface Props {
@@ -41,6 +41,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       hasFocus: false,
     };
     this.handleChange = this.handleChange.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleContainerFocus = this.handleContainerFocus.bind(this);
 
     this.focusHandler = {
@@ -102,6 +103,18 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     });
   }
 
+  handleKeyDown(event: Event, change: Change) {
+    if (!(event as KeyboardEvent).ctrlKey) {
+      return;
+    }
+
+    if ((event as KeyboardEvent).key === 'b') {
+      event.preventDefault();
+      change.addMark('bold');
+      return change;
+    }
+  }
+
   handleContainerFocus() {
     if (this.state.hasFocus) {
       return;
@@ -125,6 +138,8 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
           value={this.state.editorState}
           plugins={this.plugins}
           onChange={this.handleChange}
+          onKeyDown={this.handleKeyDown}
+          renderMark={renderMark}
           placeholder={this.props.placeholder}
           ref={editor => {
             this.editor = editor || undefined;
@@ -133,6 +148,17 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       </div>
     );
   }
+}
+
+function renderMark(props: RenderMarkProps) {
+  switch (props.mark.type) {
+    case 'bold':
+      return <BoldMark {...props} />;
+  }
+}
+
+function BoldMark(props: RenderMarkProps) {
+  return <strong>{props.children}</strong>;
 }
 
 export default CardFaceInput;
