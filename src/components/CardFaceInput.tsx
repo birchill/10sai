@@ -118,9 +118,6 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
   render() {
     const classes = [this.props.className, 'cardface-input'];
-    if (this.state.hasFocus) {
-      classes.push('hasFocus');
-    }
 
     return (
       <div className={classes.join(' ')} onClick={this.handleContainerFocus}>
