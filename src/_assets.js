@@ -4,6 +4,7 @@ import React from 'react';
 import 'main.scss'; // eslint-disable-line
 
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
+import CardFormatToolbar from './components/CardFormatToolbar';
 import CardPreview from './components/CardPreview.jsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
 import LoadingIndicator from './components/LoadingIndicator.tsx';
@@ -276,6 +277,14 @@ for (const container of cardBacks) {
         <TextRegion className="answer" text={container.dataset.answer} />
       </div>
     </div>,
+    container
+  );
+}
+
+const cardToolbars = document.querySelectorAll('.card-toolbar-container');
+for (const container of cardToolbars) {
+  ReactDOM.render(
+    <CardFormatToolbar className="toolbar" onClick={() => {}} />,
     container
   );
 }

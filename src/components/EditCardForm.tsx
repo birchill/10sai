@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import CardFaceInput from './CardFaceInput';
+import CardFormatToolbar from './CardFormatToolbar';
 import KeywordSuggestionProvider from './KeywordSuggestionProvider';
 import TagSuggestionProvider from './TagSuggestionProvider';
 import TokenList from './TokenList';
@@ -51,6 +52,7 @@ export class EditCardForm extends React.Component<Props, State> {
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
+    this.handleFormat = this.handleFormat.bind(this);
 
     // Token lists
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
@@ -68,6 +70,12 @@ export class EditCardForm extends React.Component<Props, State> {
   handleAnswerChange(value: string) {
     if (this.props.onChange) {
       this.props.onChange('answer', value);
+    }
+  }
+
+  handleFormat(command: string) {
+    if (command === 'bold') {
+      // XXX
     }
   }
 
@@ -140,6 +148,7 @@ export class EditCardForm extends React.Component<Props, State> {
           placeholder="Answer"
           onChange={this.handleAnswerChange}
         />
+        <CardFormatToolbar className="toolbar" onClick={this.handleFormat} />
         <div
           className="keywords -yellow"
           onClick={this.handleKeywordsClick}

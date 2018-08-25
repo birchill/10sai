@@ -110,8 +110,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
     if ((event as KeyboardEvent).key === 'b') {
       event.preventDefault();
-      change.addMark('bold');
-      return change;
+      return change.addMark('bold');
     }
   }
 

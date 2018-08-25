@@ -1,0 +1,34 @@
+$edit-icons-columns: 12;
+$edit-icons-rows: 2;
+$edit-icons-size: 16px;
+
+.cardformat-toolbar {
+  > .button {
+    font-size: 0;
+    border-color: transparent;
+    display: inline-block;
+
+    &::before {
+      content: "";
+      width: $edit-icons-size;
+      height: $edit-icons-size;
+      padding: .4rem;
+      display: inline-block;
+      background-image: url('img/edit-icons.svg');
+      background-origin: content-box;
+      background-clip: content-box;
+      background-position-y: -$edit-icons-size;
+      background-size: $edit-icons-size * $edit-icons-columns  $edit-icons-size * $edit-icons-rows;
+      background-repeat: no-repeat;
+    }
+    &.italic::before  {
+      background-position-x: -1 * $edit-icons-size;
+    }
+    &.underline::before  {
+      background-position-x: -2 * $edit-icons-size;
+    }
+    &.emphasis::before  {
+      background-position-x: -3 * $edit-icons-size;
+    }
+  }
+}
