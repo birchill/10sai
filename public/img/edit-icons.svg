@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  viewBox="0 0 192 32" width="100%" height="100%"
+  color="#323335">
+  <g id="icons" fill="currentColor">
+    <!-- Bold -->
+    <path d="M8 5.5C8 6.9 6.9 8 5.5 8h-5a.5.5 0 0 1 0-1c.3 0 .5-.2.5-.5v-5C1 1.2.8 1 .5 1a.5.5 0 0 1 0-1H5a2 2 0 0 1 1.6 3.2C7.4 3.6 8 4.5 8 5.5zM4 1h-.8s-.2.1-.2.3v1.4c0 .2.1.3.3.3H4a1 1 0 1 0 0-2zm.5 3H3.2s-.2.1-.2.3v2.5s.1.2.3.2h1.2a1.5 1.5 0 0 0 0-3z" transform="scale(2)"/>
+    <!-- Italic -->
+    <g transform="translate(16 0)">
+      <path d="M6.6 0h-3c-.2 0-.5.2-.6.5 0 .3 0 .5.4.5h.3a.5.5 0 0 1 .5.6l-1.5 5c0 .2-.3.4-.6.4h-.4c-.3 0-.6.2-.7.5 0 .3 0 .5.4.5h3c.2 0 .5-.2.6-.5 0-.3 0-.5-.4-.5h-.3a.5.5 0 0 1-.5-.6l1.4-4.9c.1-.3.4-.5.7-.5h.4c.3 0 .6-.2.7-.5C7 .2 7 0 6.6 0z" transform="scale(2)"/>
+    </g>
+    <!-- Underline -->
+    <g transform="translate(32 0)">
+      <path d="M6.5 1H6v2.5a2.5 2.5 0 0 1-5 0V1H.5a.5.5 0 0 1 0-1h2a.5.5 0 1 1 0 1v2.8a1.2 1.2 0 0 0 2.5 0V1a.5.5 0 1 1 0-1h1.5a.5.5 0 1 1 0 1zm-6 6h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1 0-1z" transform="translate(1) scale(2)"/>
+    </g>
+    <!-- Dot emphasis -->
+    <g transform="translate(48 0)">
+      <path d="M4 0h7a.5.5 0 0 1 0 2
+        h-3.5a.5 .5 0 0 0-.5 .5v2a.5 .5 0 0 0 .5 .5h1.5
+        a.5.5 0 0 1 0 2h-1.5a.5 .5 0 0 0-.5 .5v2
+        a.5 .5 0 0 0 .5 .5h3.5a.5.5 0 0 1 0 2h-7
+        a.5.5 0 0 1 0-2v-8a.5.5 0 0 1 0-2z"/>
+      <circle cx="8" cy="15" r="1"/>
+    </g>
+    <!-- Color -->
+    <g transform="translate(64 0)">
+      <path d="M7.5 7h-.13a.5.5 0 0 1-.46-.31L4.47.32 4.46.31 4.4.2 4.35.15 4.3.1C4.26.08 4.23.05 4.2.04h-.01L4.12.01 4 0l-.12.02-.06.01a.5.5 0 0 0-.29.29L1.1 6.69A.5.5 0 0 1 .62 7H.5a.5.5 0 1 0 0 1h2a.5.5 0 0 0 0-1h-.1a.25.25 0 0 1-.23-.34L2.42 6H5.1l.29.76c.04.11-.01.24-.11.3A.5.5 0 0 0 5 7.5c0 .27.22.5.5.5h2a.5.5 0 0 0 0-1zM2.8 5l.7-1.81a.28.28 0 0 1 .37-.17c.07.02.14.09.16.16L4.72 5H2.8z" transform="scale(2)"/>
+    </g>
+    <!-- Ruby -->
+    <g transform="translate(80 0)">
+      <!-- Following is one of many old icons. This one is a Japanese る glyph
+           with a Japanese ル annotation above it. I spent hours optimizing
+           the path for it before realizing using Japanese glyphs is probably
+           less helpful for learners of, say, Chinese so I re-did it with the R
+           icon. However, I couldn't quite bring myself to delete it yet.
+
+           Oh, and before that I spent hours hand-crafting an icon that uses 天
+           with the annotation テン (i.e. from 10sai) before realizing that 天
+           carries too much meaning unrelated to "ruby" so it was not helpful.
+           -->
+      <!--
+      <path transform="translate(0, 1.25) scale(1 0.92)"
+        d="M10 13.7c.8-.5 1.15-1.25 1.15-2.3 0-.75-.25-1.3-.7-1.75
+        a2.4 2.4 0 0 0-1.7-.65h-.15c-.3 0-.65 .05-1.05 .2
+        a7.3 7.3 0 0 0-2.1 1.15c-.25 .2-.85 .75-1.8 1.6l-1.35-1.5
+        c3.25-2.8 5.35-4.6 6.25-5.3H3.5V3.0h7.5l1 1.35
+        a314.8 314.8 0 0 0-3.85 3.25c.5-.15 .95-.25 1.25-.25
+        1.2 0 2.15 .35 2.85 1 .7 .7 1.05 1.65 1.05 2.9 0
+        1.45-.5 2.6-1.5 3.4-1 .8-2.3 1.2-3.9 1.2
+        a4.55 4.55 0 0 1-2.55-.6 2.1 2.1 0 0 1-.95-1.85
+        c0-.65 .27-1.2 .8-1.65a2.7 2.7 0 0 1 1.76-.65c1.6 0 2.6 .85 3 2.6z
+        m-1.85 .5c-.25-1.05-.65-1.55-1.25-1.55-.15 0-.3 .05-.45 .2
+        a.7 .7 0 0 0-.2 .55c0 .55 .45 .8 1.35 .8 .2 0 .4-0 .55-.05z"/>
+      <path d="
+        M7.75 .75c0 .4-.05 .75-.15 1a1.25 1.25 0 0 1-.5 .55l-.2-.35
+        c.15-.1 .3-.25 .35-.4s.15-.45 .15-.85V0h.35z
+        m1.4 .45c-.1 .25-.25 .5-.45 .65-.2 .2-.4 .3-.6 .4L8 2.1V0h.35v1.75
+        c.25-.15 .4-.4 .55-.75z"/>
+      -->
+      <path d="M2 6a1 1 0 0 1 0-2h6
+        c5 0 4.7 6 2.5 7l2 3h.5a1 1 0 0 1 0 2
+        h-3a1 1 0 0 1 0-2l-2-3h-2v3
+        a1 1 0 0 1 0 2h-4a1 1 0 0 1 0-2h1v-8z
+        m4 0v3h2c3 0 2.3-3 0-3z"/>
+      <circle cx="6" cy="1.5" r="1.25" stroke-width="0.5" fill="none"
+        stroke="currentColor" stroke-dasharray=".5 1" stroke-linecap="round"/>
+    </g>
+    <!-- Cloze -->
+    <g transform="translate(96 0)">
+      <path d="M1 0h2a1 1 0 0 1 0 2h-1
+        v12h1a1 1 0 0 1 0 2h-2a1 1 0 0 1-1-1
+        v-14a1 1 0 0 1 1-1z"/>
+      <circle cx="6" cy="15" r="1"/>
+      <circle cx="9" cy="15" r="1"/>
+      <path d="M12 0h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1
+        h-2a1 1 0 0 1 0-2h1v-12h-1a1 1 0 0 1 0-2z"/>
+    </g>
+    <!-- Paste -->
+    <g transform="translate(112 0)">
+      <path d="M0 2a1 1 0 0 1 2 0v10h4v-5a2 2 0 0 1 2-2
+        h3v-3a1 1 0 0 1 2 0v3h1
+        a2 2 0 0 1 2 2v7
+        a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2h-5a1 1 0 0 1-1-1z
+        m8 6v5a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1z
+        M9.5 8h3a.5 .5 0 0 1 0 1h-3a.5 .5 0 0 1 0-1z
+        m0 2h3a.5 .5 0 0 1 0 1h-3a.5 .5 0 0 1 0-1z
+        m0 2h3a.5 .5 0 0 1 0 1h-3a.5 .5 0 0 1 0-1z
+        M4 3a1 1 0 0 1 0-2h1a1 1 0 0 1 1-1h1
+        a1 1 0 0 1 1 1h1a1 1 0 0 1 0 2z"/>
+    </g>
+    <!-- Image -->
+    <g transform="translate(128 0)">
+      <path d="M14 16h-12a2 2 0 0 1-2-2v-12a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2
+        v12a2 2 0 0 1-2 2z
+        m0-13a1 1 0 0 0-1-1h-10a1 1 0 0 0-1 1v10
+        a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1z
+        m-10 2a1 1 0 0 1 2 0a1 1 0 0 1-2 0z
+        m0 5l5-5l3 3v4h-8z"/>
+    </g>
+    <!-- Camera -->
+    <g transform="translate(144 0)">
+      <path d="M14 15h-12a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2
+        h1a1 1 0 0 0 1-1a1 1 0 0 1 1-1
+        h6a1 1 0 0 1 1 1a1 1 0 0 0 1 1
+        h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2z
+        M8 5a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
+    </g>
+    <!-- Record sound -->
+    <g transform="translate(160 0)">
+      <path d="M8 14h1a1 1 0 0 1 0 2h-4a1 1 0 0 1 0-2
+        H6c-3.4-.6-6-3.4-6-7a1 1 0 1 1 2 0 5 5 0 1 0 10 0 1 1 0 0 1 2 0
+        c0 3.6-2.6 6.4-6 6.8z
+        m-1-4C5.4 10 4 8.6 4 7v-4a3 3 0 1 1 6 0v4C10 8.6 8.6 10 7 10z"/>
+    </g>
+    <!-- Down arrow -->
+    <g transform="translate(176 0)">
+      <path d="M2 3a2 2 0 0 0 -2 2c0 2 6 8 8 8c2 0 8-6 8-8
+        a2 2 0 0 0-2-2z"/>
+    </g>
+  </g>
+  <use y="16" xlink:href="#icons" color="#aaabad"/>
+</svg>
