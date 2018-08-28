@@ -22,6 +22,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   editor?: Editor;
   focusHandler: Plugin;
   plugins: Array<Plugin>;
+  containerRef: React.RefObject<HTMLDivElement>;
 
   static get propTypes() {
     return {
@@ -35,6 +36,8 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
   constructor(props: Props) {
     super(props);
+
+    this.containerRef = React.createRef<HTMLDivElement>();
 
     this.state = {
       editorState: PlainText.deserialize(props.value || ''),
@@ -126,13 +129,22 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     if (this.editor) {
       this.editor.focus();
     }
+    this.setState({ hasFocus: true });
+  }
+
+  get element(): HTMLElement | null {
+    return this.containerRef.current;
   }
 
   render() {
     const classes = [this.props.className, 'cardface-input'];
 
     return (
-      <div className={classes.join(' ')} onClick={this.handleContainerFocus}>
+      <div
+        className={classes.join(' ')}
+        onClick={this.handleContainerFocus}
+        ref={this.containerRef}
+      >
         <Editor
           value={this.state.editorState}
           plugins={this.plugins}

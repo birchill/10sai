@@ -7,6 +7,8 @@ interface Props {
 }
 
 export class CardFormatToolbar extends React.PureComponent<Props> {
+  containerRef: React.RefObject<HTMLDivElement>;
+
   static get propTypes() {
     return {
       className: PropTypes.string,
@@ -16,6 +18,8 @@ export class CardFormatToolbar extends React.PureComponent<Props> {
 
   constructor(props: Props) {
     super(props);
+
+    this.containerRef = React.createRef<HTMLDivElement>();
 
     this.handleClick = this.handleClick.bind(this);
   }
@@ -27,6 +31,10 @@ export class CardFormatToolbar extends React.PureComponent<Props> {
     }
   }
 
+  get element(): HTMLElement | null {
+    return this.containerRef.current;
+  }
+
   render() {
     let className = 'cardformat-toolbar';
     if (this.props.className) {
@@ -34,12 +42,13 @@ export class CardFormatToolbar extends React.PureComponent<Props> {
     }
 
     return (
-      <div className={className}>
+      <div className={className} ref={this.containerRef}>
         <button
           className="bold button -icon"
           onClick={this.handleClick}
           title="Bold (Ctrl+B)"
           data-action="bold"
+          type="button"
         >
           Bold
         </button>
@@ -48,6 +57,7 @@ export class CardFormatToolbar extends React.PureComponent<Props> {
           onClick={this.handleClick}
           title="Italic (Ctrl+I)"
           data-action="italic"
+          type="button"
         >
           Italic
         </button>
@@ -56,6 +66,7 @@ export class CardFormatToolbar extends React.PureComponent<Props> {
           onClick={this.handleClick}
           title="Underline (Ctrl+U)"
           data-action="underline"
+          type="button"
         >
           Underline
         </button>
@@ -64,6 +75,7 @@ export class CardFormatToolbar extends React.PureComponent<Props> {
           onClick={this.handleClick}
           title="Dot emphasis (Ctrl+.)"
           data-action="emphasis"
+          type="button"
         >
           Emphasis
         </button>

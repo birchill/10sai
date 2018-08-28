@@ -118,5 +118,6 @@
         a2 2 0 0 0-2-2z"/>
     </g>
   </g>
+  <!-- Standard grey -->
   <use y="16" xlink:href="#icons" color="#aaabad"/>
 </svg>

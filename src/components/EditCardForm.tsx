@@ -19,6 +19,7 @@ interface Props {
 interface State {
   keywordsText: string;
   tagsText: string;
+  textAreaFocussed: boolean;
 }
 
 export class EditCardForm extends React.Component<Props, State> {
@@ -33,9 +34,12 @@ export class EditCardForm extends React.Component<Props, State> {
   state: State = {
     keywordsText: '',
     tagsText: '',
+    textAreaFocussed: false,
   };
 
   questionTextBoxRef: React.RefObject<CardFaceInput>;
+  answerTextBoxRef: React.RefObject<CardFaceInput>;
+  formatToolbarRef: React.RefObject<CardFormatToolbar>;
   keywordsTokenListRef: React.RefObject<TokenList>;
   tagsTokenListRef: React.RefObject<TokenList>;
 
@@ -47,12 +51,17 @@ export class EditCardForm extends React.Component<Props, State> {
     super(props);
 
     this.questionTextBoxRef = React.createRef<CardFaceInput>();
+    this.answerTextBoxRef = React.createRef<CardFaceInput>();
+    this.formatToolbarRef = React.createRef<CardFormatToolbar>();
     this.keywordsTokenListRef = React.createRef<TokenList>();
     this.tagsTokenListRef = React.createRef<TokenList>();
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
     this.handleFormat = this.handleFormat.bind(this);
+
+    this.handleBlur = this.handleBlur.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
 
     // Token lists
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
@@ -76,6 +85,39 @@ export class EditCardForm extends React.Component<Props, State> {
   handleFormat(command: string) {
     if (command === 'bold') {
       // XXX
+    }
+  }
+
+  handleBlur(e: React.FocusEvent<any>) {
+    // Unconditionally set this to false. We'll set it to true when we get he
+    // subsequent focus event if necessary.
+    this.setState({ textAreaFocussed: false });
+  }
+
+  handleFocus(e: React.FocusEvent<any>) {
+    // Check if the focus is in either of the card face textboxes
+    const textboxes: Array<React.RefObject<CardFaceInput>> = [
+      this.questionTextBoxRef,
+      this.answerTextBoxRef,
+    ];
+    for (const textbox of textboxes) {
+      if (
+        textbox.current &&
+        textbox.current.element &&
+        textbox.current.element.contains(e.target as HTMLElement)
+      ) {
+        this.setState({ textAreaFocussed: true });
+        return;
+      }
+    }
+
+    // Check if the focus is in the format toolbar
+    if (
+      this.formatToolbarRef.current &&
+      this.formatToolbarRef.current.element &&
+      this.formatToolbarRef.current.element.contains(e.target as HTMLElement)
+    ) {
+      this.setState({ textAreaFocussed: true });
     }
   }
 
@@ -133,7 +175,12 @@ export class EditCardForm extends React.Component<Props, State> {
     );
 
     return (
-      <form className="form editcard-form" autoComplete="off">
+      <form
+        className="form editcard-form"
+        autoComplete="off"
+        onFocus={this.handleFocus}
+        onBlur={this.handleBlur}
+      >
         <CardFaceInput
           className="prompt"
           value={this.props.card.question || ''}
@@ -147,8 +194,16 @@ export class EditCardForm extends React.Component<Props, State> {
           value={this.props.card.answer || ''}
           placeholder="Answer"
           onChange={this.handleAnswerChange}
+          ref={this.answerTextBoxRef}
         />
-        <CardFormatToolbar className="toolbar" onClick={this.handleFormat} />
+        <CardFormatToolbar
+          className={
+            'toolbar -center' +
+            (this.state.textAreaFocussed ? ' -areafocus' : '')
+          }
+          onClick={this.handleFormat}
+          ref={this.formatToolbarRef}
+        />
         <div
           className="keywords -yellow"
           onClick={this.handleKeywordsClick}

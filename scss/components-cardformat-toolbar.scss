@@ -7,6 +7,28 @@ $edit-icons-size: 16px;
     font-size: 0;
     border-color: transparent;
     display: inline-block;
+    border-radius: 4px;
+    border-width: 1px;
+    // For all controls on this form, the onfocussed style for placeholders is
+    // $standard-grey @ opacity 70%.
+    opacity: 0.7;
+    transition: background-color 0.1s;
+
+    &:hover {
+      background: $really-light-grey;
+      opacity: 1;
+      transition-property: none;
+      filter: none;
+    }
+    &:focus {
+      border-color: $standard-grey;
+      border-style: dotted;
+      opacity: 1;
+    }
+    &:active {
+      background: $light-grey;
+      opacity: 1;
+    }
 
     &::before {
       content: "";
@@ -29,6 +51,27 @@ $edit-icons-size: 16px;
     }
     &.emphasis::before  {
       background-position-x: -3 * $edit-icons-size;
+    }
+
+    &:hover::before {
+      background-position-y: 0;
+    }
+  }
+
+  &.-center {
+    display: flex;
+    justify-content: center;
+  }
+
+  // Set when any of the buttons or connected textfields are focussed
+  &.-areafocus {
+    > .button {
+      opacity: 1;
+      // Set whenever the button's feature is active (e.g. selected text is
+      // bold)
+      &.-set::before {
+        background-position-y: 0;
+      }
     }
   }
 }
