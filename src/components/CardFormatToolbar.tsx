@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 interface Props {
   className?: string;
-  onClick: (command: string) => void;
+  onClick: (command: string, wasKeyboard: boolean) => void;
 }
 
 interface State {
@@ -48,8 +48,10 @@ export class CardFormatToolbar extends React.PureComponent<Props, State> {
 
   handleClick(evt: React.MouseEvent<HTMLButtonElement>) {
     if ((evt.target as HTMLButtonElement).dataset.action) {
+      evt.preventDefault();
+      const wasKeyboardEvent = evt.screenX === 0 && evt.screenY === 0;
       const action = (evt.target as HTMLButtonElement).dataset.action!;
-      this.props.onClick(action);
+      this.props.onClick(action, wasKeyboardEvent);
     }
   }
 

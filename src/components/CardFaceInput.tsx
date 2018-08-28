@@ -10,6 +10,7 @@ interface Props {
   placeholder?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
+  onSelectRange?: () => void;
 }
 
 interface State {
@@ -91,6 +92,14 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   }
 
   handleChange(change: Change) {
+    if (
+      change.value.selection !== this.state.editorState.selection &&
+      !change.value.selection.isCollapsed &&
+      this.props.onSelectRange
+    ) {
+      this.props.onSelectRange();
+    }
+
     // We defer calling |onChange| until the state is actually updated so that
     // if that triggers a call to updateValue we can successfully recognize it
     // as a redundant change and avoid re-setting the editor state.
@@ -134,6 +143,21 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
   get element(): HTMLElement | null {
     return this.containerRef.current;
+  }
+
+  collapseSelection() {
+    const { editorState } = this.state;
+    if (editorState.selection.isCollapsed) {
+      return;
+    }
+    const change = editorState.change().collapseToAnchor();
+    this.setState({ editorState: change.value });
+  }
+
+  toggleMark(type: 'bold') {
+    const { editorState } = this.state;
+    const change = editorState.change().toggleMark(type);
+    this.setState({ editorState: change.value });
   }
 
   render() {

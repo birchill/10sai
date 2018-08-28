@@ -20,6 +20,7 @@ interface State {
   keywordsText: string;
   tagsText: string;
   textAreaFocussed: boolean;
+  mostRecentFace: 'prompt' | 'answer';
 }
 
 export class EditCardForm extends React.Component<Props, State> {
@@ -35,6 +36,7 @@ export class EditCardForm extends React.Component<Props, State> {
     keywordsText: '',
     tagsText: '',
     textAreaFocussed: false,
+    mostRecentFace: 'prompt',
   };
 
   questionTextBoxRef: React.RefObject<CardFaceInput>;
@@ -58,6 +60,8 @@ export class EditCardForm extends React.Component<Props, State> {
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
     this.handleAnswerChange = this.handleAnswerChange.bind(this);
+    this.handlePromptSelectRange = this.handlePromptSelectRange.bind(this);
+    this.handleAnswerSelectRange = this.handleAnswerSelectRange.bind(this);
     this.handleFormat = this.handleFormat.bind(this);
 
     this.handleBlur = this.handleBlur.bind(this);
@@ -82,9 +86,44 @@ export class EditCardForm extends React.Component<Props, State> {
     }
   }
 
-  handleFormat(command: string) {
+  handlePromptSelectRange() {
+    this.setState({ mostRecentFace: 'prompt' });
+    if (this.answerTextBoxRef.current) {
+      this.answerTextBoxRef.current.collapseSelection();
+    }
+  }
+
+  handleAnswerSelectRange() {
+    this.setState({ mostRecentFace: 'answer' });
+    if (this.questionTextBoxRef.current) {
+      this.questionTextBoxRef.current.collapseSelection();
+    }
+  }
+
+  handleFormat(command: string, wasKeyboard: boolean) {
+    const currentFace: CardFaceInput | null =
+      this.state.mostRecentFace === 'prompt'
+        ? this.questionTextBoxRef.current
+        : this.answerTextBoxRef.current;
+    if (!currentFace) {
+      return;
+    }
+
     if (command === 'bold') {
-      // XXX
+      currentFace.toggleMark('bold');
+    }
+
+    // If focus was lost by clicking the button (unlike the Slate demos, our
+    // buttons are focusable, because a11y), then restore it. If the button was
+    // selected using the keyboard, however, we probably want to leave focus
+    // there.
+    if (!wasKeyboard) {
+      // And Slate is pretty broken here. If we focus immediately after doing
+      // the bold change it will undo the bold change 90% of the time. :/
+      // Seriously having second thoughts about Slate by this point.
+      setTimeout(() => {
+        currentFace.focus();
+      }, 0);
     }
   }
 
@@ -186,6 +225,7 @@ export class EditCardForm extends React.Component<Props, State> {
           value={this.props.card.question || ''}
           placeholder="Prompt"
           onChange={this.handlePromptChange}
+          onSelectRange={this.handlePromptSelectRange}
           ref={this.questionTextBoxRef}
         />
         <hr className="card-divider divider" />
@@ -194,6 +234,7 @@ export class EditCardForm extends React.Component<Props, State> {
           value={this.props.card.answer || ''}
           placeholder="Answer"
           onChange={this.handleAnswerChange}
+          onSelectRange={this.handleAnswerSelectRange}
           ref={this.answerTextBoxRef}
         />
         <CardFormatToolbar
