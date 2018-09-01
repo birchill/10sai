@@ -7,6 +7,7 @@ import {
   RichUtils,
   SelectionState,
 } from 'draft-js';
+import { cardKeyBindings } from '../text/key-bindings';
 
 function getEditorContent(editorState: EditorState): string {
   return editorState.getCurrentContent().getPlainText();
@@ -196,6 +197,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           handleKeyCommand={this.handleKeyCommand}
+          keyBindingFn={cardKeyBindings}
           placeholder={this.props.placeholder}
           textAlignment="center"
           stripPastedStyles
