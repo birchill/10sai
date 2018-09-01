@@ -113,14 +113,10 @@ export class EditCardForm extends React.Component<Props, State> {
       currentFace.toggleMark('bold');
     }
 
-    // If focus was lost by clicking the button (unlike the Slate demos, our
-    // buttons are focusable, because a11y), then restore it. If the button was
-    // selected using the keyboard, however, we probably want to leave focus
+    // If focus was lost by clicking the button, then restore it. If the button
+    // was selected using the keyboard, however, we probably want to leave focus
     // there.
     if (!wasKeyboard) {
-      // And Slate is pretty broken here. If we focus immediately after doing
-      // the bold change it will undo the bold change 90% of the time. :/
-      // Seriously having second thoughts about Slate by this point.
       setTimeout(() => {
         currentFace.focus();
       }, 0);

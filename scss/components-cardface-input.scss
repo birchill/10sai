@@ -5,29 +5,31 @@
 
   @include vertical-center;
 
-  > [data-slate-editor] {
+  > .DraftEditor-root {
     // Make the text area fill the component height
     flex: 1;
 
     @include vertical-center;
 
-    text-align: center;
-  }
-
-  // Make the placeholder centered and disappear when the control is focused
-  position: relative;
-
-  > [data-slate-editor] {
-    // The !important styles are because slatejs sets inline style on these
-    // elements :(
-    span[contenteditable=false] {
-      position: absolute;
-      left: 0;
-      width: 100% !important;
+    > .DraftEditor-editorContainer {
+      height: 100%;
     }
 
-    &:focus span[contenteditable=false] {
-      display: none !important;
+    > .public-DraftEditorPlaceholder-root {
+      color: lighten($standard-grey, 20%);
+    }
+
+    &:hover > .public-DraftEditorPlaceholder-root {
+      color: $standard-grey;
+    }
+
+    > .public-DraftEditorPlaceholder-hasFocus {
+      display: none;
+    }
+
+    // Vertically center contents
+    .public-DraftEditor-content {
+      @include vertical-center;
     }
   }
 }

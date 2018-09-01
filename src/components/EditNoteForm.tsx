@@ -7,9 +7,7 @@ import { SaveState } from '../notes/reducer';
 import NoteFrame from './NoteFrame';
 import SaveStatus from './SaveStatus';
 import TokenList from './TokenList';
-import { Editor } from 'slate-react';
-import { Change, Value } from 'slate';
-import PlainText from 'slate-plain-serializer';
+import { ContentState, Editor, EditorState } from 'draft-js';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 
 interface Props {
@@ -28,11 +26,15 @@ interface Props {
 }
 
 interface State {
-  contentEditorState: Value;
+  contentEditorState: EditorState;
   keywordText: string;
   keywordSuggestions: string[];
   loadingSuggestions: boolean;
 }
+
+const getEditorContent = (editorState: EditorState): string => {
+  return editorState.getCurrentContent().getPlainText();
+};
 
 const hasCommonKeyword = (
   keywordsA: Array<string>,
@@ -76,7 +78,7 @@ export class EditNoteForm extends React.Component<Props, State> {
     super(props);
 
     this.state = {
-      contentEditorState: PlainText.deserialize(props.note.content || ''),
+      contentEditorState: EditorState.createEmpty(),
       keywordText: '',
       keywordSuggestions: [],
       loadingSuggestions: false,
@@ -127,18 +129,21 @@ export class EditNoteForm extends React.Component<Props, State> {
   updateContent(content?: string) {
     // Setting editorState can reset the selection so we should avoid doing it
     // when the content hasn't changed (since it can interrupt typing).
-    const currentValue = PlainText.serialize(this.state.contentEditorState);
+    const currentValue = getEditorContent(this.state.contentEditorState);
     if (currentValue === content) {
       return;
     }
 
-    const change = this.state.contentEditorState
-      .change()
-      .selectAll()
-      .delete()
-      .insertText(content || '');
+    const contentState = ContentState.createFromText(content || '');
+    // Ok, so insert-characters is not quite right, but it's good enough for now
+    // until we implement proper rich text editing.
+    const contentEditorState = EditorState.push(
+      this.state.contentEditorState,
+      contentState,
+      'insert-characters'
+    );
 
-    this.setState({ contentEditorState: change.value });
+    this.setState({ contentEditorState });
   }
 
   handleContentClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -147,19 +152,19 @@ export class EditNoteForm extends React.Component<Props, State> {
     }
   }
 
-  handleContentChange(change: Change) {
+  handleContentChange(editorState: EditorState) {
     // We defer calling |onChange| until the state is actually updated so that
     // if that triggers a call to updateContent we can successfully recognize it
     // as a redundant change and avoid re-setting the editor state.
     this.setState((prevState, props) => {
       if (props.onChange) {
-        const valueAsString = PlainText.serialize(change.value);
+        const valueAsString = getEditorContent(editorState);
         if (valueAsString !== this.props.note.content) {
           props.onChange(props.formId, 'content', valueAsString);
         }
       }
 
-      return { contentEditorState: change.value };
+      return { contentEditorState: editorState };
     });
   }
 
@@ -271,9 +276,10 @@ export class EditNoteForm extends React.Component<Props, State> {
           </>
           <div className="content" onClick={this.handleContentClick}>
             <Editor
-              value={this.state.contentEditorState}
+              editorState={this.state.contentEditorState}
               onChange={this.handleContentChange}
               placeholder="Note"
+              stripPastedStyles
               ref={editor => {
                 this.editor = editor || undefined;
               }}

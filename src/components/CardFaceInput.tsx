@@ -1,8 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Change, Value } from 'slate';
-import { Editor, Plugin, RenderMarkProps } from 'slate-react';
-import PlainText from 'slate-plain-serializer';
+import {
+  ContentState,
+  Editor,
+  EditorState,
+  RichUtils,
+  SelectionState,
+} from 'draft-js';
+
+function getEditorContent(editorState: EditorState): string {
+  return editorState.getCurrentContent().getPlainText();
+}
 
 interface Props {
   value?: string;
@@ -14,15 +22,13 @@ interface Props {
 }
 
 interface State {
-  editorState: Value;
+  editorState: EditorState;
   hasFocus: boolean;
 }
 
 export class CardFaceInput extends React.PureComponent<Props, State> {
   state: State;
   editor?: Editor;
-  focusHandler: Plugin;
-  plugins: Array<Plugin>;
   containerRef: React.RefObject<HTMLDivElement>;
 
   static get propTypes() {
@@ -41,25 +47,14 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     this.containerRef = React.createRef<HTMLDivElement>();
 
     this.state = {
-      editorState: PlainText.deserialize(props.value || ''),
+      editorState: EditorState.createEmpty(),
       hasFocus: false,
     };
     this.handleChange = this.handleChange.bind(this);
-    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
+    this.handleKeyCommand = this.handleKeyCommand.bind(this);
     this.handleContainerFocus = this.handleContainerFocus.bind(this);
-
-    this.focusHandler = {
-      onFocus: () => {
-        this.setState({ hasFocus: true });
-      },
-      onBlur: () => {
-        this.setState({ hasFocus: false });
-        if (this.props.onBlur) {
-          this.props.onBlur();
-        }
-      },
-    };
-    this.plugins = [this.focusHandler];
   }
 
   componentWillMount() {
@@ -77,25 +72,27 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   updateValue(value?: string) {
     // Setting editorState can reset the selection so we should avoid doing it
     // when the content hasn't changed (since it can interrupt typing).
-    const currentValue = PlainText.serialize(this.state.editorState);
+    const currentValue = getEditorContent(this.state.editorState);
     if (currentValue === value) {
       return;
     }
 
-    const change = this.state.editorState
-      .change()
-      .selectAll()
-      .delete()
-      .insertText(value || '');
-
-    this.setState({ editorState: change.value });
+    const contentState = ContentState.createFromText(value || '');
+    // Ok, so insert-characters is not quite right, but it's good enough for now
+    // until we implement proper rich text editing.
+    const editorState = EditorState.push(
+      this.state.editorState,
+      contentState,
+      'insert-characters'
+    );
+    this.setState({ editorState });
   }
 
-  handleChange(change: Change) {
+  handleChange(editorState: EditorState) {
     if (
-      change.value.selection !== this.state.editorState.selection &&
-      !change.value.selection.isCollapsed &&
-      this.props.onSelectRange
+      this.props.onSelectRange &&
+      !editorState.getSelection().isCollapsed() &&
+      editorState.getSelection() !== this.state.editorState.getSelection()
     ) {
       this.props.onSelectRange();
     }
@@ -105,25 +102,37 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     // as a redundant change and avoid re-setting the editor state.
     this.setState((prevState, props) => {
       if (props.onChange) {
-        const valueAsString = PlainText.serialize(change.value);
+        const valueAsString = getEditorContent(editorState);
         if (valueAsString !== this.props.value) {
           props.onChange(valueAsString);
         }
       }
 
-      return { editorState: change.value };
+      return { editorState };
     });
   }
 
-  handleKeyDown(event: Event, change: Change) {
-    if (!(event as KeyboardEvent).ctrlKey) {
-      return;
-    }
+  handleFocus() {
+    this.setState({ hasFocus: true });
+  }
 
-    if ((event as KeyboardEvent).key === 'b') {
-      event.preventDefault();
-      return change.addMark('bold');
+  handleBlur() {
+    this.setState({ hasFocus: false });
+    if (this.props.onBlur) {
+      this.props.onBlur();
     }
+  }
+
+  handleKeyCommand(command: string, editorState: EditorState) {
+    // XXX Make this check more restrictive
+    // e.g. Ctrl+Shift+B should _not_ trigger bold
+    // Don't allow Ctrl+J
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      this.handleChange(newState);
+      return 'handled';
+    }
+    return 'not-handled';
   }
 
   handleContainerFocus() {
@@ -147,21 +156,32 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
   collapseSelection() {
     const { editorState } = this.state;
-    if (editorState.selection.isCollapsed) {
+    const selection: SelectionState = editorState.getSelection();
+    if (selection.isCollapsed()) {
       return;
     }
-    const change = editorState.change().collapseToAnchor();
-    this.setState({ editorState: change.value });
+
+    const collapsedSelection: SelectionState = selection
+      .set('focusKey', selection.getAnchorKey())
+      .set('focusOffset', selection.getAnchorOffset()) as SelectionState;
+    // No need to call handleChange here since that's only used for detecting
+    // content changes and when we newly select a range.
+    this.setState({
+      editorState: EditorState.acceptSelection(editorState, collapsedSelection),
+    });
   }
 
   toggleMark(type: 'bold') {
-    const { editorState } = this.state;
-    const change = editorState.change().toggleMark(type);
-    this.setState({ editorState: change.value });
+    this.handleChange(
+      RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD')
+    );
   }
 
   render() {
     const classes = [this.props.className, 'cardface-input'];
+    if (this.state.hasFocus) {
+      classes.push('hasFocus');
+    }
 
     return (
       <div
@@ -170,12 +190,14 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
         ref={this.containerRef}
       >
         <Editor
-          value={this.state.editorState}
-          plugins={this.plugins}
+          editorState={this.state.editorState}
           onChange={this.handleChange}
-          onKeyDown={this.handleKeyDown}
-          renderMark={renderMark}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+          handleKeyCommand={this.handleKeyCommand}
           placeholder={this.props.placeholder}
+          textAlignment="center"
+          stripPastedStyles
           ref={editor => {
             this.editor = editor || undefined;
           }}
@@ -183,17 +205,6 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       </div>
     );
   }
-}
-
-function renderMark(props: RenderMarkProps) {
-  switch (props.mark.type) {
-    case 'bold':
-      return <BoldMark {...props} />;
-  }
-}
-
-function BoldMark(props: RenderMarkProps) {
-  return <strong>{props.children}</strong>;
 }
 
 export default CardFaceInput;
