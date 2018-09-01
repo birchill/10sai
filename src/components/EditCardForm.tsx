@@ -100,7 +100,7 @@ export class EditCardForm extends React.Component<Props, State> {
     }
   }
 
-  handleFormat(command: string, wasKeyboard: boolean) {
+  handleFormat(command: string) {
     const currentFace: CardFaceInput | null =
       this.state.mostRecentFace === 'prompt'
         ? this.questionTextBoxRef.current
@@ -111,15 +111,6 @@ export class EditCardForm extends React.Component<Props, State> {
 
     if (command === 'bold') {
       currentFace.toggleMark('bold');
-    }
-
-    // If focus was lost by clicking the button, then restore it. If the button
-    // was selected using the keyboard, however, we probably want to leave focus
-    // there.
-    if (!wasKeyboard) {
-      setTimeout(() => {
-        currentFace.focus();
-      }, 0);
     }
   }
 

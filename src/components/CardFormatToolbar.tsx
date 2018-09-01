@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 interface Props {
   className?: string;
-  onClick: (command: string, wasKeyboard: boolean) => void;
+  onClick: (command: string) => void;
 }
 
 interface State {
@@ -43,16 +43,21 @@ export class CardFormatToolbar extends React.PureComponent<Props, State> {
     this.containerRef = React.createRef<HTMLDivElement>();
 
     this.handleClick = this.handleClick.bind(this);
+    this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
   handleClick(evt: React.MouseEvent<HTMLButtonElement>) {
     if ((evt.target as HTMLButtonElement).dataset.action) {
       evt.preventDefault();
-      const wasKeyboardEvent = evt.screenX === 0 && evt.screenY === 0;
       const action = (evt.target as HTMLButtonElement).dataset.action!;
-      this.props.onClick(action, wasKeyboardEvent);
+      this.props.onClick(action);
     }
+  }
+
+  handleMouseDown(evt: React.MouseEvent<HTMLButtonElement>) {
+    // Stop the button from stealing focus
+    evt.preventDefault();
   }
 
   handleKeyDown(evt: React.KeyboardEvent<HTMLDivElement>) {
@@ -112,6 +117,7 @@ export class CardFormatToolbar extends React.PureComponent<Props, State> {
           <button
             key={button.action}
             className={`${button.action} button -icon`}
+            onMouseDown={this.handleMouseDown}
             onClick={this.handleClick}
             title={`${button.title} (${button.accelerator})`}
             data-action={button.action}
