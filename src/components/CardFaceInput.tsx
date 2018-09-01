@@ -92,6 +92,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     if (
       this.props.onSelectRange &&
       !editorState.getSelection().isCollapsed() &&
+      editorState.getSelection().getHasFocus() &&
       editorState.getSelection() !== this.state.editorState.getSelection()
     ) {
       this.props.onSelectRange();
@@ -165,7 +166,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       .set('focusKey', selection.getAnchorKey())
       .set('focusOffset', selection.getAnchorOffset()) as SelectionState;
     // No need to call handleChange here since that's only used for detecting
-    // content changes and when we newly select a range.
+    // content changes or when we newly select a range.
     this.setState({
       editorState: EditorState.acceptSelection(editorState, collapsedSelection),
     });
