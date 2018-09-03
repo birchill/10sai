@@ -15,12 +15,12 @@
     </g>
     <!-- Dot emphasis -->
     <g transform="translate(48 0)">
-      <path d="M4 0h7a.5.5 0 0 1 0 2
+      <circle cx="8" cy="1" r="1"/>
+      <path d="M4 4h7a.5.5 0 0 1 0 2
         h-3.5a.5 .5 0 0 0-.5 .5v2a.5 .5 0 0 0 .5 .5h1.5
         a.5.5 0 0 1 0 2h-1.5a.5 .5 0 0 0-.5 .5v2
         a.5 .5 0 0 0 .5 .5h3.5a.5.5 0 0 1 0 2h-7
         a.5.5 0 0 1 0-2v-8a.5.5 0 0 1 0-2z"/>
-      <circle cx="8" cy="15" r="1"/>
     </g>
     <!-- Color -->
     <g transform="translate(64 0)">
