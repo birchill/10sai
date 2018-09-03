@@ -52,6 +52,13 @@ export class EditCardForm extends React.Component<Props, State> {
   keywordsTokenListRef: React.RefObject<TokenList>;
   tagsTokenListRef: React.RefObject<TokenList>;
 
+  handlePromptChange: (value: 'string') => void;
+  handleAnswerChange: (value: 'string') => void;
+  handlePromptMarksUpdated: (marks: Set<string>) => void;
+  handleAnswerMarksUpdated: (marks: Set<string>) => void;
+  handlePromptSelectRange: () => void;
+  handleAnswerSelectRange: () => void;
+
   debouncedUpdateSuggestions: {
     tags: (text: string) => void;
   };
@@ -65,13 +72,19 @@ export class EditCardForm extends React.Component<Props, State> {
     this.keywordsTokenListRef = React.createRef<TokenList>();
     this.tagsTokenListRef = React.createRef<TokenList>();
 
-    this.handlePromptChange = this.handlePromptChange.bind(this);
-    this.handlePromptSelectRange = this.handlePromptSelectRange.bind(this);
-    this.handlePromptMarksUpdated = this.handlePromptMarksUpdated.bind(this);
+    this.handlePromptChange = this.handleTextBoxChange.bind(this, 'question');
+    this.handlePromptSelectRange = this.handleSelectRange.bind(this, 'prompt');
+    this.handlePromptMarksUpdated = this.handleMarksUpdated.bind(
+      this,
+      'prompt'
+    );
 
-    this.handleAnswerChange = this.handleAnswerChange.bind(this);
-    this.handleAnswerSelectRange = this.handleAnswerSelectRange.bind(this);
-    this.handleAnswerMarksUpdated = this.handleAnswerMarksUpdated.bind(this);
+    this.handleAnswerChange = this.handleTextBoxChange.bind(this, 'answer');
+    this.handleAnswerSelectRange = this.handleSelectRange.bind(this, 'answer');
+    this.handleAnswerMarksUpdated = this.handleMarksUpdated.bind(
+      this,
+      'answer'
+    );
 
     this.handleFormat = this.handleFormat.bind(this);
 
@@ -91,64 +104,36 @@ export class EditCardForm extends React.Component<Props, State> {
       : this.answerTextBoxRef.current;
   }
 
-  handlePromptChange(value: string) {
+  handleTextBoxChange(field: 'question' | 'answer', value: string) {
     if (this.props.onChange) {
-      this.props.onChange('question', value);
+      this.props.onChange(field, value);
     }
   }
 
-  handleAnswerChange(value: string) {
-    if (this.props.onChange) {
-      this.props.onChange('answer', value);
-    }
-  }
-
-  handlePromptSelectRange() {
-    if (this.state.mostRecentFace === 'prompt') {
+  handleSelectRange(face: 'prompt' | 'answer') {
+    if (this.state.mostRecentFace === face) {
       return;
     }
 
     const stateUpdate: Partial<State> = {
-      mostRecentFace: 'prompt',
+      mostRecentFace: face,
     };
-    if (this.questionTextBoxRef.current) {
-      stateUpdate.currentMarks = this.questionTextBoxRef.current.getCurrentMarks();
+    const textBoxRef =
+      face === 'prompt' ? this.questionTextBoxRef : this.answerTextBoxRef;
+    if (textBoxRef.current) {
+      stateUpdate.currentMarks = textBoxRef.current.getCurrentMarks();
     }
     this.setState(stateUpdate as State);
 
-    if (this.answerTextBoxRef.current) {
-      this.answerTextBoxRef.current.collapseSelection();
+    const otherTextBoxRef =
+      face === 'prompt' ? this.answerTextBoxRef : this.questionTextBoxRef;
+    if (otherTextBoxRef.current) {
+      otherTextBoxRef.current.collapseSelection();
     }
   }
 
-  handleAnswerSelectRange() {
-    if (this.state.mostRecentFace === 'answer') {
-      return;
-    }
-
-    const stateUpdate: Partial<State> = {
-      mostRecentFace: 'answer',
-    };
-    if (this.answerTextBoxRef.current) {
-      stateUpdate.currentMarks = this.answerTextBoxRef.current.getCurrentMarks();
-    }
-    this.setState(stateUpdate as State);
-
-    if (this.questionTextBoxRef.current) {
-      this.questionTextBoxRef.current.collapseSelection();
-    }
-  }
-
-  handlePromptMarksUpdated(marks: Set<string>) {
-    if (this.state.mostRecentFace !== 'prompt') {
-      return;
-    }
-
-    this.setState({ currentMarks: marks });
-  }
-
-  handleAnswerMarksUpdated(marks: Set<string>) {
-    if (this.state.mostRecentFace !== 'answer') {
+  handleMarksUpdated(face: 'prompt' | 'answer', marks: Set<string>) {
+    if (this.state.mostRecentFace !== face) {
       return;
     }
 
