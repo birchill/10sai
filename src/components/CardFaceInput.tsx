@@ -198,9 +198,9 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     );
   }
 
-  toggleMark(type: 'bold') {
+  toggleMark(type: 'bold' | 'italic' | 'underline') {
     this.handleChange(
-      RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD')
+      RichUtils.toggleInlineStyle(this.state.editorState, type.toUpperCase())
     );
   }
 
