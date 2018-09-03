@@ -3,27 +3,35 @@ import PropTypes from 'prop-types';
 
 interface Props {
   className?: string;
-  onClick: (command: string) => void;
+  buttons: Array<FormatButtonConfig>;
+  onClick: (command: FormatButtonCommand) => void;
 }
 
 interface State {
   focusIndex: number;
 }
 
-type Button = {
-  action: string;
-  title: string;
+export type FormatButtonType = 'bold' | 'italic' | 'underline' | 'emphasis';
+
+// Note to self: In future I expect this to be a union of different objects
+// each with a 'type' field where, for example, the 'color' command includes the
+// color to set.
+export type FormatButtonCommand = FormatButtonType;
+
+export const enum FormatButtonState {
+  Normal,
+  Disabled,
+  Set,
+}
+
+export interface FormatButtonConfig {
+  type: FormatButtonType;
+  label: string;
   accelerator: string;
-};
+  state: FormatButtonState;
+}
 
-const buttons: Array<Button> = [
-  { action: 'bold', title: 'Bold', accelerator: 'Ctrl+B' },
-  { action: 'italic', title: 'Italic', accelerator: 'Ctrl+I' },
-  { action: 'underline', title: 'Underline', accelerator: 'Ctrl+U' },
-  { action: 'emphasis', title: 'Dot emphasis', accelerator: 'Ctrl+.' },
-];
-
-export class CardFormatToolbar extends React.PureComponent<Props, State> {
+export class CardFormatToolbar extends React.Component<Props, State> {
   static get propTypes() {
     return {
       className: PropTypes.string,
@@ -50,7 +58,8 @@ export class CardFormatToolbar extends React.PureComponent<Props, State> {
   handleClick(evt: React.MouseEvent<HTMLButtonElement>) {
     if ((evt.target as HTMLButtonElement).dataset.action) {
       evt.preventDefault();
-      const action = (evt.target as HTMLButtonElement).dataset.action!;
+      const action = (evt.target as HTMLButtonElement).dataset
+        .action as FormatButtonCommand;
       this.props.onClick(action);
     }
   }
@@ -72,7 +81,7 @@ export class CardFormatToolbar extends React.PureComponent<Props, State> {
         return;
 
       case 'ArrowRight':
-        if (this.state.focusIndex < buttons.length - 1) {
+        if (this.state.focusIndex < this.props.buttons.length - 1) {
           this.setState({ focusIndex: this.state.focusIndex + 1 }, () =>
             this.updateFocus()
           );
@@ -107,24 +116,32 @@ export class CardFormatToolbar extends React.PureComponent<Props, State> {
       className += ' ' + this.props.className;
     }
 
+    const getButtonClass = (button: FormatButtonConfig): string => {
+      const classes = ['button', button.type, '-icon'];
+      if (button.state === FormatButtonState.Set) {
+        classes.push('-set');
+      }
+      return classes.join(' ');
+    };
+
     return (
       <div
         className={className}
         ref={this.containerRef}
         onKeyDown={this.handleKeyDown}
       >
-        {buttons.map((button, i) => (
+        {this.props.buttons.map((button, i) => (
           <button
-            key={button.action}
-            className={`${button.action} button -icon`}
+            key={button.type}
+            className={getButtonClass(button)}
             onMouseDown={this.handleMouseDown}
             onClick={this.handleClick}
-            title={`${button.title} (${button.accelerator})`}
-            data-action={button.action}
+            title={`${button.label} (${button.accelerator})`}
+            data-action={button.type}
             type="button"
             tabIndex={i === this.state.focusIndex ? 0 : -1}
           >
-            {button.title}
+            {button.label}
           </button>
         ))}
       </div>

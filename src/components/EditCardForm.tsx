@@ -2,7 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import CardFaceInput from './CardFaceInput';
-import CardFormatToolbar from './CardFormatToolbar';
+import {
+  CardFormatToolbar,
+  FormatButtonCommand,
+  FormatButtonConfig,
+  FormatButtonState,
+} from './CardFormatToolbar';
 import KeywordSuggestionProvider from './KeywordSuggestionProvider';
 import TagSuggestionProvider from './TagSuggestionProvider';
 import TokenList from './TokenList';
@@ -21,6 +26,7 @@ interface State {
   tagsText: string;
   textAreaFocussed: boolean;
   mostRecentFace: 'prompt' | 'answer';
+  currentMarks: Set<string>;
 }
 
 export class EditCardForm extends React.Component<Props, State> {
@@ -37,6 +43,7 @@ export class EditCardForm extends React.Component<Props, State> {
     tagsText: '',
     textAreaFocussed: false,
     mostRecentFace: 'prompt',
+    currentMarks: new Set<string>(),
   };
 
   questionTextBoxRef: React.RefObject<CardFaceInput>;
@@ -59,9 +66,13 @@ export class EditCardForm extends React.Component<Props, State> {
     this.tagsTokenListRef = React.createRef<TokenList>();
 
     this.handlePromptChange = this.handlePromptChange.bind(this);
-    this.handleAnswerChange = this.handleAnswerChange.bind(this);
     this.handlePromptSelectRange = this.handlePromptSelectRange.bind(this);
+    this.handlePromptMarksUpdated = this.handlePromptMarksUpdated.bind(this);
+
+    this.handleAnswerChange = this.handleAnswerChange.bind(this);
     this.handleAnswerSelectRange = this.handleAnswerSelectRange.bind(this);
+    this.handleAnswerMarksUpdated = this.handleAnswerMarksUpdated.bind(this);
+
     this.handleFormat = this.handleFormat.bind(this);
 
     this.handleBlur = this.handleBlur.bind(this);
@@ -72,6 +83,12 @@ export class EditCardForm extends React.Component<Props, State> {
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
     this.handleTagsClick = this.handleTagsClick.bind(this);
     this.handleTagsTextChange = this.handleTagsTextChange.bind(this);
+  }
+
+  get currentFace(): CardFaceInput | null {
+    return this.state.mostRecentFace === 'prompt'
+      ? this.questionTextBoxRef.current
+      : this.answerTextBoxRef.current;
   }
 
   handlePromptChange(value: string) {
@@ -87,30 +104,64 @@ export class EditCardForm extends React.Component<Props, State> {
   }
 
   handlePromptSelectRange() {
-    this.setState({ mostRecentFace: 'prompt' });
+    if (this.state.mostRecentFace === 'prompt') {
+      return;
+    }
+
+    const stateUpdate: Partial<State> = {
+      mostRecentFace: 'prompt',
+    };
+    if (this.questionTextBoxRef.current) {
+      stateUpdate.currentMarks = this.questionTextBoxRef.current.getCurrentMarks();
+    }
+    this.setState(stateUpdate as State);
+
     if (this.answerTextBoxRef.current) {
       this.answerTextBoxRef.current.collapseSelection();
     }
   }
 
   handleAnswerSelectRange() {
-    this.setState({ mostRecentFace: 'answer' });
+    if (this.state.mostRecentFace === 'answer') {
+      return;
+    }
+
+    const stateUpdate: Partial<State> = {
+      mostRecentFace: 'answer',
+    };
+    if (this.answerTextBoxRef.current) {
+      stateUpdate.currentMarks = this.answerTextBoxRef.current.getCurrentMarks();
+    }
+    this.setState(stateUpdate as State);
+
     if (this.questionTextBoxRef.current) {
       this.questionTextBoxRef.current.collapseSelection();
     }
   }
 
-  handleFormat(command: string) {
-    const currentFace: CardFaceInput | null =
-      this.state.mostRecentFace === 'prompt'
-        ? this.questionTextBoxRef.current
-        : this.answerTextBoxRef.current;
-    if (!currentFace) {
+  handlePromptMarksUpdated(marks: Set<string>) {
+    if (this.state.mostRecentFace !== 'prompt') {
+      return;
+    }
+
+    this.setState({ currentMarks: marks });
+  }
+
+  handleAnswerMarksUpdated(marks: Set<string>) {
+    if (this.state.mostRecentFace !== 'answer') {
+      return;
+    }
+
+    this.setState({ currentMarks: marks });
+  }
+
+  handleFormat(command: FormatButtonCommand) {
+    if (!this.currentFace) {
       return;
     }
 
     if (command === 'bold') {
-      currentFace.toggleMark('bold');
+      this.currentFace.toggleMark('bold');
     }
   }
 
@@ -195,6 +246,52 @@ export class EditCardForm extends React.Component<Props, State> {
     }
   }
 
+  get formatButtonConfig(): Array<FormatButtonConfig> {
+    let currentMarks: Set<string> | undefined;
+    if (this.state.textAreaFocussed) {
+      currentMarks = this.state.currentMarks;
+    }
+    const hasMark = (style: string): boolean =>
+      currentMarks ? currentMarks.has(style) : false;
+
+    const buttons: Array<FormatButtonConfig> = [
+      {
+        type: 'bold',
+        label: 'Bold',
+        accelerator: 'Ctrl+B',
+        state: hasMark('bold')
+          ? FormatButtonState.Set
+          : FormatButtonState.Normal,
+      },
+      {
+        type: 'italic',
+        label: 'Italic',
+        accelerator: 'Ctrl+I',
+        state: hasMark('italic')
+          ? FormatButtonState.Set
+          : FormatButtonState.Normal,
+      },
+      {
+        type: 'underline',
+        label: 'Underline',
+        accelerator: 'Ctrl+U',
+        state: hasMark('underline')
+          ? FormatButtonState.Set
+          : FormatButtonState.Normal,
+      },
+      {
+        type: 'emphasis',
+        label: 'Dot emphasis',
+        accelerator: 'Ctrl+.',
+        state: hasMark('emphasis')
+          ? FormatButtonState.Set
+          : FormatButtonState.Normal,
+      },
+    ];
+
+    return buttons;
+  }
+
   render() {
     const keywordSuggestions = KeywordSuggester.getSuggestionsFromCard(
       this.props.card
@@ -213,6 +310,7 @@ export class EditCardForm extends React.Component<Props, State> {
           placeholder="Prompt"
           onChange={this.handlePromptChange}
           onSelectRange={this.handlePromptSelectRange}
+          onMarksUpdated={this.handlePromptMarksUpdated}
           ref={this.questionTextBoxRef}
         />
         <hr className="card-divider divider" />
@@ -222,6 +320,7 @@ export class EditCardForm extends React.Component<Props, State> {
           placeholder="Answer"
           onChange={this.handleAnswerChange}
           onSelectRange={this.handleAnswerSelectRange}
+          onMarksUpdated={this.handleAnswerMarksUpdated}
           ref={this.answerTextBoxRef}
         />
         <CardFormatToolbar
@@ -230,6 +329,7 @@ export class EditCardForm extends React.Component<Props, State> {
             (this.state.textAreaFocussed ? ' -areafocus' : '')
           }
           onClick={this.handleFormat}
+          buttons={this.formatButtonConfig}
           ref={this.formatToolbarRef}
         />
         <div

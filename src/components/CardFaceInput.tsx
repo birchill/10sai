@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import * as Immutable from 'immutable';
+
 import {
   ContentState,
   Editor,
@@ -20,12 +22,24 @@ interface Props {
   onChange?: (value: string) => void;
   onBlur?: () => void;
   onSelectRange?: () => void;
+  onMarksUpdated?: (currentMarks: Set<string>) => void;
 }
 
 interface State {
   editorState: EditorState;
   hasFocus: boolean;
 }
+
+// We store the current style as an Immutable.OrderedSet since it makes
+// comparing with changes cheap but we return a standard ES6 Set, lowercased
+// since:
+//
+// - We don't want to force consumers to use Immutable (10sai doesn't currently
+//   use Immutable anywhere else)
+// - The interface here is in terms of lowercase strings (e.g. toggleMark takes
+//   lowercase strings)
+const toMarkSet = (input: Immutable.OrderedSet<string>): Set<string> =>
+  new Set<string>(input.toArray().map(style => style.toLowerCase()));
 
 export class CardFaceInput extends React.PureComponent<Props, State> {
   state: State;
@@ -39,6 +53,8 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       placeholder: PropTypes.string,
       onChange: PropTypes.func,
       onBlur: PropTypes.func,
+      onSelectRange: PropTypes.func,
+      onMarksUpdated: PropTypes.func,
     };
   }
 
@@ -99,6 +115,16 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       this.props.onSelectRange();
     }
 
+    if (this.props.onMarksUpdated) {
+      const inlineStyle = editorState.getCurrentInlineStyle();
+      const currentInlineStyle = this.state.editorState.getCurrentInlineStyle();
+      if (!inlineStyle.equals(currentInlineStyle)) {
+        this.props.onMarksUpdated(
+          toMarkSet(editorState.getCurrentInlineStyle())
+        );
+      }
+    }
+
     // We defer calling |onChange| until the state is actually updated so that
     // if that triggers a call to updateValue we can successfully recognize it
     // as a redundant change and avoid re-setting the editor state.
@@ -126,9 +152,6 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   }
 
   handleKeyCommand(command: string, editorState: EditorState) {
-    // XXX Make this check more restrictive
-    // e.g. Ctrl+Shift+B should _not_ trigger bold
-    // Don't allow Ctrl+J
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
       this.handleChange(newState);
@@ -156,6 +179,10 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     return this.containerRef.current;
   }
 
+  getCurrentMarks(): Set<string> {
+    return toMarkSet(this.state.editorState.getCurrentInlineStyle());
+  }
+
   collapseSelection() {
     const { editorState } = this.state;
     const selection: SelectionState = editorState.getSelection();
@@ -166,11 +193,9 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     const collapsedSelection: SelectionState = selection
       .set('focusKey', selection.getAnchorKey())
       .set('focusOffset', selection.getAnchorOffset()) as SelectionState;
-    // No need to call handleChange here since that's only used for detecting
-    // content changes or when we newly select a range.
-    this.setState({
-      editorState: EditorState.acceptSelection(editorState, collapsedSelection),
-    });
+    this.handleChange(
+      EditorState.acceptSelection(editorState, collapsedSelection)
+    );
   }
 
   toggleMark(type: 'bold') {
