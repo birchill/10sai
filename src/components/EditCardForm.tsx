@@ -145,9 +145,7 @@ export class EditCardForm extends React.Component<Props, State> {
       return;
     }
 
-    if (command === 'bold' || command === 'italic' || command === 'underline') {
-      this.currentFace.toggleMark(command);
-    }
+    this.currentFace.toggleMark(command);
   }
 
   handleBlur(e: React.FocusEvent<any>) {

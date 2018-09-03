@@ -93,6 +93,8 @@ export function cardKeyBindings(e: React.KeyboardEvent<{}>): string | null {
       return null;
     case 'z':
       return getZCommand(e) || null;
+    case '.':
+      return hasCommandModifierOnly(e) ? 'emphasis' : null;
     case 'Enter':
       return 'split-block';
     case 'Delete':

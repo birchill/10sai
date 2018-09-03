@@ -30,6 +30,13 @@ interface State {
   hasFocus: boolean;
 }
 
+// TODO: Move this somewhere generic
+const styleMap: any = {
+  EMPHASIS: {
+    textEmphasis: 'dot',
+  },
+};
+
 // We store the current style as an Immutable.OrderedSet since it makes
 // comparing with changes cheap but we return a standard ES6 Set, lowercased
 // since:
@@ -152,7 +159,19 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   }
 
   handleKeyCommand(command: string, editorState: EditorState) {
-    const newState = RichUtils.handleKeyCommand(editorState, command);
+    let newState: EditorState | null = RichUtils.handleKeyCommand(
+      editorState,
+      command
+    );
+
+    if (!newState) {
+      switch (command) {
+        case 'emphasis':
+          newState = RichUtils.toggleInlineStyle(editorState, 'EMPHASIS');
+          break;
+      }
+    }
+
     if (newState) {
       this.handleChange(newState);
       return 'handled';
@@ -198,7 +217,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     );
   }
 
-  toggleMark(type: 'bold' | 'italic' | 'underline') {
+  toggleMark(type: 'bold' | 'italic' | 'underline' | 'emphasis') {
     this.handleChange(
       RichUtils.toggleInlineStyle(this.state.editorState, type.toUpperCase())
     );
@@ -222,6 +241,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           handleKeyCommand={this.handleKeyCommand}
+          customStyleMap={styleMap}
           keyBindingFn={cardKeyBindings}
           placeholder={this.props.placeholder}
           textAlignment="center"
