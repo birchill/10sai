@@ -5,12 +5,12 @@
   --selection-color: inherit;
 
   &.-toolbarfocus {
-    --selection-bg: #{$highlight};
+    --selection-bg: #{lighten($highlight, 20%)};
     --selection-color: white;
   }
 
   ::selection {
-    background-color: #{$highlight};
+    background-color: $highlight;
     color: white;
   }
 
