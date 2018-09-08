@@ -374,13 +374,28 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   }
 
   collapseSelection() {
+    if (this.selectionHighlight === SelectionHighlight.None) {
+      return;
+    }
+
+    let editorState = this.state.editorState;
+
+    editorState = this.clearSelectionFormatting(editorState);
+    this.selectionHighlight = SelectionHighlight.None;
+
+    delete this.selectionToRestore;
+
     const selection = this.state.editorState.getSelection();
     const collapsedSelection: SelectionState = selection
       .set('focusKey', selection.getAnchorKey())
       .set('focusOffset', selection.getAnchorOffset()) as SelectionState;
-    this.handleChange(
-      EditorState.acceptSelection(this.state.editorState, collapsedSelection)
+    editorState = EditorState.acceptSelection(
+      editorState,
+      collapsedSelection.set('hasFocus', false) as SelectionState
     );
+    this.selectionToRestore = collapsedSelection;
+
+    this.handleChange(editorState);
   }
 
   get element(): HTMLElement | null {

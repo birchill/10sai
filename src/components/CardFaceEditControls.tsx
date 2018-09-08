@@ -125,11 +125,20 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     if (this.state.selectedFace === face || this.state.focussedFace !== face) {
       return;
     }
-    console.log('selectionChange: would clear other range here');
 
+    this.updateSelectedFace(face);
+  }
+
+  updateSelectedFace(face: 'prompt' | 'answer') {
     this.setState({ selectedFace: face });
 
-    // XXX Call collapseSelection on the other face
+    const otherFace =
+      face === 'prompt'
+        ? this.answerTextBoxRef.current
+        : this.questionTextBoxRef.current;
+    if (otherFace) {
+      otherFace.collapseSelection();
+    }
   }
 
   handleMarksUpdated(face: 'prompt' | 'answer', marks: Set<string>) {
@@ -193,7 +202,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
           // that a change to the selected face. (We'll update that if the user
           // subsequently changes the selection within the newly-focussed face.)
           if (!e.wasKeyboard) {
-            stateChange.selectedFace = face;
+            this.updateSelectedFace(face);
           }
           stateChange.currentMarks = textbox.current.getCurrentMarks();
         }

@@ -3,7 +3,7 @@
   --selection-color: white;
 
   ::selection {
-    background: var(--selection-bg);
+    background-color: var(--selection-bg);
     color: var(--selection-color);
   }
 
