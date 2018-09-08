@@ -20,21 +20,22 @@ interface Props {
 interface State {
   isFocussed: boolean;
 
-  // The active face is _not_ necessarily the focussed face _nor_ the most
-  // recently focussed face.
+  // We track the "focussed" and "selected" face. The (quite subtle) difference
+  // is:
   //
-  // Because we have a single format toolbar that covers both faces, we need to
-  // allow applying the formatting commands to the 'prompt' face using just the
-  // keyboard (and without requiring the user to remember the keyboard
-  // shortcuts). In other words, they may need to tab _through_ the 'answer'
-  // face in order to get to the toolbar. As a result we try to detect the case
-  // of a simple tab through a field using the keyboard and _don't_ update the
-  // activeFace in that case.
+  // The focussed face is the face that is focussed. The status of the toolbar
+  // icons should reflect this face, if set.
   //
-  // That might suggest our UX is just wrong, but all the other alternatives
-  // I tried seem really clumsy particularly on small screens (screens which are
-  // even smaller when you have an onscreen keyboard).
-  activeFace: 'prompt' | 'answer';
+  // The selected face is the face that the user most recently changed the
+  // selection of.
+  //
+  // The main situation where the two differ is when the user selects a range in
+  // the 'prompt' face, then tabs _through_ the 'answer' face to get to the
+  // formatting toolbar. In this case, the 'prompt' face remains the selected
+  // face but while tabbing through the 'answer' face it becomes the focussed
+  // face and the toolbar's status should reflect that.
+  selectedFace: 'prompt' | 'answer';
+  focussedFace: 'prompt' | 'answer' | null;
 
   currentMarks: Set<string>;
 }
@@ -49,7 +50,8 @@ export class CardFaceEditControls extends React.Component<Props, State> {
 
   state: State = {
     isFocussed: false,
-    activeFace: 'prompt',
+    selectedFace: 'prompt',
+    focussedFace: null,
     currentMarks: new Set<string>(),
   };
 
@@ -107,12 +109,6 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     this.handleBlur = this.handleBlur.bind(this);
   }
 
-  get activeFace(): CardFaceInput | null {
-    return this.state.activeFace === 'prompt'
-      ? this.questionTextBoxRef.current
-      : this.answerTextBoxRef.current;
-  }
-
   handleTextBoxChange(field: 'question' | 'answer', value: string) {
     if (this.props.onChange) {
       this.props.onChange(field, value);
@@ -120,41 +116,65 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   }
 
   handleSelectionChange(face: 'prompt' | 'answer') {
-    if (this.state.activeFace === face) {
+    // This is a bit tricky but we're specifically looking for the first time
+    // the selection changes on the active face since that's what we use to
+    // clear the selection range on the other face.
+    //
+    // For selection changes within the focussed face we rely on the
+    // onMarksUpdated callback to be called.
+    if (this.state.selectedFace === face || this.state.focussedFace !== face) {
       return;
     }
+    console.log('selectionChange: would clear other range here');
 
-    const stateChange: Partial<State> = { activeFace: face };
-    const textBoxRef =
-      face === 'prompt' ? this.questionTextBoxRef : this.answerTextBoxRef;
-    if (textBoxRef.current) {
-      stateChange.currentMarks = textBoxRef.current.getCurrentMarks();
-    }
-    this.setState(stateChange as State);
+    this.setState({ selectedFace: face });
+
+    // XXX Call collapseSelection on the other face
   }
 
   handleMarksUpdated(face: 'prompt' | 'answer', marks: Set<string>) {
-    if (this.state.activeFace !== face) {
+    if (this.state.focussedFace !== face) {
       return;
     }
 
     this.setState({ currentMarks: marks });
   }
 
+  get editFace(): CardFaceInput | null {
+    // If we have a focussed face, use that. Otherwise use the selected face.
+    //
+    // This means that if, for example, the user selects a range in the
+    // 'prompt', tabs to the answer, then _clicks_ a button in the toolbar, the
+    // command applies to the _answer_ as one would expect.
+    //
+    // The only time it should apply to the selected face is if we don't have
+    // a focussed face (e.g. we tabbed through to the toolbar).
+    const face: 'prompt' | 'answer' =
+      this.state.focussedFace || this.state.selectedFace;
+    return face === 'prompt'
+      ? this.questionTextBoxRef.current
+      : this.answerTextBoxRef.current;
+  }
+
+  get selectedFace(): CardFaceInput | null {
+    return this.state.selectedFace === 'prompt'
+      ? this.questionTextBoxRef.current
+      : this.answerTextBoxRef.current;
+  }
+
   handleFormat(command: FormatButtonCommand) {
-    if (!this.activeFace) {
+    if (!this.editFace) {
       return;
     }
 
-    this.activeFace.toggleMark(command);
+    this.editFace.toggleMark(command);
   }
 
   handleFocus(e: React.FocusEvent<{}> & { wasKeyboard: boolean }) {
-    const stateChange: Partial<State> = {
-      isFocussed: true,
-    };
+    const stateChange: Partial<State> = { isFocussed: true };
 
     // Check for a change of face
+    let faceInFocus = false;
     const textboxes: Array<React.RefObject<CardFaceInput>> = [
       this.questionTextBoxRef,
       this.answerTextBoxRef,
@@ -163,17 +183,28 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       if (
         textbox.current &&
         textbox.current.element &&
-        textbox.current.element.contains(e.target as HTMLElement) &&
-        this.activeFace !== textbox.current &&
-        // We ignore the change if it came from the keyboard since if we are
-        // just tabbing through the field, we don't want to consider that
-        // a change in which field is active.
-        !e.wasKeyboard
+        textbox.current.element.contains(e.target as HTMLElement)
       ) {
-        stateChange.activeFace =
-          textbox === this.questionTextBoxRef ? 'prompt' : 'answer';
-        stateChange.currentMarks = textbox.current.getCurrentMarks();
+        faceInFocus = true;
+        const face = textbox === this.questionTextBoxRef ? 'prompt' : 'answer';
+        if (this.state.focussedFace !== face) {
+          stateChange.focussedFace = face;
+          // If we are just tabbing through the field, we don't want to consider
+          // that a change to the selected face. (We'll update that if the user
+          // subsequently changes the selection within the newly-focussed face.)
+          if (!e.wasKeyboard) {
+            stateChange.selectedFace = face;
+          }
+          stateChange.currentMarks = textbox.current.getCurrentMarks();
+        }
         break;
+      }
+    }
+
+    if (!faceInFocus && this.state.focussedFace) {
+      stateChange.focussedFace = null;
+      if (this.selectedFace) {
+        stateChange.currentMarks = this.selectedFace.getCurrentMarks();
       }
     }
 

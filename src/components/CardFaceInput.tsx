@@ -155,10 +155,22 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   }
 
   handleChange(editorState: EditorState) {
+    const areSelectionEndpointsEqual = (
+      a: SelectionState,
+      b: SelectionState
+    ): boolean =>
+      a.get('anchorKey') === b.get('anchorKey') &&
+      a.get('anchorOffset') === b.get('anchorOffset') &&
+      a.get('focusKey') === b.get('focusKey') &&
+      a.get('focusOffset') === b.get('focusOffset');
+
     if (
       this.props.onSelectionChange &&
       editorState.getSelection().getHasFocus() &&
-      editorState.getSelection() !== this.state.editorState.getSelection()
+      !areSelectionEndpointsEqual(
+        editorState.getSelection(),
+        this.state.editorState.getSelection()
+      )
     ) {
       this.props.onSelectionChange();
     }
