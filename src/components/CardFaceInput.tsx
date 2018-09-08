@@ -33,6 +33,7 @@ interface State {
 const styleMap: any = {
   EMPHASIS: {
     textEmphasis: 'dot',
+    WebkitTextEmphasis: 'dot',
   },
   SELECTION: {
     backgroundColor: 'var(--selection-bg)',
