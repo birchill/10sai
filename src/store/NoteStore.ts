@@ -161,6 +161,13 @@ export class NoteStore {
           return false;
         }
 
+        // Update lower-case version of keywords
+        if (noteUpdate.hasOwnProperty('keywords')) {
+          noteDoc.keywords_idx = noteDoc.keywords!.map(keyword =>
+            keyword.toLowerCase()
+          );
+        }
+
         // Check for redundant changes.
         if (!hasChange(noteUpdate, doc, ['modified'])) {
           return false;

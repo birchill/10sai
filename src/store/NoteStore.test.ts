@@ -332,4 +332,22 @@ describe('NoteStore', () => {
 
     expect(result).toEqual([]);
   });
+
+  it('keyword lookup: reflects updates to a notes keywords', async () => {
+    let note1 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['ABC'],
+    });
+    let note2 = await dataStore.putNote({
+      ...typicalNewNote,
+      keywords: ['DEF'],
+    });
+
+    note1 = await dataStore.putNote({ id: note1.id, keywords: ['ABC', 'deF'] });
+    note2 = await dataStore.putNote({ id: note2.id, keywords: ['ABC'] });
+
+    const result = await dataStore.getNotesForKeywords(['Def']);
+
+    expect(result).toEqual([note1]);
+  });
 });
