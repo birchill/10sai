@@ -4,6 +4,11 @@
   --selection-bg: inherit;
   --selection-color: inherit;
 
+  > * {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
   &.-toolbarfocus {
     --selection-bg: #{lighten($highlight, 20%)};
     --selection-color: white;
