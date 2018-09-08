@@ -1,10 +1,17 @@
 .cardface-editcontrols {
-  --selection-bg: #{$highlight};
-  --selection-color: white;
+  // Normally we actually make the artificial selection look no different from
+  // regular text and only reveal it when the toolbar is in focus.
+  --selection-bg: inherit;
+  --selection-color: inherit;
+
+  &.-toolbarfocus {
+    --selection-bg: #{$highlight};
+    --selection-color: white;
+  }
 
   ::selection {
-    background-color: var(--selection-bg);
-    color: var(--selection-color);
+    background-color: #{$highlight};
+    color: white;
   }
 
   > .prompt, > .answer {

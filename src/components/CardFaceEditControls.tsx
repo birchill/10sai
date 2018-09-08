@@ -18,7 +18,7 @@ interface Props {
 }
 
 interface State {
-  isFocussed: boolean;
+  toolbarFocussed: boolean;
 
   // We track the "focussed" and "selected" face. The (quite subtle) difference
   // is:
@@ -49,7 +49,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   }
 
   state: State = {
-    isFocussed: false,
+    toolbarFocussed: false,
     selectedFace: 'prompt',
     focussedFace: null,
     currentMarks: new Set<string>(),
@@ -180,7 +180,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   }
 
   handleFocus(e: React.FocusEvent<{}> & { wasKeyboard: boolean }) {
-    const stateChange: Partial<State> = { isFocussed: true };
+    const stateChange: Partial<State> = {};
 
     // Check for a change of face
     let faceInFocus = false;
@@ -210,9 +210,13 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       }
     }
 
-    if (!faceInFocus && this.state.focussedFace) {
+    if (!faceInFocus) {
       stateChange.focussedFace = null;
-      if (this.selectedFace) {
+      stateChange.toolbarFocussed = true;
+      // If we tabbed to the toolbar but we have both a focussedFace and
+      // a selectedFace, we should make sure we show the marks from the
+      // _selected_ face.
+      if (this.state.focussedFace && this.selectedFace) {
         stateChange.currentMarks = this.selectedFace.getCurrentMarks();
       }
     }
@@ -223,12 +227,16 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   handleBlur(e: React.FocusEvent<any>) {
     // Unconditionally set this to false. We'll set it to true when we get he
     // subsequent focus event if necessary.
-    this.setState({ isFocussed: false });
+    this.setState({ toolbarFocussed: false });
+  }
+
+  get isFocussed(): boolean {
+    return this.state.toolbarFocussed || !!this.state.focussedFace;
   }
 
   get formatButtonConfig(): Array<FormatButtonConfig> {
     let currentMarks: Set<string> | undefined;
-    if (this.state.isFocussed) {
+    if (this.isFocussed) {
       currentMarks = this.state.currentMarks;
     }
     const hasMark = (style: string): boolean =>
@@ -273,9 +281,14 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   }
 
   render() {
+    const classes = ['cardface-editcontrols'];
+    if (this.state.toolbarFocussed) {
+      classes.push('-toolbarfocus');
+    }
+
     return (
       <div
-        className="cardface-editcontrols"
+        className={classes.join(' ')}
         onFocus={this.keyboardFocusHelper.onFocus}
         onKeyDown={this.keyboardFocusHelper.onKeyDown}
         onBlur={this.handleBlur}
@@ -300,9 +313,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
           ref={this.answerTextBoxRef}
         />
         <CardFormatToolbar
-          className={
-            'toolbar -center' + (this.state.isFocussed ? ' -areafocus' : '')
-          }
+          className={'toolbar -center' + (this.isFocussed ? ' -areafocus' : '')}
           onClick={this.handleFormat}
           buttons={this.formatButtonConfig}
           ref={this.formatToolbarRef}
