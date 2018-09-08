@@ -455,9 +455,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     const originalSelection = this.state.editorState.getSelection();
 
     let editorState = this.clearSelectionFormatting(this.state.editorState);
-
-    // XXX acceptSelection?
-    editorState = EditorState.forceSelection(editorState, originalSelection);
+    editorState = EditorState.acceptSelection(editorState, originalSelection);
 
     this.setState({ editorState });
   }
