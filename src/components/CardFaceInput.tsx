@@ -142,13 +142,21 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       return;
     }
 
-    // XXX Collapse any selectionToRestore here
+    if (this.selectionToRestore) {
+      delete this.selectionToRestore;
+    }
+
+    let editorState = this.state.editorState;
+    if (this.selectionHighlight !== SelectionHighlight.None) {
+      editorState = this.clearSelectionFormatting(editorState);
+      this.selectionHighlight = SelectionHighlight.None;
+    }
 
     const contentState = ContentState.createFromText(value || '');
     // Ok, so insert-characters is not quite right, but it's good enough for now
     // until we implement proper rich text editing.
-    const editorState = EditorState.push(
-      this.state.editorState,
+    editorState = EditorState.push(
+      editorState,
       contentState,
       'insert-characters'
     );
@@ -383,8 +391,6 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
     editorState = this.clearSelectionFormatting(editorState);
     this.selectionHighlight = SelectionHighlight.None;
-
-    delete this.selectionToRestore;
 
     const selection = this.state.editorState.getSelection();
     const collapsedSelection: SelectionState = selection
