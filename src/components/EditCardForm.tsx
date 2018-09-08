@@ -33,6 +33,9 @@ export class EditCardForm extends React.Component<Props, State> {
     tagsText: '',
   };
 
+  handleKeywordsClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  handleTagsClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+
   private cardControlsRef: React.RefObject<CardFaceEditControls>;
   private keywordsTokenListRef: React.RefObject<TokenList>;
   private tagsTokenListRef: React.RefObject<TokenList>;
@@ -46,9 +49,10 @@ export class EditCardForm extends React.Component<Props, State> {
 
     this.handleCardChange = this.handleCardChange.bind(this);
 
-    this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
+    this.handleKeywordsClick = this.handleTokenListClick.bind(this, 'keywords');
+    this.handleTagsClick = this.handleTokenListClick.bind(this, 'tags');
+
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
-    this.handleTagsClick = this.handleTagsClick.bind(this);
     this.handleTagsTextChange = this.handleTagsTextChange.bind(this);
   }
 
@@ -56,15 +60,25 @@ export class EditCardForm extends React.Component<Props, State> {
     this.props.onChange && this.props.onChange(field, value);
   }
 
-  // XXX Factor out common code here
-  handleKeywordsClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (!e.defaultPrevented && this.keywordsTokenListRef.current) {
-      this.keywordsTokenListRef.current.focus();
+  handleTokenListClick(
+    tokenList: 'keywords' | 'tags',
+    e: React.MouseEvent<HTMLDivElement>
+  ) {
+    const tokenListRef =
+      tokenList === 'keywords'
+        ? this.keywordsTokenListRef
+        : this.tagsTokenListRef;
+    if (!e.defaultPrevented && tokenListRef.current) {
+      tokenListRef.current.focus();
     }
   }
 
   handleKeywordsTextChange(text: string) {
     this.setState({ keywordsText: text });
+  }
+
+  handleTagsTextChange(text: string) {
+    this.setState({ tagsText: text });
   }
 
   handleKeywordsChange(
@@ -79,16 +93,6 @@ export class EditCardForm extends React.Component<Props, State> {
     for (const keyword of addedKeywords) {
       addRecentEntry(keyword);
     }
-  }
-
-  handleTagsClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (!e.defaultPrevented && this.tagsTokenListRef.current) {
-      this.tagsTokenListRef.current.focus();
-    }
-  }
-
-  handleTagsTextChange(text: string) {
-    this.setState({ tagsText: text });
   }
 
   handleTagsChange(
