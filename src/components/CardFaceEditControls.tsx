@@ -286,6 +286,14 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       classes.push('-toolbarfocus');
     }
 
+    const getFaceClassName = (face: 'prompt' | 'answer'): string => {
+      const classes: Array<string> = [face];
+      if (this.state.toolbarFocussed && this.state.selectedFace === face) {
+        classes.push('-targeted');
+      }
+      return classes.join(' ');
+    };
+
     return (
       <div
         className={classes.join(' ')}
@@ -294,7 +302,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         onBlur={this.handleBlur}
       >
         <CardFaceInput
-          className="prompt"
+          className={getFaceClassName('prompt')}
           value={this.props.card.question || ''}
           placeholder="Prompt"
           onChange={this.handlePromptChange}
@@ -304,7 +312,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         />
         <hr className="card-divider divider" />
         <CardFaceInput
-          className="answer"
+          className={getFaceClassName('answer')}
           value={this.props.card.answer || ''}
           placeholder="Answer"
           onChange={this.handleAnswerChange}
