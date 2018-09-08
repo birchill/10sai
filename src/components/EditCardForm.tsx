@@ -1,13 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import CardFaceInput from './CardFaceInput';
-import {
-  CardFormatToolbar,
-  FormatButtonCommand,
-  FormatButtonConfig,
-  FormatButtonState,
-} from './CardFormatToolbar';
+import CardFaceEditControls from './CardFaceEditControls';
 import KeywordSuggestionProvider from './KeywordSuggestionProvider';
 import TagSuggestionProvider from './TagSuggestionProvider';
 import TokenList from './TokenList';
@@ -24,15 +18,11 @@ interface Props {
 interface State {
   keywordsText: string;
   tagsText: string;
-  textAreaFocussed: boolean;
-  mostRecentFace: 'prompt' | 'answer';
-  currentMarks: Set<string>;
 }
 
 export class EditCardForm extends React.Component<Props, State> {
   static get propTypes() {
     return {
-      // eslint-disable-next-line react/forbid-prop-types
       card: PropTypes.object.isRequired,
       onChange: PropTypes.func,
     };
@@ -41,146 +31,32 @@ export class EditCardForm extends React.Component<Props, State> {
   state: State = {
     keywordsText: '',
     tagsText: '',
-    textAreaFocussed: false,
-    mostRecentFace: 'prompt',
-    currentMarks: new Set<string>(),
   };
 
-  questionTextBoxRef: React.RefObject<CardFaceInput>;
-  answerTextBoxRef: React.RefObject<CardFaceInput>;
-  formatToolbarRef: React.RefObject<CardFormatToolbar>;
-  keywordsTokenListRef: React.RefObject<TokenList>;
-  tagsTokenListRef: React.RefObject<TokenList>;
-
-  handlePromptChange: (value: 'string') => void;
-  handleAnswerChange: (value: 'string') => void;
-  handlePromptMarksUpdated: (marks: Set<string>) => void;
-  handleAnswerMarksUpdated: (marks: Set<string>) => void;
-  handlePromptSelectRange: () => void;
-  handleAnswerSelectRange: () => void;
-
-  debouncedUpdateSuggestions: {
-    tags: (text: string) => void;
-  };
+  private cardControlsRef: React.RefObject<CardFaceEditControls>;
+  private keywordsTokenListRef: React.RefObject<TokenList>;
+  private tagsTokenListRef: React.RefObject<TokenList>;
 
   constructor(props: Props) {
     super(props);
 
-    this.questionTextBoxRef = React.createRef<CardFaceInput>();
-    this.answerTextBoxRef = React.createRef<CardFaceInput>();
-    this.formatToolbarRef = React.createRef<CardFormatToolbar>();
+    this.cardControlsRef = React.createRef<CardFaceEditControls>();
     this.keywordsTokenListRef = React.createRef<TokenList>();
     this.tagsTokenListRef = React.createRef<TokenList>();
 
-    this.handlePromptChange = this.handleTextBoxChange.bind(this, 'question');
-    this.handlePromptSelectRange = this.handleSelectRange.bind(this, 'prompt');
-    this.handlePromptMarksUpdated = this.handleMarksUpdated.bind(
-      this,
-      'prompt'
-    );
+    this.handleCardChange = this.handleCardChange.bind(this);
 
-    this.handleAnswerChange = this.handleTextBoxChange.bind(this, 'answer');
-    this.handleAnswerSelectRange = this.handleSelectRange.bind(this, 'answer');
-    this.handleAnswerMarksUpdated = this.handleMarksUpdated.bind(
-      this,
-      'answer'
-    );
-
-    this.handleFormat = this.handleFormat.bind(this);
-
-    this.handleBlur = this.handleBlur.bind(this);
-    this.handleFocus = this.handleFocus.bind(this);
-
-    // Token lists
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
     this.handleTagsClick = this.handleTagsClick.bind(this);
     this.handleTagsTextChange = this.handleTagsTextChange.bind(this);
   }
 
-  get currentFace(): CardFaceInput | null {
-    return this.state.mostRecentFace === 'prompt'
-      ? this.questionTextBoxRef.current
-      : this.answerTextBoxRef.current;
+  handleCardChange(field: 'question' | 'answer', value: string | string[]) {
+    this.props.onChange && this.props.onChange(field, value);
   }
 
-  handleTextBoxChange(field: 'question' | 'answer', value: string) {
-    if (this.props.onChange) {
-      this.props.onChange(field, value);
-    }
-  }
-
-  handleSelectRange(face: 'prompt' | 'answer') {
-    if (this.state.mostRecentFace === face) {
-      return;
-    }
-
-    const stateUpdate: Partial<State> = {
-      mostRecentFace: face,
-    };
-    const textBoxRef =
-      face === 'prompt' ? this.questionTextBoxRef : this.answerTextBoxRef;
-    if (textBoxRef.current) {
-      stateUpdate.currentMarks = textBoxRef.current.getCurrentMarks();
-    }
-    this.setState(stateUpdate as State);
-
-    const otherTextBoxRef =
-      face === 'prompt' ? this.answerTextBoxRef : this.questionTextBoxRef;
-    if (otherTextBoxRef.current) {
-      otherTextBoxRef.current.collapseSelection();
-    }
-  }
-
-  handleMarksUpdated(face: 'prompt' | 'answer', marks: Set<string>) {
-    if (this.state.mostRecentFace !== face) {
-      return;
-    }
-
-    this.setState({ currentMarks: marks });
-  }
-
-  handleFormat(command: FormatButtonCommand) {
-    if (!this.currentFace) {
-      return;
-    }
-
-    this.currentFace.toggleMark(command);
-  }
-
-  handleBlur(e: React.FocusEvent<any>) {
-    // Unconditionally set this to false. We'll set it to true when we get he
-    // subsequent focus event if necessary.
-    this.setState({ textAreaFocussed: false });
-  }
-
-  handleFocus(e: React.FocusEvent<any>) {
-    // Check if the focus is in either of the card face textboxes
-    const textboxes: Array<React.RefObject<CardFaceInput>> = [
-      this.questionTextBoxRef,
-      this.answerTextBoxRef,
-    ];
-    for (const textbox of textboxes) {
-      if (
-        textbox.current &&
-        textbox.current.element &&
-        textbox.current.element.contains(e.target as HTMLElement)
-      ) {
-        this.setState({ textAreaFocussed: true });
-        return;
-      }
-    }
-
-    // Check if the focus is in the format toolbar
-    if (
-      this.formatToolbarRef.current &&
-      this.formatToolbarRef.current.element &&
-      this.formatToolbarRef.current.element.contains(e.target as HTMLElement)
-    ) {
-      this.setState({ textAreaFocussed: true });
-    }
-  }
-
+  // XXX Factor out common code here
   handleKeywordsClick(e: React.MouseEvent<HTMLDivElement>) {
     if (!e.defaultPrevented && this.keywordsTokenListRef.current) {
       this.keywordsTokenListRef.current.focus();
@@ -229,91 +105,17 @@ export class EditCardForm extends React.Component<Props, State> {
     }
   }
 
-  get formatButtonConfig(): Array<FormatButtonConfig> {
-    let currentMarks: Set<string> | undefined;
-    if (this.state.textAreaFocussed) {
-      currentMarks = this.state.currentMarks;
-    }
-    const hasMark = (style: string): boolean =>
-      currentMarks ? currentMarks.has(style) : false;
-
-    const buttons: Array<FormatButtonConfig> = [
-      {
-        type: 'bold',
-        label: 'Bold',
-        accelerator: 'Ctrl+B',
-        state: hasMark('bold')
-          ? FormatButtonState.Set
-          : FormatButtonState.Normal,
-      },
-      {
-        type: 'italic',
-        label: 'Italic',
-        accelerator: 'Ctrl+I',
-        state: hasMark('italic')
-          ? FormatButtonState.Set
-          : FormatButtonState.Normal,
-      },
-      {
-        type: 'underline',
-        label: 'Underline',
-        accelerator: 'Ctrl+U',
-        state: hasMark('underline')
-          ? FormatButtonState.Set
-          : FormatButtonState.Normal,
-      },
-      {
-        type: 'emphasis',
-        label: 'Dot emphasis',
-        accelerator: 'Ctrl+.',
-        state: hasMark('emphasis')
-          ? FormatButtonState.Set
-          : FormatButtonState.Normal,
-      },
-    ];
-
-    return buttons;
-  }
-
   render() {
     const keywordSuggestions = KeywordSuggester.getSuggestionsFromCard(
       this.props.card
     );
 
     return (
-      <form
-        className="form editcard-form"
-        autoComplete="off"
-        onFocus={this.handleFocus}
-        onBlur={this.handleBlur}
-      >
-        <CardFaceInput
-          className="prompt"
-          value={this.props.card.question || ''}
-          placeholder="Prompt"
-          onChange={this.handlePromptChange}
-          onSelectRange={this.handlePromptSelectRange}
-          onMarksUpdated={this.handlePromptMarksUpdated}
-          ref={this.questionTextBoxRef}
-        />
-        <hr className="card-divider divider" />
-        <CardFaceInput
-          className="answer"
-          value={this.props.card.answer || ''}
-          placeholder="Answer"
-          onChange={this.handleAnswerChange}
-          onSelectRange={this.handleAnswerSelectRange}
-          onMarksUpdated={this.handleAnswerMarksUpdated}
-          ref={this.answerTextBoxRef}
-        />
-        <CardFormatToolbar
-          className={
-            'toolbar -center' +
-            (this.state.textAreaFocussed ? ' -areafocus' : '')
-          }
-          onClick={this.handleFormat}
-          buttons={this.formatButtonConfig}
-          ref={this.formatToolbarRef}
+      <form className="form editcard-form" autoComplete="off">
+        <CardFaceEditControls
+          card={this.props.card}
+          onChange={this.handleCardChange}
+          ref={this.cardControlsRef}
         />
         <div
           className="keywords -yellow"
@@ -382,6 +184,10 @@ export class EditCardForm extends React.Component<Props, State> {
         </div>
       </form>
     );
+  }
+
+  focus() {
+    this.cardControlsRef.current && this.cardControlsRef.current.focus();
   }
 }
 

@@ -8,25 +8,6 @@
     width: 100%;
   }
 
-  > .prompt, > .answer {
-    padding-left: 1rem;
-    padding-right: 1rem;
-    min-height: 5rem;
-
-    color: lighten($text-color, 20%);
-    &:hover, &:focus-within {
-      color: $text-color;
-    }
-  }
-
-  > .divider {
-    width: 80%;
-  }
-
-  > .toolbar {
-    margin: .5rem;
-  }
-
   > .tags, > .keywords {
     display: flex;
     border-top: 1px dotted transparent;

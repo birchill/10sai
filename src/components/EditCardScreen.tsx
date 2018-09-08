@@ -81,12 +81,8 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 
   activate() {
-    if (
-      this.isFormEmpty() &&
-      this.activeFormRef.current &&
-      this.activeFormRef.current.questionTextBoxRef.current
-    ) {
-      this.activeFormRef.current.questionTextBoxRef.current.focus();
+    if (this.isFormEmpty() && this.activeFormRef.current) {
+      this.activeFormRef.current.focus();
     }
   }
 
