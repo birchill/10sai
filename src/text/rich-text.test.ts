@@ -674,3 +674,28 @@ describe('serialize', () => {
     ).toEqual('abc\ndef\nghi');
   });
 });
+
+describe('serialize and deserialize roundtripping', () => {
+  it('roundtrips various strings', () => {
+    const tests = [
+      '',
+      'abc',
+      'abc\n',
+      '\nabc',
+      'a\nb',
+      '\n',
+      'abc􅨐b􅨑def􅨜ghi',
+      'abc\u{2028}def',
+      'abc􅨐b􅨑def􅨜ghi􅨐i􅨑jkl􅨜mno',
+      '􅨐b􅨑abc􅨐i􅨑def􅨜􅨜',
+      '􅨐b􅨑abc􅨐i􅨑def􅨜􅨜',
+      'abc􅨐!link:http://yer.com􅨑def􅨜ghi',
+    ];
+
+    for (const test of tests) {
+      const parsed = deserialize(test);
+      const serialized = serialize(parsed);
+      expect(serialized).toEqual(test);
+    }
+  });
+});
