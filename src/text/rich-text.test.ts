@@ -1,4 +1,4 @@
-import { deserialize } from './rich-text';
+import { deserialize, serialize } from './rich-text';
 
 describe('deserialize', () => {
   it('parses valid plain text strings', () => {
@@ -230,7 +230,7 @@ describe('deserialize', () => {
     }).toThrow();
   });
 
-  it('passes through astral characters', () => {
+  it('passes through non-BMP characters', () => {
     // (These characters are just the first few that appear in CJK Unified
     // Ideographs Extension B)
     expect(deserialize('𠀀𠀁􅨐!𠀆:𠀊􅨝𠀂􅨑𠀃􅨜𠀄')).toEqual([
@@ -320,4 +320,285 @@ describe('deserialize', () => {
       { type: 'text', children: [] },
     ]);
   });
+});
+
+describe('serialize', () => {
+  it('serializes simple text nodes', () => {
+    expect(serialize([])).toEqual('');
+    expect(serialize([{ type: 'text', children: [] }])).toEqual('');
+    expect(serialize([{ type: 'text', children: [''] }])).toEqual('');
+    expect(serialize([{ type: 'text', children: ['a'] }])).toEqual('a');
+    expect(serialize([{ type: 'text', children: [' '] }])).toEqual(' ');
+    expect(serialize([{ type: 'text', children: ['abc'] }])).toEqual('abc');
+  });
+
+  it('serializes inlines', () => {
+    // Simplest case
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            'abc',
+            { type: 'text', styles: ['b'], children: ['def'] },
+            'ghi',
+          ],
+        },
+      ])
+    ).toEqual('abc􅨐b􅨑def􅨜ghi');
+    // Inline only
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [{ type: 'text', styles: ['b'], children: ['abc'] }],
+        },
+      ])
+    ).toEqual('􅨐b􅨑abc􅨜');
+    // Empty inline body
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [{ type: 'text', styles: ['b'], children: [''] }],
+        },
+      ])
+    ).toEqual('􅨐b􅨑􅨜');
+    // No inline children
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [{ type: 'text', styles: ['b'], children: [] }],
+        },
+      ])
+    ).toEqual('􅨐b􅨑􅨜');
+    // Multiple inlines
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            'abc',
+            { type: 'text', styles: ['b'], children: ['def'] },
+            { type: 'text', styles: ['u'], children: ['ghi'] },
+            'jkl',
+          ],
+        },
+      ])
+    ).toEqual('abc􅨐b􅨑def􅨜􅨐u􅨑ghi􅨜jkl');
+  });
+
+  it('serializes multiple inline styles', () => {
+    // Multiple inline styles
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            { type: 'text', styles: ['b', 'u', 'code'], children: ['abc'] },
+          ],
+        },
+      ])
+    ).toEqual('􅨐b􅨝u􅨝code􅨑abc􅨜');
+    // No inline styles
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [{ type: 'text', styles: [], children: ['abc'] }],
+        },
+      ])
+    ).toEqual('􅨐􅨑abc􅨜');
+  });
+
+  it('serializes nested inlines', () => {
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            {
+              type: 'text',
+              styles: ['b'],
+              children: [
+                'abc',
+                { type: 'text', styles: ['i'], children: ['def'] },
+              ],
+            },
+          ],
+        },
+      ])
+    ).toEqual('􅨐b􅨑abc􅨐i􅨑def􅨜􅨜');
+  });
+
+  it('serializes custom inlines', () => {
+    // With data
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            'abc',
+            {
+              type: 'link',
+              styles: [],
+              children: ['def'],
+              data: 'http://yer.com',
+            },
+            'ghi',
+          ],
+        },
+      ])
+    ).toEqual('abc􅨐!link:http://yer.com􅨑def􅨜ghi');
+    // Without data
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            'abc',
+            {
+              type: 'link',
+              styles: [],
+              children: ['http://yer.com'],
+            },
+            'ghi',
+          ],
+        },
+      ])
+    ).toEqual('abc􅨐!link􅨑http://yer.com􅨜ghi');
+    // With empty data
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            'abc',
+            {
+              type: 'link',
+              styles: [],
+              children: ['http://yer.com'],
+              data: '',
+            },
+            'ghi',
+          ],
+        },
+      ])
+    ).toEqual('abc􅨐!link􅨑http://yer.com􅨜ghi');
+  });
+
+  it('serializes non-BMP characters', () => {
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            '𠀀𠀁',
+            { type: '𠀆', styles: ['𠀂'], children: ['𠀃'], data: '𠀊' },
+            '𠀄',
+          ],
+        },
+      ])
+    ).toEqual('𠀀𠀁􅨐!𠀆:𠀊􅨝𠀂􅨑𠀃􅨜𠀄');
+  });
+
+  it('serializes unmatched surrogates', () => {
+    expect(serialize([{ type: 'text', children: ['ab\ud801c'] }])).toEqual(
+      'ab\ud801c'
+    );
+    expect(serialize([{ type: 'text', children: ['ab\udc37c'] }])).toEqual(
+      'ab\udc37c'
+    );
+  });
+
+  it('strips special characters', () => {
+    expect(
+      serialize([
+        { type: 'text', children: ['\u{105A18}ab\u{105A19}c\u{105A20}'] },
+      ])
+    ).toEqual('abc');
+    // Inline styles
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            'abc',
+            { type: 'text', styles: ['b\u{105A18}u'], children: ['def'] },
+            'ghi',
+          ],
+        },
+      ])
+    ).toEqual('abc􅨐bu􅨑def􅨜ghi');
+    // Custom inline type
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            {
+              type: 'hello\u{105A19}',
+              styles: ['b'],
+              children: ['abc'],
+              data: 'data\u{105A20}data',
+            },
+          ],
+        },
+      ])
+    ).toEqual('􅨐!hello:datadata􅨝b􅨑abc􅨜');
+  });
+
+  it('throws if the style can be serialized', () => {
+    expect(() => {
+      serialize([
+        {
+          type: 'text',
+          children: [{ type: 'text', styles: ['b', '!i'], children: ['abc'] }],
+        },
+      ]);
+    }).toThrow();
+  });
+
+  it('serializes multiple blocks', () => {
+    expect(
+      serialize([
+        { type: 'text', children: ['abc'] },
+        { type: 'text', children: ['def'] },
+      ])
+    ).toEqual('abc\ndef');
+    expect(
+      serialize([
+        { type: 'text', children: ['abc'] },
+        { type: 'text', children: [''] },
+      ])
+    ).toEqual('abc\n');
+    expect(
+      serialize([
+        { type: 'text', children: ['abc'] },
+        { type: 'text', children: [] },
+      ])
+    ).toEqual('abc\n');
+    expect(
+      serialize([
+        { type: 'text', children: [''] },
+        { type: 'text', children: ['abc'] },
+      ])
+    ).toEqual('\nabc');
+    expect(
+      serialize([
+        { type: 'text', children: [] },
+        { type: 'text', children: ['abc'] },
+      ])
+    ).toEqual('\nabc');
+    expect(
+      serialize([
+        { type: 'text', children: ['abc'] },
+        { type: 'text', children: ['def'] },
+        { type: 'text', children: ['ghi'] },
+      ])
+    ).toEqual('abc\ndef\nghi');
+  });
+
+  // XXX What to do with NEL / LS / PS?
 });

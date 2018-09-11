@@ -17,12 +17,70 @@ interface Inline {
 
 type RichText = string;
 
-function serialize(text: Array<Block>): RichText {
-  // XXX This needs to strip all characters in U+105A10 - U+105AFF range
-  // as well as NEL (U+0085) and LS / PS (U+2028 / U+2029).
-  // XXX Needs to strip stuff from inline header types too? e.g. ! in styles
-  // : in custom inline types
-  return '';
+export function serialize(text: Array<Block>): RichText {
+  let result = '';
+  let first = true;
+  for (const block of text) {
+    if (!first) {
+      result += '\n';
+    } else {
+      first = false;
+    }
+
+    if (block.type === 'text') {
+      result += serializeChildren(block.children);
+    }
+  }
+
+  return result;
+}
+
+function serializeChildren(children: Array<Inline | string>): string {
+  let result = '';
+  for (const child of children) {
+    if (typeof child === 'string') {
+      result += stripSpecialChars(child);
+    } else if (typeof child === 'object') {
+      result += serializeInline(child as Inline);
+    }
+  }
+  return result;
+}
+
+function serializeInline(inline: Inline): string {
+  // If the inline styles begin with '!' we can't serialize it without changing
+  // meaning so it's safest to just throw in that case. Besides, it almost
+  // certainly represents an application error, as opposed to user error, so
+  // catestrophic failure is preferable.
+  if (inline.styles.some(style => style.startsWith('!'))) {
+    throw new Error('Failed to serialize. Style begins with a !');
+  }
+
+  let result = '\u{105A10}';
+  const headers = [];
+  if (inline.type !== 'text') {
+    let header = `!${stripSpecialChars(inline.type)}`;
+    // It's important we don't serialize the data if it's a zero-length string
+    // since the parser will reject a custom inline header if the data string is
+    // zero-length.
+    if (inline.data && inline.data.length) {
+      header += `:${stripSpecialChars(inline.data)}`;
+    }
+    headers.push(header);
+  }
+  headers.push(...inline.styles.map(stripSpecialChars));
+  result += headers.join('\u{105A1D}');
+  result += '\u{105A11}';
+  result += serializeChildren(inline.children);
+  result += '\u{105A1C}';
+
+  return result;
+}
+
+const specialChar = /[\u{105A10}-\u{105AFF}]+/gu;
+
+function stripSpecialChars(text: string): string {
+  return text.replace(specialChar, '');
 }
 
 export function deserialize(text: RichText): Array<Block> {
