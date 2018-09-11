@@ -39,13 +39,21 @@ function serializeChildren(children: Array<Inline | string>): string {
   let result = '';
   for (const child of children) {
     if (typeof child === 'string') {
-      result += stripSpecialChars(child);
+      result += sanitizeTextNode(child);
     } else if (typeof child === 'object') {
       result += serializeInline(child as Inline);
     }
   }
   return result;
 }
+
+const specialChar = /[\u{105A10}-\u{105AFF}]+/gu;
+
+function sanitizeTextNode(text: string): string {
+  return text.replace(specialChar, '').replace('\n', '\u{2028}');
+}
+
+const specialCharOrNewline = /[\u{105A10}-\u{105AFF}\n]+/gu;
 
 function serializeInline(inline: Inline): string {
   // If the inline styles begin with '!' we can't serialize it without changing
@@ -56,31 +64,39 @@ function serializeInline(inline: Inline): string {
     throw new Error('Failed to serialize. Style begins with a !');
   }
 
+  // Likewise if the style name contains a special character of any kind--such
+  // names are not user supplied, so any special character present represents an
+  // application error.
+  if (inline.styles.some(style => style.search(specialCharOrNewline) !== -1)) {
+    throw new Error('Failed to serialize. Invalid character in style name.');
+  }
+
+  // Likewise for custom inline types
+  if (inline.type.search(specialCharOrNewline) !== -1) {
+    throw new Error('Failed to serialize. Invalid character in inline name.');
+  }
+  // (For inline data, however, it might be user supplied so we just strip
+  // special characters when serializing.)
+
   let result = '\u{105A10}';
   const headers = [];
   if (inline.type !== 'text') {
-    let header = `!${stripSpecialChars(inline.type)}`;
+    let header = `!${inline.type}`;
     // It's important we don't serialize the data if it's a zero-length string
     // since the parser will reject a custom inline header if the data string is
     // zero-length.
     if (inline.data && inline.data.length) {
-      header += `:${stripSpecialChars(inline.data)}`;
+      header += `:${inline.data.replace(specialCharOrNewline, '')}`;
     }
     headers.push(header);
   }
-  headers.push(...inline.styles.map(stripSpecialChars));
+  headers.push(...inline.styles);
   result += headers.join('\u{105A1D}');
   result += '\u{105A11}';
   result += serializeChildren(inline.children);
   result += '\u{105A1C}';
 
   return result;
-}
-
-const specialChar = /[\u{105A10}-\u{105AFF}]+/gu;
-
-function stripSpecialChars(text: string): string {
-  return text.replace(specialChar, '');
 }
 
 export function deserialize(text: RichText): Array<Block> {
@@ -187,6 +203,9 @@ class Lexer implements Iterator<Token> {
       } else if (charCode === 0xa) {
         thisToken = { type: TokenType.BlockDelimeter, offset: this.offset };
         this.offset++;
+      } else if (charCode === 0x2028) {
+        text += '\n';
+        continue;
       }
 
       if (thisToken) {

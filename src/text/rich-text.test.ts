@@ -274,6 +274,12 @@ describe('deserialize', () => {
     );
   });
 
+  it('converts LS characters into newlines', () => {
+    expect(deserialize('ab\u{2028}c')).toEqual([
+      { type: 'text', children: ['ab\nc'] },
+    ]);
+  });
+
   it('ignores all but the first specified custom inline type', () => {
     expect(deserialize('abc􅨐!r:せん.だい􅨝!ruby:yer􅨑def􅨜ghi')).toEqual([
       {
@@ -518,8 +524,26 @@ describe('serialize', () => {
         { type: 'text', children: ['\u{105A18}ab\u{105A19}c\u{105A20}'] },
       ])
     ).toEqual('abc');
-    // Inline styles
-    expect(
+  });
+
+  it('serializes an embedded line break in a text node', () => {
+    expect(serialize([{ type: 'text', children: ['abc\ndef'] }])).toEqual(
+      'abc\u{2028}def'
+    );
+  });
+
+  it("throws if the style can't be serialized", () => {
+    // Initial !
+    expect(() => {
+      serialize([
+        {
+          type: 'text',
+          children: [{ type: 'text', styles: ['b', '!i'], children: ['abc'] }],
+        },
+      ]);
+    }).toThrow();
+    // Special character
+    expect(() => {
       serialize([
         {
           type: 'text',
@@ -529,10 +553,22 @@ describe('serialize', () => {
             'ghi',
           ],
         },
-      ])
-    ).toEqual('abc􅨐bu􅨑def􅨜ghi');
-    // Custom inline type
-    expect(
+      ]);
+    }).toThrow();
+    // Embedded newline character
+    expect(() => {
+      serialize([
+        {
+          type: 'text',
+          children: [{ type: 'text', styles: ['b\nu'], children: ['abc'] }],
+        },
+      ]);
+    }).toThrow();
+  });
+
+  it("throws if the custom inline type can't be serialized", () => {
+    // Special character
+    expect(() => {
       serialize([
         {
           type: 'text',
@@ -541,23 +577,61 @@ describe('serialize', () => {
               type: 'hello\u{105A19}',
               styles: ['b'],
               children: ['abc'],
+            },
+          ],
+        },
+      ]);
+    }).toThrow();
+    // Embedded newline character
+    expect(() => {
+      serialize([
+        {
+          type: 'text',
+          children: [
+            {
+              type: 'he\nllo',
+              styles: ['b'],
+              children: ['abc'],
+            },
+          ],
+        },
+      ]);
+    }).toThrow();
+  });
+
+  it('strips special characters from inline data', () => {
+    // Special characters
+    expect(
+      serialize([
+        {
+          type: 'text',
+          children: [
+            {
+              type: 'hello',
+              styles: ['b'],
+              children: ['abc'],
               data: 'data\u{105A20}data',
             },
           ],
         },
       ])
     ).toEqual('􅨐!hello:datadata􅨝b􅨑abc􅨜');
-  });
-
-  it('throws if the style can be serialized', () => {
-    expect(() => {
+    // Embedded newlines
+    expect(
       serialize([
         {
           type: 'text',
-          children: [{ type: 'text', styles: ['b', '!i'], children: ['abc'] }],
+          children: [
+            {
+              type: 'hello',
+              styles: ['b'],
+              children: ['abc'],
+              data: 'data\ndata\n',
+            },
+          ],
         },
-      ]);
-    }).toThrow();
+      ])
+    ).toEqual('􅨐!hello:datadata􅨝b􅨑abc􅨜');
   });
 
   it('serializes multiple blocks', () => {
@@ -599,6 +673,4 @@ describe('serialize', () => {
       ])
     ).toEqual('abc\ndef\nghi');
   });
-
-  // XXX What to do with NEL / LS / PS?
 });
