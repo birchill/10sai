@@ -85,6 +85,7 @@ class Lexer implements Iterator<Token> {
     let text = '';
     let startOffset = this.offset;
     for (; this.offset < this.len; this.offset++) {
+      let thisToken: Token | undefined;
       const charCode = this.input.charCodeAt(this.offset);
 
       // Look for special characters
@@ -122,26 +123,29 @@ class Lexer implements Iterator<Token> {
               continue;
           }
 
-          const specialToken: Token = { type, offset: this.offset };
+          thisToken = { type, offset: this.offset };
           this.offset += 2;
-
-          if (text.length) {
-            this.nextToken = specialToken;
-            return {
-              done: false,
-              value: {
-                type: TokenType.Text,
-                value: text,
-                offset: startOffset,
-              },
-            };
-          }
-
-          return { done: false, value: specialToken };
         }
+      } else if (charCode === 0xa) {
+        thisToken = { type: TokenType.BlockDelimeter, offset: this.offset };
+        this.offset++;
       }
 
-      // XXX Look for line breaks
+      if (thisToken) {
+        if (text.length) {
+          this.nextToken = thisToken;
+          return {
+            done: false,
+            value: {
+              type: TokenType.Text,
+              value: text,
+              offset: startOffset,
+            },
+          };
+        }
+
+        return { done: false, value: thisToken };
+      }
 
       text += this.input.substring(this.offset, this.offset + 1);
     }
@@ -164,11 +168,20 @@ class Lexer implements Iterator<Token> {
 }
 
 class Parser implements Iterator<Block> {
-  lexer: Lexer;
-  state: ParserState;
+  private lexer: Lexer;
+  private done: boolean;
 
   constructor(input: string) {
     this.lexer = new Lexer(input);
+    // We set this to true because we have a slightly odd behavior where if the
+    // content is an empty string, we want to return ZERO blocks (i.e. we want
+    // to be able to represent a completely empty state). On the other hand, if
+    // the content is a single block delimeter characters, we want to return TWO
+    // blocks since that seems to best match the intention of the content.
+    //
+    // So we initially set |done| to true and if we get any content at all, we
+    // set it to false until we hit the end of the content.
+    this.done = true;
   }
 
   [Symbol.iterator]() {
@@ -179,6 +192,7 @@ class Parser implements Iterator<Block> {
     const block: Block = { type: 'text', children: [] };
 
     for (const token of this.lexer) {
+      this.done = false;
       switch (token.type) {
         case TokenType.Text:
           block.children.push(token.value);
@@ -200,7 +214,8 @@ class Parser implements Iterator<Block> {
       }
     }
 
-    if (block.type !== 'text' || block.children.length) {
+    if (!this.done) {
+      this.done = true;
       return { done: false, value: block };
     }
 
@@ -310,12 +325,6 @@ class Parser implements Iterator<Block> {
       }'. Unexpected end of input parsing inline`
     );
   }
-}
-
-const enum ParserState {
-  Block,
-  InlineHeader,
-  InlineBody,
 }
 
 function fromDraft(text: RawDraftContentState): Array<Block> {

@@ -274,7 +274,7 @@ describe('deserialize', () => {
     );
   });
 
-  it('Ignores all but the first specified custom inline type', () => {
+  it('ignores all but the first specified custom inline type', () => {
     expect(deserialize('abc􅨐!r:せん.だい􅨝!ruby:yer􅨑def􅨜ghi')).toEqual([
       {
         type: 'text',
@@ -292,5 +292,32 @@ describe('deserialize', () => {
     ]);
   });
 
-  // Block delimeters
+  it('parses multiple blocks', () => {
+    // Simple case
+    expect(deserialize('abc\ndef')).toEqual([
+      { type: 'text', children: ['abc'] },
+      { type: 'text', children: ['def'] },
+    ]);
+    // Empty end block
+    expect(deserialize('abc\n')).toEqual([
+      { type: 'text', children: ['abc'] },
+      { type: 'text', children: [] },
+    ]);
+    // Empty start block
+    expect(deserialize('\nabc')).toEqual([
+      { type: 'text', children: [] },
+      { type: 'text', children: ['abc'] },
+    ]);
+    // Empty inner block
+    expect(deserialize('abc\n\ndef')).toEqual([
+      { type: 'text', children: ['abc'] },
+      { type: 'text', children: [] },
+      { type: 'text', children: ['def'] },
+    ]);
+    // Block delimeter only
+    expect(deserialize('\n')).toEqual([
+      { type: 'text', children: [] },
+      { type: 'text', children: [] },
+    ]);
+  });
 });
