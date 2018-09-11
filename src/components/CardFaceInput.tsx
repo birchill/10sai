@@ -153,8 +153,6 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     }
 
     const contentState = ContentState.createFromText(value || '');
-    // Ok, so insert-characters is not quite right, but it's good enough for now
-    // until we implement proper rich text editing.
     editorState = EditorState.push(
       editorState,
       contentState,
