@@ -91,7 +91,7 @@ class Lexer implements Iterator<Token> {
       // Look for special characters
       if (charCode >= 0xd800 && charCode <= 0xdbff) {
         const codepoint = this.input.codePointAt(this.offset);
-        if (codepoint >= 0x105a10 && codepoint <= 0x105aff) {
+        if (codepoint && codepoint >= 0x105a10 && codepoint <= 0x105aff) {
           let type;
           switch (codepoint) {
             case 0x105a10:
@@ -195,7 +195,7 @@ class Parser implements Iterator<Block> {
       this.done = false;
       switch (token.type) {
         case TokenType.Text:
-          block.children.push(token.value);
+          block.children.push(token.value!);
           break;
 
         case TokenType.InlineRangeStart:
