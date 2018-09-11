@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import CardFaceEditControls from './CardFaceEditControls';
+import { CardFaceEditControls } from './CardFaceEditControls';
 import KeywordSuggestionProvider from './KeywordSuggestionProvider';
 import TagSuggestionProvider from './TagSuggestionProvider';
 import TokenList from './TokenList';
