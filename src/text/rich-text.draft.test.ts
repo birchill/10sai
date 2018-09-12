@@ -79,9 +79,31 @@ describe('fromDraft', () => {
       ],
       entityMap: {},
     };
+    expect(fromDraft(input)).toEqual([
+      {
+        type: 'text',
+        children: [
+          'abc',
+          {
+            type: 'text',
+            children: [
+              'd',
+              {
+                type: 'text',
+                styles: ['i'],
+                children: ['e'],
+              },
+              'f',
+            ],
+            styles: ['b'],
+          },
+          'ghi',
+        ],
+      },
+    ]);
   });
 
-  it('converts overlapping ranges', () => {
+  it('converts partially-overlapping ranges', () => {
     const input: RawDraftContentState = {
       blocks: [
         {
@@ -90,8 +112,8 @@ describe('fromDraft', () => {
           entityRanges: [],
           inlineStyleRanges: [
             {
-              length: 1,
-              offset: 3,
+              length: 3,
+              offset: 1,
               style: 'BOLD',
             },
             {
@@ -107,6 +129,161 @@ describe('fromDraft', () => {
       ],
       entityMap: {},
     };
+    expect(fromDraft(input)).toEqual([
+      {
+        type: 'text',
+        children: [
+          'a',
+          {
+            type: 'text',
+            styles: ['b'],
+            children: [
+              'b',
+              {
+                type: 'text',
+                styles: ['i'],
+                children: ['cd'],
+              },
+            ],
+          },
+          {
+            type: 'text',
+            styles: ['i'],
+            children: ['e'],
+          },
+          'f',
+        ],
+      },
+    ]);
+  });
+
+  it('converts ranges with equal ends', () => {
+    const input: RawDraftContentState = {
+      blocks: [
+        {
+          depth: 0,
+          data: {},
+          entityRanges: [],
+          inlineStyleRanges: [
+            {
+              length: 3,
+              offset: 1,
+              style: 'BOLD',
+            },
+            {
+              length: 2,
+              offset: 2,
+              style: 'ITALIC',
+            },
+          ],
+          key: 'yer',
+          text: 'abcdef',
+          type: 'unstyled',
+        },
+      ],
+      entityMap: {},
+    };
+    expect(fromDraft(input)).toEqual([
+      {
+        type: 'text',
+        children: [
+          'a',
+          {
+            type: 'text',
+            styles: ['b'],
+            children: [
+              'b',
+              {
+                type: 'text',
+                styles: ['i'],
+                children: ['cd'],
+              },
+            ],
+          },
+          'ef',
+        ],
+      },
+    ]);
+  });
+
+  it('converts partially-overlapping ranges', () => {
+    const input: RawDraftContentState = {
+      blocks: [
+        {
+          depth: 0,
+          data: {},
+          entityRanges: [],
+          inlineStyleRanges: [
+            {
+              length: 3,
+              offset: 1,
+              style: 'BOLD',
+            },
+            {
+              length: 2,
+              offset: 1,
+              style: 'ITALIC',
+            },
+          ],
+          key: 'yer',
+          text: 'abcdef',
+          type: 'unstyled',
+        },
+      ],
+      entityMap: {},
+    };
+    expect(fromDraft(input)).toEqual([
+      {
+        type: 'text',
+        children: [
+          'a',
+          {
+            type: 'text',
+            styles: ['b', 'i'],
+            children: ['bc'],
+          },
+          {
+            type: 'text',
+            styles: ['b'],
+            children: ['d'],
+          },
+          'ef',
+        ],
+      },
+    ]);
+  });
+
+  it('treats offsets as codepoint offsets', () => {
+    const input: RawDraftContentState = {
+      blocks: [
+        {
+          depth: 0,
+          data: {},
+          entityRanges: [],
+          inlineStyleRanges: [
+            {
+              length: 2,
+              offset: 1,
+              style: 'BOLD',
+            },
+          ],
+          key: 'yer',
+          text: '𠀀𠀁𠀆𠀂',
+          type: 'unstyled',
+        },
+      ],
+      entityMap: {},
+    };
+    expect(fromDraft(input)).toEqual([
+      {
+        type: 'text',
+        children: [
+          '𠀀',
+          { type: 'text', children: ['𠀁𠀆'], styles: ['b'] },
+          '𠀂',
+        ],
+      },
+    ]);
   });
 
   it('converts multiple blocks', () => {
@@ -133,6 +310,10 @@ describe('fromDraft', () => {
       ],
       entityMap: {},
     };
+    expect(fromDraft(input)).toEqual([
+      { type: 'text', children: ['abc'] },
+      { type: 'text', children: ['def'] },
+    ]);
   });
 
   // XXX Drops SELECTION styles

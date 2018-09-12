@@ -1,4 +1,5 @@
 import { RawDraftContentState, RawDraftInlineStyleRange } from 'draft-js';
+import unicodeSubstring from 'unicode-substring';
 
 interface Block {
   type: 'text';
@@ -420,17 +421,26 @@ export function fromDraft(text: RawDraftContentState): Array<Block> {
 
     let offset: number = 0;
     const styleStack: Array<Inline> = [];
-    for (const change of changeList) {
-      const currentChildList: Array<string | Inline> = styleStack.length
+    const currentChildList = (): Array<string | Inline> =>
+      styleStack.length
         ? styleStack[styleStack.length - 1].children
         : block.children;
+
+    for (const change of changeList) {
       if (offset !== change.offset) {
-        currentChildList.push(draftBlock.text.substring(offset, change.offset));
+        currentChildList().push(
+          unicodeSubstring(draftBlock.text, offset, change.offset)
+        );
       }
 
       const { pushStyles, popStyles } = change;
       while (popStyles.size) {
-        const stackTop = styleStack[styleStack.length - 1];
+        if (!styleStack.length) {
+          throw Error(
+            'Something has gone horribly wrong in our range handling'
+          );
+        }
+        const stackTop = styleStack.pop()!;
         for (const style of stackTop.styles) {
           if (popStyles.has(style)) {
             popStyles.delete(style);
@@ -440,7 +450,6 @@ export function fromDraft(text: RawDraftContentState): Array<Block> {
             pushStyles.add(style);
           }
         }
-        styleStack.pop();
       }
 
       if (pushStyles.size) {
@@ -449,7 +458,7 @@ export function fromDraft(text: RawDraftContentState): Array<Block> {
           styles: [...pushStyles],
           children: [],
         };
-        currentChildList.push(inline);
+        currentChildList().push(inline);
         styleStack.push(inline);
       }
 
@@ -457,7 +466,7 @@ export function fromDraft(text: RawDraftContentState): Array<Block> {
     }
 
     if (offset !== draftBlock.text.length) {
-      block.children.push(draftBlock.text.substring(offset));
+      block.children.push(unicodeSubstring(draftBlock.text, offset));
     }
 
     result.push(block);
