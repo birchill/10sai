@@ -316,5 +316,41 @@ describe('fromDraft', () => {
     ]);
   });
 
-  // XXX Drops SELECTION styles
+  it('drops SELECTION styles', () => {
+    const input: RawDraftContentState = {
+      blocks: [
+        {
+          depth: 0,
+          data: {},
+          entityRanges: [],
+          inlineStyleRanges: [
+            {
+              length: 3,
+              offset: 3,
+              style: 'BOLD',
+            },
+            {
+              length: 3,
+              offset: 2,
+              style: 'SELECTION',
+            },
+          ],
+          key: 'yer',
+          text: 'abcdefghi',
+          type: 'unstyled',
+        },
+      ],
+      entityMap: {},
+    };
+    expect(fromDraft(input)).toEqual([
+      {
+        type: 'text',
+        children: [
+          'abc',
+          { type: 'text', children: ['def'], styles: ['b'] },
+          'ghi',
+        ],
+      },
+    ]);
+  });
 });

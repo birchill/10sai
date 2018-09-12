@@ -490,7 +490,6 @@ function getChangeList(
     style: string;
   };
 
-  // XXX Make sure we drop SELECTION styles
   const translateStyle = (style: string): string => {
     switch (style) {
       case 'BOLD':
@@ -512,6 +511,11 @@ function getChangeList(
 
   return (
     styleRanges
+      // Drop any SELECTION styles that show up
+      .filter(
+        (range: RawDraftInlineStyleRange): boolean =>
+          (range.style as string) !== 'SELECTION'
+      )
       // Convert each range into a push, pop command pair
       .map(
         (range: RawDraftInlineStyleRange): [StyleChange, StyleChange] => {
