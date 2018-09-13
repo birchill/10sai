@@ -1,12 +1,31 @@
-import { RawDraftContentState, RawDraftInlineStyleRange } from 'draft-js';
+import {
+  RawDraftContentState,
+  RawDraftInlineStyleRange,
+  RawDraftContentBlock,
+  RawDraftEntityRange,
+} from 'draft-js';
 import unicodeSubstring from 'unicode-substring';
 
 import { Block, Inline } from './rich-text';
 
-export function fromDraft(text: RawDraftContentState): Array<Block> {
+// draft-js typings here make all these members required but most of them are optional.
+declare module 'draft-js' {
+  interface RawDraftContentBlock {
+    key?: string;
+    type: string;
+    text: string;
+    depth?: number;
+    inlineStyleRanges?: Array<RawDraftInlineStyleRange>;
+    entityRanges?: Array<RawDraftEntityRange>;
+    data?: any;
+    children?: Array<RawDraftContentBlock>;
+  }
+}
+
+export function fromDraft(content: RawDraftContentState): Array<Block> {
   const result: Array<Block> = [];
 
-  for (const draftBlock of text.blocks) {
+  for (const draftBlock of content.blocks) {
     const block: Block = { type: 'text', children: [] };
 
     // So it turns out when I initially analzyed the data structures used by
@@ -169,8 +188,34 @@ function getChangeList(
   );
 }
 
-/*
-function toDraft(text: Array<Block>): RawContentState {
-  // XXX
+export function toDraft(content: Array<Block>): RawDraftContentState {
+  const result: RawDraftContentState = {
+    blocks: [],
+    entityMap: {},
+  };
+
+  for (const block of content) {
+    // Collect all the text
+    const getText = (children: Array<string | Inline>): string => {
+      let result = '';
+      for (const child of children) {
+        if (typeof child === 'string') {
+          result += child;
+        } else {
+          result += getText(child.children);
+        }
+      }
+      return result;
+    };
+    let text = getText(block.children);
+
+    const draftBlock: RawDraftContentBlock = {
+      text,
+      type: 'unstyled',
+    };
+
+    result.blocks.push(draftBlock as Draft.RawDraftContentBlock);
+  }
+
+  return result;
 }
-*/

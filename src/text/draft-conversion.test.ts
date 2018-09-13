@@ -1,5 +1,6 @@
 import { RawDraftContentState } from 'draft-js';
-import { fromDraft } from './draft-conversion';
+import { fromDraft, toDraft } from './draft-conversion';
+import { Block } from './rich-text';
 
 describe('fromDraft', () => {
   it('converts a simple string', () => {
@@ -352,5 +353,20 @@ describe('fromDraft', () => {
         ],
       },
     ]);
+  });
+});
+
+describe('toDraft', () => {
+  it('converts a simple string', () => {
+    const input: Array<Block> = [{ type: 'text', children: ['abc'] }];
+    expect(toDraft(input)).toEqual({
+      blocks: [
+        {
+          type: 'unstyled',
+          text: 'abc',
+        },
+      ],
+      entityMap: {},
+    });
   });
 });
