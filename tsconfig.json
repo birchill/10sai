@@ -4,6 +4,7 @@
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
     "jsx": "react",
+    "lib": ["dom", "es2017", "es2017.object"],
     "moduleResolution": "node",
     "noImplicitAny": true,
     "outDir": "./public/",

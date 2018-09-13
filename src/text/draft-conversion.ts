@@ -3,6 +3,7 @@ import {
   RawDraftInlineStyleRange,
   RawDraftContentBlock,
   RawDraftEntityRange,
+  DraftInlineStyleType,
 } from 'draft-js';
 import unicodeSubstring from 'unicode-substring';
 
@@ -20,6 +21,31 @@ declare module 'draft-js' {
     data?: any;
     children?: Array<RawDraftContentBlock>;
   }
+}
+
+const styleMappingFromDraft: { [key: string]: string } = {
+  BOLD: 'b',
+  ITALIC: 'i',
+  UNDERLINE: 'u',
+  EMPHASIS: '.',
+};
+
+const styleMappingToDraft: { [key: string]: string } = {};
+
+for (const [key, value] of Object.entries(styleMappingFromDraft)) {
+  styleMappingToDraft[value] = key;
+}
+
+function translateStyleFromDraft(style: string): string {
+  return styleMappingFromDraft.hasOwnProperty(style)
+    ? styleMappingFromDraft[style]
+    : style;
+}
+
+function translateStyleToDraft(style: string): string {
+  return styleMappingToDraft.hasOwnProperty(style)
+    ? styleMappingToDraft[style]
+    : style;
 }
 
 export function fromDraft(content: RawDraftContentState): Array<Block> {
@@ -107,25 +133,6 @@ function getChangeList(
     style: string;
   };
 
-  const translateStyle = (style: string): string => {
-    switch (style) {
-      case 'BOLD':
-        return 'b';
-
-      case 'ITALIC':
-        return 'i';
-
-      case 'UNDERLINE':
-        return 'u';
-
-      case 'EMPHASIS':
-        return '.';
-
-      default:
-        return style;
-    }
-  };
-
   return (
     styleRanges
       // Drop any SELECTION styles that show up
@@ -140,12 +147,12 @@ function getChangeList(
             {
               offset: range.offset,
               type: 'push',
-              style: translateStyle(range.style),
+              style: translateStyleFromDraft(range.style),
             },
             {
               offset: range.offset + range.length,
               type: 'pop',
-              style: translateStyle(range.style),
+              style: translateStyleFromDraft(range.style),
             },
           ];
         }
@@ -195,27 +202,81 @@ export function toDraft(content: Array<Block>): RawDraftContentState {
   };
 
   for (const block of content) {
-    // Collect all the text
-    const getText = (children: Array<string | Inline>): string => {
-      let result = '';
-      for (const child of children) {
-        if (typeof child === 'string') {
-          result += child;
-        } else {
-          result += getText(child.children);
-        }
-      }
-      return result;
-    };
-    let text = getText(block.children);
+    const data: NodeData = convertNode(block, 0);
 
     const draftBlock: RawDraftContentBlock = {
-      text,
+      text: data.text,
       type: 'unstyled',
     };
+
+    if (data.inlineStyles.length) {
+      draftBlock.inlineStyleRanges = [];
+
+      // Merge and add styles
+      const rangeEnds: {
+        [key: string]: { end: number; range: RawDraftInlineStyleRange };
+      } = {};
+      for (const styleRange of data.inlineStyles) {
+        if (
+          rangeEnds.hasOwnProperty(styleRange.style) &&
+          rangeEnds[styleRange.style].end === styleRange.offset
+        ) {
+          rangeEnds[styleRange.style].range.length += styleRange.length;
+          rangeEnds[styleRange.style].end += styleRange.length;
+        } else {
+          rangeEnds[styleRange.style] = {
+            end: styleRange.offset + styleRange.length,
+            range: styleRange,
+          };
+          draftBlock.inlineStyleRanges.push(styleRange);
+        }
+      }
+    }
 
     result.blocks.push(draftBlock as Draft.RawDraftContentBlock);
   }
 
   return result;
+}
+
+interface NodeData {
+  text: string;
+  length: number;
+  inlineStyles: Array<RawDraftInlineStyleRange>;
+}
+
+function convertNode(
+  node: { styles?: Array<string>; children: Array<string | Inline> },
+  offset: number
+): NodeData {
+  const inlineStyles: Array<RawDraftInlineStyleRange> = [];
+
+  let text = '';
+  let length = 0;
+  for (const child of node.children) {
+    if (typeof child === 'string') {
+      text += child;
+      length += [...child].length;
+    } else {
+      const data: NodeData = convertNode(child, offset + length);
+      text += data.text;
+      length += data.length;
+      inlineStyles.push(...data.inlineStyles);
+    }
+  }
+
+  if (node.styles) {
+    // We know for certain that the inline styles that apply to this node will
+    // have an offset <= than any we already have in inlineStyles so by adding
+    // to the start of the array here, we can avoid sorting later.
+    inlineStyles.unshift(
+      ...node.styles.map(style => ({
+        style: translateStyleToDraft(style) as DraftInlineStyleType,
+        offset,
+        length,
+      }))
+    );
+  }
+
+  return { text, length, inlineStyles };
 }
