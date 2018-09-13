@@ -1,5 +1,5 @@
 import { RawDraftContentState } from 'draft-js';
-import { fromDraft } from './rich-text';
+import { fromDraft } from './draft-conversion';
 
 describe('fromDraft', () => {
   it('converts a simple string', () => {
