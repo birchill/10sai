@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import * as Immutable from 'immutable';
 
 import {
+  convertFromRaw,
+  convertToRaw,
   ContentState,
   Editor,
   EditorState,
@@ -11,9 +13,15 @@ import {
   SelectionState,
 } from 'draft-js';
 import { cardKeyBindings } from '../text/key-bindings';
+import { deserialize, serialize } from '../text/rich-text';
+import { fromDraft, toDraft } from '../text/draft-conversion';
 
-function getEditorContent(editorState: EditorState): string {
-  return editorState.getCurrentContent().getPlainText();
+function serializeContent(editorState: EditorState): string {
+  return serialize(fromDraft(convertToRaw(editorState.getCurrentContent())));
+}
+
+function deserializeContent(text: string): ContentState {
+  return convertFromRaw(toDraft(deserialize(text)));
 }
 
 interface Props {
@@ -121,7 +129,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     }
 
     // If the value in state already matches the props value, don't update.
-    const currentValueInState = getEditorContent(state.editorState);
+    const currentValueInState = serializeContent(state.editorState);
     if (currentValueInState === props.value) {
       return null;
     }
@@ -134,7 +142,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       stateChange.selectionHighlight = SelectionHighlight.None;
     }
 
-    const contentState = ContentState.createFromText(props.value || '');
+    const contentState = deserializeContent(props.value || '');
     editorState = EditorState.push(
       editorState,
       contentState,
@@ -240,7 +248,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     // recognize it as a redundant change and avoid re-setting the editor state.
     this.setState((prevState, props) => {
       if (props.onChange) {
-        const valueAsString = getEditorContent(editorState);
+        const valueAsString = serializeContent(editorState);
         if (valueAsString !== this.props.value) {
           props.onChange(valueAsString);
         }
