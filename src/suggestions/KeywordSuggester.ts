@@ -3,6 +3,7 @@ import { LRUMap } from '../utils/lru';
 import { SuggestionResult } from './SuggestionResult';
 import { findSubstringMatch, mergeAndTrimSuggestions } from './utils';
 import { Card } from '../model';
+import { toPlainText } from '../text/rich-text';
 import { stripRuby } from '../text/ruby';
 import { extractKeywordsFromCloze } from '../text/cloze';
 import {
@@ -121,8 +122,8 @@ export class KeywordSuggester {
       return [];
     }
 
-    const question = stripRuby(card.question);
-    const answer = stripRuby(card.answer);
+    const question = stripRuby(toPlainText(card.question));
+    const answer = stripRuby(toPlainText(card.answer));
 
     // Look for a cloze -- if we find some stop there.
     const clozeKeywords = extractKeywordsFromCloze(question, answer);

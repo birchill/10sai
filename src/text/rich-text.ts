@@ -409,7 +409,34 @@ function toHTML(text: Array<Block>): string {
   return '';
 }
 
-function toPlainText(text: RichText): string {
-  // XXX
-  return '';
+export function toPlainText(text: RichText): string {
+  let result = '';
+  let first = true;
+  const parser = new Parser(text);
+
+  for (const block of parser) {
+    if (!first) {
+      result += '\n';
+    } else {
+      first = false;
+    }
+
+    if (block.type === 'text') {
+      result += childrenToPlainText(block.children);
+    }
+  }
+
+  return result;
+}
+
+function childrenToPlainText(children: Array<Inline | string>): string {
+  let result = '';
+  for (const child of children) {
+    if (typeof child === 'string') {
+      result += child;
+    } else {
+      result += childrenToPlainText(child.children);
+    }
+  }
+  return result;
 }

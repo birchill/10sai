@@ -1,4 +1,4 @@
-import { deserialize, serialize } from './rich-text';
+import { deserialize, serialize, toPlainText } from './rich-text';
 
 describe('deserialize', () => {
   it('parses valid plain text strings', () => {
@@ -688,7 +688,6 @@ describe('serialize and deserialize roundtripping', () => {
       'abc\u{2028}def',
       'abc􅨐b􅨑def􅨜ghi􅨐i􅨑jkl􅨜mno',
       '􅨐b􅨑abc􅨐i􅨑def􅨜􅨜',
-      '􅨐b􅨑abc􅨐i􅨑def􅨜􅨜',
       'abc􅨐!link:http://yer.com􅨑def􅨜ghi',
     ];
 
@@ -696,6 +695,28 @@ describe('serialize and deserialize roundtripping', () => {
       const parsed = deserialize(test);
       const serialized = serialize(parsed);
       expect(serialized).toEqual(test);
+    }
+  });
+});
+
+describe('toPlainText', () => {
+  it('converts various strings to plain text', () => {
+    const tests = [
+      ['', ''],
+      ['abc', 'abc'],
+      ['abc\n', 'abc\n'],
+      ['\nabc', '\nabc'],
+      ['a\nb', 'a\nb'],
+      ['\n', '\n'],
+      ['abc􅨐b􅨑def􅨜ghi', 'abcdefghi'],
+      ['abc\u{2028}def', 'abc\ndef'],
+      ['abc􅨐b􅨑def􅨜ghi􅨐i􅨑jkl􅨜mno', 'abcdefghijklmno'],
+      ['􅨐b􅨑abc􅨐i􅨑def􅨜􅨜', 'abcdef'],
+      ['abc􅨐!link:http://yer.com􅨑def􅨜ghi', 'abcdefghi'],
+    ];
+
+    for (const [input, expected] of tests) {
+      expect(toPlainText(input)).toEqual(expected);
     }
   });
 });
