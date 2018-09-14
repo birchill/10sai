@@ -27,6 +27,8 @@ interface Props {
 
 interface State {
   editorState: EditorState;
+  selectionToRestore: SelectionState | null;
+  selectionHighlight: SelectionHighlight;
   hasFocus: boolean;
 }
 
@@ -85,12 +87,6 @@ const enum SelectionHighlight {
 }
 
 export class CardFaceInput extends React.PureComponent<Props, State> {
-  state: State;
-  selectionToRestore?: SelectionState;
-  selectionHighlight: SelectionHighlight;
-  editorRef: React.RefObject<Editor>;
-  containerRef: React.RefObject<HTMLDivElement>;
-
   static get propTypes() {
     return {
       value: PropTypes.string,
@@ -102,14 +98,100 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     };
   }
 
+  static getDerivedStateFromProps(props: Props, state: State): State | null {
+    // In general the state is our single source of truth for the value of the
+    // input. However, it would nice to reflect changes to the value made from
+    // syncing. That preserves the promise of "sync you don't need to sink
+    // about".
+    //
+    // However, when the user is typing fast there are async events flying all
+    // over the shop (async state updates, async updates to Redux state that
+    // trickles down on the next render, then updates triggered by updating the
+    // database) and it's really hard to distinguish between genuine updates to
+    // the Redux state (reflected in prop changes here) that we care about
+    // versus delayed reactions to state changes we made here are few keystrokes
+    // about. In fact, I tried a bunch of approaches but none of them worked.
+    //
+    // However, when you're focussed on the field you don't really want the
+    // value to update anyway. Any updates that happen when the field is not
+    // focussed are probably legitimate edits made on another device/tab/browser
+    // that we should reflect.
+    if (state.hasFocus) {
+      return null;
+    }
+
+    // If the value in state already matches the props value, don't update.
+    const currentValueInState = getEditorContent(state.editorState);
+    if (currentValueInState === props.value) {
+      return null;
+    }
+
+    const stateChange: Partial<State> = { selectionToRestore: null };
+
+    let editorState = state.editorState;
+    if (state.selectionHighlight !== SelectionHighlight.None) {
+      editorState = CardFaceInput.clearSelectionFormatting(editorState);
+      stateChange.selectionHighlight = SelectionHighlight.None;
+    }
+
+    const contentState = ContentState.createFromText(props.value || '');
+    editorState = EditorState.push(
+      editorState,
+      contentState,
+      'insert-characters'
+    );
+    stateChange.editorState = editorState;
+
+    return stateChange as State;
+  }
+
+  static clearSelectionFormatting(editorState: EditorState): EditorState {
+    const currentContent = editorState.getCurrentContent();
+    const firstBlock = currentContent.getBlockMap().first();
+    const lastBlock = currentContent.getBlockMap().last();
+    const firstBlockKey = firstBlock.getKey();
+    const lastBlockKey = lastBlock.getKey();
+    const lengthOfLastBlock = lastBlock.getLength();
+
+    const selectAll = new SelectionState({
+      anchorKey: firstBlockKey,
+      anchorOffset: 0,
+      focusKey: lastBlockKey,
+      focusOffset: lengthOfLastBlock,
+      hasFocus: true,
+    });
+    const newContent = Modifier.removeInlineStyle(
+      currentContent,
+      selectAll,
+      'SELECTION'
+    );
+
+    let updatedState = EditorState.push(
+      editorState,
+      newContent,
+      'change-inline-style'
+    );
+    updatedState = EditorState.acceptSelection(
+      updatedState,
+      editorState.getSelection()
+    );
+
+    return updatedState;
+  }
+
+  state: State;
+  editorRef: React.RefObject<Editor>;
+  containerRef: React.RefObject<HTMLDivElement>;
+
   constructor(props: Props) {
     super(props);
 
     this.state = {
       editorState: EditorState.createEmpty(),
+      selectionToRestore: null,
+      selectionHighlight: SelectionHighlight.None,
       hasFocus: false,
     };
-    this.selectionHighlight = SelectionHighlight.None;
     this.editorRef = React.createRef<Editor>();
     this.containerRef = React.createRef<HTMLDivElement>();
 
@@ -120,45 +202,6 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     this.handleContainerMouseDown = this.handleContainerMouseDown.bind(this);
     this.handleContainerClick = this.handleContainerClick.bind(this);
     this.handleContainerSelect = this.handleContainerSelect.bind(this);
-  }
-
-  componentWillMount() {
-    if (this.props.value) {
-      this.updateValue(this.props.value);
-    }
-  }
-
-  componentWillReceiveProps(nextProps: Props) {
-    if (this.props.value !== nextProps.value) {
-      this.updateValue(nextProps.value);
-    }
-  }
-
-  updateValue(value?: string) {
-    // Setting editorState can reset the selection so we should avoid doing it
-    // when the content hasn't changed (since it can interrupt typing).
-    const currentValue = getEditorContent(this.state.editorState);
-    if (currentValue === value) {
-      return;
-    }
-
-    if (this.selectionToRestore) {
-      delete this.selectionToRestore;
-    }
-
-    let editorState = this.state.editorState;
-    if (this.selectionHighlight !== SelectionHighlight.None) {
-      editorState = this.clearSelectionFormatting(editorState);
-      this.selectionHighlight = SelectionHighlight.None;
-    }
-
-    const contentState = ContentState.createFromText(value || '');
-    editorState = EditorState.push(
-      editorState,
-      contentState,
-      'insert-characters'
-    );
-    this.setState({ editorState });
   }
 
   handleChange(editorState: EditorState) {
@@ -193,8 +236,8 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     }
 
     // We defer calling |onChange| until the state is actually updated so that
-    // if that triggers a call to updateValue we can successfully recognize it
-    // as a redundant change and avoid re-setting the editor state.
+    // if that triggers a call to getDerivedStateFromProps we can successfully
+    // recognize it as a redundant change and avoid re-setting the editor state.
     this.setState((prevState, props) => {
       if (props.onChange) {
         const valueAsString = getEditorContent(editorState);
@@ -215,57 +258,26 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     //
     // As a result we do the update in the callback. That's all sorts of nasty,
     // but draft-js doesn't leave any other way.
-    const selectionToRestore = this.selectionToRestore;
-    delete this.selectionToRestore;
-
-    this.setState({ hasFocus: true }, () => {
+    const selectionToRestore = this.state.selectionToRestore;
+    this.setState({ hasFocus: true, selectionToRestore: null }, () => {
       if (selectionToRestore) {
-        let editorState = this.clearSelectionFormatting(this.state.editorState);
-        this.selectionHighlight = SelectionHighlight.None;
-
+        let editorState = CardFaceInput.clearSelectionFormatting(
+          this.state.editorState
+        );
         editorState = EditorState.forceSelection(
           editorState,
           selectionToRestore
         );
-        this.setState({ editorState });
-      } else if (this.selectionHighlight !== SelectionHighlight.None) {
-        this.selectionHighlight = SelectionHighlight.AwaitingSelectionUpdate;
+        this.setState({
+          editorState,
+          selectionHighlight: SelectionHighlight.None,
+        });
+      } else if (this.state.selectionHighlight !== SelectionHighlight.None) {
+        this.setState({
+          selectionHighlight: SelectionHighlight.AwaitingSelectionUpdate,
+        });
       }
     });
-  }
-
-  clearSelectionFormatting(editorState: EditorState): EditorState {
-    const currentContent = editorState.getCurrentContent();
-    const firstBlock = currentContent.getBlockMap().first();
-    const lastBlock = currentContent.getBlockMap().last();
-    const firstBlockKey = firstBlock.getKey();
-    const lastBlockKey = lastBlock.getKey();
-    const lengthOfLastBlock = lastBlock.getLength();
-
-    const selectAll = new SelectionState({
-      anchorKey: firstBlockKey,
-      anchorOffset: 0,
-      focusKey: lastBlockKey,
-      focusOffset: lengthOfLastBlock,
-      hasFocus: true,
-    });
-    const newContent = Modifier.removeInlineStyle(
-      currentContent,
-      selectAll,
-      'SELECTION'
-    );
-
-    let updatedState = EditorState.push(
-      editorState,
-      newContent,
-      'change-inline-style'
-    );
-    updatedState = EditorState.acceptSelection(
-      updatedState,
-      editorState.getSelection()
-    );
-
-    return updatedState;
   }
 
   handleBlur() {
@@ -278,22 +290,22 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     // _not_ in the editor state) so we can restore it when we are re-focussed.
     //
     // If we are re-focussed using the mouse / touch then we'll clear
-    // |selectionToRestore| in handleContainerMouseDown above so that we don't
+    // |selectionToRestore| in handleContainerMouseDown below so that we don't
     // restore the selection.
-    this.selectionToRestore = this.state.editorState.getSelection();
+    const selectionToRestore = this.state.editorState.getSelection();
 
     // See notes in onFocus for why we need to update editorState in a callback.
-    this.setState({ hasFocus: false }, () => {
+    this.setState({ hasFocus: false, selectionToRestore }, () => {
       // If we have a selection range, highlight it so we can see what we've
       // selected even when the focus is on the formatting toolbar.
       //
       // This is necessary when using the keyboard but also when adding complex
       // formatting widgets like color pickers that need to steal the focus.
-      if (this.selectionToRestore && !this.selectionToRestore.isCollapsed()) {
+      if (selectionToRestore && !selectionToRestore.isCollapsed()) {
         const newContent = Modifier.applyInlineStyle(
           this.state.editorState.getCurrentContent(),
-          // We prefer this over using this.selectionToRestore since
-          // selectionToRestore has hasFocus === true and if we set that then
+          // We prefer this over using |selectionToRestore| since
+          // |selectionToRestore| has hasFocus === true and if we set that then
           // we'll fail to run the onFocus callback later since draft-js will
           // thing the selection is already focussed.
           this.state.editorState.getSelection(),
@@ -306,8 +318,8 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
             newContent,
             'change-inline-style'
           ),
+          selectionHighlight: SelectionHighlight.Highlighted,
         });
-        this.selectionHighlight = SelectionHighlight.Highlighted;
       }
     });
   }
@@ -339,10 +351,10 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     }
 
     // This only gets called on a mouse click / touch in which case we should
-    // clear the selection since we only want to restore it when tabbing between
-    // fields.
-    if (this.selectionToRestore) {
-      delete this.selectionToRestore;
+    // clear the selection to restore since we only want to restore it when
+    // tabbing between fields.
+    if (this.state.selectionToRestore) {
+      this.setState({ selectionToRestore: null });
     }
 
     // We can't clear the selection formatting here since that will change the
@@ -367,9 +379,12 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     // selection highlight, and we'll never be able to capture the DOM selection
     // that draft-js has extracted for us).
     if (
-      this.selectionHighlight === SelectionHighlight.AwaitingSelectionUpdate
+      this.state.selectionHighlight ===
+      SelectionHighlight.AwaitingSelectionUpdate
     ) {
-      this.selectionHighlight = SelectionHighlight.AwaitingSelectionCommit;
+      this.setState({
+        selectionHighlight: SelectionHighlight.AwaitingSelectionCommit,
+      });
     }
   }
 
@@ -381,14 +396,13 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   }
 
   collapseSelection() {
-    if (this.selectionHighlight === SelectionHighlight.None) {
+    if (this.state.selectionHighlight === SelectionHighlight.None) {
       return;
     }
 
     let editorState = this.state.editorState;
 
-    editorState = this.clearSelectionFormatting(editorState);
-    this.selectionHighlight = SelectionHighlight.None;
+    editorState = CardFaceInput.clearSelectionFormatting(editorState);
 
     const selection = this.state.editorState.getSelection();
     const collapsedSelection: SelectionState = selection
@@ -398,7 +412,10 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       editorState,
       collapsedSelection.set('hasFocus', false) as SelectionState
     );
-    this.selectionToRestore = collapsedSelection;
+    this.setState({
+      selectionToRestore: collapsedSelection,
+      selectionHighlight: SelectionHighlight.None,
+    });
 
     this.handleChange(editorState);
   }
@@ -450,19 +467,20 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
   componentDidUpdate() {
     if (
-      this.selectionHighlight !== SelectionHighlight.AwaitingSelectionCommit
+      this.state.selectionHighlight !==
+      SelectionHighlight.AwaitingSelectionCommit
     ) {
       return;
     }
 
-    this.selectionHighlight = SelectionHighlight.None;
-
     const originalSelection = this.state.editorState.getSelection();
 
-    let editorState = this.clearSelectionFormatting(this.state.editorState);
+    let editorState = CardFaceInput.clearSelectionFormatting(
+      this.state.editorState
+    );
     editorState = EditorState.acceptSelection(editorState, originalSelection);
 
-    this.setState({ editorState });
+    this.setState({ editorState, selectionHighlight: SelectionHighlight.None });
   }
 }
 

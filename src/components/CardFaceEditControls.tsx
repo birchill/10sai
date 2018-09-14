@@ -48,13 +48,6 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     };
   }
 
-  state: State = {
-    toolbarFocussed: false,
-    selectedFace: 'prompt',
-    focussedFace: null,
-    currentMarks: new Set<string>(),
-  };
-
   keyboardFocusHelper: KeyboardFocusHelper;
 
   questionTextBoxRef: React.RefObject<CardFaceInput>;
@@ -72,6 +65,13 @@ export class CardFaceEditControls extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
+
+    this.state = {
+      toolbarFocussed: false,
+      selectedFace: 'prompt',
+      focussedFace: null,
+      currentMarks: new Set<string>(),
+    };
 
     this.keyboardFocusHelper = new KeyboardFocusHelper({
       onFocus: this.handleFocus.bind(this),
