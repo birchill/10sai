@@ -21,7 +21,9 @@ function serializeContent(editorState: EditorState): string {
 }
 
 function deserializeContent(text: string): ContentState {
-  return convertFromRaw(toDraft(deserialize(text)));
+  return text === ''
+    ? ContentState.createFromText('')
+    : convertFromRaw(toDraft(deserialize(text)));
 }
 
 interface Props {

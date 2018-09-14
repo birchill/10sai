@@ -11,6 +11,9 @@
     transition: opacity 0.2s;
 
     @include card-styles;
+    .text {
+      @include rich-text;
+    }
   }
 
   &:not(.-showanswer) > .back,
