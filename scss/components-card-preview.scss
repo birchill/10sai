@@ -11,7 +11,7 @@
   overflow: hidden;
   color: $text-color;
 
-  .flex-container {
+  > .flex-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,6 +20,14 @@
     box-sizing: border-box;
     padding: .4rem;
     overflow: hidden;
+
+    > .question {
+      @include rich-text;
+      p {
+        margin-top: 0.1em;
+        margin-bottom: 0.1em;
+      }
+    }
   }
 
   // Hover states

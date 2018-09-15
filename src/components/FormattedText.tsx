@@ -2,13 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { deserialize, Inline } from '../text/rich-text';
+import { styleClassMapping } from '../text/rich-text-styles';
 import { parseRuby } from '../text/ruby';
 
 interface Props {
   text: string;
 }
 
-const FormattedText: React.SFC<Props> = props => {
+export const FormattedText: React.SFC<Props> = props => {
   const blocks = deserialize(props.text);
   let i = 0;
 
@@ -21,13 +22,6 @@ const FormattedText: React.SFC<Props> = props => {
     </>
   );
 };
-
-const styleMapping = new Map<string, string>([
-  ['b', 'bold'],
-  ['i', 'italic'],
-  ['u', 'underline'],
-  ['.', 'dotemphasis'],
-]);
 
 function renderChildren(
   children: Array<Inline | string>,
@@ -43,7 +37,7 @@ function renderChildren(
           return renderRuby(child, key);
         } else {
           const className = child.styles
-            .map(style => styleMapping.get(style))
+            .map(style => styleClassMapping.get(style))
             .join(' ');
           return (
             <span key={key} className={className}>
