@@ -5,7 +5,7 @@ import 'main.scss'; // eslint-disable-line
 
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
 import CardFormatToolbar from './components/CardFormatToolbar';
-import CardPreview from './components/CardPreview.jsx';
+import CardPreview from './components/CardPreview.tsx';
 import CancelableTextbox from './components/CancelableTextbox.jsx';
 import LoadingIndicator from './components/LoadingIndicator.tsx';
 import NoteList from './components/NoteList.tsx';

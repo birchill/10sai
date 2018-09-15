@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import CardPreview from './CardPreview.jsx';
+import CardPreview from './CardPreview.tsx';
 import Link from './Link.tsx';
 import VirtualGrid from './VirtualGrid.jsx';
 

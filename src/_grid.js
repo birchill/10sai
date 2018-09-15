@@ -3,7 +3,7 @@ import React from 'react';
 
 import 'main.scss'; // eslint-disable-line
 
-import CardPreview from './components/CardPreview.jsx';
+import CardPreview from './components/CardPreview.tsx';
 import VirtualGrid from './components/VirtualGrid.jsx';
 
 function renderTemplateCard() {
@@ -25,6 +25,7 @@ ReactDOM.render(
     items={cards}
     className="card-grid"
     renderItem={renderCard}
-    renderTemplateItem={renderTemplateCard} />,
+    renderTemplateItem={renderTemplateCard}
+  />,
   document.getElementById('grid-container')
 );
