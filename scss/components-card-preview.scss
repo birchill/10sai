@@ -10,6 +10,7 @@
   text-align: center;
   overflow: hidden;
   color: $text-color;
+  contain: strict;
 
   > .flex-container {
     display: flex;
