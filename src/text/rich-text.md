@@ -29,36 +29,36 @@ Three reasons:
     Consider the data structure produced by Slate for a simple string with one
     piece of inline style:
 
-```
-{
-  "object": "value",
-  "document": {
-    "object": "document",
-    "data": {},
-    "nodes": [
-      {
-        "object": "block",
-        "type": "line",
-        "isVoid": false,
+    ```
+    {
+      "object": "value",
+      "document": {
+        "object": "document",
         "data": {},
         "nodes": [
           {
-            "object": "text",
-            "leaves": [
+            "object": "block",
+            "type": "line",
+            "isVoid": false,
+            "data": {},
+            "nodes": [
               {
-                "object": "leaf",
-                "text": "Testing",
-                "marks": [{ "object": "mark", "type": "bold", "data": {} }]
-              },
-              { "object": "leaf", "text": " something", "marks": [] }
+                "object": "text",
+                "leaves": [
+                  {
+                    "object": "leaf",
+                    "text": "Testing",
+                    "marks": [{ "object": "mark", "type": "bold", "data": {} }]
+                  },
+                  { "object": "leaf", "text": " something", "marks": [] }
+                ]
+              }
             ]
           }
         ]
       }
-    ]
-  }
-}
-```
+    }
+    ```
 
     That whole thing could be represented as just:
 
@@ -93,8 +93,8 @@ The 10sai serialization format aims to be compact, somewhat human-readable (but
 not necessarily human-editable), and reasonably future proof.
 
 It makes use of PUA (private use area) characters to delineate markup since this
-avoids the need to provide an escaping mechanism (e.g. if we used [] to
-represent markup, we'd need to support [[ or \[ or something similar to enter
+avoids the need to provide an escaping mechanism (e.g. if we used `[]` to
+represent markup, we'd need to support `[[` or `\[` or something similar to enter
 the literal characters and it increases the complexity a lot). This obviously
 greatly reduces human-writability but the reduction in complexity is considered
 worthwhile.
@@ -123,7 +123,7 @@ Other types of blocks ('image' etc.) begin with the character U+105A1B. The full
 details of such blocks has yet to be determined but will likely consist of:
 
 * One U+105A1B character
-* One or more characters in the [a-z] range indicating the block type
+* One or more characters in the `[a-z]`range indicating the block type
 * An optional U+105A1
 * One U+105A1E character to mark the end of the block header
 
@@ -144,13 +144,13 @@ They take the format:
 * A sequence of 0 or more headers separated by U+105AD characters.
   * Each header is either:
     * A custom inline type header taking the format:
-      !<type>[:<data>]
-      (That is, an initial ! U+0021 character followed by a type string
+      `!<type>[:<data>]`
+      (That is, an initial `!` U+0021 character followed by a type string
       consisting of one or more characters which can include any character
-      except a ':' or a character in the U+105A10~U+105AFF range, optionally
+      except a ':' or a character in the U+105A10\~U+105AFF range, optionally
       followed by a ':' character and one or more or characters describing data
       parameters for the type--likewise made up of any character not in the
-      U+105A10~U+105AFF range.)
+      U+105A10\~U+105AFF range.)
 
       Only the first such type header is recognized. Any subsequent type headers
       will be ignored.
