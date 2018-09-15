@@ -402,13 +402,6 @@ class Parser implements Iterator<Block> {
   }
 }
 
-// This needs to be synchronized with the formatting applied in any editor
-// components (e.g. draft-js, Slate etc.).
-function toHTML(text: Array<Block>): string {
-  // XXX
-  return '';
-}
-
 export function toPlainText(text: RichText): string {
   let result = '';
   let first = true;
