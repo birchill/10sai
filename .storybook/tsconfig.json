@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "jsx": "react",
+    "lib": ["dom", "es2017", "es2017.object"],
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "outDir": "build/lib",
+    "pretty": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "target": "es2017"
+  },
+  "include": [ "./src/**/*" ],
+  "exclude": [ "node_modules", "build" ]
+}

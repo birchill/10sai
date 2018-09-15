@@ -14,7 +14,8 @@
     "start": "cross-env NODE_ENV=development webpack-dev-server --config webpack.dev.js --progress --colors --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server --config webpack.prod.js --progress --colors --history-api-fallback --content-base public/",
     "precommit": "lint-staged",
-    "test": "jest"
+    "test": "jest",
+    "storybook": "start-storybook -p 9001 -c .storybook"
   },
   "dependencies": {
     "@types/deep-equal": "^1.0.1",
@@ -22,6 +23,7 @@
     "@types/event-emitter": "^0.3.2",
     "@types/pouchdb-find": "^6.3.3",
     "@types/pouchdb-upsert": "^2.2.3",
+    "@types/storybook__react": "^3.0.9",
     "@types/ua-parser-js": "^0.7.32",
     "cross-env": "^5.2.0",
     "deep-equal": "^1.0.1",
@@ -55,6 +57,7 @@
     "@babel/preset-es2017": "^7.0.0-beta.51",
     "@babel/preset-react": "^7.0.0-beta.51",
     "@babel/register": "^7.0.0-beta.51",
+    "@storybook/react": "^4.0.0-alpha.21",
     "@types/jest": "^23.1.4",
     "@types/memoize-one": "^3.1.1",
     "@types/pouchdb": "^6.3.2",

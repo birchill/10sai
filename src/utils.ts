@@ -49,7 +49,7 @@ export function debounce(func: Function, wait: number) {
     const context = this;
     const args = arguments;
     clearTimeout(timeout as number);
-    timeout = setTimeout(() => {
+    timeout = window.setTimeout(() => {
       timeout = null;
       func.apply(context, args);
     }, wait);
