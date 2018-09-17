@@ -15,7 +15,7 @@
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server --config webpack.prod.js --progress --colors --history-api-fallback --content-base public/",
     "precommit": "lint-staged",
     "test": "jest",
-    "storybook": "start-storybook -p 9001 -c .storybook"
+    "storybook": "start-storybook -p 9001 -c .storybook -s public"
   },
   "dependencies": {
     "@types/deep-equal": "^1.0.1",
