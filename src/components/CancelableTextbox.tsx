@@ -1,7 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export class CancelableTextbox extends React.PureComponent {
+interface Props {
+  value?: string;
+  onChange?: (value: string) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+}
+
+interface State {
+  value: string;
+}
+
+export class CancelableTextbox extends React.PureComponent<Props, State> {
   static get propTypes() {
     return {
       value: PropTypes.string,
@@ -10,31 +20,31 @@ export class CancelableTextbox extends React.PureComponent {
     };
   }
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
 
     this.state = { value: '' };
     this.handleChange = this.handleChange.bind(this);
-    this.handleFocus  = this.handleFocus.bind(this);
-    this.handleClear  = this.handleClear.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
+    this.handleClear = this.handleClear.bind(this);
   }
 
   componentWillMount() {
     this.setState({ value: this.props.value || '' });
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({ value: nextProps.value  || '' });
+  componentWillReceiveProps(nextProps: Props) {
+    this.setState({ value: nextProps.value || '' });
   }
 
-  handleChange(e) {
+  handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     this.setState({ value: e.target.value });
     if (this.props.onChange) {
       this.props.onChange(e.target.value);
     }
   }
 
-  handleFocus(e) {
+  handleFocus(e: React.FocusEvent<HTMLInputElement>) {
     if (this.props.onFocus) {
       this.props.onFocus(e);
     }
@@ -56,13 +66,15 @@ export class CancelableTextbox extends React.PureComponent {
           {...this.props}
           value={this.state.value}
           onChange={this.handleChange}
-          onFocus={this.handleFocus} />
+          onFocus={this.handleFocus}
+        />
         <button
           type="reset"
           className="cancel"
           aria-hidden={hidden}
-          tabIndex="-1"
-          onClick={this.handleClear}>
+          tabIndex={-1}
+          onClick={this.handleClear}
+        >
           <span className="label">Clear</span>
         </button>
       </div>

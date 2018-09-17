@@ -10,62 +10,11 @@
       padding: 1em;
       overflow: auto;
     }
-    .row {
-      display: flex;
-      width: -moz-max-content;
-      width: max-content;
-      align-items: center;
-    }
-    .row > * {
-      margin-left: 0.8em;
-      margin-right: 0.8em;
-    }
-    .row + .row {
-      margin-top: 0.8em;
-    }
     </style>
   </head>
   <body>
     <h1>Assets</h1>
     <h2>Forms</h2>
-    <h3>Buttons</h3>
-    <div class=row>
-      <input type=submit value="&lt;input type=&quot;submit&quot;&gt;">
-      <input type=button value="&lt;input type=&quot;button&quot;&gt;">
-      <button>&lt;button&gt;</button>
-      <a class=button role="button">&lt;a class="button"&gt;</a>
-    </div>
-    <div class=row>
-      <input type=button disabled value="disabled">
-      <input type=button class=-primary value="-primary">
-      <input type=button disabled class=-primary value="disabled -primary">
-      <input type=button class=-link value="-link">
-      <input type=button class=-large value="-large">
-      <input type=button class=-shadow value="-shadow">
-    </div>
-    <div class=row>
-      <button class="-icon -delete">-icon -delete</button>
-      <button class="-icon -plus">-icon -plus</button>
-      <button class="-icon -edit-card">-icon -edit-card</button>
-      <button class="-icon -delete" disabled>-icon -delete disabled</button>
-    </div>
-    <div class=row>
-      <button class="-icon -delete -large">-icon -delete -large</button>
-      <button class="-icon -plus -large -primary"
-        >-icon -delete -large -primary</button>
-      <button class="-icon -add-card -link">-icon -add-card -link</button>
-    </div>
-
-    <h3>Text boxes</h3>
-    <input type=text value="Text box">
-    <input class="-icon -search" type=search value="-icon -search">
-    <input class="-icon -search -rounded" type=search
-      value="-icon -search -rounded">
-    <span id=cancelable-textbox-container></span>
-    <div class="stacked-group">
-      <input class="-icon -user" type=text value="-user">
-      <input class="-icon -lock" type=password value="-password">
-    </div>
 
     <h3>Autocomplete token boxes</h3>
 

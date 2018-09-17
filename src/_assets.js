@@ -6,7 +6,6 @@ import 'main.scss'; // eslint-disable-line
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
 import CardFormatToolbar from './components/CardFormatToolbar';
 import CardPreview from './components/CardPreview.tsx';
-import CancelableTextbox from './components/CancelableTextbox.jsx';
 import LoadingIndicator from './components/LoadingIndicator.tsx';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
@@ -17,19 +16,6 @@ import TricolorProgress from './components/TricolorProgress.jsx';
 import TokenList from './components/TokenList.tsx';
 
 import SyncState from './sync/states';
-
-ReactDOM.render(
-  <CancelableTextbox
-    value="CancelableTextbox"
-    onChange={() => {
-      console.log('CancelableTextbox: onChange');
-    }}
-    onFocus={() => {
-      console.log('CancelableTextbox: onFocus');
-    }}
-  />,
-  document.getElementById('cancelable-textbox-container')
-);
 
 (function renderTokenList(tokens) {
   const onChange = tokens => {
