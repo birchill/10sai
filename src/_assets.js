@@ -13,24 +13,8 @@ import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
 import TabBlock from './components/TabBlock.jsx';
 import TextRegion from './components/TextRegion.jsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
-import TokenList from './components/TokenList.tsx';
 
 import SyncState from './sync/states';
-
-(function renderTokenList(tokens) {
-  const onChange = tokens => {
-    renderTokenList(tokens);
-  };
-
-  ReactDOM.render(
-    <TokenList
-      tokens={tokens}
-      placeholder="Tags (live example)"
-      onChange={onChange}
-    />,
-    document.getElementById('token-list-container')
-  );
-})([]);
 
 ReactDOM.render(
   <LoadingIndicator />,

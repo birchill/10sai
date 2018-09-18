@@ -4,7 +4,7 @@ import { storiesOf } from '@storybook/react';
 storiesOf('Forms|Buttons', module)
   .add('default', () => (
     <>
-      <div className="row">
+      <div className="series">
         <input type="submit" value="&lt;input type=&quot;submit&quot;&gt;" />
         <input type="button" value="&lt;input type=&quot;button&quot;&gt;" />
         <button>&lt;button&gt;</button>
@@ -12,7 +12,7 @@ storiesOf('Forms|Buttons', module)
           &lt;a class="button"&gt;
         </a>
       </div>
-      <div className="row">
+      <div className="series">
         <input type="button" disabled value="disabled" />
         <input type="button" className="-primary" value="-primary" />
         <input
@@ -24,7 +24,7 @@ storiesOf('Forms|Buttons', module)
         <input type="button" className="-link" value="-link" />
         <input type="button" className="-large" value="-large" />
       </div>
-      <div className="row">
+      <div className="series">
         <button className="-icon -delete">-icon -delete</button>
         <button className="-icon -plus">-icon -plus</button>
         <button className="-icon -edit-card">-icon -edit-card</button>
@@ -32,7 +32,7 @@ storiesOf('Forms|Buttons', module)
           -icon -delete disabled
         </button>
       </div>
-      <div className="row">
+      <div className="series">
         <button className="-icon -delete -large">-icon -delete -large</button>
         <button className="-icon -plus -large -primary">
           -icon -plus -large -primary
@@ -42,7 +42,7 @@ storiesOf('Forms|Buttons', module)
     </>
   ))
   .add('primary', () => (
-    <div className="row">
+    <div className="series">
       <input type="button" className="-primary" value="-primary" />
       <input
         type="button"
