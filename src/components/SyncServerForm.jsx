@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import CancelableTextbox from './CancelableTextbox.jsx';
+import CancelableTextbox from './CancelableTextbox.tsx';
 
 export class SyncServerForm extends React.PureComponent {
   static get propTypes() {
