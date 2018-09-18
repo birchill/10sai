@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Link from './Link';
-import TabBlock from './TabBlock.jsx';
+import TabBlock from './TabBlock';
 
 interface Props {
   className?: string;

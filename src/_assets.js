@@ -9,56 +9,10 @@ import CardPreview from './components/CardPreview.tsx';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
-import TabBlock from './components/TabBlock.jsx';
 import TextRegion from './components/TextRegion.jsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
 
 import SyncState from './sync/states';
-
-(function renderTabs(selectedTab) {
-  ReactDOM.render(
-    <TabBlock className="extra-class" active={selectedTab}>
-      <a
-        id="lookup-tab"
-        href="/lookup"
-        aria-controls="lookup-page"
-        className="-icon -lookup"
-        onClick={evt => {
-          renderTabs(selectedTab === 0 ? undefined : 0);
-          evt.preventDefault();
-        }}
-      >
-        Lookup
-      </a>
-      <a
-        id="add-tab"
-        href="/add"
-        aria-controls="add-page"
-        className="-icon -plus"
-        onClick={evt => {
-          renderTabs(selectedTab === 1 ? undefined : 1);
-          evt.preventDefault();
-        }}
-      >
-        Add card
-      </a>
-      <a
-        id="review-tab"
-        href="/review"
-        aria-controls="review-page"
-        className="-icon -review -badge"
-        data-badge="10%"
-        onClick={evt => {
-          renderTabs(selectedTab === 2 ? undefined : 2);
-          evt.preventDefault();
-        }}
-      >
-        Review
-      </a>
-    </TabBlock>,
-    document.getElementById('tab-block-container')
-  );
-})();
 
 const stub = () => {};
 
