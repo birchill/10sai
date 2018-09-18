@@ -6,7 +6,6 @@ import 'main.scss'; // eslint-disable-line
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
 import CardFormatToolbar from './components/CardFormatToolbar';
 import CardPreview from './components/CardPreview.tsx';
-import LoadingIndicator from './components/LoadingIndicator.tsx';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
 import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
@@ -15,11 +14,6 @@ import TextRegion from './components/TextRegion.jsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
 
 import SyncState from './sync/states';
-
-ReactDOM.render(
-  <LoadingIndicator />,
-  document.getElementById('loading-indicator-container')
-);
 
 (function renderTabs(selectedTab) {
   ReactDOM.render(
