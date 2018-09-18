@@ -146,7 +146,7 @@ export class NoteList extends React.PureComponent<Props, State> {
       : null;
   }
 
-  getSnapshotBeforeUpdate(previousProps: Props) {
+  getSnapshotBeforeUpdate(previousProps: Props): AnimationSnapshot | null {
     if (!this.state.doAnimation) {
       return null;
     }

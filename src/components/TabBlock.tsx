@@ -35,23 +35,23 @@ export class TabBlock extends React.Component<Props> {
     this.highlightBarRef = React.createRef<HTMLDivElement>();
   }
 
-  componentWillUpdate(nextProps: Props) {
+  getSnapshotBeforeUpdate(previousProps: Props): null {
     // If we are going from inactive to active we need to make sure the
     // underlying transform has the correct translation so that only the scale
     // transitions.
     if (
-      typeof this.props.active === 'undefined' &&
-      typeof nextProps.active !== 'undefined' &&
+      typeof previousProps.active === 'undefined' &&
+      typeof this.props.active !== 'undefined' &&
       this.highlightBarRef.current
     ) {
       // Don't transition from whatever underlying 'transform' style we set when
       // we went inactive.
       this.highlightBarRef.current.style.transitionProperty = 'none';
       this.highlightBarRef.current.style.transformOrigin = `${100 *
-        nextProps.active +
+        this.props.active +
         50}%`;
       this.highlightBarRef.current.style.transform = `scale(0, 1) translate(${100 *
-        nextProps.active}%)`;
+        this.props.active}%)`;
 
       // Flush the old style
       // eslint-disable-next-line no-unused-expressions
@@ -60,6 +60,8 @@ export class TabBlock extends React.Component<Props> {
       // Re-enable transitions
       this.highlightBarRef.current.style.transitionProperty = 'transform';
     }
+
+    return null;
   }
 
   componentDidUpdate(prevProps: Props) {
