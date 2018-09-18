@@ -2,13 +2,37 @@ import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 
-import { TokenList } from './TokenList';
+import { TokenList, Props as TokenListProps } from './TokenList';
+
+interface Props extends TokenListProps {
+  value: string;
+}
+
+class TokenListWithText extends React.PureComponent<Props> {
+  ref: React.RefObject<TokenList>;
+
+  constructor(props: Props) {
+    super(props);
+    this.ref = React.createRef<TokenList>();
+  }
+
+  componentDidMount() {
+    if (this.ref.current) {
+      this.ref.current.updateText(this.props.value);
+    }
+  }
+
+  render() {
+    return <TokenList ref={this.ref} {...this.props} />;
+  }
+}
 
 storiesOf('Components|TokenList', module)
   .add('default', () => (
     <>
       <div className="row">
-        <TokenList
+        <TokenListWithText
+          value="a"
           placeholder="Tags"
           tokens={['漢字', 'N1']}
           suggestions={['Abc', 'テスト']}
@@ -82,6 +106,16 @@ storiesOf('Components|TokenList', module)
           loadingSuggestions={true}
         />
       </div>
+      <div className="row">
+        <TokenListWithText
+          value="Suggest"
+          placeholder="Loading example (with suggestions)"
+          suggestions={['Suggestion 1', 'Suggestion 2']}
+          onTokensChange={action('onTokensChange')}
+          onTextChange={action('onTextChange')}
+          loadingSuggestions={true}
+        />
+      </div>
     </>
   ))
   .add('linked', () => (
@@ -144,14 +178,16 @@ storiesOf('Components|TokenList', module)
           loadingSuggestions={true}
         />
       </div>
-      <TokenList
-        className="-yellow"
-        placeholder="With linked tag"
-        tokens={['Linked', 'Not linked']}
-        linkedTokens={['Linked']}
-        linkedTooltip="This token is linked"
-        onTokensChange={action('onTokensChange')}
-        onTextChange={action('onTextChange')}
-      />
+      <div className="row">
+        <TokenListWithText
+          value="Suggest"
+          className="-yellow"
+          placeholder="With linked tag"
+          tokens={['漢字', 'N1']}
+          suggestions={['Suggestion']}
+          onTokensChange={action('onTokensChange')}
+          onTextChange={action('onTextChange')}
+        />
+      </div>
     </>
   ));

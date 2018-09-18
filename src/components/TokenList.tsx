@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import LoadingIndicator from './LoadingIndicator';
 
-interface Props {
+export interface Props {
   className?: string;
   tokens?: string[];
   placeholder?: string;
