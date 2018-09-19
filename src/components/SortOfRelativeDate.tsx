@@ -13,36 +13,33 @@ import PropTypes from 'prop-types';
 
 const JUST_NOW_THRESHOLD = 10 * 1000; // 10s
 
-export class SortOfRelativeDate extends React.PureComponent {
+interface Props {
+  value: Date;
+}
+
+export class SortOfRelativeDate extends React.PureComponent<Props> {
   static get propTypes() {
     return {
       value: PropTypes.instanceOf(Date).isRequired,
     };
   }
 
-  static isJustNow(date) {
-    return Date.now() - date < JUST_NOW_THRESHOLD;
-  }
+  timeoutHandle?: number;
 
-  constructor(props) {
-    super(props);
-
-    this.update = this.update.bind(this);
-    this.state = { justNow: SortOfRelativeDate.isJustNow(props.value) };
+  componentDidMount() {
     this.maybeRegisterUpdateTimeout();
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.value === this.props.value) {
+  componentDidUpdate(previousProps: Props) {
+    if (previousProps.value === this.props.value) {
       return;
     }
 
     if (this.timeoutHandle) {
-      clearTimeout(this.timeoutHandle);
+      window.clearTimeout(this.timeoutHandle);
       this.timeoutHandle = undefined;
     }
 
-    this.setState({ justNow: SortOfRelativeDate.isJustNow(nextProps.value) });
     this.maybeRegisterUpdateTimeout();
   }
 
@@ -53,25 +50,25 @@ export class SortOfRelativeDate extends React.PureComponent {
     }
   }
 
+  isJustNow(): boolean {
+    return Date.now() - this.props.value.getTime() < JUST_NOW_THRESHOLD;
+  }
+
   maybeRegisterUpdateTimeout() {
-    if (this.state.justNow) {
-      this.timeoutHandle = setTimeout(this.update, JUST_NOW_THRESHOLD);
+    if (this.isJustNow()) {
+      this.timeoutHandle = window.setTimeout(() => {
+        this.timeoutHandle = undefined;
+        this.forceUpdate();
+      }, JUST_NOW_THRESHOLD);
     }
   }
 
-  update() {
-    // We just assume that the timeout will always put us at a point where
-    // we no longer need to show a relative date.
-    this.setState({ justNow: false });
-    this.timeoutHandle = undefined;
-  }
-
   render() {
-    const dateString = this.state.justNow
+    const dateString = this.isJustNow()
       ? 'just now' // TODO: Localize this
       : this.props.value.toLocaleString();
 
-    return <time dateTime={this.props.value}>{dateString}</time>;
+    return <time dateTime={this.props.value.toISOString()}>{dateString}</time>;
   }
 }
 

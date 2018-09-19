@@ -2,12 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import SyncState from '../sync/states';
-import SyncStatusMessages from '../sync/status-messages';
+import { SyncStatusMessages } from '../sync/status-messages';
+import { SyncServer } from '../sync/SyncServer';
 
-import SyncServerForm from './SyncServerForm.jsx';
-import ServerStatus from './ServerStatus.jsx';
+import SyncServerForm from './SyncServerForm';
+import ServerStatus from './ServerStatus';
 
-function translateError(error) {
+function translateError(error: any) {
   if (typeof error === 'undefined') {
     return <p>Unknown error</p>;
   }
@@ -50,12 +51,35 @@ function translateError(error) {
   return <p>Unknown error</p>;
 }
 
-export class SyncSettingsPanel extends React.PureComponent {
+const iconClasses = new Map<symbol, string>();
+iconClasses.set(SyncState.OK, '-uptodate');
+iconClasses.set(SyncState.IN_PROGRESS, '-inprogress');
+iconClasses.set(SyncState.PAUSED, '-paused');
+iconClasses.set(SyncState.OFFLINE, '-offline');
+iconClasses.set(SyncState.ERROR, '-error');
+iconClasses.set(SyncState.NOT_CONFIGURED, '-notconfigured');
+
+interface Props {
+  syncState: symbol;
+  server?: SyncServer;
+  lastSyncTime?: Date;
+  errorDetail?: any;
+  progress?: number;
+  editingServer?: boolean;
+  onSubmit: (server?: SyncServer) => void;
+  onRetry: (server?: SyncServer) => void;
+  onEdit: () => void;
+  onCancel: () => void;
+  onPause: () => void;
+  onResume: () => void;
+}
+
+export class SyncSettingsPanel extends React.PureComponent<Props> {
   static get propTypes() {
     return {
       syncState: PropTypes.symbol.isRequired,
       server: PropTypes.shape({
-        name: PropTypes.string,
+        name: PropTypes.string.isRequired,
         username: PropTypes.string,
         password: PropTypes.string,
       }),
@@ -73,31 +97,27 @@ export class SyncSettingsPanel extends React.PureComponent {
     };
   }
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
 
-    [
-      'handleEditServer',
-      'handleServerChange',
-      'handleServerChangeCancel',
-      'handlePause',
-      'handleResume',
-      'handleRetry',
-      'handleKeyDown',
-    ].forEach(handler => {
-      this[handler] = this[handler].bind(this);
-    });
+    this.handleEditServer = this.handleEditServer.bind(this);
+    this.handleServerChange = this.handleServerChange.bind(this);
+    this.handleServerChangeCancel = this.handleServerChangeCancel.bind(this);
+    this.handlePause = this.handlePause.bind(this);
+    this.handleResume = this.handleResume.bind(this);
+    this.handleRetry = this.handleRetry.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
   componentDidMount() {
-    if (this.props.editingServer) {
+    if (!!this.props.editingServer) {
       document.addEventListener('keydown', this.handleKeyDown, {
         capture: true,
       });
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (this.props.editingServer && !prevProps.editingServer) {
       document.addEventListener('keydown', this.handleKeyDown, {
         capture: true,
@@ -121,7 +141,7 @@ export class SyncSettingsPanel extends React.PureComponent {
     this.props.onEdit();
   }
 
-  handleServerChange(server) {
+  handleServerChange(server?: SyncServer) {
     this.props.onSubmit(server);
   }
 
@@ -141,7 +161,7 @@ export class SyncSettingsPanel extends React.PureComponent {
     this.props.onRetry(this.props.server);
   }
 
-  handleKeyDown(e) {
+  handleKeyDown(e: KeyboardEvent) {
     if (e.keyCode && e.keyCode === 27) {
       e.stopPropagation();
       this.handleServerChangeCancel();
@@ -236,21 +256,13 @@ export class SyncSettingsPanel extends React.PureComponent {
   }
 
   render() {
-    const iconClasses = [];
-    iconClasses[SyncState.OK] = '-uptodate';
-    iconClasses[SyncState.IN_PROGRESS] = '-inprogress';
-    iconClasses[SyncState.PAUSED] = '-paused';
-    iconClasses[SyncState.OFFLINE] = '-offline';
-    iconClasses[SyncState.ERROR] = '-error';
-    iconClasses[SyncState.NOT_CONFIGURED] = '-notconfigured';
-
     const iconClass = this.props.editingServer
-      ? iconClasses[SyncState.NOT_CONFIGURED]
-      : iconClasses[this.props.syncState];
+      ? iconClasses.get(SyncState.NOT_CONFIGURED)
+      : iconClasses.get(this.props.syncState);
 
     const summary = this.props.editingServer
       ? 'Configure sync server'
-      : SyncStatusMessages[this.props.syncState];
+      : SyncStatusMessages.get(this.props.syncState);
 
     let body;
     if (this.props.editingServer) {
@@ -265,14 +277,24 @@ export class SyncSettingsPanel extends React.PureComponent {
         />
       );
     } else {
-      const renderFns = [];
-      renderFns[SyncState.OK] = this.renderOkOrOffline;
-      renderFns[SyncState.IN_PROGRESS] = this.renderInProgress;
-      renderFns[SyncState.PAUSED] = this.renderPaused;
-      renderFns[SyncState.OFFLINE] = this.renderOkOrOffline;
-      renderFns[SyncState.ERROR] = this.renderError;
-      renderFns[SyncState.NOT_CONFIGURED] = this.renderNotConfigured;
-      body = renderFns[this.props.syncState].call(this);
+      switch (this.props.syncState) {
+        case SyncState.OK:
+        case SyncState.OFFLINE:
+          body = this.renderOkOrOffline();
+          break;
+        case SyncState.IN_PROGRESS:
+          body = this.renderInProgress();
+          break;
+        case SyncState.PAUSED:
+          body = this.renderPaused();
+          break;
+        case SyncState.ERROR:
+          body = this.renderError();
+          break;
+        case SyncState.NOT_CONFIGURED:
+          body = this.renderNotConfigured();
+          break;
+      }
     }
 
     let subheading;

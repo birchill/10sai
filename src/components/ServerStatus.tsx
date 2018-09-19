@@ -1,13 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import SortOfRelativeDate from './SortOfRelativeDate.jsx';
+import SortOfRelativeDate from './SortOfRelativeDate';
 
-function ServerStatus(props) {
+interface Props {
+  className?: string;
+  server: string;
+  lastSyncTime?: Date;
+  onEdit: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+const ServerStatus: React.SFC<Props> = (props: Props) => {
   return (
     <fieldset
       className={`${props.className || ''} server-status`}
-      name="server-status">
+      name="server-status"
+    >
       <legend>Sync server</legend>
       <div className="summary">
         <div className="name">{props.server}</div>
@@ -24,7 +32,7 @@ function ServerStatus(props) {
       </button>
     </fieldset>
   );
-}
+};
 
 ServerStatus.propTypes = {
   className: PropTypes.string,

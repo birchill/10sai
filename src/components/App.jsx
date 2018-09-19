@@ -18,7 +18,7 @@ import MainTabBlock from './MainTabBlock.tsx';
 import Popup from './Popup.jsx';
 import ReviewScreenContainer from './ReviewScreenContainer.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
-import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.jsx';
+import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.tsx';
 import TabPanel from './TabPanel.jsx';
 import TagSuggesterContext from './TagSuggesterContext.ts';
 

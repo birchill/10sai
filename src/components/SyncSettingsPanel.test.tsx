@@ -3,10 +3,11 @@
 /* eslint-disable react/jsx-max-props-per-line */
 
 import React from 'react';
-import { configure, shallow } from 'enzyme';
+import { configure, shallow, ShallowWrapper } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import SyncState from '../sync/states';
-import SyncSettingsPanel from './SyncSettingsPanel.jsx';
+import SyncSettingsPanel from './SyncSettingsPanel';
+import SyncServerForm from './SyncServerForm';
 
 configure({ adapter: new Adapter() });
 
@@ -91,7 +92,7 @@ describe('<SyncSettingsPanel />', () => {
 
   it('calls the cancel callback when the Cancel button is clicked', () => {
     const onCancel = jest.fn();
-    const subject = shallow(
+    const subject = shallow<SyncSettingsPanel>(
       <SyncSettingsPanel
         syncState={SyncState.NOT_CONFIGURED}
         onSubmit={stub}
@@ -104,7 +105,7 @@ describe('<SyncSettingsPanel />', () => {
       />
     );
 
-    subject.find('SyncServerForm').prop('onCancel')();
+    subject.find(SyncServerForm).prop('onCancel')();
     subject.update();
 
     expect(onCancel).toHaveBeenCalledTimes(1);
@@ -125,7 +126,7 @@ describe('<SyncSettingsPanel />', () => {
       />
     );
 
-    subject.find('SyncServerForm').prop('onSubmit')({ name: 'abc' });
+    subject.find(SyncServerForm).prop('onSubmit')({ name: 'abc' });
 
     expect(onSubmit).toHaveBeenCalledWith({ name: 'abc' });
   });

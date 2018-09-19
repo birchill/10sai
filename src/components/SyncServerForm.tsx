@@ -1,9 +1,25 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import CancelableTextbox from './CancelableTextbox.tsx';
+import { SyncServer } from '../sync/SyncServer';
+import CancelableTextbox from './CancelableTextbox';
 
-export class SyncServerForm extends React.PureComponent {
+interface Props {
+  className?: string;
+  server?: string;
+  username?: string;
+  password?: string;
+  onSubmit: (server?: SyncServer) => void;
+  onCancel: () => void;
+}
+
+interface State {
+  server: string;
+  username: string;
+  password: string;
+}
+
+export class SyncServerForm extends React.PureComponent<Props, State> {
   static get propTypes() {
     return {
       className: PropTypes.string,
@@ -15,13 +31,13 @@ export class SyncServerForm extends React.PureComponent {
     };
   }
 
-  static handleTextBoxFocus(e) {
+  static handleTextBoxFocus(e: React.FocusEvent<HTMLInputElement>) {
     // Until scrollIntoViewIfNeeded() gets standardized this is a very hacky
     // version that should barely work for this situation.
     const textBox = e.target;
 
     // Get nearest scroll container
-    let scrollParent;
+    let scrollParent: HTMLElement | undefined;
     for (
       let parent = e.target.parentNode;
       parent instanceof HTMLElement;
@@ -48,7 +64,7 @@ export class SyncServerForm extends React.PureComponent {
       }
 
       const bbox = textBox.getBoundingClientRect();
-      const scrollParentBbox = scrollParent.getBoundingClientRect();
+      const scrollParentBbox = scrollParent!.getBoundingClientRect();
       if (bbox.bottom > scrollParentBbox.bottom) {
         textBox.scrollIntoView({ block: 'end', behavior: 'smooth' });
       } else if (bbox.top < scrollParentBbox.top) {
@@ -57,52 +73,62 @@ export class SyncServerForm extends React.PureComponent {
     });
   }
 
-  constructor(props) {
+  state: State = {
+    server: '',
+    username: '',
+    password: '',
+  };
+
+  constructor(props: Props) {
     super(props);
 
-    this.state = { server: '', username: '', password: '' };
-    [
-      'handleServerChange',
-      'handleUsernameChange',
-      'handlePasswordChange',
-      'handleSubmit',
-      'handleCancel',
-    ].forEach(handler => {
-      this[handler] = this[handler].bind(this);
-    });
+    this.handleServerChange = this.handleServerChange.bind(this);
+    this.handleUsernameChange = this.handleUsernameChange.bind(this);
+    this.handlePasswordChange = this.handlePasswordChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.setState({
-      server: this.props.server,
+      server: this.props.server || '',
       username: this.props.username || '',
       password: this.props.password || '',
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    ['server', 'username', 'password'].forEach(field => {
-      if (this.props[field] !== nextProps[field]) {
-        this.setState({ [field]: nextProps[field] || '' });
+  componentDidUpdate(previousProps: Props) {
+    const fields: Array<keyof Props> = ['server', 'username', 'password'];
+    const stateChange: Partial<State> = {};
+    for (const field of fields) {
+      if (this.props[field] !== previousProps[field]) {
+        stateChange[field as keyof State] =
+          (this.props[field] as string | undefined) || '';
       }
-    });
+    }
+
+    if (Object.keys(stateChange).length) {
+      this.setState(stateChange as State);
+    }
   }
 
-  handleServerChange(value) {
+  handleServerChange(value: string) {
     this.setState({ server: value });
     // When clearing the server, also clear the username/password
     if (!value) {
       this.setState({ username: '', password: '' });
     }
   }
-  handleUsernameChange(e) {
+
+  handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>) {
     this.setState({ username: e.target.value });
   }
-  handlePasswordChange(e) {
+
+  handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
     this.setState({ password: e.target.value });
   }
 
-  handleSubmit(e) {
+  handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const server = this.state.server.trim()
       ? {
@@ -116,7 +142,7 @@ export class SyncServerForm extends React.PureComponent {
 
   handleCancel() {
     this.setState({
-      server: this.props.server,
+      server: this.props.server || '',
       username: this.props.username || '',
       password: this.props.password || '',
     });
@@ -134,10 +160,10 @@ export class SyncServerForm extends React.PureComponent {
         <CancelableTextbox
           type="text"
           name="server"
-          autocomplete="url"
+          autoComplete="url"
           placeholder="Server name"
           className="server"
-          size="40"
+          size={40}
           value={this.state.server}
           onChange={this.handleServerChange}
           onFocus={SyncServerForm.handleTextBoxFocus}
@@ -146,10 +172,10 @@ export class SyncServerForm extends React.PureComponent {
           <input
             type="text"
             name="username"
-            autocomplete="username"
+            autoComplete="username"
             placeholder="Username"
             className="username -icon -user"
-            size="40"
+            size={40}
             value={this.state.username}
             onChange={this.handleUsernameChange}
             onFocus={SyncServerForm.handleTextBoxFocus}
@@ -157,10 +183,10 @@ export class SyncServerForm extends React.PureComponent {
           <input
             type="password"
             name="password"
-            autocomplete="current-password"
+            autoComplete="current-password"
             placeholder="Password"
             className="password -icon -lock"
-            size="40"
+            size={40}
             value={this.state.password}
             onChange={this.handlePasswordChange}
             onFocus={SyncServerForm.handleTextBoxFocus}

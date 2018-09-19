@@ -8,7 +8,7 @@ import CardFormatToolbar from './components/CardFormatToolbar';
 import CardPreview from './components/CardPreview.tsx';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
-import SyncSettingsPanel from './components/SyncSettingsPanel.jsx';
+import SyncSettingsPanel from './components/SyncSettingsPanel.tsx';
 import TextRegion from './components/TextRegion.jsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
 

@@ -1,7 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-interface Props {
+import { Omit } from '../utils/type-helpers';
+
+interface Props
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   value?: string;
   onChange?: (value: string) => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
