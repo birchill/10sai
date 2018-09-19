@@ -8,7 +8,7 @@ import CardFormatToolbar from './components/CardFormatToolbar';
 import CardPreview from './components/CardPreview.tsx';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
-import TextRegion from './components/TextRegion.jsx';
+import TextRegion from './components/TextRegion.tsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
 
 const cardFronts = document.querySelectorAll('.card-front-container');
@@ -16,7 +16,9 @@ for (const container of cardFronts) {
   ReactDOM.render(
     <div className="review-card current">
       <div className="front">
-        <TextRegion className="question" text={container.dataset.question} />
+        <TextRegion className="question">
+          {container.dataset.question}
+        </TextRegion>
       </div>
     </div>,
     container
@@ -28,9 +30,11 @@ for (const container of cardBacks) {
   ReactDOM.render(
     <div className="review-card current -showanswer">
       <div className="back">
-        <TextRegion className="question" text={container.dataset.question} />
+        <TextRegion className="question">
+          {container.dataset.question}
+        </TextRegion>
         <hr className="card-divider divider" />
-        <TextRegion className="answer" text={container.dataset.answer} />
+        <TextRegion className="question">{container.dataset.answer}</TextRegion>
       </div>
     </div>,
     container

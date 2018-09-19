@@ -10,7 +10,12 @@ interface Props {
 }
 
 export const FormattedText: React.SFC<Props> = props => {
-  const blocks = deserialize(props.text);
+  let blocks;
+  try {
+    blocks = deserialize(props.text);
+  } catch (e) {
+    return <>Malformed text: {props.text}</>;
+  }
   let i = 0;
 
   return (

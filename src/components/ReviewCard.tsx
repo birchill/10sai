@@ -1,10 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import FormattedText from './FormattedText.tsx';
-import TextRegion from './TextRegion.jsx';
+import { FormattedText } from './FormattedText';
+import { TextRegion } from './TextRegion';
 
-function ReviewCard(props) {
+interface Props {
+  question: string;
+  answer: string;
+  showAnswer?: boolean;
+  className?: string;
+  onSelectCard: () => void;
+}
+
+export const ReviewCard: React.SFC<Props> = (props: Props) => {
   let className = 'review-card';
   if (props.showAnswer) {
     className += ' -showanswer';
@@ -25,25 +33,25 @@ function ReviewCard(props) {
     >
       <div className="front">
         <TextRegion className="question">
-          <FormattedText text={props.question} />
+          <FormattedText text={props.question} key={props.question} />
         </TextRegion>
       </div>
       <div className="back">
         <TextRegion className="question">
-          <FormattedText text={props.question} />
+          <FormattedText text={props.question} key={props.question} />
         </TextRegion>
         <hr className="card-divider divider" />
         <TextRegion className="answer">
-          <FormattedText text={props.answer} />
+          <FormattedText text={props.answer} key={props.answer} />
         </TextRegion>
       </div>
     </div>
   );
-}
+};
 
 ReviewCard.propTypes = {
   question: PropTypes.string.isRequired,
-  answer: PropTypes.string,
+  answer: PropTypes.string.isRequired,
   showAnswer: PropTypes.bool,
   className: PropTypes.string,
   onSelectCard: PropTypes.func,

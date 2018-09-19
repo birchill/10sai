@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import DynamicNoteList from './DynamicNoteList';
-import ReviewCard from './ReviewCard.jsx';
+import ReviewCard from './ReviewCard.tsx';
 
 function ReviewPanel(props) {
   // There is one case where both the previous card and the next card might be

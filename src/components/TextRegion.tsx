@@ -2,13 +2,24 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
+type SizeKeyword = 'x-small' | 'small' | 'medium' | 'large' | 'x-large';
+
+interface Props {
+  className?: string;
+  children: React.ReactElement<any>;
+}
+
+interface State {
+  size: SizeKeyword;
+}
+
 // A block of text where the size of the text content is resized to more-or-less
 // fill the region.
 //
 // Relies on there being CSS selectors defined for the region that match on the
 // 'data-size' attribute with keywords 'x-small', 'small', 'medium', 'large',
 // 'x-large'. Typically these will define increasing font sizes.
-class TextRegion extends React.Component {
+export class TextRegion extends React.Component<Props, State> {
   static get propTypes() {
     return {
       className: PropTypes.string,
@@ -16,15 +27,29 @@ class TextRegion extends React.Component {
     };
   }
 
-  static getBestSize(textElem, containerElem, containerWidth, containerHeight) {
+  static getBestSize(
+    textElem: HTMLElement,
+    containerElem: HTMLElement,
+    containerWidth: number,
+    containerHeight: number
+  ): SizeKeyword {
     // Selectors for [data-size=...] MUST be defined for each of these and they
     // must define increasing font sizes or potentially bad things could happen.
-    const sizeKeywords = ['x-small', 'small', 'medium', 'large', 'x-large'];
-    let { size } = containerElem.dataset;
+    const sizeKeywords: Array<SizeKeyword> = [
+      'x-small',
+      'small',
+      'medium',
+      'large',
+      'x-large',
+    ];
+    let { size } = containerElem.dataset as { size: SizeKeyword };
 
-    const dimensionDiff = (actual, ideal) => (actual - ideal) / ideal;
-    const xDiff = bbox => dimensionDiff(bbox.width, containerWidth);
-    const yDiff = bbox => dimensionDiff(bbox.height, containerHeight);
+    const dimensionDiff = (actual: number, ideal: number): number =>
+      (actual - ideal) / ideal;
+    const xDiff = (bbox: ClientRect): number =>
+      dimensionDiff(bbox.width, containerWidth);
+    const yDiff = (bbox: ClientRect): number =>
+      dimensionDiff(bbox.height, containerHeight);
 
     let bbox = textElem.getBoundingClientRect();
 
@@ -84,20 +109,21 @@ class TextRegion extends React.Component {
     return size;
   }
 
-  constructor(props) {
+  containerWidth: number | undefined;
+  containerHeight: number | undefined;
+  containerElemRef: React.RefObject<HTMLDivElement>;
+  textElemRef: React.RefObject<HTMLDivElement>;
+  state: State;
+
+  constructor(props: Props) {
     super(props);
 
-    this.needsSizeUpdate = false;
     this.containerWidth = undefined;
     this.containerHeight = undefined;
     this.state = { size: 'medium' };
     this.handleResize = this.handleResize.bind(this);
-    this.assignContainerElem = elem => {
-      this.containerElem = elem;
-    };
-    this.assignTextElem = elem => {
-      this.textElem = elem;
-    };
+    this.containerElemRef = React.createRef<HTMLDivElement>();
+    this.textElemRef = React.createRef<HTMLDivElement>();
   }
 
   componentDidMount() {
@@ -105,13 +131,7 @@ class TextRegion extends React.Component {
     this.resizeText();
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.children !== nextProps.children) {
-      this.needsSizeUpdate = true;
-    }
-  }
-
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps: Props) {
     // Currently the only thing in state is the size and we update that by
     // applying the size to the target element and measuring it.
     // That means that by the time we update the size, the target element is
@@ -121,24 +141,22 @@ class TextRegion extends React.Component {
     return !shallowEqual(this.props, nextProps);
   }
 
-  componentDidUpdate() {
-    if (this.needsSizeUpdate) {
+  componentDidUpdate(previousProps: Props) {
+    if (this.props.children !== previousProps.children) {
       this.resizeText();
     }
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
-    this.containerElem = undefined;
-    this.textElem = undefined;
   }
 
   handleResize() {
-    if (!this.containerElem) {
+    if (!this.containerElemRef.current) {
       return;
     }
 
-    const bbox = this.containerElem.getBoundingClientRect();
+    const bbox = this.containerElemRef.current.getBoundingClientRect();
     if (
       bbox.width === this.containerWidth &&
       bbox.height === this.containerHeight
@@ -149,19 +167,19 @@ class TextRegion extends React.Component {
     this.resizeText(bbox);
   }
 
-  resizeText(containerBbox) {
-    if (!this.containerElem || !this.textElem) {
+  resizeText(containerBbox?: ClientRect) {
+    if (!this.containerElemRef.current || !this.textElemRef.current) {
       return;
     }
 
-    const bbox = containerBbox || this.containerElem.getBoundingClientRect();
+    const bbox =
+      containerBbox || this.containerElemRef.current.getBoundingClientRect();
     const size = TextRegion.getBestSize(
-      this.textElem,
-      this.containerElem,
+      this.textElemRef.current,
+      this.containerElemRef.current,
       bbox.width,
       bbox.height
     );
-    this.needsSizeUpdate = false;
     this.containerWidth = bbox.width;
     this.containerHeight = bbox.height;
 
@@ -178,10 +196,10 @@ class TextRegion extends React.Component {
     return (
       <div
         className={className}
-        ref={this.assignContainerElem}
+        ref={this.containerElemRef}
         data-size={this.state.size}
       >
-        <div className="text" ref={this.assignTextElem}>
+        <div className="text" ref={this.textElemRef}>
           {this.props.children}
         </div>
       </div>
