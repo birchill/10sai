@@ -4,47 +4,47 @@ import React from 'react';
 import 'main.scss'; // eslint-disable-line
 
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
-import CardFormatToolbar from './components/CardFormatToolbar';
+import CardFormatToolbar from './components/CardFormatToolbar.tsx';
 import CardPreview from './components/CardPreview.tsx';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
-import TextRegion from './components/TextRegion.tsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
 
-const cardFronts = document.querySelectorAll('.card-front-container');
-for (const container of cardFronts) {
-  ReactDOM.render(
-    <div className="review-card current">
-      <div className="front">
-        <TextRegion className="question">
-          {container.dataset.question}
-        </TextRegion>
-      </div>
-    </div>,
-    container
-  );
-}
-
-const cardBacks = document.querySelectorAll('.card-back-container');
-for (const container of cardBacks) {
-  ReactDOM.render(
-    <div className="review-card current -showanswer">
-      <div className="back">
-        <TextRegion className="question">
-          {container.dataset.question}
-        </TextRegion>
-        <hr className="card-divider divider" />
-        <TextRegion className="question">{container.dataset.answer}</TextRegion>
-      </div>
-    </div>,
-    container
-  );
-}
+const buttons = [
+  {
+    type: 'bold',
+    label: 'Bold',
+    accelerator: 'Ctrl+B',
+    state: 1,
+  },
+  {
+    type: 'italic',
+    label: 'Italic',
+    accelerator: 'Ctrl+I',
+    state: 0,
+  },
+  {
+    type: 'underline',
+    label: 'Underline',
+    accelerator: 'Ctrl+U',
+    state: 0,
+  },
+  {
+    type: 'emphasis',
+    label: 'Dot emphasis',
+    accelerator: 'Ctrl+.',
+    state: 0,
+  },
+];
 
 const cardToolbars = document.querySelectorAll('.card-toolbar-container');
 for (const container of cardToolbars) {
   ReactDOM.render(
-    <CardFormatToolbar className="toolbar" onClick={() => {}} />,
+    <CardFormatToolbar
+      className="toolbar"
+      buttons={buttons}
+      onClick={() => {}}
+    />,
     container
   );
 }
