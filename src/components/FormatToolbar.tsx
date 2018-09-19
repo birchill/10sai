@@ -31,7 +31,7 @@ export interface FormatButtonConfig {
   state: FormatButtonState;
 }
 
-export class CardFormatToolbar extends React.Component<Props, State> {
+export class FormatToolbar extends React.Component<Props, State> {
   static get propTypes() {
     return {
       className: PropTypes.string,
@@ -111,7 +111,7 @@ export class CardFormatToolbar extends React.Component<Props, State> {
   }
 
   render() {
-    let className = 'cardformat-toolbar';
+    let className = 'format-toolbar';
     if (this.props.className) {
       className += ' ' + this.props.className;
     }
@@ -149,4 +149,4 @@ export class CardFormatToolbar extends React.Component<Props, State> {
   }
 }
 
-export default CardFormatToolbar;
+export default FormatToolbar;

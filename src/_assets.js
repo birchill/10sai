@@ -4,7 +4,7 @@ import React from 'react';
 import 'main.scss'; // eslint-disable-line
 
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
-import CardFormatToolbar from './components/CardFormatToolbar.tsx';
+import FormatToolbar from './components/FormatToolbar.tsx';
 import CardPreview from './components/CardPreview.tsx';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
@@ -40,11 +40,7 @@ const buttons = [
 const cardToolbars = document.querySelectorAll('.card-toolbar-container');
 for (const container of cardToolbars) {
   ReactDOM.render(
-    <CardFormatToolbar
-      className="toolbar"
-      buttons={buttons}
-      onClick={() => {}}
-    />,
+    <FormatToolbar className="toolbar" buttons={buttons} onClick={() => {}} />,
     container
   );
 }

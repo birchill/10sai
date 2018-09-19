@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 
 import { CardFaceInput } from './CardFaceInput';
 import {
-  CardFormatToolbar,
+  FormatToolbar,
   FormatButtonCommand,
   FormatButtonConfig,
   FormatButtonState,
-} from './CardFormatToolbar';
+} from './FormatToolbar';
 
 import { Card } from '../model';
 import KeyboardFocusHelper from '../utils/KeyboardFocusHelper';
@@ -52,7 +52,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
 
   questionTextBoxRef: React.RefObject<CardFaceInput>;
   answerTextBoxRef: React.RefObject<CardFaceInput>;
-  formatToolbarRef: React.RefObject<CardFormatToolbar>;
+  formatToolbarRef: React.RefObject<FormatToolbar>;
 
   handlePromptChange: (value: 'string') => void;
   handleAnswerChange: (value: 'string') => void;
@@ -80,7 +80,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     // Control refs
     this.questionTextBoxRef = React.createRef<CardFaceInput>();
     this.answerTextBoxRef = React.createRef<CardFaceInput>();
-    this.formatToolbarRef = React.createRef<CardFormatToolbar>();
+    this.formatToolbarRef = React.createRef<FormatToolbar>();
 
     // Prompt text box handling
     this.handlePromptChange = this.handleTextBoxChange.bind(this, 'question');
@@ -320,7 +320,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
           onMarksUpdated={this.handleAnswerMarksUpdated}
           ref={this.answerTextBoxRef}
         />
-        <CardFormatToolbar
+        <FormatToolbar
           className={'toolbar -center' + (this.isFocussed ? ' -areafocus' : '')}
           onClick={this.handleFormat}
           buttons={this.formatButtonConfig}
