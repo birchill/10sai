@@ -4,46 +4,9 @@ import React from 'react';
 import 'main.scss'; // eslint-disable-line
 
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
-import FormatToolbar from './components/FormatToolbar.tsx';
-import CardPreview from './components/CardPreview.tsx';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
 import TricolorProgress from './components/TricolorProgress.jsx';
-
-const buttons = [
-  {
-    type: 'bold',
-    label: 'Bold',
-    accelerator: 'Ctrl+B',
-    state: 1,
-  },
-  {
-    type: 'italic',
-    label: 'Italic',
-    accelerator: 'Ctrl+I',
-    state: 0,
-  },
-  {
-    type: 'underline',
-    label: 'Underline',
-    accelerator: 'Ctrl+U',
-    state: 0,
-  },
-  {
-    type: 'emphasis',
-    label: 'Dot emphasis',
-    accelerator: 'Ctrl+.',
-    state: 0,
-  },
-];
-
-const cardToolbars = document.querySelectorAll('.card-toolbar-container');
-for (const container of cardToolbars) {
-  ReactDOM.render(
-    <FormatToolbar className="toolbar" buttons={buttons} onClick={() => {}} />,
-    container
-  );
-}
 
 const progressBars = document.querySelectorAll('.tricolor-progress-container');
 for (const container of progressBars) {
