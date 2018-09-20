@@ -1,6 +1,9 @@
 .tricolor-progress {
   position: relative;
 
+  // Set a default height. This will typically be overridden.
+  height: 10px;
+
   > * {
     width: 100%;
     height: 100%;

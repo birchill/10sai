@@ -6,20 +6,6 @@ import 'main.scss'; // eslint-disable-line
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
 import NoteList from './components/NoteList.tsx';
 import SaveStatus from './components/SaveStatus.tsx';
-import TricolorProgress from './components/TricolorProgress.jsx';
-
-const progressBars = document.querySelectorAll('.tricolor-progress-container');
-for (const container of progressBars) {
-  ReactDOM.render(
-    <TricolorProgress
-      aItems={parseFloat(container.dataset.a)}
-      bItems={parseFloat(container.dataset.b)}
-      cItems={parseFloat(container.dataset.c)}
-      title={container.dataset.title}
-    />,
-    container
-  );
-}
 
 const saveStatuses = document.getElementById('save-statuses-container');
 

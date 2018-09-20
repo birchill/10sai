@@ -3,14 +3,26 @@ import PropTypes from 'prop-types';
 
 // A bar with three colored regions.
 
-function TricolorProgress(props) {
+interface Props {
+  // Rather than provide two percentages, we accept three numbers and calculate
+  // the percentages ourselves.
+  aItems: number;
+  bItems: number;
+  cItems: number;
+  title?: string;
+  className?: string;
+}
+
+export const TricolorProgress: React.SFC<Props> = (props: Props) => {
   const sum = props.aItems + props.bItems + props.cItems;
-  const asScaleX = numItems => `scaleX(${sum ? numItems / sum : 0})`;
+  const asScaleX = (numItems: number): string =>
+    `scaleX(${sum ? numItems / sum : 0})`;
 
   return (
     <div
       className={`tricolor-progress ${props.className || ''}`}
-      title={props.title}>
+      title={props.title}
+    >
       <div className="c" />
       <div
         className="b"
@@ -19,11 +31,9 @@ function TricolorProgress(props) {
       <div className="a" style={{ transform: asScaleX(props.aItems) }} />
     </div>
   );
-}
+};
 
 TricolorProgress.propTypes = {
-  // Rather than provide two percentages, we accept three numbers and calculate
-  // the percentages ourselves.
   aItems: PropTypes.number.isRequired,
   bItems: PropTypes.number.isRequired,
   cItems: PropTypes.number.isRequired,
