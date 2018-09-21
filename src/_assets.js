@@ -5,33 +5,6 @@ import 'main.scss'; // eslint-disable-line
 
 import KeywordSuggesterContext from './components/KeywordSuggesterContext.ts';
 import NoteList from './components/NoteList.tsx';
-import SaveStatus from './components/SaveStatus.tsx';
-
-const saveStatuses = document.getElementById('save-statuses-container');
-
-(function renderSaveStatus(oldStatus = '') {
-  let status;
-  do {
-    status = ['ok', 'in-progress', 'error', 'new'][
-      Math.floor(Math.random() * 4)
-    ];
-  } while (status === oldStatus);
-
-  ReactDOM.render(
-    <>
-      <SaveStatus saveState={status} errorMessage={'Error message'} />
-      <button
-        onClick={() => {
-          renderSaveStatus(status);
-        }}
-      >
-        Update
-      </button>
-      <span className="currentstatus">{`Current: ${status}`}</span>
-    </>,
-    saveStatuses
-  );
-})();
 
 const okNote = index => ({
   formId: index,
