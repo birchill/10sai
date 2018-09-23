@@ -116,6 +116,7 @@ function ReviewPanel(props) {
               notes={props.notes}
               keywords={props.currentCard.keywords}
               priority="reading"
+              className="notes"
             />
           </>
         ) : null}

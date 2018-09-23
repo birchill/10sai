@@ -1,0 +1,11 @@
+.note-list {
+  & .noteform {
+    margin-bottom: 1rem;
+  }
+
+  & > .addnote {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

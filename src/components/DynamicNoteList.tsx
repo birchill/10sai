@@ -60,6 +60,7 @@ interface InnerProps {
   notes: Array<NoteState>;
   keywords: Array<string>;
   priority: 'reading' | 'writing';
+  className?: string;
   onAddNote: (initialKeywords: Array<string>) => void;
   onEditNote: (noteFormId: number, change: Partial<Note>) => void;
   onDeleteNote: (noteFormId: number, noteId?: string) => void;
@@ -81,6 +82,7 @@ const DynamicNoteListInner = (props: InnerProps) => (
       notes={props.notes}
       keywords={props.keywords}
       priority={props.priority}
+      className={props.className}
       onAddNote={props.onAddNote}
       onEditNote={props.onEditNote}
       onDeleteNote={props.onDeleteNote}
@@ -93,6 +95,7 @@ interface Props {
   notes: Array<NoteState>;
   keywords: Array<string>;
   priority: 'reading' | 'writing';
+  className?: string;
 }
 
 // XXX Use the actual state once we have it

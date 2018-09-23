@@ -13,6 +13,7 @@ interface Props {
   notes: Array<NoteState>;
   keywords: Array<string>;
   priority: 'reading' | 'writing';
+  className?: string;
   onAddNote: (initialKeywords: Array<string>) => void;
   onEditNote: (noteFormId: number, change: Partial<Note>) => void;
   onDeleteNote: (noteFormId: number, noteId?: string) => void;
@@ -65,6 +66,7 @@ export class NoteList extends React.PureComponent<Props, State> {
         })
       ),
       keywords: PropTypes.arrayOf(PropTypes.string),
+      className: PropTypes.string,
       onAddNote: PropTypes.func.isRequired,
       onEditNote: PropTypes.func.isRequired,
       onDeleteNote: PropTypes.func.isRequired,
@@ -485,14 +487,19 @@ export class NoteList extends React.PureComponent<Props, State> {
     const sortedNotes = this.sortNotes(this.props.notes, this.props.keywords);
     const lastRealNoteIndex = this.props.notes.length - 1;
 
+    let className = 'note-list';
+    if (this.props.className) {
+      className += ' ' + this.props.className;
+    }
+
     let noteFormClassName = 'noteform';
     if (this.props.priority === 'reading') {
       noteFormClassName += ' -hideeditcontrols';
     }
 
     return (
-      <>
-        <div className="notes" ref={this.notesContainerRef}>
+      <div className={className}>
+        <div className="notecontainer" ref={this.notesContainerRef}>
           {sortedNotes.map((note, i) => {
             const ref = i === lastRealNoteIndex ? this.lastNoteRef : undefined;
             return (
@@ -516,7 +523,7 @@ export class NoteList extends React.PureComponent<Props, State> {
           ref={this.addNoteButtonRef}
           onClick={this.handleAddNote}
         />
-        <div className="notes" ref={this.deletingNotesContainerRef}>
+        <div className="notecontainer" ref={this.deletingNotesContainerRef}>
           {this.state.deletingNotes.map((note, i) => (
             <EditNoteForm
               key={note.formId}
@@ -531,7 +538,7 @@ export class NoteList extends React.PureComponent<Props, State> {
             />
           ))}
         </div>
-      </>
+      </div>
     );
   }
 }
