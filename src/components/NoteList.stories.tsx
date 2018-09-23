@@ -48,8 +48,18 @@ class NoteListExample extends React.PureComponent<Props, State> {
       ? this.props.updatedNotes
       : this.props.initialNotes;
 
+    const buttonStyle = {
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      marginBottom: '1em',
+      display: 'block',
+    };
+
     return (
       <KeywordSuggesterContext.Provider value={mockKeywordSuggester}>
+        <button style={buttonStyle} onClick={this.onClick}>
+          {this.state.hasRun ? 'Reset' : 'Run'}
+        </button>
         <NoteList
           notes={notes}
           keywords={[]}
@@ -58,9 +68,6 @@ class NoteListExample extends React.PureComponent<Props, State> {
           onEditNote={action('onEditNote')}
           onDeleteNote={action('onDeleteNote')}
         />
-        <button className="run-button" onClick={this.onClick}>
-          {this.state.hasRun ? 'Reset' : 'Run'}
-        </button>
       </KeywordSuggesterContext.Provider>
     );
   }
@@ -87,9 +94,34 @@ const newNote = (index: number): NoteState => ({
   originalKeywords: new Set<string>(),
 });
 
-storiesOf('Components|NoteList', module).add('delete middle note', () => (
-  <NoteListExample
-    initialNotes={[okNote(1), okNote(2), okNote(3)]}
-    updatedNotes={[okNote(1), okNote(3)]}
-  />
-));
+storiesOf('Components|NoteList', module)
+  .add('delete middle note', () => (
+    <NoteListExample
+      initialNotes={[okNote(1), okNote(2), okNote(3)]}
+      updatedNotes={[okNote(1), okNote(3)]}
+    />
+  ))
+  .add('delete outer ones', () => (
+    <NoteListExample
+      initialNotes={[okNote(1), okNote(2), okNote(3)]}
+      updatedNotes={[okNote(2)]}
+    />
+  ))
+  .add('add existing', () => (
+    <NoteListExample
+      initialNotes={[okNote(1), okNote(2)]}
+      updatedNotes={[okNote(1), okNote(2), okNote(3)]}
+    />
+  ))
+  .add('add new', () => (
+    <NoteListExample
+      initialNotes={[okNote(1), okNote(2)]}
+      updatedNotes={[okNote(1), okNote(2), newNote(3)]}
+    />
+  ))
+  .add('everything at once', () => (
+    <NoteListExample
+      initialNotes={[okNote(1), okNote(2), okNote(3)]}
+      updatedNotes={[okNote(3), okNote(1), okNote(4)]}
+    />
+  ));
