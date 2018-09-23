@@ -113,6 +113,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
               onChange={this.handleFormChange}
               {...this.props.forms.active}
               ref={this.activeFormRef}
+              key={this.props.forms.active.formId}
             />
             <hr className="note-divider divider" />
             <DynamicNoteList

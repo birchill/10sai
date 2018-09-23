@@ -119,7 +119,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     // trickles down on the next render, then updates triggered by updating the
     // database) and it's really hard to distinguish between genuine updates to
     // the Redux state (reflected in prop changes here) that we care about
-    // versus delayed reactions to state changes we made here are few keystrokes
+    // versus delayed reactions to state changes we made here a few keystrokes
     // about. In fact, I tried a bunch of approaches but none of them worked.
     //
     // However, when you're focussed on the field you don't really want the
