@@ -6,7 +6,6 @@ module.exports = {
   entry: {
     '10sai': ['@babel/polyfill', './src/index.js'],
     _database: ['@babel/polyfill', './src/_database.js'],
-    _assets: ['@babel/polyfill', './src/_assets.js'],
     _grid: ['@babel/polyfill', './src/_grid.js'],
   },
   output: {
