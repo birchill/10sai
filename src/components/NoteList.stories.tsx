@@ -73,12 +73,12 @@ class NoteListExample extends React.PureComponent<Props, State> {
   }
 }
 
-const okNote = (index: number): NoteState => ({
+const okNote = (index: number, keywords: Array<string> = []): NoteState => ({
   formId: index,
   note: {
     id: 'yer',
     content: `Note ${index}`,
-    keywords: [],
+    keywords,
   },
   saveState: SaveState.Ok,
   originalKeywords: new Set<string>(),
@@ -124,4 +124,20 @@ storiesOf('Components|NoteList', module)
       initialNotes={[okNote(1), okNote(2), okNote(3)]}
       updatedNotes={[okNote(3), okNote(1), okNote(4)]}
     />
+  ))
+  .add('reading priority', () => (
+    <KeywordSuggesterContext.Provider value={mockKeywordSuggester}>
+      <NoteList
+        notes={[
+          okNote(1, ['Keyword']),
+          okNote(2, ['Keyword 1', 'Keyword 2']),
+          okNote(3),
+        ]}
+        keywords={['Keyword']}
+        priority="reading"
+        onAddNote={action('onAddNote')}
+        onEditNote={action('onEditNote')}
+        onDeleteNote={action('onDeleteNote')}
+      />
+    </KeywordSuggesterContext.Provider>
   ));
