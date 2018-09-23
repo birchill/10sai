@@ -113,7 +113,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
               onChange={this.handleFormChange}
               {...this.props.forms.active}
               ref={this.activeFormRef}
-              key={this.props.forms.active.formId}
+              key={`card-${this.props.forms.active.formId}`}
             />
             <hr className="note-divider divider" />
             <DynamicNoteList
@@ -127,6 +127,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
               keywords={keywords}
               priority="writing"
               className="notes"
+              key={`notes-${this.props.forms.active.formId}`}
             />
           </>
         ) : (
