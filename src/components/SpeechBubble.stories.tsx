@@ -169,12 +169,12 @@ class ShowOnHover extends React.Component<{}, ShowOnHoverState> {
       hovered: false,
     };
     this.buttonRef = React.createRef<HTMLInputElement>();
+    this.handleMouseOver = this.handleMouseOver.bind(this);
+    this.handleMouseOut = this.handleMouseOut.bind(this);
   }
 
   componentDidMount() {
     this.forceUpdate();
-    this.handleMouseOver = this.handleMouseOver.bind(this);
-    this.handleMouseOut = this.handleMouseOut.bind(this);
   }
 
   handleMouseOver() {
@@ -210,4 +210,55 @@ class ShowOnHover extends React.Component<{}, ShowOnHoverState> {
 
 storiesOf('Components|SpeechBubble', module).add('show on hover', () => (
   <ShowOnHover />
+));
+
+interface ShowOnClickState {
+  visible: boolean;
+}
+
+class ShowOnClick extends React.Component<{}, ShowOnClickState> {
+  state: ShowOnClickState;
+  buttonRef: React.RefObject<HTMLInputElement>;
+
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      visible: false,
+    };
+    this.buttonRef = React.createRef<HTMLInputElement>();
+    this.toggleVisibility = this.toggleVisibility.bind(this);
+  }
+
+  componentDidMount() {
+    this.forceUpdate();
+  }
+
+  toggleVisibility() {
+    this.setState({ visible: !this.state.visible });
+  }
+
+  render() {
+    return (
+      <div>
+        <input
+          type="button"
+          ref={this.buttonRef}
+          value="Click me"
+          onClick={this.toggleVisibility}
+        />
+        <AnchoredSpeechBubble
+          position="below"
+          align="inline-direction"
+          anchorElement={this.buttonRef.current}
+          visible={this.state.visible}
+        >
+          <p style={{ margin: '.5em' }}>Hello there!</p>
+        </AnchoredSpeechBubble>
+      </div>
+    );
+  }
+}
+
+storiesOf('Components|SpeechBubble', module).add('show on click', () => (
+  <ShowOnClick />
 ));
