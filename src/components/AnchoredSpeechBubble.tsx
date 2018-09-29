@@ -53,10 +53,12 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
     };
 
     this.speechBubbleRef = React.createRef<SpeechBubble>();
+    this.updatePosition = this.updatePosition.bind(this);
   }
 
   componentDidMount() {
     this.updatePosition();
+    window.addEventListener('resize', this.updatePosition);
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -67,6 +69,10 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
     ) {
       this.updatePosition();
     }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updatePosition);
   }
 
   updatePosition() {
