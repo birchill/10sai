@@ -1,9 +1,15 @@
 .speech-bubble {
+  display: flex;
+  position: fixed;
+  z-index: 9999;
+  background: transparent;
+
   > .panel {
     padding: 2px 0;
     color: $text-color;
     margin: 4px;
     max-width: 320px;
+    flex-grow: 1;
   }
 
   > .panel, > .arrow::before {
@@ -16,6 +22,7 @@
   > .arrow {
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
 
     // Desired width of the arrow
     --arrow-width: 20px;
@@ -31,6 +38,13 @@
     //
     width: calc(var(--arrow-width) + 2 * var(--shadow-margin));
     height: calc(var(--arrow-width) / 2 + var(--shadow-margin));
+
+    //
+    // Minimum space to allow between the arrow and the end of the panel.
+    // This value is not used in this stylesheet but is read from computed
+    // style.
+    //
+    --arrow-margin: 11.5px;
 
     &::before {
       content: "";
@@ -70,6 +84,8 @@
   }
 
   &.-top {
+    flex-direction: column;
+
     > .panel {
       //
       // Drop the margin between the doorhanger and the arrow and add extra
@@ -93,6 +109,8 @@
   }
 
   &.-bottom {
+    flex-direction: column-reverse;
+
     > .panel {
       //
       // Drop the margin between the doorhanger and the arrow and add extra
