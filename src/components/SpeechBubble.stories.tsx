@@ -118,7 +118,7 @@ storiesOf('Components|SpeechBubble', module)
         <SpeechBubbleAndButton position="below" align="center">
           below / center<br />
           Supercalifragilisticexpialidocious<br />
-          (This one should end of hanging left.)
+          (This one should end up hanging left.)
         </SpeechBubbleAndButton>
       </div>
       <p style={{ marginTop: '3rem' }}>RTL:</p>
@@ -132,7 +132,7 @@ storiesOf('Components|SpeechBubble', module)
         <SpeechBubbleAndButton position="below" align="center">
           below / center<br />
           Supercalifragilisticexpialidocious<br />
-          (This one should end of hanging right.)
+          (This one should end up hanging right.)
         </SpeechBubbleAndButton>
       </div>
     </div>

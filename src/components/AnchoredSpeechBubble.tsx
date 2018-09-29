@@ -142,24 +142,27 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
     }
 
     // Find the vertical position
-    let top =
-      this.props.position === 'above' ? anchorBbox.top : anchorBbox.bottom;
+    const topOverlap = 5;
+    const topPoint = anchorBbox.top + topOverlap;
+    const bottomOverlap = 7;
+    const bottomPoint = anchorBbox.bottom - bottomOverlap;
+    let top = this.props.position === 'above' ? topPoint : bottomPoint;
     let arrowSide: 'top' | 'bottom' =
       this.props.position === 'above' ? 'bottom' : 'top';
     if (contentBbox) {
       if (
         this.props.position === 'above' &&
         top - contentBbox.height < 0 &&
-        anchorBbox.bottom + contentBbox.height < viewport.bottom
+        bottomPoint + contentBbox.height < viewport.bottom
       ) {
-        top = anchorBbox.bottom;
+        top = bottomPoint;
         arrowSide = 'top';
       } else if (
         this.props.position === 'below' &&
         top + contentBbox.height > viewport.bottom &&
-        anchorBbox.top - contentBbox.height > 0
+        topPoint - contentBbox.height > 0
       ) {
-        top = anchorBbox.top;
+        top = topPoint;
         arrowSide = 'bottom';
       }
     }
