@@ -13,13 +13,16 @@ export interface Props {
   // Physical horizontal position of the arrow with regards to the panel.
   arrowPosition: 'left' | 'center' | 'right';
   arrowSide: 'top' | 'bottom';
+  // TODO: This shouldn't be optional but we can't use defaultProps properly
+  // because we can't upgrade to TS3 because someone broke the Web Animations
+  // typings in TS3 and, although I submitted a PR to fix them, after 6 weeks
+  // and half a dozen attempts to ping folk in MS, no-one has bothered to press
+  // the green merge button--although they still had time to release TS 3.1 in
+  // the meantime. Seriously MS, get your act together.
+  visible?: boolean;
 }
 
-interface State {
-  visible: boolean;
-}
-
-export class SpeechBubble extends React.Component<Props, State> {
+export class SpeechBubble extends React.Component<Props> {
   static get propTypes() {
     return {
       className: PropTypes.string,
@@ -30,7 +33,10 @@ export class SpeechBubble extends React.Component<Props, State> {
     };
   }
 
-  state: State;
+  static defaultProps = {
+    visible: true,
+  };
+
   layer: HTMLElement;
   containerRef: React.RefObject<HTMLDivElement>;
   panelRef: React.RefObject<HTMLDivElement>;
@@ -38,10 +44,6 @@ export class SpeechBubble extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-
-    this.state = {
-      visible: false,
-    };
 
     let layer: HTMLElement | null = document.getElementById('speech-bubbles');
     if (!layer) {
@@ -55,6 +57,40 @@ export class SpeechBubble extends React.Component<Props, State> {
     this.containerRef = React.createRef<HTMLDivElement>();
     this.panelRef = React.createRef<HTMLDivElement>();
     this.arrowRef = React.createRef<HTMLDivElement>();
+  }
+
+  componentDidMount() {
+    if (this.props.visible) {
+      this.fadeInOut();
+    }
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.visible !== this.props.visible) {
+      this.fadeInOut();
+    }
+  }
+
+  fadeInOut() {
+    if (!this.containerRef.current) {
+      return;
+    }
+
+    const containerElem = this.containerRef.current;
+    if (!this.props.visible) {
+      containerElem.classList.add('-fadeout');
+      containerElem.addEventListener(
+        'transitionend',
+        () => {
+          containerElem.classList.remove('-fadeout');
+        },
+        { once: true }
+      );
+    } else {
+      containerElem.classList.add('-fadein');
+      getComputedStyle(containerElem).opacity;
+      containerElem.classList.remove('-fadein');
+    }
   }
 
   render() {
@@ -80,6 +116,7 @@ export class SpeechBubble extends React.Component<Props, State> {
         className={classes.join(' ')}
         style={containerStyle}
         ref={this.containerRef}
+        hidden={!this.props.visible}
       >
         <div className="panel" ref={this.panelRef}>
           {this.props.children}

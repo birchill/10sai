@@ -4,6 +4,20 @@
   z-index: 9999;
   background: transparent;
 
+  transition: opacity .15s;
+  will-change: opacity;
+
+  &[hidden] {
+    opacity: 0;
+    pointer-events: none;
+    &:not(.-fadeout) {
+      display: none;
+    }
+  }
+  &.-fadein {
+    opacity: 0;
+  }
+
   > .panel {
     padding: 2px 0;
     color: $text-color;

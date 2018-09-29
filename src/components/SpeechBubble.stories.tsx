@@ -4,15 +4,17 @@ import { action } from '@storybook/addon-actions';
 
 import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
 
-interface Props {
+interface SpeechBubbleAndButtonProps {
   position: 'above' | 'below';
   align: 'center' | 'largest-side' | 'inline-direction';
 }
 
-class SpeechBubbleAndButton extends React.Component<Props> {
+class SpeechBubbleAndButton extends React.Component<
+  SpeechBubbleAndButtonProps
+> {
   buttonRef: React.RefObject<HTMLInputElement>;
 
-  constructor(props: Props) {
+  constructor(props: SpeechBubbleAndButtonProps) {
     super(props);
     this.buttonRef = React.createRef<HTMLInputElement>();
   }
@@ -152,3 +154,60 @@ storiesOf('Components|SpeechBubble', module)
       </SpeechBubbleAndButton>
     </div>
   ));
+
+interface ShowOnHoverState {
+  hovered: boolean;
+}
+
+class ShowOnHover extends React.Component<{}, ShowOnHoverState> {
+  state: ShowOnHoverState;
+  buttonRef: React.RefObject<HTMLInputElement>;
+
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      hovered: false,
+    };
+    this.buttonRef = React.createRef<HTMLInputElement>();
+  }
+
+  componentDidMount() {
+    this.forceUpdate();
+    this.handleMouseOver = this.handleMouseOver.bind(this);
+    this.handleMouseOut = this.handleMouseOut.bind(this);
+  }
+
+  handleMouseOver() {
+    this.setState({ hovered: true });
+  }
+
+  handleMouseOut() {
+    this.setState({ hovered: false });
+  }
+
+  render() {
+    return (
+      <div>
+        <input
+          type="button"
+          ref={this.buttonRef}
+          value="Hover me"
+          onMouseOver={this.handleMouseOver}
+          onMouseOut={this.handleMouseOut}
+        />
+        <AnchoredSpeechBubble
+          position="below"
+          align="inline-direction"
+          anchorElement={this.buttonRef.current}
+          visible={this.state.hovered}
+        >
+          <p style={{ margin: '.5em' }}>Hello there!</p>
+        </AnchoredSpeechBubble>
+      </div>
+    );
+  }
+}
+
+storiesOf('Components|SpeechBubble', module).add('show on hover', () => (
+  <ShowOnHover />
+));
