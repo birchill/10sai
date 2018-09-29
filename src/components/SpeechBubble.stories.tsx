@@ -251,6 +251,7 @@ class ShowOnClick extends React.Component<{}, ShowOnClickState> {
           align="inline-direction"
           anchorElement={this.buttonRef.current}
           visible={this.state.visible}
+          onClickOutside={this.toggleVisibility}
         >
           <p style={{ margin: '.5em' }}>Hello there!</p>
         </AnchoredSpeechBubble>

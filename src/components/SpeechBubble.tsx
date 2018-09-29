@@ -20,6 +20,15 @@ export interface Props {
   // the green merge button--although they still had time to release TS 3.1 in
   // the meantime. Seriously MS, get your act together.
   visible?: boolean;
+  // Called whenever the menu is visible and we get a click outside of the panel
+  // area. This is useful for closing the speech bubble whenever there is
+  // a click anywhere else in the panel.
+  //
+  // If the panel is closed by clicking, e.g. a button outside the menu, then it
+  // so happens that we won't end up calling this (due to the way we unregister
+  // the event listener). This wasn't intended at first but proves to be useful
+  // so we've kept it.
+  onClickOutside?: (evt: MouseEvent) => void;
 }
 
 export class SpeechBubble extends React.Component<Props> {
@@ -57,17 +66,41 @@ export class SpeechBubble extends React.Component<Props> {
     this.containerRef = React.createRef<HTMLDivElement>();
     this.panelRef = React.createRef<HTMLDivElement>();
     this.arrowRef = React.createRef<HTMLDivElement>();
+
+    this.handleWindowClick = this.handleWindowClick.bind(this);
   }
 
   componentDidMount() {
     if (this.props.visible) {
       this.fadeInOut();
+      // Here and below, it might be preferable to find the rootmost window and
+      // listen there instead but we're currently not using <iframe>s so it
+      // doesn't seem necessary yet.
+      window.addEventListener('click', this.handleWindowClick);
     }
   }
 
   componentDidUpdate(prevProps: Props) {
     if (prevProps.visible !== this.props.visible) {
       this.fadeInOut();
+
+      if (this.props.visible) {
+        // We register the click handler on the window but if this render was
+        // triggered as part of a click event we can still end up calling
+        // 'handleWindowClick' for _this_ event so we need to spin the event
+        // loop first.
+        setTimeout(() => {
+          window.addEventListener('click', this.handleWindowClick);
+        }, 0);
+      } else {
+        window.removeEventListener('click', this.handleWindowClick);
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.props.visible) {
+      window.removeEventListener('click', this.handleWindowClick);
     }
   }
 
@@ -90,6 +123,20 @@ export class SpeechBubble extends React.Component<Props> {
       containerElem.classList.add('-fadein');
       getComputedStyle(containerElem).opacity;
       containerElem.classList.remove('-fadein');
+    }
+  }
+
+  handleWindowClick(evt: MouseEvent) {
+    if (!this.props.onClickOutside) {
+      return;
+    }
+
+    if (!this.containerRef.current) {
+      return;
+    }
+
+    if (evt.target && !this.containerRef.current.contains(evt.target as Node)) {
+      this.props.onClickOutside(evt);
     }
   }
 
