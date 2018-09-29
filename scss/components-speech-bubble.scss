@@ -6,10 +6,10 @@
 
   transition: opacity .1s;
   will-change: opacity;
+  pointer-events: none;
 
   &[hidden] {
     opacity: 0;
-    pointer-events: none;
     &:not(.-fadeout) {
       display: none;
     }
@@ -19,6 +19,7 @@
   }
 
   > .panel {
+    pointer-events: all;
     padding: 2px 0;
     color: $text-color;
     margin: 4px;
@@ -63,7 +64,6 @@
     &::before {
       content: "";
       position: absolute;
-      pointer-events: all;
 
       // Make sure the border is included in the size.
       box-sizing: border-box;
