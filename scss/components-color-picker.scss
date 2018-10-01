@@ -1,0 +1,47 @@
+.color-picker {
+  > .swatch {
+    background: var(--swatch-color);
+    border-radius: 100%;
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    border: 1.5px solid black;
+    box-sizing: border-box;
+    transition: transform 0.15s;
+    will-change: transform;
+
+    &::before {
+      content: "";
+      display: inline-block;
+      position: relative;
+      border-radius: 100%;
+      border-width: 1px;
+      width: 35px;
+      height: 35px;
+      margin-top: -1.5px;
+      margin-left: -1.5px;
+      opacity: 0.3;
+      background: var(--swatch-color);
+      transition: transform 0.2s;
+      will-change: transform;
+      transform: scale(1);
+    }
+
+    &.-selected::before {
+      transform: scale(1.2);
+    }
+    &:hover {
+      transform: scale(1.1);
+    }
+    &:focus {
+      border-style: dashed;
+      filter: brightness(1.3);
+    }
+    :focus:not(:focus-visible) {
+      border-color: transparent;
+    }
+  }
+  > .swatch + .swatch {
+    margin-left: 10px;
+  }
+}

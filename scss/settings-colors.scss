@@ -18,3 +18,12 @@ $fail-red: #e10000;
 $pass-green: #00b900;
 
 $warning-red: #e14700;
+
+:root {
+  --text-black: #{$text-color};
+  --text-green: #28a228;
+  --text-blue: #{$highlight};
+  --text-purple: #ae59b6;
+  --text-red: #{$fail-red};
+  --text-orange: #d35400;
+}
