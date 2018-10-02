@@ -11,7 +11,13 @@ interface State {
   focusIndex: number;
 }
 
-export type FormatButtonType = 'bold' | 'italic' | 'underline' | 'emphasis';
+export type FormatButtonType =
+  | 'bold'
+  | 'italic'
+  | 'underline'
+  | 'emphasis'
+  | 'color'
+  | 'dropdown';
 
 // Note to self: In future I expect this to be a union of different objects
 // each with a 'type' field where, for example, the 'color' command includes the
@@ -27,7 +33,7 @@ export const enum FormatButtonState {
 export interface FormatButtonConfig {
   type: FormatButtonType;
   label: string;
-  accelerator: string;
+  accelerator?: string;
   state: FormatButtonState;
 }
 
@@ -130,20 +136,31 @@ export class FormatToolbar extends React.Component<Props, State> {
         ref={this.containerRef}
         onKeyDown={this.handleKeyDown}
       >
-        {this.props.buttons.map((button, i) => (
-          <button
-            key={button.type}
-            className={getButtonClass(button)}
-            onMouseDown={this.handleMouseDown}
-            onClick={this.handleClick}
-            title={`${button.label} (${button.accelerator})`}
-            data-action={button.type}
-            type="button"
-            tabIndex={i === this.state.focusIndex ? 0 : -1}
-          >
-            {button.label}
-          </button>
-        ))}
+        {this.props.buttons.map((button, i) => {
+          let title = button.label;
+          if (button.accelerator) {
+            title += ` (${button.accelerator})`;
+          }
+          let styles: React.CSSProperties = {};
+          if (button.type === 'color') {
+            (styles as any)['--selected-color'] = 'blue';
+          }
+          return (
+            <button
+              key={button.type}
+              className={getButtonClass(button)}
+              style={styles}
+              onMouseDown={this.handleMouseDown}
+              onClick={this.handleClick}
+              title={title}
+              data-action={button.type}
+              type="button"
+              tabIndex={i === this.state.focusIndex ? 0 : -1}
+            >
+              {button.label}
+            </button>
+          );
+        })}
       </div>
     );
   }

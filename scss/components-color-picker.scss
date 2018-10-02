@@ -1,4 +1,12 @@
 .color-picker {
+  // Once other browsers get support for column-gap in flex container we should
+  // drop the margins between swatches and use
+  //
+  //   display: flex;
+  //   column-gap: 10px;
+  //
+  // here instead.
+
   > .swatch {
     background: var(--swatch-color);
     border-radius: 100%;

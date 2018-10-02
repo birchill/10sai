@@ -32,6 +32,16 @@ storiesOf('Components|FormatToolbar', module).add('default', () => (
         accelerator: 'Ctrl+.',
         state: FormatButtonState.Normal,
       },
+      {
+        type: 'color',
+        label: 'Text color',
+        state: FormatButtonState.Normal,
+      },
+      {
+        type: 'dropdown',
+        label: 'Text color',
+        state: FormatButtonState.Normal,
+      },
     ]}
     onClick={action('onChange')}
   />

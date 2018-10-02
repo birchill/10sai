@@ -52,6 +52,33 @@ $edit-icons-size: 16px;
     &.emphasis::before  {
       background-position-x: -3 * $edit-icons-size;
     }
+    &.color::before  {
+      padding-right: .1rem;
+      background-position-x: -4 * $edit-icons-size;
+    }
+    // Current color indication
+    &.color::after  {
+      content: "";
+      display: inline-block;
+      position: relative;
+      // TODO: Switch to inset-inline-start
+      left: calc(-#{$edit-icons-size} - .1rem);
+      top: -.4rem;
+      width: $edit-icons-size;
+      height: 3px;
+      // TODO: Switch to margin-inline-end
+      margin-right: -16px;
+      background-color: var(--selected-color);
+    }
+    &.dropdown::before  {
+      padding-left: .1rem;
+      $icon-scale: 5 / 8;
+      background-position-x: -11 * $edit-icons-size * $icon-scale;
+      background-position-y: -1 * $edit-icons-size * $icon-scale;
+      background-size: $edit-icons-size * $edit-icons-columns * $icon-scale  $edit-icons-size * $edit-icons-rows * $icon-scale;
+      width: $icon-scale * $edit-icons-size;
+      height: $icon-scale * $edit-icons-size;
+    }
 
     &:hover::before {
       background-position-y: 0;
