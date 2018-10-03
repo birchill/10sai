@@ -2,18 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
-import { ColorPicker } from './ColorPicker';
+import { ColorKeyword, ColorPicker } from './ColorPicker';
 
 interface Props {
   className?: string;
   buttons: Array<FormatButtonConfig>;
-  onClick: (command: FormatButtonCommand) => void;
+  onClick: (command: FormatButtonCommand, params?: ColorParams) => void;
 }
 
-interface State {
-  focusIndex: number;
-  colorDropDownOpen: boolean;
-}
+type ColorParams = ColorKeyword;
 
 export type FormatButtonType =
   | 'bold'
@@ -39,12 +36,28 @@ export interface FormatButtonConfig {
   label: string;
   accelerator?: string;
   state: FormatButtonState;
+  initialValue?: ColorKeyword;
+}
+
+interface State {
+  focusIndex: number;
+  colorDropDownOpen: boolean;
+  selectedColor?: ColorKeyword;
 }
 
 export class FormatToolbar extends React.Component<Props, State> {
   static get propTypes() {
     return {
       className: PropTypes.string,
+      buttons: PropTypes.arrayOf(
+        PropTypes.shape({
+          type: PropTypes.string.isRequired,
+          label: PropTypes.string.isRequired,
+          accelerator: PropTypes.string,
+          state: PropTypes.number,
+          initialValue: PropTypes.any,
+        })
+      ),
       onClick: PropTypes.func.isRequired,
     };
   }
@@ -60,6 +73,12 @@ export class FormatToolbar extends React.Component<Props, State> {
       focusIndex: 0,
       colorDropDownOpen: false,
     };
+
+    const colorButton = props.buttons.find(button => button.type === 'color');
+    if (colorButton) {
+      this.state.selectedColor = colorButton.initialValue || 'blue';
+    }
+
     this.containerRef = React.createRef<HTMLDivElement>();
     this.colorDropDownRef = React.createRef<HTMLButtonElement>();
 
@@ -67,6 +86,7 @@ export class FormatToolbar extends React.Component<Props, State> {
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.toggleColorDropDown = this.toggleColorDropDown.bind(this);
+    this.handleColorSelect = this.handleColorSelect.bind(this);
   }
 
   handleClick(evt: React.MouseEvent<HTMLButtonElement>) {
@@ -77,6 +97,8 @@ export class FormatToolbar extends React.Component<Props, State> {
 
       if (action === 'color-dropdown') {
         this.toggleColorDropDown();
+      } else if (action === 'color') {
+        this.props.onClick(action, this.state.selectedColor);
       } else {
         this.props.onClick(action);
       }
@@ -129,6 +151,12 @@ export class FormatToolbar extends React.Component<Props, State> {
     this.setState({ colorDropDownOpen: !this.state.colorDropDownOpen });
   }
 
+  handleColorSelect(color: ColorKeyword) {
+    this.toggleColorDropDown();
+    this.props.onClick('color', color);
+    this.setState({ selectedColor: color });
+  }
+
   get element(): HTMLElement | null {
     return this.containerRef.current;
   }
@@ -158,7 +186,9 @@ export class FormatToolbar extends React.Component<Props, State> {
 
     let styles: React.CSSProperties = {};
     if (button.type === 'color') {
-      (styles as any)['--selected-color'] = 'blue';
+      (styles as any)['--selected-color'] = `var(--text-${
+        this.state.selectedColor
+      })`;
     }
 
     let menu: React.ReactNode | undefined;
@@ -173,7 +203,10 @@ export class FormatToolbar extends React.Component<Props, State> {
           visible={this.state.colorDropDownOpen}
           onClickOutside={this.toggleColorDropDown}
         >
-          <ColorPicker onSelect={() => {}} />
+          <ColorPicker
+            initialSelection={this.state.selectedColor}
+            onSelect={this.handleColorSelect}
+          />
         </AnchoredSpeechBubble>
       );
       ref = this.colorDropDownRef;

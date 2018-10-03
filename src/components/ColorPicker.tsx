@@ -1,7 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-type ColorKeyword = 'black' | 'green' | 'blue' | 'purple' | 'red' | 'orange';
+export type ColorKeyword =
+  | 'black'
+  | 'green'
+  | 'blue'
+  | 'purple'
+  | 'red'
+  | 'orange';
 
 const colors: Array<ColorKeyword> = [
   'black',
@@ -14,7 +20,7 @@ const colors: Array<ColorKeyword> = [
 
 interface Props {
   initialSelection?: ColorKeyword;
-  onSelect?: (color: string) => void;
+  onSelect?: (color: ColorKeyword) => void;
 }
 
 interface State {
@@ -38,9 +44,9 @@ export class ColorPicker extends React.PureComponent<Props, State> {
   }
 
   handleClick(evt: React.MouseEvent<HTMLButtonElement>) {
-    const color = (evt.target as HTMLElement).dataset.color!;
+    const color = (evt.target as HTMLElement).dataset.color as ColorKeyword;
     this.setState({
-      selection: color as ColorKeyword,
+      selection: color,
     });
     if (this.props.onSelect) {
       this.props.onSelect(color);

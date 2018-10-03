@@ -36,6 +36,7 @@ storiesOf('Components|FormatToolbar', module).add('default', () => (
         type: 'color',
         label: 'Text color',
         state: FormatButtonState.Normal,
+        initialValue: 'blue',
       },
       {
         type: 'color-dropdown',
