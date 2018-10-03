@@ -21,9 +21,7 @@ export type FormatButtonType =
   | 'underline'
   | 'emphasis'
   | 'color'
-  | 'dropdown';
-
-export type DropDownType = 'color';
+  | 'color-dropdown';
 
 // Note to self: In future I expect this to be a union of different objects
 // each with a 'type' field where, for example, the 'color' command includes the
@@ -41,7 +39,6 @@ export interface FormatButtonConfig {
   label: string;
   accelerator?: string;
   state: FormatButtonState;
-  dropDownType?: DropDownType;
 }
 
 export class FormatToolbar extends React.Component<Props, State> {
@@ -78,7 +75,7 @@ export class FormatToolbar extends React.Component<Props, State> {
       const action = (evt.target as HTMLButtonElement).dataset
         .action as FormatButtonCommand;
 
-      if (action === 'dropdown') {
+      if (action === 'color-dropdown') {
         this.toggleColorDropDown();
       } else {
         this.props.onClick(action);
@@ -166,7 +163,7 @@ export class FormatToolbar extends React.Component<Props, State> {
 
     let menu: React.ReactNode | undefined;
     let ref: React.RefObject<HTMLButtonElement> | undefined;
-    if (button.type === 'dropdown' && button.dropDownType === 'color') {
+    if (button.type === 'color-dropdown') {
       menu = (
         <AnchoredSpeechBubble
           className="format-toolbar-color"

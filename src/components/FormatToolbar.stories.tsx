@@ -38,10 +38,9 @@ storiesOf('Components|FormatToolbar', module).add('default', () => (
         state: FormatButtonState.Normal,
       },
       {
-        type: 'dropdown',
+        type: 'color-dropdown',
         label: 'Text color',
         state: FormatButtonState.Normal,
-        dropDownType: 'color',
       },
     ]}
     onClick={action('onChange')}

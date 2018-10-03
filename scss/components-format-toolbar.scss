@@ -70,7 +70,7 @@ $edit-icons-size: 16px;
       margin-right: -16px;
       background-color: var(--selected-color);
     }
-    &.dropdown::before  {
+    &.color-dropdown::before  {
       padding-left: .1rem;
       $icon-scale: 5 / 8;
       background-position-x: -11 * $edit-icons-size * $icon-scale;
