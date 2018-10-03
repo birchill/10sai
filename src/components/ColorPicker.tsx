@@ -62,6 +62,9 @@ export class ColorPicker extends React.PureComponent<Props, State> {
       return;
     }
 
+    evt.preventDefault();
+    evt.stopPropagation();
+
     const containerElem = this.containerRef.current;
     const swatches = Array.from(
       containerElem.querySelectorAll('.swatch')
@@ -102,6 +105,13 @@ export class ColorPicker extends React.PureComponent<Props, State> {
     if (swatch) {
       swatch.focus();
     }
+  }
+
+  get hasFocus(): boolean {
+    return (
+      !!this.containerRef.current &&
+      this.containerRef.current.contains(document.activeElement)
+    );
   }
 
   render() {

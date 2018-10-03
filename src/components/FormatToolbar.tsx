@@ -64,6 +64,7 @@ export class FormatToolbar extends React.Component<Props, State> {
 
   containerRef: React.RefObject<HTMLDivElement>;
   colorDropDownRef: React.RefObject<HTMLButtonElement>;
+  colorPickerRef: React.RefObject<ColorPicker>;
   state: State;
 
   constructor(props: Props) {
@@ -81,6 +82,7 @@ export class FormatToolbar extends React.Component<Props, State> {
 
     this.containerRef = React.createRef<HTMLDivElement>();
     this.colorDropDownRef = React.createRef<HTMLButtonElement>();
+    this.colorPickerRef = React.createRef<ColorPicker>();
 
     this.handleClick = this.handleClick.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
@@ -161,6 +163,31 @@ export class FormatToolbar extends React.Component<Props, State> {
     return this.containerRef.current;
   }
 
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    // Update the focus when opening/closing the color drop-down
+    if (
+      prevState.colorDropDownOpen !== this.state.colorDropDownOpen &&
+      this.colorPickerRef.current
+    ) {
+      const colorPicker = this.colorPickerRef.current;
+      // If the menu is newly-opened focus the color picker
+      if (this.state.colorDropDownOpen) {
+        colorPicker.focus();
+        // If the menu is newly closed and the color picker is still focussed,
+        // focus the drop-down button instead.
+      } else if (!this.state.colorDropDownOpen && colorPicker.hasFocus) {
+        const dropDownButton = this.containerRef.current
+          ? (this.containerRef.current.querySelector(
+              'button[data-action="color-dropdown"]'
+            ) as HTMLButtonElement)
+          : null;
+        if (dropDownButton) {
+          dropDownButton.focus();
+        }
+      }
+    }
+  }
+
   render() {
     let className = 'format-toolbar';
     if (this.props.className) {
@@ -206,6 +233,7 @@ export class FormatToolbar extends React.Component<Props, State> {
           <ColorPicker
             initialSelection={this.state.selectedColor}
             onSelect={this.handleColorSelect}
+            ref={this.colorPickerRef}
           />
         </AnchoredSpeechBubble>
       );
