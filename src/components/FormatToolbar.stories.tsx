@@ -41,6 +41,7 @@ storiesOf('Components|FormatToolbar', module).add('default', () => (
         type: 'dropdown',
         label: 'Text color',
         state: FormatButtonState.Normal,
+        dropDownType: 'color',
       },
     ]}
     onClick={action('onChange')}

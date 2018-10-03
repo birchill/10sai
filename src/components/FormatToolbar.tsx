@@ -1,6 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
+import { ColorPicker } from './ColorPicker';
+
 interface Props {
   className?: string;
   buttons: Array<FormatButtonConfig>;
@@ -9,6 +12,7 @@ interface Props {
 
 interface State {
   focusIndex: number;
+  colorDropDownOpen: boolean;
 }
 
 export type FormatButtonType =
@@ -18,6 +22,8 @@ export type FormatButtonType =
   | 'emphasis'
   | 'color'
   | 'dropdown';
+
+export type DropDownType = 'color';
 
 // Note to self: In future I expect this to be a union of different objects
 // each with a 'type' field where, for example, the 'color' command includes the
@@ -35,6 +41,7 @@ export interface FormatButtonConfig {
   label: string;
   accelerator?: string;
   state: FormatButtonState;
+  dropDownType?: DropDownType;
 }
 
 export class FormatToolbar extends React.Component<Props, State> {
@@ -46,6 +53,7 @@ export class FormatToolbar extends React.Component<Props, State> {
   }
 
   containerRef: React.RefObject<HTMLDivElement>;
+  colorDropDownRef: React.RefObject<HTMLButtonElement>;
   state: State;
 
   constructor(props: Props) {
@@ -53,12 +61,15 @@ export class FormatToolbar extends React.Component<Props, State> {
 
     this.state = {
       focusIndex: 0,
+      colorDropDownOpen: false,
     };
     this.containerRef = React.createRef<HTMLDivElement>();
+    this.colorDropDownRef = React.createRef<HTMLButtonElement>();
 
     this.handleClick = this.handleClick.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.toggleColorDropDown = this.toggleColorDropDown.bind(this);
   }
 
   handleClick(evt: React.MouseEvent<HTMLButtonElement>) {
@@ -66,7 +77,12 @@ export class FormatToolbar extends React.Component<Props, State> {
       evt.preventDefault();
       const action = (evt.target as HTMLButtonElement).dataset
         .action as FormatButtonCommand;
-      this.props.onClick(action);
+
+      if (action === 'dropdown') {
+        this.toggleColorDropDown();
+      } else {
+        this.props.onClick(action);
+      }
     }
   }
 
@@ -112,6 +128,10 @@ export class FormatToolbar extends React.Component<Props, State> {
     getNthButton(this.state.focusIndex).focus();
   }
 
+  toggleColorDropDown() {
+    this.setState({ colorDropDownOpen: !this.state.colorDropDownOpen });
+  }
+
   get element(): HTMLElement | null {
     return this.containerRef.current;
   }
@@ -120,6 +140,46 @@ export class FormatToolbar extends React.Component<Props, State> {
     let className = 'format-toolbar';
     if (this.props.className) {
       className += ' ' + this.props.className;
+    }
+
+    return (
+      <div
+        className={className}
+        ref={this.containerRef}
+        onKeyDown={this.handleKeyDown}
+      >
+        {this.props.buttons.map(this.renderButton.bind(this))}
+      </div>
+    );
+  }
+
+  renderButton(button: FormatButtonConfig, index: number) {
+    let title = button.label;
+    if (button.accelerator) {
+      title += ` (${button.accelerator})`;
+    }
+
+    let styles: React.CSSProperties = {};
+    if (button.type === 'color') {
+      (styles as any)['--selected-color'] = 'blue';
+    }
+
+    let menu: React.ReactNode | undefined;
+    let ref: React.RefObject<HTMLButtonElement> | undefined;
+    if (button.type === 'dropdown' && button.dropDownType === 'color') {
+      menu = (
+        <AnchoredSpeechBubble
+          className="format-toolbar-color"
+          position="below"
+          align="center"
+          anchorElement={this.colorDropDownRef.current}
+          visible={this.state.colorDropDownOpen}
+          onClickOutside={this.toggleColorDropDown}
+        >
+          <ColorPicker onSelect={() => {}} />
+        </AnchoredSpeechBubble>
+      );
+      ref = this.colorDropDownRef;
     }
 
     const getButtonClass = (button: FormatButtonConfig): string => {
@@ -131,37 +191,22 @@ export class FormatToolbar extends React.Component<Props, State> {
     };
 
     return (
-      <div
-        className={className}
-        ref={this.containerRef}
-        onKeyDown={this.handleKeyDown}
-      >
-        {this.props.buttons.map((button, i) => {
-          let title = button.label;
-          if (button.accelerator) {
-            title += ` (${button.accelerator})`;
-          }
-          let styles: React.CSSProperties = {};
-          if (button.type === 'color') {
-            (styles as any)['--selected-color'] = 'blue';
-          }
-          return (
-            <button
-              key={button.type}
-              className={getButtonClass(button)}
-              style={styles}
-              onMouseDown={this.handleMouseDown}
-              onClick={this.handleClick}
-              title={title}
-              data-action={button.type}
-              type="button"
-              tabIndex={i === this.state.focusIndex ? 0 : -1}
-            >
-              {button.label}
-            </button>
-          );
-        })}
-      </div>
+      <React.Fragment key={button.type}>
+        <button
+          className={getButtonClass(button)}
+          style={styles}
+          onMouseDown={this.handleMouseDown}
+          onClick={this.handleClick}
+          title={title}
+          data-action={button.type}
+          type="button"
+          tabIndex={index === this.state.focusIndex ? 0 : -1}
+          ref={ref}
+        >
+          {button.label}
+        </button>
+        {menu}
+      </React.Fragment>
     );
   }
 }

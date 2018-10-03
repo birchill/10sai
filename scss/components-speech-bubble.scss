@@ -11,7 +11,9 @@
   &[hidden] {
     opacity: 0;
     &:not(.-fadeout) {
-      display: none;
+      // We'd like to use display:none here but then when we go to re-show the
+      // content we won't have dimensions available for positioning it.
+      visibility: hidden;
     }
   }
   &.-fadein {
