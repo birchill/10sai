@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { ColorKeywordOrBlack } from '../text/rich-text-styles';
 import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
-import { ColorKeyword, ColorPicker } from './ColorPicker';
+import { ColorPicker } from './ColorPicker';
 
 interface Props {
   className?: string;
@@ -10,7 +11,7 @@ interface Props {
   onClick: (command: FormatButtonCommand, params?: ColorParams) => void;
 }
 
-type ColorParams = ColorKeyword;
+type ColorParams = ColorKeywordOrBlack;
 
 export type FormatButtonType =
   | 'bold'
@@ -36,13 +37,13 @@ export interface FormatButtonConfig {
   label: string;
   accelerator?: string;
   state: FormatButtonState;
-  initialValue?: ColorKeyword;
+  initialValue?: ColorKeywordOrBlack;
 }
 
 interface State {
   focusIndex: number;
   colorDropDownOpen: boolean;
-  selectedColor?: ColorKeyword;
+  selectedColor?: ColorKeywordOrBlack;
 }
 
 export class FormatToolbar extends React.Component<Props, State> {
@@ -153,7 +154,7 @@ export class FormatToolbar extends React.Component<Props, State> {
     this.setState({ colorDropDownOpen: !this.state.colorDropDownOpen });
   }
 
-  handleColorSelect(color: ColorKeyword) {
+  handleColorSelect(color: ColorKeywordOrBlack) {
     this.toggleColorDropDown();
     this.props.onClick('color', color);
     this.setState({ selectedColor: color });

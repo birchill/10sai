@@ -1,15 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export type ColorKeyword =
-  | 'black'
-  | 'green'
-  | 'blue'
-  | 'purple'
-  | 'red'
-  | 'orange';
+import { ColorKeywordOrBlack } from '../text/rich-text-styles';
 
-const colors: Array<ColorKeyword> = [
+const colors: Array<ColorKeywordOrBlack> = [
   'black',
   'green',
   'blue',
@@ -19,12 +13,12 @@ const colors: Array<ColorKeyword> = [
 ];
 
 interface Props {
-  initialSelection?: ColorKeyword;
-  onSelect?: (color: ColorKeyword) => void;
+  initialSelection?: ColorKeywordOrBlack;
+  onSelect?: (color: ColorKeywordOrBlack) => void;
 }
 
 interface State {
-  selection: ColorKeyword;
+  selection: ColorKeywordOrBlack;
 }
 
 export class ColorPicker extends React.PureComponent<Props, State> {
@@ -44,7 +38,8 @@ export class ColorPicker extends React.PureComponent<Props, State> {
   }
 
   handleClick(evt: React.MouseEvent<HTMLButtonElement>) {
-    const color = (evt.target as HTMLElement).dataset.color as ColorKeyword;
+    const color = (evt.target as HTMLElement).dataset
+      .color as ColorKeywordOrBlack;
     this.setState({
       selection: color,
     });
@@ -89,7 +84,7 @@ export class ColorPicker extends React.PureComponent<Props, State> {
 
     if (typeof updatedIndex !== 'undefined') {
       const swatch = swatches[updatedIndex];
-      this.setState({ selection: swatch.dataset.color as ColorKeyword });
+      this.setState({ selection: swatch.dataset.color as ColorKeywordOrBlack });
       swatch.focus();
     }
   }

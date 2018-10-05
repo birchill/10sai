@@ -9,7 +9,8 @@ import unicodeSubstring from 'unicode-substring';
 
 import { Block, Inline } from './rich-text';
 
-// draft-js typings here make all these members required but most of them are optional.
+// draft-js typings here make all these members required but most of them are
+// optional.
 declare module 'draft-js' {
   interface RawDraftContentBlock {
     key?: string;
@@ -37,12 +38,20 @@ for (const [key, value] of Object.entries(styleMappingFromDraft)) {
 }
 
 function translateStyleFromDraft(style: string): string {
+  if (style.startsWith('COLOR:')) {
+    return 'c:' + style.substring('COLOR:'.length);
+  }
+
   return styleMappingFromDraft.hasOwnProperty(style)
     ? styleMappingFromDraft[style]
     : style;
 }
 
 function translateStyleToDraft(style: string): string {
+  if (style.startsWith('c:')) {
+    return 'COLOR:' + style.substring(2);
+  }
+
   return styleMappingToDraft.hasOwnProperty(style)
     ? styleMappingToDraft[style]
     : style;

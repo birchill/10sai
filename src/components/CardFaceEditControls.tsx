@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { CardFaceInput } from './CardFaceInput';
+import { CardFaceInput, MarkType } from './CardFaceInput';
 import {
   FormatToolbar,
   FormatButtonCommand,
   FormatButtonConfig,
   FormatButtonState,
 } from './FormatToolbar';
+import { ColorKeywordOrBlack } from '../text/rich-text-styles';
 
 import { Card } from '../model';
 import KeyboardFocusHelper from '../utils/KeyboardFocusHelper';
@@ -171,12 +172,18 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       : this.answerTextBoxRef.current;
   }
 
-  handleFormat(command: FormatButtonCommand) {
+  handleFormat(command: FormatButtonCommand, params?: ColorKeywordOrBlack) {
     if (!this.editFace) {
       return;
     }
 
-    this.editFace.toggleMark(command);
+    if (command === 'color') {
+      if (params) {
+        this.editFace.setColor(params);
+      }
+    } else {
+      this.editFace.toggleMark(command as MarkType);
+    }
   }
 
   handleFocus(e: React.FocusEvent<{}> & { wasKeyboard: boolean }) {
@@ -274,6 +281,17 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         state: hasMark('emphasis')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,
+      },
+      {
+        type: 'color',
+        label: 'Text color',
+        state: FormatButtonState.Normal,
+        initialValue: 'blue',
+      },
+      {
+        type: 'color-dropdown',
+        label: 'Text color',
+        state: FormatButtonState.Normal,
       },
     ];
 

@@ -14,6 +14,7 @@ import {
 } from 'draft-js';
 import { cardKeyBindings } from '../text/key-bindings';
 import { deserialize, serialize } from '../text/rich-text';
+import { ColorKeywordOrBlack, ColorKeywords } from '../text/rich-text-styles';
 import { fromDraft, toDraft } from '../text/draft-conversion';
 
 function serializeContent(editorState: EditorState): string {
@@ -53,6 +54,12 @@ const styleMap: any = {
   },
 };
 
+for (const color of ColorKeywords) {
+  styleMap[`COLOR:${color}`] = { color: `var(--text-${color})` };
+}
+
+export type MarkType = 'bold' | 'italic' | 'underline' | 'emphasis';
+
 // We store the current style as an Immutable.OrderedSet since it makes
 // comparing with changes cheap but we return a standard ES6 Set, lowercased
 // since:
@@ -62,7 +69,12 @@ const styleMap: any = {
 // - The interface here is in terms of lowercase strings (e.g. toggleMark takes
 //   lowercase strings)
 const toMarkSet = (input: Immutable.OrderedSet<string>): Set<string> =>
-  new Set<string>(input.toArray().map(style => style.toLowerCase()));
+  new Set<string>(
+    input
+      .toArray()
+      .filter(style => !style.startsWith('COLOR:'))
+      .map(style => style.toLowerCase())
+  );
 
 // This monster is the results of days and days of infuriating work to get
 // draft-js to:
@@ -438,10 +450,67 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     return toMarkSet(this.state.editorState.getCurrentInlineStyle());
   }
 
-  toggleMark(type: 'bold' | 'italic' | 'underline' | 'emphasis') {
+  toggleMark(type: MarkType) {
     this.handleChange(
       RichUtils.toggleInlineStyle(this.state.editorState, type.toUpperCase())
     );
+  }
+
+  setColor(color: ColorKeywordOrBlack) {
+    const { editorState } = this.state;
+    const selection = editorState.getSelection();
+
+    const colorStyle = `COLOR:${color}`;
+
+    // If selection is collapsed the toggle the inline style
+    if (selection.isCollapsed()) {
+      let nextOverrideStyle =
+        editorState.getInlineStyleOverride() || Immutable.OrderedSet<string>();
+
+      nextOverrideStyle = nextOverrideStyle.filter(
+        style => !style!.startsWith('COLOR:')
+      ) as Immutable.OrderedSet<string>;
+
+      const hasColor = editorState.getCurrentInlineStyle().has(colorStyle);
+      if (color !== 'black' && !hasColor) {
+        nextOverrideStyle = nextOverrideStyle.add(colorStyle);
+      }
+
+      this.handleChange(
+        EditorState.setInlineStyleOverride(editorState, nextOverrideStyle)
+      );
+      return;
+    }
+
+    // Drop any color styles in the range
+    let nextContent = ColorKeywords.reduce(
+      (contentState, color) =>
+        Modifier.removeInlineStyle(contentState, selection, `COLOR:${color}`),
+      editorState.getCurrentContent()
+    );
+
+    let nextEditorState = EditorState.push(
+      editorState,
+      nextContent,
+      'change-inline-style'
+    );
+
+    if (color !== 'black') {
+      // Set the new color (but only if it's not black)
+      nextContent = Modifier.applyInlineStyle(
+        nextContent,
+        selection,
+        colorStyle
+      );
+
+      nextEditorState = EditorState.push(
+        nextEditorState,
+        nextContent,
+        'change-inline-style'
+      );
+    }
+
+    this.handleChange(nextEditorState);
   }
 
   render() {
