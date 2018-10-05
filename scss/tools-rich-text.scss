@@ -15,4 +15,20 @@
     text-emphasis: dot;
     -webkit-text-emphasis: dot;
   }
+
+  .green {
+    color: var(--text-green);
+  }
+  .blue {
+    color: var(--text-blue);
+  }
+  .purple {
+    color: var(--text-purple);
+  }
+  .red {
+    color: var(--text-red);
+  }
+  .orange {
+    color: var(--text-orange);
+  }
 }

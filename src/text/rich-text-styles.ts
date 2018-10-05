@@ -16,3 +16,7 @@ export const ColorKeywords: Array<ColorKeyword> = [
   'red',
   'orange',
 ];
+
+for (const color of ColorKeywords) {
+  styleClassMapping.set(`c:${color}`, color);
+}
