@@ -16,6 +16,7 @@ import { cardKeyBindings } from '../text/key-bindings';
 import { deserialize, serialize } from '../text/rich-text';
 import { ColorKeywordOrBlack, ColorKeywords } from '../text/rich-text-styles';
 import { fromDraft, toDraft } from '../text/draft-conversion';
+import { setsEqual } from '../utils/sets-equal';
 
 function serializeContent(editorState: EditorState): string {
   return serialize(fromDraft(convertToRaw(editorState.getCurrentContent())));
@@ -28,7 +29,7 @@ function deserializeContent(text: string): ContentState {
 }
 
 interface Props {
-  value?: string;
+  initialValue?: string;
   className?: string;
   placeholder?: string;
   onChange?: (value: string) => void;
@@ -38,6 +39,7 @@ interface Props {
 
 interface State {
   editorState: EditorState;
+  previousInitialValue?: string;
   selectionToRestore: SelectionState | null;
   selectionHighlight: SelectionHighlight;
   hasFocus: boolean;
@@ -50,7 +52,6 @@ const styleMap: any = {
   },
   SELECTION: {
     backgroundColor: 'var(--selection-bg)',
-    color: 'var(--selection-color)',
   },
 };
 
@@ -111,60 +112,13 @@ const enum SelectionHighlight {
 export class CardFaceInput extends React.PureComponent<Props, State> {
   static get propTypes() {
     return {
-      value: PropTypes.string,
+      initialValue: PropTypes.string,
       className: PropTypes.string,
       placeholder: PropTypes.string,
       onChange: PropTypes.func,
       onSelectionChange: PropTypes.func,
       onMarksUpdated: PropTypes.func,
     };
-  }
-
-  static getDerivedStateFromProps(props: Props, state: State): State | null {
-    // In general the state is our single source of truth for the value of the
-    // input. However, it would nice to reflect changes to the value made from
-    // syncing. That preserves the promise of "sync you don't need to sink
-    // about".
-    //
-    // However, when the user is typing fast there are async events flying all
-    // over the shop (async state updates, async updates to Redux state that
-    // trickles down on the next render, then updates triggered by updating the
-    // database) and it's really hard to distinguish between genuine updates to
-    // the Redux state (reflected in prop changes here) that we care about
-    // versus delayed reactions to state changes we made here a few keystrokes
-    // about. In fact, I tried a bunch of approaches but none of them worked.
-    //
-    // However, when you're focussed on the field you don't really want the
-    // value to update anyway. Any updates that happen when the field is not
-    // focussed are probably legitimate edits made on another device/tab/browser
-    // that we should reflect.
-    if (state.hasFocus) {
-      return null;
-    }
-
-    // If the value in state already matches the props value, don't update.
-    const currentValueInState = serializeContent(state.editorState);
-    if (currentValueInState === props.value) {
-      return null;
-    }
-
-    const stateChange: Partial<State> = { selectionToRestore: null };
-
-    let editorState = state.editorState;
-    if (state.selectionHighlight !== SelectionHighlight.None) {
-      editorState = CardFaceInput.clearSelectionFormatting(editorState);
-      stateChange.selectionHighlight = SelectionHighlight.None;
-    }
-
-    const contentState = deserializeContent(props.value || '');
-    editorState = EditorState.push(
-      editorState,
-      contentState,
-      'insert-characters'
-    );
-    stateChange.editorState = editorState;
-
-    return stateChange as State;
   }
 
   static clearSelectionFormatting(editorState: EditorState): EditorState {
@@ -248,12 +202,12 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     }
 
     if (this.props.onMarksUpdated) {
-      const inlineStyle = editorState.getCurrentInlineStyle();
-      const currentInlineStyle = this.state.editorState.getCurrentInlineStyle();
-      if (!inlineStyle.equals(currentInlineStyle)) {
-        this.props.onMarksUpdated(
-          toMarkSet(editorState.getCurrentInlineStyle())
-        );
+      const nextMarkSet = toMarkSet(editorState.getCurrentInlineStyle());
+      const currentMarkSet = toMarkSet(
+        this.state.editorState.getCurrentInlineStyle()
+      );
+      if (!setsEqual(nextMarkSet, currentMarkSet)) {
+        this.props.onMarksUpdated(nextMarkSet);
       }
     }
 
@@ -263,7 +217,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     this.setState((prevState, props) => {
       if (props.onChange) {
         const valueAsString = serializeContent(editorState);
-        if (valueAsString !== this.props.value) {
+        if (valueAsString !== this.props.initialValue) {
           props.onChange(valueAsString);
         }
       }
@@ -495,8 +449,8 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       'change-inline-style'
     );
 
+    // Set the new color (but only if it's not black)
     if (color !== 'black') {
-      // Set the new color (but only if it's not black)
       nextContent = Modifier.applyInlineStyle(
         nextContent,
         selection,
@@ -544,14 +498,55 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     );
   }
 
-  componentDidUpdate() {
+  componentDidMount() {
+    if (this.props.initialValue) {
+      this.updateValueFromInitialValue();
+    }
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    // If the initialValue was updated and our value hasn't deviated from it,
+    // update our value to match it.
     if (
-      this.state.selectionHighlight !==
-      SelectionHighlight.AwaitingSelectionCommit
+      prevProps.initialValue !== this.props.initialValue &&
+      serializeContent(this.state.editorState) === prevProps.initialValue
     ) {
-      return;
+      this.updateValueFromInitialValue();
     }
 
+    // Otherwise check if we need to swap the false selection for the real one.
+    if (
+      this.state.selectionHighlight ===
+      SelectionHighlight.AwaitingSelectionCommit
+    ) {
+      this.swapInActiveSelection();
+    }
+  }
+
+  updateValueFromInitialValue() {
+    const stateChange: Partial<State> = { selectionToRestore: null };
+
+    // We're about to update the value which means any selection we have may
+    // start pointing to nodes that no longer exist it---we should clear it
+    // otherwise we'll get errors.
+    let editorState = this.state.editorState;
+    if (this.state.selectionHighlight !== SelectionHighlight.None) {
+      editorState = CardFaceInput.clearSelectionFormatting(editorState);
+      stateChange.selectionHighlight = SelectionHighlight.None;
+    }
+
+    const contentState = deserializeContent(this.props.initialValue || '');
+    editorState = EditorState.push(
+      editorState,
+      contentState,
+      'insert-characters'
+    );
+    stateChange.editorState = editorState;
+
+    this.setState(stateChange as State);
+  }
+
+  swapInActiveSelection() {
     const originalSelection = this.state.editorState.getSelection();
 
     let editorState = CardFaceInput.clearSelectionFormatting(

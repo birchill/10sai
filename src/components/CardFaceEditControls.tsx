@@ -321,7 +321,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       >
         <CardFaceInput
           className={getFaceClassName('prompt')}
-          value={this.props.card.question || ''}
+          initialValue={this.props.card.question || ''}
           placeholder="Prompt"
           onChange={this.handlePromptChange}
           onSelectionChange={this.handlePromptSelectionChange}
@@ -331,7 +331,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         <hr className="card-divider divider" />
         <CardFaceInput
           className={getFaceClassName('answer')}
-          value={this.props.card.answer || ''}
+          initialValue={this.props.card.answer || ''}
           placeholder="Answer"
           onChange={this.handleAnswerChange}
           onSelectionChange={this.handleAnswerSelectionChange}

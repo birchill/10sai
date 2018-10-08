@@ -2,7 +2,6 @@
   // Normally we actually make the artificial selection look no different from
   // regular text and only reveal it when the toolbar is in focus.
   --selection-bg: inherit;
-  --selection-color: inherit;
 
   > * {
     box-sizing: border-box;
@@ -11,7 +10,6 @@
 
   &.-toolbarfocus {
     --selection-bg: #{lighten($highlight, 20%)};
-    --selection-color: white;
   }
 
   ::selection {
