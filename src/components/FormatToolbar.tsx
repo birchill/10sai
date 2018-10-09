@@ -91,6 +91,7 @@ export class FormatToolbar extends React.Component<Props, State> {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.toggleColorDropDown = this.toggleColorDropDown.bind(this);
     this.handleColorSelect = this.handleColorSelect.bind(this);
+    this.handleDropDownKey = this.handleDropDownKey.bind(this);
   }
 
   handleClick(evt: React.MouseEvent<HTMLButtonElement>) {
@@ -159,6 +160,13 @@ export class FormatToolbar extends React.Component<Props, State> {
     this.toggleColorDropDown();
     this.props.onClick('color', color);
     this.setState({ selectedColor: color });
+  }
+
+  handleDropDownKey(evt: React.KeyboardEvent<{}>) {
+    if (evt.key === 'Escape') {
+      this.setState({ colorDropDownOpen: false });
+      evt.preventDefault();
+    }
   }
 
   get element(): HTMLElement | null {
@@ -230,6 +238,7 @@ export class FormatToolbar extends React.Component<Props, State> {
           anchorElement={this.colorDropDownRef.current}
           visible={this.state.colorDropDownOpen}
           onClickOutside={this.toggleColorDropDown}
+          onUnhandledKeyPress={this.handleDropDownKey}
         >
           <ColorPicker
             initialSelection={this.state.selectedColor}

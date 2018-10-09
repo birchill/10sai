@@ -20,6 +20,7 @@ export interface Props {
   // the green merge button--although they still had time to release TS 3.1 in
   // the meantime. Seriously MS, get your act together.
   visible?: boolean;
+
   // Called whenever the menu is visible and we get a click outside of the panel
   // area. This is useful for closing the speech bubble whenever there is
   // a click anywhere else in the panel.
@@ -29,6 +30,11 @@ export interface Props {
   // the event listener). This wasn't intended at first but proves to be useful
   // so we've kept it.
   onClickOutside?: (evt: MouseEvent) => void;
+
+  // Called whenever there is a keydown event that is not default prevented
+  // while the menu is in focus. This too is useful for closing the menu when
+  // the user presses some other keystroke.
+  onUnhandledKeyPress?: (evt: React.KeyboardEvent<{}>) => void;
 }
 
 export class SpeechBubble extends React.Component<Props> {
@@ -39,6 +45,9 @@ export class SpeechBubble extends React.Component<Props> {
       top: PropTypes.number.isRequired,
       arrowPosition: PropTypes.oneOf(['left', 'center', 'right']).isRequired,
       arrowSide: PropTypes.oneOf(['top', 'bottom']).isRequired,
+      visible: PropTypes.bool.isRequired,
+      onClickOutside: PropTypes.func,
+      onUnhandledKeyPress: PropTypes.func,
     };
   }
 
@@ -68,6 +77,7 @@ export class SpeechBubble extends React.Component<Props> {
     this.arrowRef = React.createRef<HTMLDivElement>();
 
     this.handleWindowClick = this.handleWindowClick.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
   componentDidMount() {
@@ -140,6 +150,16 @@ export class SpeechBubble extends React.Component<Props> {
     }
   }
 
+  handleKeyDown(evt: React.KeyboardEvent<HTMLDivElement>) {
+    if (evt.defaultPrevented) {
+      return;
+    }
+
+    if (this.props.onUnhandledKeyPress) {
+      this.props.onUnhandledKeyPress(evt);
+    }
+  }
+
   render() {
     const classes = ['speech-bubble'];
     classes.push(this.props.arrowSide === 'top' ? '-bottom' : '-top');
@@ -164,6 +184,7 @@ export class SpeechBubble extends React.Component<Props> {
         style={containerStyle}
         ref={this.containerRef}
         hidden={!this.props.visible}
+        onKeyDown={this.handleKeyDown}
       >
         <div className="panel" ref={this.panelRef}>
           {this.props.children}
