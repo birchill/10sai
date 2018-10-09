@@ -210,8 +210,19 @@ export class SpeechBubble extends React.Component<Props> {
         break;
 
       case 'center':
-        containerLeft =
-          this.props.left - panelElem.getBoundingClientRect().width / 2;
+        {
+          const viewport = document.documentElement.getBoundingClientRect();
+          const panelWidth = panelElem.getBoundingClientRect().width;
+          // See comment in AnchoredSpeechBubble for why we do this adjustment
+          // here.
+          containerLeft = Math.max(
+            0,
+            Math.min(
+              viewport.width - panelWidth,
+              this.props.left - panelWidth / 2
+            )
+          );
+        }
         break;
 
       case 'right':

@@ -130,14 +130,18 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
       case 'center':
         arrowPosition = 'center';
 
-        // Check if fits.
-        if (contentBbox) {
-          if (left + contentBbox.width / 2 > viewport.right) {
-            arrowPosition = 'right';
-          } else if (left - contentBbox.width / 2 < 0) {
-            arrowPosition = 'left';
-          }
-        }
+        // We _could_ check if the box fits, and, if not switch the arrow
+        // position to left / right accordingly but that's not actually what you
+        // want in a lot of cases.
+        //
+        // For example, if the box just overlaps the right edge, by switching
+        // the panel so that it hangs to the left we might end up making it
+        // overlap the left edge.
+        //
+        // In that case, though it's probably more desirable to just let the
+        // arrow be a bit off-center. We do that adjustment inside SpeechBubble
+        // since we want to keep the 'left' position we pass to SpeechBubble the
+        // same.
         break;
     }
 
