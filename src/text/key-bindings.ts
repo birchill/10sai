@@ -15,7 +15,7 @@ const isMac = os.name === 'Mac OS';
 // - We don't control them so they might add new commands at any point that
 //   could break us unless we carefully audit each update of draft-js.
 //
-// That said, there is some good stuff there so we should basically just fork it
+// That said, there is some good stuff there so we basically just fork it
 // and will need to check occasionally for any useful updates to it.
 //
 // For what it's worth, this current version is based on Draft 0.10.24 so any
@@ -23,23 +23,23 @@ const isMac = os.name === 'Mac OS';
 // here.
 
 const isCtrlKeyCommand = (e: React.KeyboardEvent<{}>): boolean => {
-  // As per draft-js, we need to check that the ctrlKey modifier is not being
+  // As per draft-js, we need to check that the altKey modifier is not being
   // used since if they are, the result is an `altGraph` key modifier.
   return !!e.ctrlKey && !e.altKey;
 };
 
 const isCtrlKeyCommandOnly = (e: React.KeyboardEvent<{}>): boolean => {
-  // As with isCtrlKeyCommand but also check that Shift is NOT being uesd since
+  // As with isCtrlKeyCommand but also check that Shift is NOT being used since
   // that has been known to conflict with browser UI shortcuts (e.g.
   // Ctrl+Shift+B to open bookmarks).
   return !!e.ctrlKey && !e.altKey && !e.shiftKey;
 };
 
-const hasCommandModifier = (e: React.KeyboardEvent<{}>): boolean => {
+export const hasCommandModifier = (e: React.KeyboardEvent<{}>): boolean => {
   return isMac ? !!e.metaKey && !e.altKey : isCtrlKeyCommand(e);
 };
 
-const hasCommandModifierOnly = (e: React.KeyboardEvent<{}>): boolean => {
+export const hasCommandModifierOnly = (e: React.KeyboardEvent<{}>): boolean => {
   // Likewise, we also check that Shift is NOT being used here.
   return isMac
     ? !!e.metaKey && !e.altKey && !e.shiftKey

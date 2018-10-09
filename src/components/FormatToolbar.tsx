@@ -173,6 +173,14 @@ export class FormatToolbar extends React.Component<Props, State> {
     return this.containerRef.current;
   }
 
+  toggleColor() {
+    this.props.onClick('color', this.state.selectedColor);
+  }
+
+  selectColor() {
+    this.toggleColorDropDown();
+  }
+
   componentDidUpdate(prevProps: Props, prevState: State) {
     // Update the focus when opening/closing the color drop-down
     if (

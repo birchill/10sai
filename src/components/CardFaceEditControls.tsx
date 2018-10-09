@@ -9,6 +9,10 @@ import {
   FormatButtonState,
 } from './FormatToolbar';
 import { ColorKeywordOrBlack } from '../text/rich-text-styles';
+import {
+  hasCommandModifier,
+  hasCommandModifierOnly,
+} from '../text/key-bindings';
 
 import { Card } from '../model';
 import KeyboardFocusHelper from '../utils/KeyboardFocusHelper';
@@ -76,6 +80,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
 
     this.keyboardFocusHelper = new KeyboardFocusHelper({
       onFocus: this.handleFocus.bind(this),
+      onKeyDown: this.handleKeyDown.bind(this),
     });
 
     // Control refs
@@ -229,6 +234,22 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     }
 
     this.setState(stateChange as State);
+  }
+
+  handleKeyDown(e: React.KeyboardEvent<{}>) {
+    if (e.defaultPrevented) {
+      return;
+    }
+
+    if (e.key !== '/' || !this.formatToolbarRef.current) {
+      return;
+    }
+
+    if (hasCommandModifierOnly(e)) {
+      this.formatToolbarRef.current.toggleColor();
+    } else if (e.ctrlKey || e.metaKey) {
+      this.formatToolbarRef.current.selectColor();
+    }
   }
 
   handleBlur(e: React.FocusEvent<any>) {
