@@ -1,11 +1,10 @@
 .color-picker {
-  // Once other browsers get support for column-gap in flex container we should
-  // drop the margins between swatches and use
-  //
-  //   display: flex;
-  //   column-gap: 10px;
-  //
-  // here instead.
+  display: grid;
+  // The number of columns needs to be kept in sync with the |swatchesPerRow|
+  // value in the ColorPicker component.
+  grid-template-columns: repeat(3, 38px);
+  column-gap: 10px;
+  row-gap: 10px;
 
   > .swatch {
     background: var(--swatch-color);
@@ -43,13 +42,10 @@
     }
     &:focus {
       border-style: dashed;
-      filter: brightness(1.3);
+      filter: brightness(1.1);
     }
     :focus:not(:focus-visible) {
       border-color: transparent;
     }
-  }
-  > .swatch + .swatch {
-    margin-left: 10px;
   }
 }

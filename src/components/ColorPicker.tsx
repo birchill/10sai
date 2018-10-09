@@ -12,6 +12,8 @@ const colors: Array<ColorKeywordOrBlack> = [
   'orange',
 ];
 
+const swatchesPerRow = 3;
+
 interface Props {
   initialSelection?: ColorKeywordOrBlack;
   onSelect?: (color: ColorKeywordOrBlack) => void;
@@ -49,7 +51,9 @@ export class ColorPicker extends React.PureComponent<Props, State> {
   }
 
   handleKeyDown(evt: React.KeyboardEvent<HTMLDivElement>) {
-    if (evt.key !== 'ArrowLeft' && evt.key !== 'ArrowRight') {
+    if (
+      !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(evt.key)
+    ) {
       return;
     }
 
@@ -71,15 +75,24 @@ export class ColorPicker extends React.PureComponent<Props, State> {
 
     let updatedIndex: number | undefined;
     if (
-      (evt.key === 'ArrowLeft' && !isRtl && index > 0) ||
-      (evt.key === 'ArrowRight' && isRtl && index > 0)
+      (evt.key === 'ArrowLeft' && !isRtl && index % swatchesPerRow !== 0) ||
+      (evt.key === 'ArrowRight' && isRtl && index % swatchesPerRow !== 0)
     ) {
       updatedIndex = index - 1;
     } else if (
-      (evt.key === 'ArrowRight' && !isRtl && index < swatches.length - 1) ||
-      (evt.key === 'ArrowLeft' && isRtl && index < swatches.length - 1)
+      (evt.key === 'ArrowRight' &&
+        !isRtl &&
+        (index + 1) % swatchesPerRow !== 0) ||
+      (evt.key === 'ArrowLeft' && isRtl && (index + 1) % swatchesPerRow !== 0)
     ) {
       updatedIndex = index + 1;
+    } else if (evt.key === 'ArrowUp' && index - swatchesPerRow >= 0) {
+      updatedIndex = index - swatchesPerRow;
+    } else if (
+      evt.key === 'ArrowDown' &&
+      index + swatchesPerRow < swatches.length
+    ) {
+      updatedIndex = index + swatchesPerRow;
     }
 
     if (typeof updatedIndex !== 'undefined') {
