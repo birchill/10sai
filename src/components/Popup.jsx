@@ -60,7 +60,7 @@ export class Popup extends React.PureComponent {
   }
 
   handleKeyDown(e) {
-    if (!e.keyCode || e.keyCode === 27) {
+    if (e.key === 'Escape') {
       this.props.close();
     }
   }
@@ -100,6 +100,9 @@ const mapDispatchToProps = (dispatch, props) => ({
   },
 });
 
-const ConnectedPopup = connect(undefined, mapDispatchToProps)(Popup);
+const ConnectedPopup = connect(
+  undefined,
+  mapDispatchToProps
+)(Popup);
 
 export default ConnectedPopup;
