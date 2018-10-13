@@ -14,7 +14,7 @@ $edit-icons-size: 16px;
     opacity: 0.7;
     transition: background-color 0.1s;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: $really-light-grey;
       opacity: 1;
       transition-property: none;
@@ -28,6 +28,9 @@ $edit-icons-size: 16px;
     &:active {
       background: $light-grey;
       opacity: 1;
+    }
+    &:disabled {
+      opacity: 0.5;
     }
 
     &::before {
@@ -80,7 +83,7 @@ $edit-icons-size: 16px;
       height: $icon-scale * $edit-icons-size;
     }
 
-    &:hover::before {
+    &:hover:not(:disabled)::before {
       background-position-y: 0;
     }
   }
@@ -92,7 +95,7 @@ $edit-icons-size: 16px;
 
   // Set when any of the buttons or connected textfields are focussed
   &.-areafocus {
-    > .button {
+    > .button:not(:disabled) {
       opacity: 1;
       // Set whenever the button's feature is active (e.g. selected text is
       // bold)

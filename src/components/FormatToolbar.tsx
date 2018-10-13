@@ -119,17 +119,36 @@ export class FormatToolbar extends React.Component<Props, State> {
   handleKeyDown(evt: React.KeyboardEvent<HTMLDivElement>) {
     switch (evt.key) {
       case 'ArrowLeft':
-        if (this.state.focusIndex) {
-          this.setState({ focusIndex: this.state.focusIndex - 1 }, () =>
-            this.updateFocus()
-          );
+        {
+          let nextFocusable = this.state.focusIndex - 1;
+          while (
+            nextFocusable >= 0 &&
+            this.props.buttons[nextFocusable].state ===
+              FormatButtonState.Disabled
+          ) {
+            --nextFocusable;
+          }
+
+          if (nextFocusable >= 0) {
+            this.setState({ focusIndex: nextFocusable }, () =>
+              this.updateFocus()
+            );
+          }
+          evt.preventDefault();
         }
-        evt.preventDefault();
         return;
 
       case 'ArrowRight':
-        if (this.state.focusIndex < this.props.buttons.length - 1) {
-          this.setState({ focusIndex: this.state.focusIndex + 1 }, () =>
+        let nextFocusable = this.state.focusIndex + 1;
+        while (
+          nextFocusable < this.props.buttons.length &&
+          this.props.buttons[nextFocusable].state === FormatButtonState.Disabled
+        ) {
+          ++nextFocusable;
+        }
+
+        if (nextFocusable < this.props.buttons.length) {
+          this.setState({ focusIndex: nextFocusable }, () =>
             this.updateFocus()
           );
         }
@@ -278,6 +297,7 @@ export class FormatToolbar extends React.Component<Props, State> {
           data-action={button.type}
           type="button"
           tabIndex={index === this.state.focusIndex ? 0 : -1}
+          disabled={button.state === FormatButtonState.Disabled}
           ref={ref}
         >
           {button.label}
