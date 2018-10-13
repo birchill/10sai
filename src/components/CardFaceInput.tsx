@@ -404,6 +404,10 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     return this.containerRef.current;
   }
 
+  get value(): string {
+    return serializeContent(this.state.editorState);
+  }
+
   getCurrentMarks(): Set<string> {
     return toMarkSet(this.state.editorState.getCurrentInlineStyle());
   }
@@ -504,7 +508,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     if (this.props.initialValue) {
-      this.updateValueFromInitialValue();
+      this.updateValue(this.props.initialValue);
     }
   }
 
@@ -515,7 +519,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       prevProps.initialValue !== this.props.initialValue &&
       serializeContent(this.state.editorState) === prevProps.initialValue
     ) {
-      this.updateValueFromInitialValue();
+      this.updateValue(this.props.initialValue || '');
     }
 
     // Otherwise check if we need to swap the false selection for the real one.
@@ -527,7 +531,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     }
   }
 
-  updateValueFromInitialValue() {
+  updateValue(value: string) {
     const stateChange: Partial<State> = { selectionToRestore: null };
 
     // We're about to update the value which means any selection we have may
@@ -539,7 +543,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
       stateChange.selectionHighlight = SelectionHighlight.None;
     }
 
-    const contentState = deserializeContent(this.props.initialValue || '');
+    const contentState = deserializeContent(value);
     editorState = EditorState.push(
       editorState,
       contentState,
