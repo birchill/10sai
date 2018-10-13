@@ -19,7 +19,8 @@ export type FormatButtonType =
   | 'underline'
   | 'emphasis'
   | 'color'
-  | 'color-dropdown';
+  | 'color-dropdown'
+  | 'cloze';
 
 // Note to self: In future I expect this to be a union of different objects
 // each with a 'type' field where, for example, the 'color' command includes the

@@ -24,7 +24,7 @@ storiesOf('Components|FormatToolbar', module).add('default', () => (
         type: 'underline',
         label: 'Underline',
         accelerator: 'Ctrl+U',
-        state: FormatButtonState.Disabled,
+        state: FormatButtonState.Normal,
       },
       {
         type: 'emphasis',
@@ -35,13 +35,21 @@ storiesOf('Components|FormatToolbar', module).add('default', () => (
       {
         type: 'color',
         label: 'Text color',
+        accelerator: 'Ctrl+/',
         state: FormatButtonState.Normal,
         initialValue: 'blue',
       },
       {
         type: 'color-dropdown',
         label: 'Text color',
+        accelerator: 'Ctrl+Alt+/',
         state: FormatButtonState.Normal,
+      },
+      {
+        type: 'cloze',
+        label: 'Cloze',
+        accelerator: 'Ctrl+[',
+        state: FormatButtonState.Disabled,
       },
     ]}
     onClick={action('onChange')}

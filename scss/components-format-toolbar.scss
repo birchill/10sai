@@ -1,5 +1,5 @@
 $edit-icons-columns: 12;
-$edit-icons-rows: 2;
+$edit-icons-rows: 7;
 $edit-icons-size: 16px;
 
 .format-toolbar {
@@ -81,6 +81,24 @@ $edit-icons-size: 16px;
       background-size: $edit-icons-size * $edit-icons-columns * $icon-scale  $edit-icons-size * $edit-icons-rows * $icon-scale;
       width: $icon-scale * $edit-icons-size;
       height: $icon-scale * $edit-icons-size;
+    }
+    &.cloze::before  {
+      background-position-x: -6 * $edit-icons-size;
+    }
+    &.cloze.-green::before  {
+      background-position-y: -2 * $edit-icons-size;
+    }
+    &.cloze.-blue::before  {
+      background-position-y: -3 * $edit-icons-size;
+    }
+    &.cloze.-purple::before  {
+      background-position-y: -4 * $edit-icons-size;
+    }
+    &.cloze.-red::before  {
+      background-position-y: -5 * $edit-icons-size;
+    }
+    &.cloze.-orange::before  {
+      background-position-y: -6 * $edit-icons-size;
     }
 
     &:hover:not(:disabled)::before {

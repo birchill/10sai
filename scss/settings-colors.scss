@@ -20,6 +20,8 @@ $pass-green: #00b900;
 $warning-red: #e14700;
 
 :root {
+  // These colors need to be synchronized with the color icons in
+  // edit-icons.svg.
   --text-black: #{$text-color};
   --text-green: #4cbd4c;
   --text-blue: #0f5bde;
