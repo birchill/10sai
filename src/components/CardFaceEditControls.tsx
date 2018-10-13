@@ -43,6 +43,7 @@ interface State {
   focussedFace: 'prompt' | 'answer' | null;
 
   currentMarks: Set<string>;
+  hasSelection: boolean;
 }
 
 export class CardFaceEditControls extends React.Component<Props, State> {
@@ -76,6 +77,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       selectedFace: 'prompt',
       focussedFace: null,
       currentMarks: new Set<string>(),
+      hasSelection: false,
     };
 
     this.keyboardFocusHelper = new KeyboardFocusHelper({
@@ -121,7 +123,11 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     }
   }
 
-  handleSelectionChange(face: 'prompt' | 'answer') {
+  handleSelectionChange(face: 'prompt' | 'answer', collapsed: boolean) {
+    if (this.state.focussedFace === face) {
+      this.setState({ hasSelection: !collapsed });
+    }
+
     // This is a bit tricky but we're specifically looking for the first time
     // the selection changes on the active face since that's what we use to
     // clear the selection range on the other face.
@@ -217,6 +223,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
             this.updateSelectedFace(face);
           }
           stateChange.currentMarks = textbox.current.getCurrentMarks();
+          stateChange.hasSelection = !textbox.current.isSelectionCollapsed();
         }
         break;
       }
@@ -230,6 +237,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       // _selected_ face.
       if (this.state.focussedFace && this.selectedFace) {
         stateChange.currentMarks = this.selectedFace.getCurrentMarks();
+        stateChange.hasSelection = !this.selectedFace.isSelectionCollapsed();
       }
     }
 
@@ -269,6 +277,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     }
     const hasMark = (style: string): boolean =>
       currentMarks ? currentMarks.has(style) : false;
+    let hasSelection = this.isFocussed ? this.state.hasSelection : false;
 
     const buttons: Array<FormatButtonConfig> = [
       {
@@ -307,12 +316,21 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         type: 'color',
         label: 'Text color',
         state: FormatButtonState.Normal,
-        initialValue: 'blue',
+        initialColor: 'blue',
       },
       {
         type: 'color-dropdown',
         label: 'Text color',
         state: FormatButtonState.Normal,
+      },
+      {
+        type: 'cloze',
+        label: 'Cloze',
+        accelerator: 'Ctrl+[',
+        state: hasSelection
+          ? FormatButtonState.Normal
+          : FormatButtonState.Disabled,
+        initialColor: 'blue',
       },
     ];
 

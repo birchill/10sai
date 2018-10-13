@@ -85,19 +85,19 @@ $edit-icons-size: 16px;
     &.cloze::before  {
       background-position-x: -6 * $edit-icons-size;
     }
-    &.cloze.-green::before  {
+    &:not(:disabled).cloze.-green::before  {
       background-position-y: -2 * $edit-icons-size;
     }
-    &.cloze.-blue::before  {
+    &:not(:disabled).cloze.-blue::before  {
       background-position-y: -3 * $edit-icons-size;
     }
-    &.cloze.-purple::before  {
+    &:not(:disabled).cloze.-purple::before  {
       background-position-y: -4 * $edit-icons-size;
     }
-    &.cloze.-red::before  {
+    &:not(:disabled).cloze.-red::before  {
       background-position-y: -5 * $edit-icons-size;
     }
-    &.cloze.-orange::before  {
+    &:not(:disabled).cloze.-orange::before  {
       background-position-y: -6 * $edit-icons-size;
     }
 

@@ -38,13 +38,14 @@ export interface FormatButtonConfig {
   label: string;
   accelerator?: string;
   state: FormatButtonState;
-  initialValue?: ColorKeywordOrBlack;
+  initialColor?: ColorKeywordOrBlack;
 }
 
 interface State {
   focusIndex: number;
   colorDropDownOpen: boolean;
   selectedColor?: ColorKeywordOrBlack;
+  clozeColor?: ColorKeywordOrBlack;
 }
 
 export class FormatToolbar extends React.Component<Props, State> {
@@ -57,7 +58,7 @@ export class FormatToolbar extends React.Component<Props, State> {
           label: PropTypes.string.isRequired,
           accelerator: PropTypes.string,
           state: PropTypes.number,
-          initialValue: PropTypes.any,
+          initialColor: PropTypes.any,
         })
       ),
       onClick: PropTypes.func.isRequired,
@@ -81,7 +82,12 @@ export class FormatToolbar extends React.Component<Props, State> {
 
     const colorButton = props.buttons.find(button => button.type === 'color');
     if (colorButton) {
-      this.state.selectedColor = colorButton.initialValue || 'blue';
+      this.state.selectedColor = colorButton.initialColor || 'blue';
+    }
+
+    const clozeButton = props.buttons.find(button => button.type === 'cloze');
+    if (clozeButton) {
+      this.state.clozeColor = clozeButton.initialColor || 'blue';
     }
 
     this.containerRef = React.createRef<HTMLDivElement>();
@@ -106,6 +112,8 @@ export class FormatToolbar extends React.Component<Props, State> {
         this.toggleColorDropDown();
       } else if (action === 'color') {
         this.props.onClick(action, this.state.selectedColor);
+      } else if (action === 'cloze') {
+        this.props.onClick(action, this.state.clozeColor);
       } else {
         this.props.onClick(action);
       }
@@ -283,6 +291,9 @@ export class FormatToolbar extends React.Component<Props, State> {
       const classes = ['button', button.type, '-icon'];
       if (button.state === FormatButtonState.Set) {
         classes.push('-set');
+      }
+      if (button.type === 'cloze') {
+        classes.push(`-${this.state.clozeColor}`);
       }
       return classes.join(' ');
     };

@@ -33,7 +33,7 @@ interface Props {
   className?: string;
   placeholder?: string;
   onChange?: (value: string) => void;
-  onSelectionChange?: () => void;
+  onSelectionChange?: (collapsed: boolean) => void;
   onMarksUpdated?: (currentMarks: Set<string>) => void;
 }
 
@@ -198,7 +198,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
         this.state.editorState.getSelection()
       )
     ) {
-      this.props.onSelectionChange();
+      this.props.onSelectionChange(editorState.getSelection().isCollapsed());
     }
 
     if (this.props.onMarksUpdated) {
@@ -394,6 +394,10 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     });
 
     this.handleChange(editorState);
+  }
+
+  isSelectionCollapsed(): boolean {
+    return this.state.editorState.getSelection().isCollapsed();
   }
 
   get element(): HTMLElement | null {

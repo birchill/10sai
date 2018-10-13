@@ -37,7 +37,7 @@ storiesOf('Components|FormatToolbar', module).add('default', () => (
         label: 'Text color',
         accelerator: 'Ctrl+/',
         state: FormatButtonState.Normal,
-        initialValue: 'blue',
+        initialColor: 'blue',
       },
       {
         type: 'color-dropdown',
@@ -50,6 +50,7 @@ storiesOf('Components|FormatToolbar', module).add('default', () => (
         label: 'Cloze',
         accelerator: 'Ctrl+[',
         state: FormatButtonState.Disabled,
+        initialColor: 'blue',
       },
     ]}
     onClick={action('onChange')}
