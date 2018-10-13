@@ -12,6 +12,7 @@ import {
 } from './CardStore';
 import { NoteStore, NOTE_PREFIX } from './NoteStore';
 import { ReviewStore, REVIEW_PREFIX } from './ReviewStore';
+import { SettingsStore, SETTING_PREFIX } from './SettingsStore';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(PouchDBFind);
@@ -70,6 +71,7 @@ export class DataStore {
   cardStore: CardStore;
   noteStore: NoteStore;
   reviewStore: ReviewStore;
+  settingsStore: SettingsStore;
 
   reviewTime: Date;
   initDone: Promise<void>;
@@ -95,6 +97,7 @@ export class DataStore {
     });
     this.noteStore = new NoteStore(this.db);
     this.reviewStore = new ReviewStore(this.db);
+    this.settingsStore = new SettingsStore(this.db, pouchOptions);
 
     this.viewCleanupScheduled = false;
 
@@ -155,10 +158,25 @@ export class DataStore {
     return this.reviewStore.deleteReview();
   }
 
+  // Settings API
+  settingsDocPrefix = '_local/setting-';
+  async getSettings(): Promise<object> {
+    return this.settingsStore.getSettings();
+  }
+
+  async updateSetting(key: string, value: any, destination: 'local' | 'sync') {
+    this.settingsStore.updateSetting(key, value, destination);
+  }
+
+  async clearSetting(key: string) {
+    this.settingsStore.clearSetting(key);
+  }
+
   // Topics include:
   // - card
   // - note
   // - review
+  // - setting
   get changes() {
     if (this.changesEmitter) {
       return this.changesEmitter;
@@ -168,6 +186,9 @@ export class DataStore {
     // use that instead.
     this.changesEmitter = EventEmitter(null);
 
+    const emit = this.changesEmitter!.emit.bind(this.changesEmitter!);
+    this.settingsStore.registerChangeHandler(emit);
+
     const dbChanges = this.db!.changes({
       since: 'now',
       live: true,
@@ -176,11 +197,10 @@ export class DataStore {
 
     dbChanges.on('change', async change => {
       console.assert(change.changes && change.doc, 'Unexpected changes event');
-
-      const emit = this.changesEmitter!.emit.bind(this.changesEmitter!);
       await this.cardStore.onChange(change, emit);
       await this.noteStore.onChange(change, emit);
       await this.reviewStore.onChange(change, emit);
+      await this.settingsStore.onChange(change, emit);
     });
 
     return this.changesEmitter;
@@ -511,7 +531,8 @@ export class DataStore {
         !doc.id.startsWith(CARD_PREFIX) &&
         !doc.id.startsWith(NOTE_PREFIX) &&
         !doc.id.startsWith(PROGRESS_PREFIX) &&
-        !doc.id.startsWith(REVIEW_PREFIX)
+        !doc.id.startsWith(REVIEW_PREFIX) &&
+        !doc.id.startsWith(SETTING_PREFIX)
       ) {
         unrecognized.push(doc.doc);
       }
@@ -527,7 +548,8 @@ export class DataStore {
         id.startsWith(CARD_PREFIX) ||
         id.startsWith(NOTE_PREFIX) ||
         id.startsWith(PROGRESS_PREFIX) ||
-        id.startsWith(REVIEW_PREFIX)
+        id.startsWith(REVIEW_PREFIX) ||
+        id.startsWith(SETTING_PREFIX)
       ) {
         throw new Error('I recognize this doc');
       }
@@ -547,6 +569,7 @@ export class DataStore {
 
   async destroy(): Promise<void> {
     await this.noteStore.destroy();
+    await this.settingsStore.destroy();
 
     if (!this.db) {
       return;

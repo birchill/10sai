@@ -17,7 +17,6 @@ import reviewSync from './review/sync.ts';
 
 import * as routeActions from './route/actions';
 
-import SettingsStore from './SettingsStore';
 import DataStore from './store/DataStore.ts';
 import App from './components/App.jsx';
 
@@ -61,8 +60,6 @@ const dataStore = new DataStore({ reviewTime: getReviewTime() });
 syncEditChanges(dataStore, store);
 reviewSync(dataStore, store);
 
-const settingsStore = new SettingsStore();
-
 const dispatchSettingUpdates = settings => {
   for (const key in settings) {
     if (settings.hasOwnProperty(key)) {
@@ -75,8 +72,10 @@ const dispatchSettingUpdates = settings => {
   }
 };
 
-settingsStore.getSettings().then(dispatchSettingUpdates);
-settingsStore.onUpdate(dispatchSettingUpdates);
+dataStore.getSettings().then(dispatchSettingUpdates);
+dataStore.changes.on('setting', change => {
+  dispatchSettingUpdates(change.setting);
+});
 
 //
 // Sagas
@@ -87,7 +86,7 @@ sagaMiddleware.run(function* allSagas() {
     editSagas(dataStore),
     noteSagas(dataStore),
     reviewSagas(dataStore),
-    syncSagas(dataStore, settingsStore, store.dispatch.bind(store)),
+    syncSagas(dataStore, store.dispatch.bind(store)),
     routeSagas(),
   ]);
 });

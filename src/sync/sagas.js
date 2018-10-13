@@ -93,7 +93,7 @@ function* stopReplication(dataStore) {
   yield dataStore.setSyncServer();
 }
 
-function* setSyncServer(dataStore, settingsStore, dispatch, action) {
+function* setSyncServer(dataStore, dispatch, action) {
   // Normalize server so we can reliably compare the new server with the old
   // in updateSetting.
   const server = getServer(action);
@@ -105,9 +105,9 @@ function* setSyncServer(dataStore, settingsStore, dispatch, action) {
     // Here and below we clear the paused state--presumably if the user is
     // setting a new sync server they want to perform a sync.
     const updatedServer = { server };
-    yield settingsStore.updateSetting('syncServer', updatedServer);
+    yield dataStore.updateSetting('syncServer', updatedServer, 'local');
   } else {
-    yield settingsStore.clearSetting('syncServer');
+    yield dataStore.clearSetting('syncServer');
   }
 
   // Update UI state
@@ -128,7 +128,7 @@ function* retrySync(dataStore, dispatch) {
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* finishSync(settingsStore, action) {
+function* finishSync(dataStore, action) {
   const server = yield select(getFromSync(getServer));
   const updatedServer = { server, lastSyncTime: action.lastSyncTime };
 
@@ -137,10 +137,10 @@ function* finishSync(settingsStore, action) {
     updatedServer.paused = true;
   }
 
-  yield settingsStore.updateSetting('syncServer', updatedServer);
+  yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 }
 
-function* pauseSync(dataStore, settingsStore) {
+function* pauseSync(dataStore) {
   // Update stored paused state
   const server = yield select(getFromSync(getServer));
   const lastSyncTime = yield select(getFromSync(getLastSyncTime));
@@ -150,12 +150,12 @@ function* pauseSync(dataStore, settingsStore) {
   }
 
   const updatedServer = { server, lastSyncTime, paused: true };
-  yield settingsStore.updateSetting('syncServer', updatedServer);
+  yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 
   yield stopReplication(dataStore);
 }
 
-function* resumeSync(dataStore, settingsStore, dispatch) {
+function* resumeSync(dataStore, dispatch) {
   // Update stored paused state
   const server = yield select(getFromSync(getServer));
   const lastSyncTime = yield select(getFromSync(getLastSyncTime));
@@ -165,7 +165,7 @@ function* resumeSync(dataStore, settingsStore, dispatch) {
   }
 
   const updatedServer = { server, lastSyncTime };
-  yield settingsStore.updateSetting('syncServer', updatedServer);
+  yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 
   yield startReplication(dataStore, server, dispatch);
 }
@@ -250,19 +250,13 @@ function* goOffline(dataStore) {
   yield stopReplication(dataStore);
 }
 
-function* syncSagas(dataStore, settingsStore, dispatch) {
+function* syncSagas(dataStore, dispatch) {
   yield* [
-    takeLatest(
-      'SET_SYNC_SERVER',
-      setSyncServer,
-      dataStore,
-      settingsStore,
-      dispatch
-    ),
+    takeLatest('SET_SYNC_SERVER', setSyncServer, dataStore, dispatch),
     takeLatest('RETRY_SYNC', retrySync, dataStore, dispatch),
-    takeLatest('FINISH_SYNC', finishSync, settingsStore),
-    takeEvery('PAUSE_SYNC', pauseSync, dataStore, settingsStore),
-    takeEvery('RESUME_SYNC', resumeSync, dataStore, settingsStore, dispatch),
+    takeLatest('FINISH_SYNC', finishSync, dataStore),
+    takeEvery('PAUSE_SYNC', pauseSync, dataStore),
+    takeEvery('RESUME_SYNC', resumeSync, dataStore, dispatch),
     takeEvery('UPDATE_SETTING', updateSetting, dataStore, dispatch),
     takeEvery('GO_ONLINE', goOnline, dataStore, dispatch),
     takeEvery('GO_OFFLINE', goOffline, dataStore),

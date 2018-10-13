@@ -67,6 +67,7 @@ export class FormatToolbar extends React.Component<Props, State> {
   colorDropDownRef: React.RefObject<HTMLButtonElement>;
   colorPickerRef: React.RefObject<ColorPicker>;
   previousFocus?: HTMLElement;
+  pointerMediaQuery?: MediaQueryList;
   state: State;
 
   constructor(props: Props) {
