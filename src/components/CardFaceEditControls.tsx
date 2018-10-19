@@ -253,14 +253,18 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       return;
     }
 
-    if (e.key !== '/' || !this.formatToolbarRef.current) {
-      return;
-    }
-
-    if (hasCommandModifierOnly(e)) {
-      this.formatToolbarRef.current.toggleColor();
-    } else if (e.ctrlKey || e.metaKey) {
-      this.formatToolbarRef.current.selectColor();
+    if (e.key === '/' && this.formatToolbarRef.current) {
+      if (hasCommandModifierOnly(e)) {
+        this.formatToolbarRef.current.toggleColor();
+      } else if (e.ctrlKey || e.metaKey) {
+        this.formatToolbarRef.current.selectColor();
+      }
+    } else if (e.key === '[') {
+      if (hasCommandModifierOnly(e)) {
+        // XXX Pass in the actual color here... probably easier to do once we
+        // store it.
+        this.makeCloze('blue');
+      }
     }
   }
 
@@ -274,7 +278,8 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     if (
       !this.selectedFace ||
       !this.questionTextBoxRef.current ||
-      !this.answerTextBoxRef.current
+      !this.answerTextBoxRef.current ||
+      this.selectedFace.isSelectionCollapsed()
     ) {
       return;
     }
