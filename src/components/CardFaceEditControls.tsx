@@ -194,7 +194,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       }
     } else if (command === 'cloze') {
       if (params) {
-        this.doCloze(params);
+        this.makeCloze(params);
       }
     } else {
       this.editFace.toggleMark(command as MarkType);
@@ -270,28 +270,31 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     this.setState({ toolbarFocussed: false });
   }
 
-  doCloze(color: ColorKeywordOrBlack) {
-    if (!this.questionTextBoxRef.current || !this.answerTextBoxRef.current) {
+  makeCloze(color: ColorKeywordOrBlack) {
+    if (
+      !this.selectedFace ||
+      !this.questionTextBoxRef.current ||
+      !this.answerTextBoxRef.current
+    ) {
       return;
     }
 
-    // 1. Update the answer to match the question
-    //
-    // The simplest thing to do here would just be to call this.props.onChange
-    // to update the Redux state setting 'answer' to with
-    // this.props.card.question.
-    //
-    // However, that wouldn't really be right because:
-    //
-    // 1. In order for this component to be properly isolated, it shouldn't
-    //    assume anything about what the onChange callback does.
-    // 2. We can't be certain the Redux state is up-to-date if we are typing
-    //    quickly.
-    const question = this.questionTextBoxRef.current.value;
-    this.answerTextBoxRef.current.updateValue(question);
-    if (this.props.onChange) {
-      this.props.onChange('answer', question);
-    }
+    const question = this.selectedFace.value;
+    const selection = this.selectedFace.getSelection();
+
+    this.questionTextBoxRef.current.makeCloze({
+      color,
+      selection,
+      content: question,
+      blank: true,
+    });
+
+    this.answerTextBoxRef.current.makeCloze({
+      color,
+      selection,
+      content: question,
+      blank: false,
+    });
   }
 
   get isFocussed(): boolean {

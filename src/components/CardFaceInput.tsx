@@ -18,6 +18,14 @@ import { ColorKeywordOrBlack, ColorKeywords } from '../text/rich-text-styles';
 import { fromDraft, toDraft } from '../text/draft-conversion';
 import { setsEqual } from '../utils/sets-equal';
 
+// Augment the immutable typings because draft-js uses pre v4 immutable
+// XXX I don't think we need this anymore
+declare module 'immutable' {
+  interface OrderedMap<K, V> extends Map<K, V> {
+    keys(): IterableIterator<K>;
+  }
+}
+
 function serializeContent(editorState: EditorState): string {
   return serialize(fromDraft(convertToRaw(editorState.getCurrentContent())));
 }
@@ -60,6 +68,22 @@ for (const color of ColorKeywords) {
 }
 
 export type MarkType = 'bold' | 'italic' | 'underline' | 'emphasis';
+
+export interface ClozeOptions {
+  color: ColorKeywordOrBlack;
+  selection: SimpleSelection;
+  content: string;
+  blank: boolean;
+}
+
+// A selection range that is independent of block keys, a little less
+// draft-specific, and non-directional. This is intended for setting up clozes.
+export interface SimpleSelection {
+  startBlock: number;
+  startOffset: number;
+  endBlock: number;
+  endOffset: number;
+}
 
 // We store the current style as an Immutable.OrderedSet since it makes
 // comparing with changes cheap but we return a standard ES6 Set, lowercased
@@ -400,6 +424,31 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     return this.state.editorState.getSelection().isCollapsed();
   }
 
+  getSelection(): SimpleSelection {
+    const currentSelection = this.state.editorState.getSelection();
+    const startKey = currentSelection.getStartKey();
+    const endKey = currentSelection.getEndKey();
+
+    // Get the block indices of the selection range
+    const keySeq = this.state.editorState
+      .getCurrentContent()
+      .getBlockMap()
+      .keySeq();
+    let startBlock = keySeq.findIndex(k => k === startKey);
+    let endBlock = keySeq.findIndex(k => k === endKey);
+
+    if (startBlock === -1 || endBlock === -1) {
+      throw new Error('Failed to convert selection');
+    }
+
+    return {
+      startBlock,
+      startOffset: currentSelection.getStartOffset(),
+      endBlock,
+      endOffset: currentSelection.getEndOffset(),
+    };
+  }
+
   get element(): HTMLElement | null {
     return this.containerRef.current;
   }
@@ -424,7 +473,7 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
 
     const colorStyle = `COLOR:${color}`;
 
-    // If selection is collapsed the toggle the inline style
+    // If selection is collapsed then toggle the inline style
     if (selection.isCollapsed()) {
       let nextOverrideStyle =
         editorState.getInlineStyleOverride() || Immutable.OrderedSet<string>();
@@ -473,6 +522,121 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     }
 
     this.handleChange(nextEditorState);
+  }
+
+  // We would like for CardFaceInput to be agnostic of clozes and instead to
+  // just expose primitives like setColor etc.
+  //
+  // However, the "sometimes async" behavior of React's setState makes this
+  // impossible without also maintaining some sort of pending editor state.
+  // So, instead, we just do it all here.
+  makeCloze(options: ClozeOptions) {
+    if (
+      options.selection.startBlock > options.selection.endBlock ||
+      (options.selection.startBlock === options.selection.endBlock &&
+        options.selection.startOffset >= options.selection.endOffset)
+    ) {
+      console.error('Invalid range for performing cloze');
+      return;
+    }
+
+    // We're about to clobber the content and selection so reset the
+    // corresponding state.
+    const stateChange: Partial<State> = {
+      selectionToRestore: null,
+      selectionHighlight: SelectionHighlight.None,
+    };
+
+    // Update content
+    let { editorState } = this.state;
+    let contentState = deserializeContent(options.content);
+    editorState = EditorState.push(
+      editorState,
+      contentState,
+      'insert-characters'
+    );
+
+    // Update selection
+    const keySeq = contentState.getBlockMap().keySeq();
+    const selectionStartKey = keySeq.get(options.selection.startBlock);
+    const selectionEndKey = keySeq.get(options.selection.endBlock);
+    let selection = SelectionState.createEmpty(selectionStartKey);
+    selection = selection.merge({
+      anchorKey: selectionStartKey,
+      anchorOffset: options.selection.startOffset,
+      focusKey: selectionEndKey,
+      focusOffset: options.selection.endOffset,
+    }) as SelectionState;
+    editorState = EditorState.forceSelection(editorState, selection);
+
+    // Set up inline styles
+    let inlineStyles = ['BOLD'];
+    if (options.color !== 'black') {
+      inlineStyles.push(`COLOR:${options.color}`);
+    }
+
+    // Blank out text
+    if (options.blank) {
+      contentState = Modifier.replaceText(
+        contentState,
+        selection,
+        '[....]',
+        Immutable.OrderedSet(inlineStyles)
+      );
+      editorState = EditorState.push(
+        editorState,
+        contentState,
+        'insert-characters'
+      );
+
+      // Reset the selection to a collapsed selection in the middle of the
+      // replaced range.
+      selection = SelectionState.createEmpty(selectionStartKey);
+      selection = selection.merge({
+        anchorKey: selectionStartKey,
+        anchorOffset: options.selection.startOffset + 3,
+        focusKey: selectionStartKey,
+        focusOffset: options.selection.startOffset + 3,
+      }) as SelectionState;
+      editorState = EditorState.forceSelection(editorState, selection);
+    } else {
+      // We really should just completely clobber the inline styles of the
+      // selection but unfortunately draft doesn't currently offer that API.
+      // Instead we'd need to duplicate the code in
+      // ContentStateInlineStyle.modifyInlineStyle and adapt it--something we'll
+      // no doubt eventually end up doing--but for now we just doing things the
+      // slow way and just clear colors and then set the other styles one by
+      // one.
+
+      // Drop any existing colors
+      contentState = ColorKeywords.reduce(
+        (contentState, color) =>
+          Modifier.removeInlineStyle(contentState, selection, `COLOR:${color}`),
+        contentState
+      );
+      editorState = EditorState.push(
+        editorState,
+        contentState,
+        'change-inline-style'
+      );
+
+      // Set the new styles
+      for (const style of inlineStyles) {
+        contentState = Modifier.applyInlineStyle(
+          contentState,
+          selection,
+          style
+        );
+      }
+      editorState = EditorState.push(
+        editorState,
+        contentState,
+        'change-inline-style'
+      );
+    }
+
+    this.setState(stateChange as State);
+    this.handleChange(editorState);
   }
 
   render() {
