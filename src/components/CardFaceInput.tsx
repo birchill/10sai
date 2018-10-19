@@ -18,14 +18,6 @@ import { ColorKeywordOrBlack, ColorKeywords } from '../text/rich-text-styles';
 import { fromDraft, toDraft } from '../text/draft-conversion';
 import { setsEqual } from '../utils/sets-equal';
 
-// Augment the immutable typings because draft-js uses pre v4 immutable
-// XXX I don't think we need this anymore
-declare module 'immutable' {
-  interface OrderedMap<K, V> extends Map<K, V> {
-    keys(): IterableIterator<K>;
-  }
-}
-
 function serializeContent(editorState: EditorState): string {
   return serialize(fromDraft(convertToRaw(editorState.getCurrentContent())));
 }
