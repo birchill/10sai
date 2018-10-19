@@ -351,12 +351,14 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       {
         type: 'color',
         label: 'Text color',
+        accelerator: 'Ctrl+/',
         state: FormatButtonState.Normal,
         initialColor: 'blue',
       },
       {
         type: 'color-dropdown',
-        label: 'Text color',
+        label: 'Select text color',
+        accelerator: 'Ctrl+Alt+/',
         state: FormatButtonState.Normal,
       },
       {
