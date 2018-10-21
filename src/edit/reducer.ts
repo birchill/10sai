@@ -11,6 +11,7 @@ import { isNoteAction, NoteAction, EditNoteContext } from '../notes/actions';
 export interface EditFormState {
   formId: number;
   formState: FormState;
+  isNew: boolean;
   card: Partial<Card>;
   dirtyFields?: Set<keyof Card>;
   notes: Array<NoteState>;
@@ -28,6 +29,7 @@ const initialState: EditState = {
     active: {
       formId: 0,
       formState: FormState.Ok,
+      isNew: true,
       card: {},
       notes: [],
     },
@@ -39,12 +41,24 @@ export function edit(state = initialState, action: Action): EditState {
 
   switch (editAction.type) {
     case 'NEW_CARD': {
+      // If the last card was a new card, then we're adding cards in bulk and we
+      // should persist the tags field since generally you add a bunch of cards
+      // with similar tags at the same time.
+      const card: Partial<Card> = {};
+      if (
+        state.forms.active.isNew &&
+        typeof state.forms.active.card.tags !== 'undefined'
+      ) {
+        card.tags = state.forms.active.card.tags;
+      }
+
       return {
         forms: {
           active: {
             formId: editAction.newFormId,
             formState: FormState.Ok,
-            card: {},
+            isNew: true,
+            card,
             notes: [],
           },
         },
@@ -57,6 +71,7 @@ export function edit(state = initialState, action: Action): EditState {
           active: {
             formId: editAction.newFormId,
             formState: FormState.Loading,
+            isNew: false,
             card: {},
             notes: [],
           },
@@ -74,6 +89,7 @@ export function edit(state = initialState, action: Action): EditState {
           active: {
             formId: editAction.formId,
             formState: FormState.Ok,
+            isNew: false,
             card: editAction.card,
             notes: [],
           },
@@ -96,6 +112,7 @@ export function edit(state = initialState, action: Action): EditState {
           active: {
             formId: editAction.formId,
             formState: deleted ? FormState.Deleted : FormState.NotFound,
+            isNew: false,
             card: {},
             notes: [],
           },
@@ -142,6 +159,7 @@ export function edit(state = initialState, action: Action): EditState {
           active: {
             formId: editAction.formId,
             formState: FormState.Ok,
+            isNew: editState.isNew,
             card: { ...state.forms.active.card, ...editAction.card },
             dirtyFields,
             notes: state.forms.active.notes,
@@ -189,6 +207,7 @@ export function edit(state = initialState, action: Action): EditState {
           active: {
             formId: editAction.formId,
             formState: FormState.Ok,
+            isNew: state.forms.active.isNew,
             card: { ...editAction.card, ...state.forms.active.card },
             notes: state.forms.active.notes,
           },
@@ -233,6 +252,7 @@ export function edit(state = initialState, action: Action): EditState {
             active: {
               formId: state.forms.active.formId,
               formState: FormState.Deleted,
+              isNew: false,
               card: {},
               notes: [],
             },
@@ -272,12 +292,14 @@ export function edit(state = initialState, action: Action): EditState {
         return state;
       }
 
+      // If the card was not already saved, just clear the fields
       if (!state.forms.active.card._id) {
         return {
           forms: {
             active: {
               formId: editAction.formId,
               formState: FormState.Ok,
+              isNew: true,
               card: {},
               notes: [],
             },
@@ -290,6 +312,7 @@ export function edit(state = initialState, action: Action): EditState {
           active: {
             formId: editAction.formId,
             formState: FormState.Deleted,
+            isNew: false,
             card: {},
             notes: [],
           },

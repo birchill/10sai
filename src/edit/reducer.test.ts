@@ -9,12 +9,16 @@ import { CardChange } from '../store/CardStore';
 import { StoreError } from '../store/DataStore';
 import { generateCard } from '../utils/testing';
 
-const emptyState = (newFormId: number): EditState => ({
+const emptyState = (
+  newFormId: number,
+  initialTags?: Array<string> | undefined
+): EditState => ({
   forms: {
     active: {
       formId: newFormId,
       formState: FormState.Ok,
-      card: {},
+      isNew: true,
+      card: { tags: initialTags },
       notes: [],
     },
   },
@@ -30,6 +34,7 @@ const okState = (
       active: {
         formId,
         formState: FormState.Ok,
+        isNew: false,
         card,
         notes: [],
       },
@@ -48,6 +53,7 @@ const loadingState = (newFormId: number): EditState => ({
     active: {
       formId: newFormId,
       formState: FormState.Loading,
+      isNew: false,
       card: {},
       notes: [],
     },
@@ -57,12 +63,14 @@ const loadingState = (newFormId: number): EditState => ({
 const dirtyState = (
   formId: number,
   card: Partial<Card>,
-  dirtyFields: Set<keyof Card>
+  dirtyFields: Set<keyof Card>,
+  isNew: boolean = false
 ): EditState => ({
   forms: {
     active: {
       formId,
       formState: FormState.Ok,
+      isNew,
       card,
       dirtyFields,
       notes: [],
@@ -75,6 +83,7 @@ const notFoundState = (formId: number): EditState => ({
     active: {
       formId,
       formState: FormState.NotFound,
+      isNew: false,
       card: {},
       notes: [],
     },
@@ -86,6 +95,7 @@ const deletedState = (formId: number): EditState => ({
     active: {
       formId,
       formState: FormState.Deleted,
+      isNew: false,
       card: {},
       notes: [],
     },
@@ -127,6 +137,26 @@ describe('reducer:edit', () => {
     const updatedState = subject(initialState, actions.newCard(2));
 
     expect(updatedState).toEqual(emptyState(2));
+  });
+
+  it('should persist the tags on NEW_CARD if the previous card was also new', () => {
+    const initialState = emptyState(4, ['Tag 1', 'Tag 2']);
+
+    const updatedState = subject(initialState, actions.newCard(5));
+
+    expect(updatedState.forms.active.card.tags).toEqual(['Tag 1', 'Tag 2']);
+  });
+
+  it('should NOT persist the tags on NEW_CARD if the previous card was not new', () => {
+    const initialState = okState(
+      4,
+      { ...generateCard('abc'), tags: ['Tag 1', 'Tag 2'] },
+      toDirtyFields('question', 'answer')
+    );
+
+    const updatedState = subject(initialState, actions.newCard(5));
+
+    expect(updatedState.forms.active.card.tags).toBeUndefined();
   });
 
   it('should update formId and state on LOAD_CARD', () => {
@@ -242,7 +272,8 @@ describe('reducer:edit', () => {
         dirtyState(
           7,
           { question: 'Updated question', answer: 'Updated answer' },
-          toDirtyFields('question', 'answer')
+          toDirtyFields('question', 'answer'),
+          true
         )
       );
     }
