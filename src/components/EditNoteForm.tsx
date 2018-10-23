@@ -4,6 +4,7 @@ import memoize from 'memoize-one';
 
 import { Note } from '../model';
 import { SaveState } from '../notes/reducer';
+import { getKeywordVariants } from '../text/keywords';
 import NoteFrame from './NoteFrame';
 import SaveStatus from './SaveStatus';
 import TokenList from './TokenList';
@@ -215,6 +216,11 @@ export class EditNoteForm extends React.Component<Props, State> {
       className += ' ' + this.props.className;
     }
 
+    const linkedTokens = [
+      ...this.props.relatedKeywords,
+      ...getKeywordVariants(this.props.relatedKeywords),
+    ];
+
     let statusMessage: string | undefined;
     if (!this.props.note.keywords || !this.props.note.keywords.length) {
       statusMessage =
@@ -260,7 +266,7 @@ export class EditNoteForm extends React.Component<Props, State> {
                     className="tokens -yellow -seamless -inline"
                     tokens={this.props.note.keywords}
                     placeholder="Keywords"
-                    linkedTokens={this.props.relatedKeywords}
+                    linkedTokens={linkedTokens}
                     linkedTooltip="This keyword links the note to the card"
                     onTokensChange={this.handleKeywordsChange}
                     onTextChange={this.handleKeywordsTextChange}
