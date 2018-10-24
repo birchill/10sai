@@ -63,13 +63,18 @@ export class EditCardScreen extends React.PureComponent<Props> {
 
   componentDidMount() {
     if (this.props.active) {
-      this.activate();
+      this.focusIfNew();
     }
   }
 
   componentDidUpdate(previousProps: Props) {
-    if (this.props.active && previousProps.active !== this.props.active) {
-      this.activate();
+    // If we are newly active, or if we've just changed cards (e.g. by creating
+    // a new card) then focus the card if it's new.
+    if (
+      (this.props.active && previousProps.active !== this.props.active) ||
+      previousProps.forms.active.formId !== this.props.forms.active.formId
+    ) {
+      this.focusIfNew();
     }
   }
 
@@ -80,7 +85,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
     );
   }
 
-  activate() {
+  focusIfNew() {
     if (this.isFormEmpty() && this.activeFormRef.current) {
       this.activeFormRef.current.focus();
     }
