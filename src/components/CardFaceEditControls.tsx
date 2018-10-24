@@ -256,14 +256,17 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     if (e.key === '/' && this.formatToolbarRef.current) {
       if (hasCommandModifierOnly(e)) {
         this.formatToolbarRef.current.toggleColor();
+        e.preventDefault();
       } else if (e.ctrlKey || e.metaKey) {
         this.formatToolbarRef.current.selectColor();
+        e.preventDefault();
       }
     } else if (e.key === '[') {
       if (hasCommandModifierOnly(e)) {
         // XXX Pass in the actual color here... probably easier to do once we
         // store it.
         this.makeCloze('blue');
+        e.preventDefault();
       }
     }
   }
