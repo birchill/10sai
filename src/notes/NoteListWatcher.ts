@@ -2,6 +2,7 @@ import { collate } from 'pouchdb-collate';
 import { Note } from '../model';
 import { DataStore } from '../store/DataStore';
 import { NoteChange } from '../store/NoteStore';
+import { getKeywordVariants } from '../text/keywords';
 import deepEqual from 'deep-equal';
 
 // A wrapper around a Store that watches for Notes that match a given set of
@@ -9,8 +10,9 @@ import deepEqual from 'deep-equal';
 
 type NoteListListener = (notes: Array<Note>, deletedIds: Array<string>) => void;
 
-const normalizeKeywords = (keywords: string[]): string[] =>
-  keywords
+// Get keyword variants, convert to lowercase etc.
+const prepareKeywords = (keywords: string[]): string[] =>
+  [...keywords, ...getKeywordVariants(keywords)]
     .map(keyword => keyword.toLowerCase())
     .filter(keyword => keyword.length > 0);
 
@@ -31,7 +33,7 @@ export class NoteListWatcher {
     this.notes = [];
     this.listener = onUpdate;
 
-    this.updateKeywords(normalizeKeywords(keywords));
+    this.updateKeywords(prepareKeywords(keywords));
     this.handleChange = this.handleChange.bind(this);
 
     this.dataStore.changes.on('note', this.handleChange);
@@ -84,24 +86,24 @@ export class NoteListWatcher {
     return this.initDone.then(() => this.notes);
   }
 
-  // Note that this will be the lowercased version of the keywords.
+  // Note that this will be the expanded, lowercased version of the keywords.
   getKeywords(): string[] {
     return this.keywords;
   }
 
   setKeywords(keywords: string[]) {
-    const normalizedKeywords = normalizeKeywords(keywords);
-    if (deepEqual(normalizedKeywords, this.keywords)) {
+    const preparedKeywords = prepareKeywords(keywords);
+    if (deepEqual(preparedKeywords, this.keywords)) {
       return;
     }
 
-    this.updateKeywords(normalizedKeywords);
+    this.updateKeywords(preparedKeywords);
   }
 
   updateKeywords(keywords: string[]) {
     console.assert(
-      deepEqual(keywords, normalizeKeywords(keywords)),
-      'Keywords should already be normalized'
+      deepEqual(keywords, prepareKeywords(keywords)),
+      'Keywords should already be prepared'
     );
     this.keywords = keywords;
 

@@ -4,7 +4,7 @@ import memoize from 'memoize-one';
 
 import { Note } from '../model';
 import { SaveState } from '../notes/reducer';
-import { getKeywordVariants } from '../text/keywords';
+import { getKeywordVariants, getKeywordsToMatch } from '../text/keywords';
 import NoteFrame from './NoteFrame';
 import SaveStatus from './SaveStatus';
 import TokenList from './TokenList';
@@ -41,10 +41,8 @@ const hasCommonKeyword = (
   keywordsA: Array<string>,
   keywordsB: Array<string>
 ): boolean => {
-  const toLower = (keywords: Array<string>): Array<string> =>
-    keywords.map(keyword => keyword.toLowerCase());
-  const keywordSet = new Set<string>(toLower(keywordsA));
-  for (const keyword of toLower(keywordsB)) {
+  const keywordSet = new Set<string>(getKeywordsToMatch(keywordsA));
+  for (const keyword of getKeywordsToMatch(keywordsB)) {
     if (keywordSet.has(keyword)) {
       return true;
     }

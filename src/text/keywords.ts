@@ -20,3 +20,9 @@ export function getKeywordVariants(
     ...new Set(result.filter(variant => !keywordsArray.includes(variant))),
   ];
 }
+
+// Transforms keywords into the form we use to look up the database
+export const getKeywordsToMatch = (keywords: string[]): string[] =>
+  [...keywords, ...getKeywordVariants(keywords)]
+    .map(keyword => keyword.toLowerCase())
+    .filter(keyword => keyword.length > 0);
