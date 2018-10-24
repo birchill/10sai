@@ -32,6 +32,7 @@ export class EditCardToolbar extends React.PureComponent<Props> {
           <Link
             href="/cards/new"
             className="add button -icon -plus -link"
+            title="Add card (Ctrl+Shift+C)"
             active
           >
             Add

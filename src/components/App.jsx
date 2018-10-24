@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import DocumentTitle from 'react-document-title';
 
 import { URLFromRoute } from '../route/router';
+import * as routeActions from '../route/actions';
 import { getReviewProgress } from '../review/selectors.ts';
 import CardList from '../CardList.ts';
 import KeywordSuggester from '../suggestions/KeywordSuggester.ts';
@@ -43,6 +44,7 @@ class App extends React.PureComponent {
         unreviewedCards: PropTypes.number.isRequired,
       }),
       onClosePopup: PropTypes.func,
+      onNewCard: PropTypes.func,
     };
   }
 
@@ -60,6 +62,7 @@ class App extends React.PureComponent {
     this.cardList = new CardList(props.dataStore);
     this.keywordSuggester = new KeywordSuggester(props.dataStore);
     this.tagSuggester = new TagSuggester(props.dataStore);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
   getChildContext() {
@@ -81,6 +84,20 @@ class App extends React.PureComponent {
   closePopup() {
     if (this.props.onClosePopup) {
       this.props.onClosePopup();
+    }
+  }
+
+  handleKeyDown(e) {
+    // App-wide keyboard shortcuts
+
+    if (e.defaultPrevented) {
+      return;
+    }
+
+    // Ctrl+Shift+C
+    if (e.key === 'C' && (e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey) {
+      this.props.onNewCard();
+      e.preventDefault();
     }
   }
 
@@ -113,7 +130,7 @@ class App extends React.PureComponent {
         <DataStoreContext.Provider value={this.props.dataStore}>
           <TagSuggesterContext.Provider value={this.tagSuggester}>
             <KeywordSuggesterContext.Provider value={this.keywordSuggester}>
-              <div className="app">
+              <div className="app" onKeyDown={this.handleKeyDown}>
                 <div className="screens">
                   <HomeScreenContainer />
                   <TabPanel
@@ -182,7 +199,15 @@ const mapStateToProps = state => ({
   activeCardId: state.selection.activeCardId,
   reviewProgress: getReviewProgress(state),
 });
+const mapDispatchToProps = (dispatch, props) => ({
+  onNewCard: href => {
+    dispatch(routeActions.followLink('/cards/new', 'forwards', true));
+  },
+});
 
-const ConnectedApp = connect(mapStateToProps)(App);
+const ConnectedApp = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);
 
 export default ConnectedApp;
