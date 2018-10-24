@@ -14,5 +14,9 @@ export function getKeywordVariants(
     result.push(...extractKanji(keyword));
   }
 
-  return [...new Set(result)];
+  // Drop any duplicates or any candidates that are already part of the
+  // passed-in keywords.
+  return [
+    ...new Set(result.filter(variant => !keywordsArray.includes(variant))),
+  ];
 }
