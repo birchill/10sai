@@ -35,10 +35,10 @@ interface State {
   // selection of.
   //
   // The main situation where the two differ is when the user selects a range in
-  // the 'prompt' face, then tabs _through_ the 'answer' face to get to the
-  // formatting toolbar. In this case, the 'prompt' face remains the selected
-  // face but while tabbing through the 'answer' face it becomes the focussed
-  // face and the toolbar's status should reflect that.
+  // the 'answer' face, then shift+tabs back _through_ the 'prompt' face to get
+  // to the formatting toolbar. In this case, the 'answer' face remains the
+  // selected face but while tabbing through the 'prompt' face it becomes the
+  // focussed face and the toolbar's status should reflect that.
   selectedFace: 'prompt' | 'answer';
   focussedFace: 'prompt' | 'answer' | null;
 
@@ -399,6 +399,12 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         onKeyDown={this.keyboardFocusHelper.onKeyDown}
         onBlur={this.handleBlur}
       >
+        <FormatToolbar
+          className={'toolbar -center' + (this.isFocussed ? ' -areafocus' : '')}
+          onClick={this.handleFormat}
+          buttons={this.formatButtonConfig}
+          ref={this.formatToolbarRef}
+        />
         <CardFaceInput
           className={getFaceClassName('prompt')}
           initialValue={this.props.card.question || ''}
@@ -417,12 +423,6 @@ export class CardFaceEditControls extends React.Component<Props, State> {
           onSelectionChange={this.handleAnswerSelectionChange}
           onMarksUpdated={this.handleAnswerMarksUpdated}
           ref={this.answerTextBoxRef}
-        />
-        <FormatToolbar
-          className={'toolbar -center' + (this.isFocussed ? ' -areafocus' : '')}
-          onClick={this.handleFormat}
-          buttons={this.formatButtonConfig}
-          ref={this.formatToolbarRef}
         />
       </div>
     );

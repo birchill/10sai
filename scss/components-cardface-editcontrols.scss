@@ -2,6 +2,8 @@
   // Normally we actually make the artificial selection look no different from
   // regular text and only reveal it when the toolbar is in focus.
   --selection-bg: inherit;
+  // Don't allow margin from the children to collapse with any applied to us.
+  padding-top: .1px;
 
   > * {
     box-sizing: border-box;
@@ -17,6 +19,11 @@
     color: white;
   }
 
+  > .toolbar {
+    margin: .5rem;
+    margin-bottom: 0;
+  }
+
   > .prompt, > .answer {
     padding-left: 1rem;
     padding-right: 1rem;
@@ -30,9 +37,5 @@
 
   > .divider {
     width: 80%;
-  }
-
-  > .toolbar {
-    margin: .5rem;
   }
 }
