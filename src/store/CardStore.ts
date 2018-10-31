@@ -499,7 +499,7 @@ export class CardStore {
           return -1;
         }
         if (lcValueB === lcPrefix) {
-          return -1;
+          return 1;
         }
       }
 
