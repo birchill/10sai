@@ -22,7 +22,7 @@ const EditCardNotFound: React.SFC<Props> = props => {
 };
 
 EditCardNotFound.propTypes = {
-  deleted: PropTypes.bool,
+  deleted: PropTypes.bool.isRequired,
 };
 
 export default EditCardNotFound;

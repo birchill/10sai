@@ -7,8 +7,8 @@ import { TextRegion } from './TextRegion';
 interface Props {
   question: string;
   answer: string;
-  showAnswer?: boolean;
-  className?: string;
+  showAnswer?: boolean | null;
+  className?: string | null;
   onSelectCard: () => void;
 }
 
@@ -54,7 +54,7 @@ ReviewCard.propTypes = {
   answer: PropTypes.string.isRequired,
   showAnswer: PropTypes.bool,
   className: PropTypes.string,
-  onSelectCard: PropTypes.func,
+  onSelectCard: PropTypes.func.isRequired,
 };
 
 export default ReviewCard;

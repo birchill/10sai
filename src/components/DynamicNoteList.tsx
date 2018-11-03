@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Dispatch } from 'redux';
+import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
@@ -101,7 +101,10 @@ interface Props {
 // XXX Use the actual state once we have it
 type State = any;
 
-const mapDispatchToProps = (dispatch: Dispatch<State>, ownProps: Props) => ({
+const mapDispatchToProps = (
+  dispatch: Dispatch<Action<any>>,
+  ownProps: Props
+) => ({
   onAddNote: (initialKeywords: string[]) => {
     dispatch(noteActions.addNote(ownProps.context, initialKeywords));
   },

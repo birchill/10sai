@@ -9,8 +9,8 @@ interface Props {
   aItems: number;
   bItems: number;
   cItems: number;
-  title?: string;
-  className?: string;
+  title?: string | null;
+  className?: string | null;
 }
 
 export const TricolorProgress: React.SFC<Props> = (props: Props) => {
@@ -21,7 +21,7 @@ export const TricolorProgress: React.SFC<Props> = (props: Props) => {
   return (
     <div
       className={`tricolor-progress ${props.className || ''}`}
-      title={props.title}
+      title={props.title || ''}
     >
       <div className="c" />
       <div

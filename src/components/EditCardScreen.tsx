@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Dispatch } from 'redux';
+import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
 
 import { Card, Note } from '../model';
@@ -25,31 +25,6 @@ interface Props {
 }
 
 export class EditCardScreen extends React.PureComponent<Props> {
-  static get propTypes() {
-    return {
-      forms: PropTypes.shape({
-        active: PropTypes.shape({
-          formId: PropTypes.number.isRequired,
-          formState: PropTypes.string.isRequired,
-          card: PropTypes.object.isRequired,
-          notes: PropTypes.arrayOf(
-            PropTypes.shape({
-              formId: PropTypes.number,
-              note: PropTypes.object.isRequired,
-              dirtyFields: PropTypes.instanceOf(Set),
-              saveState: PropTypes.string.isRequired,
-              saveError: PropTypes.object,
-            })
-          ),
-          saveError: PropTypes.object,
-        }).isRequired,
-      }),
-      active: PropTypes.bool.isRequired,
-      onEdit: PropTypes.func.isRequired,
-      onDelete: PropTypes.func.isRequired,
-    };
-  }
-
   activeFormRef: React.RefObject<EditCardForm>;
 
   constructor(props: Props) {
@@ -151,7 +126,7 @@ type State = any;
 const mapStateToProps = (state: State) => ({
   forms: (state.edit as EditState).forms,
 });
-const mapDispatchToProps = (dispatch: Dispatch<State>) => ({
+const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
   onEdit: (formId: number, change: Partial<Card>) => {
     dispatch(editActions.editCard(formId, change));
   },

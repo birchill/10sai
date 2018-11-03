@@ -28,7 +28,7 @@ class KeywordSuggestionProviderInner extends SuggestionProvider<PropsInner> {
       defaultSuggestions: PropTypes.arrayOf(PropTypes.string),
       includeRecentKeywords: PropTypes.bool,
       keywordSuggester: PropTypes.object.isRequired,
-    };
+    } as React.ValidationMap<PropsInner>;
   }
 
   addRecentEntry: (entry: string) => void;

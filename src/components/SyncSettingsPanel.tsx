@@ -75,28 +75,6 @@ interface Props {
 }
 
 export class SyncSettingsPanel extends React.PureComponent<Props> {
-  static get propTypes() {
-    return {
-      syncState: PropTypes.symbol.isRequired,
-      server: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        username: PropTypes.string,
-        password: PropTypes.string,
-      }),
-      lastSyncTime: PropTypes.instanceOf(Date),
-      // eslint-disable-next-line react/forbid-prop-types
-      errorDetail: PropTypes.object,
-      progress: PropTypes.number,
-      editingServer: PropTypes.bool,
-      onSubmit: PropTypes.func.isRequired,
-      onRetry: PropTypes.func.isRequired,
-      onEdit: PropTypes.func.isRequired,
-      onCancel: PropTypes.func.isRequired,
-      onPause: PropTypes.func.isRequired,
-      onResume: PropTypes.func.isRequired,
-    };
-  }
-
   constructor(props: Props) {
     super(props);
 

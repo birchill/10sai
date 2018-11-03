@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
+import { Dispatch, Action } from 'redux';
 import SyncSettingsPanel from './SyncSettingsPanel';
 import { SyncServer } from '../sync/SyncServer';
 
@@ -34,7 +34,7 @@ interface DispatchProps {
   onResume: () => void;
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<State>) => ({
+const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
   onSubmit: (server?: SyncServer) =>
     dispatch({ type: 'SET_SYNC_SERVER', server }),
   onRetry: (server?: SyncServer) => dispatch({ type: 'RETRY_SYNC', server }),

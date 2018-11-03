@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import NoteCorner from './NoteCorner';
 
 interface Props {
-  className?: string;
+  className?: string | null;
 }
 
 const NoteFrame: React.SFC<Props> = props => {

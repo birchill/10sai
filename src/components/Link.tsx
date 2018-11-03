@@ -1,6 +1,6 @@
 import React, { AnchorHTMLAttributes } from 'react';
 import PropTypes from 'prop-types';
-import { Dispatch } from 'redux';
+import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
 import { Overwrite } from '../utils/type-helpers';
 import * as routeActions from '../route/actions';
@@ -23,16 +23,6 @@ interface DefaultProps {
 }
 
 class Link extends React.PureComponent<Props> {
-  static get propTypes() {
-    return {
-      href: PropTypes.string.isRequired,
-      direction: PropTypes.oneOf(['backwards', 'replace', 'forwards']),
-      onClick: PropTypes.func,
-      children: PropTypes.node,
-      active: PropTypes.bool,
-    };
-  }
-
   static get defaultProps(): DefaultProps {
     return {
       direction: 'forwards',
@@ -79,7 +69,7 @@ interface DispatchProps {
 type State = any;
 
 const mapDispatchToProps = (
-  dispatch: Dispatch<State>,
+  dispatch: Dispatch<Action<any>>,
   props: Props
 ): DispatchProps => ({
   onClick: (href: string) => {

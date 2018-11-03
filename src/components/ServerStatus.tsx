@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 import SortOfRelativeDate from './SortOfRelativeDate';
 
 interface Props {
-  className?: string;
+  className?: string | null;
   server: string;
-  lastSyncTime?: Date;
+  lastSyncTime?: Date | null;
   onEdit: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
