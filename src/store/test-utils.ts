@@ -17,10 +17,12 @@ export const syncWithWaitableRemote = async (
     return new Promise(resolve => {
       // Debounce
       const idleTimeout = 50; // ms
-      let timeout: NodeJS.Timer;
+      let timeout: number | null;
       pauseAction = () => {
-        clearTimeout(timeout);
-        timeout = setTimeout(resolve, idleTimeout);
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+        timeout = window.setTimeout(resolve, idleTimeout);
       };
     });
   };
