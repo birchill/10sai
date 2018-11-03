@@ -15,7 +15,13 @@ export const syncWithWaitableRemote = async (
 
   return () => {
     return new Promise(resolve => {
-      pauseAction = resolve;
+      // Debounce
+      const idleTimeout = 50; // ms
+      let timeout: NodeJS.Timer;
+      pauseAction = () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(resolve, idleTimeout);
+      };
     });
   };
 };
