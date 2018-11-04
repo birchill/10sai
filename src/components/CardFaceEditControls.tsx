@@ -23,22 +23,23 @@ interface Props {
 }
 
 interface State {
+  // Is the toolbar focussed?
   toolbarFocussed: boolean;
 
   // We track the "focussed" and "selected" face. The (quite subtle) difference
   // is:
   //
-  // The focussed face is the face that is focussed. The status of the toolbar
-  // icons should reflect this face, if set.
+  // The focussed face is the face that actually has the focussed, if any. The
+  // status of the toolbar icons should reflect this face, if set.
   //
   // The selected face is the face that the user most recently changed the
   // selection of.
   //
-  // The main situation where the two differ is when the user selects a range in
-  // the 'answer' face, then shift+tabs back _through_ the 'prompt' face to get
-  // to the formatting toolbar. In this case, the 'answer' face remains the
-  // selected face but while tabbing through the 'prompt' face it becomes the
-  // focussed face and the toolbar's status should reflect that.
+  // This distinction is needed (rather than just recording the last focussed
+  // face) because when the user selects a range in the 'answer' face then
+  // navigates back to the toolbar using Shift+Tab passing _through_ the
+  // 'prompt' face on the way there, the toolbar should still affect the
+  // 'answer' face'.
   selectedFace: 'prompt' | 'answer';
   focussedFace: 'prompt' | 'answer' | null;
 
@@ -154,14 +155,14 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   }
 
   handleMarksUpdated(face: 'prompt' | 'answer', marks: Set<string>) {
-    if (this.state.focussedFace !== face) {
+    if (this.editFaceType !== face) {
       return;
     }
 
     this.setState({ currentMarks: marks });
   }
 
-  get editFace(): CardFaceInput | null {
+  get editFaceType(): 'prompt' | 'answer' {
     // If we have a focussed face, use that. Otherwise use the selected face.
     //
     // This means that if, for example, the user selects a range in the
@@ -170,9 +171,11 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     //
     // The only time it should apply to the selected face is if we don't have
     // a focussed face (e.g. we tabbed through to the toolbar).
-    const face: 'prompt' | 'answer' =
-      this.state.focussedFace || this.state.selectedFace;
-    return face === 'prompt'
+    return this.state.focussedFace || this.state.selectedFace;
+  }
+
+  get editFace(): CardFaceInput | null {
+    return this.editFaceType === 'prompt'
       ? this.questionTextBoxRef.current
       : this.answerTextBoxRef.current;
   }
@@ -236,10 +239,8 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     if (!faceInFocus) {
       stateChange.focussedFace = null;
       stateChange.toolbarFocussed = true;
-      // If we tabbed to the toolbar but we have both a focussedFace and
-      // a selectedFace, we should make sure we show the marks from the
-      // _selected_ face.
-      if (this.state.focussedFace && this.selectedFace) {
+      // Show the marks from the _selected_ face.
+      if (this.selectedFace) {
         stateChange.currentMarks = this.selectedFace.getCurrentMarks();
         stateChange.hasSelection = !this.selectedFace.isSelectionCollapsed();
       }
@@ -272,9 +273,9 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   }
 
   handleBlur(e: React.FocusEvent<any>) {
-    // Unconditionally set this to false. We'll set it to true when we get he
+    // Unconditionally clear focus state. We'll update it when we get the
     // subsequent focus event if necessary.
-    this.setState({ toolbarFocussed: false });
+    this.setState({ toolbarFocussed: false, focussedFace: null });
   }
 
   makeCloze(color: ColorKeywordOrBlack) {
@@ -316,7 +317,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     }
     const hasMark = (style: string): boolean =>
       currentMarks ? currentMarks.has(style) : false;
-    let hasSelection = this.isFocussed ? this.state.hasSelection : false;
+    let hasSelection = this.isFocussed && this.state.hasSelection;
 
     const buttons: Array<FormatButtonConfig> = [
       {
