@@ -1,6 +1,46 @@
-// Special buttons
+// Actual buttons
 
-input[type=button], input[type=submit], input[type=reset], button, a.button {
+.button {
+  padding: .4em 1em;
+  outline: 0;
+  cursor: pointer;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+
+  // This is important for when this is applied to <a> elements
+  box-sizing: border-box;
+  outline: none;
+
+  background: transparent;
+  border: $border-width solid $highlight;
+  border-radius: .3em;
+  color: $highlight;
+
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  &:hover {
+    /*
+     * Using a filter here (and below) means that when we put SVG icons in
+     * the buttons we don't have to prepare special recolored versions of them.
+     */
+    filter: brightness(1.2);
+  }
+
+  &:disabled, &:hover:disabled {
+    filter: grayscale(1);
+  }
+
+  // Variations
+
   // A default button
   &.-primary {
     background: $highlight;
@@ -10,9 +50,16 @@ input[type=button], input[type=submit], input[type=reset], button, a.button {
     }
   }
 
-  // Some buttons should look like links
-  &.-link {
-    border-width: 0;
+  // A button without a border, somewhat like a link
+  &.-borderless {
+    border-style: dotted;
+    border-color: transparent;
+
+    &:focus {
+      border-color: $highlight;
+      border-radius: 0;
+      outline: none;
+    }
   }
 
   // A large button
@@ -52,7 +99,7 @@ input[type=button], input[type=submit], input[type=reset], button, a.button {
 }
 
 @media screen and (max-width: 600px) {
-  input[type=button], input[type=submit], button, a.button {
+  .button {
     &.-large {
       font-size: 1.2rem;
     }

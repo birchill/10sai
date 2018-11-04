@@ -27,7 +27,12 @@ class SpeechBubbleAndButton extends React.Component<
   render() {
     return (
       <div>
-        <input type="button" ref={this.buttonRef} value="Button" />
+        <input
+          type="button"
+          className="button"
+          ref={this.buttonRef}
+          value="Button"
+        />
         <AnchoredSpeechBubble
           position={this.props.position}
           align={this.props.align}
@@ -116,8 +121,10 @@ storiesOf('Components|SpeechBubble', module)
           below / center
         </SpeechBubbleAndButton>
         <SpeechBubbleAndButton position="below" align="center">
-          below / center<br />
-          Supercalifragilisticexpialidocious<br />
+          below / center
+          <br />
+          Supercalifragilisticexpialidocious
+          <br />
           (This one should end up hanging left.)
         </SpeechBubbleAndButton>
       </div>
@@ -130,8 +137,10 @@ storiesOf('Components|SpeechBubble', module)
           below / center
         </SpeechBubbleAndButton>
         <SpeechBubbleAndButton position="below" align="center">
-          below / center<br />
-          Supercalifragilisticexpialidocious<br />
+          below / center
+          <br />
+          Supercalifragilisticexpialidocious
+          <br />
           (This one should end up hanging right.)
         </SpeechBubbleAndButton>
       </div>
@@ -146,10 +155,14 @@ storiesOf('Components|SpeechBubble', module)
         above / largest-center
       </SpeechBubbleAndButton>
       <SpeechBubbleAndButton position="above" align="largest-side">
-        above / largest-side<br />
-        This speech bubble has<br />
-        quite a number of lines<br />
-        and should probably be<br />
+        above / largest-side
+        <br />
+        This speech bubble has
+        <br />
+        quite a number of lines
+        <br />
+        and should probably be
+        <br />
         shown below instead.
       </SpeechBubbleAndButton>
     </div>
@@ -190,6 +203,7 @@ class ShowOnHover extends React.Component<{}, ShowOnHoverState> {
       <div>
         <input
           type="button"
+          className="button"
           ref={this.buttonRef}
           value="Hover me"
           onMouseOver={this.handleMouseOver}
@@ -242,6 +256,7 @@ class ShowOnClick extends React.Component<{}, ShowOnClickState> {
       <div>
         <input
           type="button"
+          className="button"
           ref={this.buttonRef}
           value="Click me"
           onClick={this.toggleVisibility}

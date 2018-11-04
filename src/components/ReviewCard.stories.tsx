@@ -156,7 +156,9 @@ class UpdatingReviewCard extends React.PureComponent<{}, State> {
             onSelectCard={action('onSelectCard')}
           />
         </div>
-        <button onClick={this.handleClick}>Update</button>
+        <button className="button" onClick={this.handleClick}>
+          Update
+        </button>
       </div>
     );
   }

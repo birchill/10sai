@@ -292,7 +292,7 @@ export class EditNoteForm extends React.Component<Props, State> {
           <div className="controls">
             <button
               type="button"
-              className="delete -icon -delete -link -yellow"
+              className="button delete -icon -delete -borderless -yellow"
               onClick={this.handleDeleteClick}
             >
               Discard

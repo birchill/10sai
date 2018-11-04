@@ -21,7 +21,7 @@ export class EditCardToolbar extends React.PureComponent<Props> {
       <nav className="buttons tool-bar editcard-toolbar">
         <div>
           <button
-            className="delete -icon -delete -link"
+            className="button delete -icon -delete -borderless"
             disabled={!this.props.canDelete}
             onClick={this.props.onDelete}
           >
@@ -31,7 +31,7 @@ export class EditCardToolbar extends React.PureComponent<Props> {
         <div className="-center">
           <Link
             href="/cards/new"
-            className="add button -icon -plus -link"
+            className="add button -icon -plus -borderless"
             title="Add card (Ctrl+Shift+C)"
             active
           >
@@ -39,7 +39,11 @@ export class EditCardToolbar extends React.PureComponent<Props> {
           </Link>
         </div>
         <div>
-          <Link href="/" className="close-button" direction="backwards">
+          <Link
+            href="/"
+            className="button close-button -borderless"
+            direction="backwards"
+          >
             Close
           </Link>
         </div>

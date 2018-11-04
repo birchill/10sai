@@ -25,7 +25,9 @@ class SortOfRelativeDateExample extends React.PureComponent<{}, State> {
     return (
       <div className="series">
         <SortOfRelativeDate value={this.state.value} />
-        <button onClick={this.handleClick}>Update</button>
+        <button className="button" onClick={this.handleClick}>
+          Update
+        </button>
       </div>
     );
   }

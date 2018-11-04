@@ -38,7 +38,9 @@ class SaveStatusExample extends React.PureComponent<{}, State> {
           saveState={this.state.saveState}
           saveError={'Error message'}
         />
-        <button onClick={this.onClick}>Update</button>
+        <button className="button" onClick={this.onClick}>
+          Update
+        </button>
         <span className="currentstatus">{`Current: ${
           this.state.saveState
         }`}</span>

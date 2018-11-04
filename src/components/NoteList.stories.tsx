@@ -57,7 +57,7 @@ class NoteListExample extends React.PureComponent<Props, State> {
 
     return (
       <KeywordSuggesterContext.Provider value={mockKeywordSuggester}>
-        <button style={buttonStyle} onClick={this.onClick}>
+        <button className="button" style={buttonStyle} onClick={this.onClick}>
           {this.state.hasRun ? 'Reset' : 'Run'}
         </button>
         <NoteList

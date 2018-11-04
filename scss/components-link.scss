@@ -1,0 +1,13 @@
+.link {
+  color: $highlight;
+  text-decoration: none;
+  border-width: $border-width;
+  border-style: dotted;
+  border-color: transparent;
+  box-sizing: border-box;
+  outline: none;
+}
+.link:focus {
+  border-color: $highlight;
+  outline: none;
+}

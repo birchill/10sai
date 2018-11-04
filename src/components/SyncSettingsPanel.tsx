@@ -162,7 +162,7 @@ export class SyncSettingsPanel extends React.PureComponent<Props> {
     return (
       <React.Fragment>
         <button
-          className="-primary -icon -pause -center"
+          className="button -primary -icon -pause -center"
           onClick={this.handlePause}
         >
           Pause
@@ -177,7 +177,7 @@ export class SyncSettingsPanel extends React.PureComponent<Props> {
       <React.Fragment>
         <progress className="progress" value={this.props.progress} />
         <button
-          className="-primary -center"
+          className="button -primary -center"
           name="cancel-sync"
           onClick={this.handlePause}
         >
@@ -191,7 +191,7 @@ export class SyncSettingsPanel extends React.PureComponent<Props> {
     return (
       <React.Fragment>
         <button
-          className="-primary -center -icon -play"
+          className="button -primary -center -icon -play"
           onClick={this.handleResume}
         >
           Resume
@@ -205,7 +205,7 @@ export class SyncSettingsPanel extends React.PureComponent<Props> {
     return (
       <button
         name="edit-server"
-        className="-primary"
+        className="button -primary"
         onClick={this.handleEditServer}
       >
         Add a sync server
@@ -221,7 +221,7 @@ export class SyncSettingsPanel extends React.PureComponent<Props> {
             {translateError(this.props.errorDetail)}
           </div>
           <button
-            className="-primary -center"
+            className="button -primary -center"
             name="retry"
             onClick={this.handleRetry}
           >

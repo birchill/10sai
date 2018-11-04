@@ -196,14 +196,14 @@ export class SyncServerForm extends React.PureComponent<Props, State> {
           type="button"
           name="submit"
           value="Ok"
-          className="submit -primary"
+          className="submit button -primary"
           onClick={this.handleSubmit}
         />
         <input
           type="button"
           name="cancel"
           value="Cancel"
-          className="cancel -link"
+          className="cancel button -borderless"
           onClick={this.handleCancel}
         />
       </form>

@@ -92,7 +92,11 @@ class ActiveTricolorProgress extends React.PureComponent<{}, State> {
           cItems={this.state.c}
           title="Title goes here"
         />
-        <button onClick={this.handleClick} style={{ marginTop: '1em' }}>
+        <button
+          className="button"
+          onClick={this.handleClick}
+          style={{ marginTop: '1em' }}
+        >
           Update
         </button>
       </div>

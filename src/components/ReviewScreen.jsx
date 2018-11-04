@@ -20,7 +20,7 @@ const renderReviewButton = props => {
   const numCards = nextReviewNumCards(props);
   return (
     <button
-      className="start -primary -center"
+      className="button start -primary -center"
       onClick={() => {
         props.onNewReview(props.maxNewCards, props.maxCards);
       }}
