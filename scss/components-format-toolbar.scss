@@ -9,9 +9,7 @@ $edit-icons-size: 16px;
     display: inline-block;
     border-radius: 4px;
     border-width: 1px;
-    // For all controls on this form, the onfocussed style for placeholders is
-    // $standard-grey @ opacity 70%.
-    opacity: 0.7;
+    opacity: 0.3;
     transition: background-color 0.1s;
 
     &:hover:not(:disabled) {
@@ -28,9 +26,6 @@ $edit-icons-size: 16px;
     &:active {
       background: $light-grey;
       opacity: 1;
-    }
-    &:disabled {
-      opacity: 0.5;
     }
 
     &::before {
