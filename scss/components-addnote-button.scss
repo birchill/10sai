@@ -1,6 +1,7 @@
 .addnote-button {
   color: $keyword-yellow-dark;
-  border: none;
+  border-color: transparent;
+  border-width: $border-width;
   border-radius: 0;
   padding: 0;
   background: transparent;
@@ -114,6 +115,12 @@
 
   &:focus {
     outline: none;
+  }
+  &:-moz-focusring {
+    border: $border-width dotted $keyword-yellow-dark;
+  }
+  &:focus-visible {
+    border: $border-width dotted $keyword-yellow-dark;
   }
 
   &:active {
