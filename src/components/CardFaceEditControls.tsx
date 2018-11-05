@@ -409,7 +409,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         <CardFaceInput
           className={getFaceClassName('prompt')}
           initialValue={this.props.card.question || ''}
-          placeholder="Prompt"
+          placeholder="Front"
           onChange={this.handlePromptChange}
           onSelectionChange={this.handlePromptSelectionChange}
           onMarksUpdated={this.handlePromptMarksUpdated}
@@ -419,7 +419,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         <CardFaceInput
           className={getFaceClassName('answer')}
           initialValue={this.props.card.answer || ''}
-          placeholder="Answer"
+          placeholder="Back"
           onChange={this.handleAnswerChange}
           onSelectionChange={this.handleAnswerSelectionChange}
           onMarksUpdated={this.handleAnswerMarksUpdated}
