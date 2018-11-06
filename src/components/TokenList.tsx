@@ -611,7 +611,7 @@ export class TokenList extends React.PureComponent<Props> {
     // it easy to free those references).
     const getNthTokenButton = (i: number) =>
       this.rootElem!.querySelector(
-        `.input > .chip:nth-of-type(${i + 1}) > .clear`
+        `.tokens > .chip:nth-of-type(${i + 1}) > .clear`
       ) as HTMLButtonElement | undefined;
 
     const getNthSuggestionLink = (i: number) =>
