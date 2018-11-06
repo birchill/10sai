@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 
 import { Card, Note } from '../model';
 import EditCardToolbar from './EditCardToolbar';
-import EditCardForm from './EditCardForm';
+import { EditCardForm } from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound';
 import DynamicNoteList from './DynamicNoteList';
 import { FormState } from '../edit/FormState';
