@@ -312,6 +312,33 @@ export class TokenList extends React.PureComponent<Props> {
         }
         break;
 
+      case 'Enter':
+        {
+          // If we press Enter while focussing on a token, it probably means we
+          // want to edit it.
+          if (this.state.focusRegion === FocusRegion.Tokens) {
+            const tokenText = this.state.tokens[this.state.focusIndex];
+            this.deleteToken(this.state.focusIndex);
+
+            this.setState(
+              {
+                focusRegion: FocusRegion.TextInput,
+                focusIndex: 0,
+                text: tokenText,
+              },
+              () => this.updateFocus()
+            );
+            e.preventDefault();
+
+            // deleteToken will call onTokensChange but we still need to call
+            // onTextChange.
+            if (this.props.onTextChange) {
+              this.props.onTextChange(tokenText);
+            }
+          }
+        }
+        break;
+
       default:
         {
           // With this one weird trick we can detect any printable characters
