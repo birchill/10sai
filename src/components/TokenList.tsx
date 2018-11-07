@@ -319,24 +319,8 @@ export class TokenList extends React.PureComponent<Props> {
           // If we press Enter while focussing on a token, it probably means we
           // want to edit it.
           if (this.state.focusRegion === FocusRegion.Tokens) {
-            const tokenText = this.state.tokens[this.state.focusIndex];
-            this.deleteToken(this.state.focusIndex);
-
-            this.setState(
-              {
-                focusRegion: FocusRegion.TextInput,
-                focusIndex: 0,
-                text: tokenText,
-              },
-              () => this.updateFocus()
-            );
             e.preventDefault();
-
-            // deleteToken will call onTokensChange but we still need to call
-            // onTextChange.
-            if (this.props.onTextChange) {
-              this.props.onTextChange(tokenText);
-            }
+            this.editToken(this.state.focusIndex);
           }
         }
         break;
@@ -541,23 +525,10 @@ export class TokenList extends React.PureComponent<Props> {
     if (!chip) {
       return;
     }
+
     const index = parseInt(chip.dataset.index!);
-    const tokenText = this.state.tokens[index];
-    this.deleteToken(index);
-
-    this.setState(
-      {
-        focusRegion: FocusRegion.TextInput,
-        focusIndex: 0,
-        text: tokenText,
-      },
-      () => this.updateFocus()
-    );
+    this.editToken(index);
     e.preventDefault();
-
-    if (this.props.onTextChange) {
-      this.props.onTextChange(tokenText);
-    }
   }
 
   handleTokenButtonClick(e: React.MouseEvent<HTMLButtonElement>) {
@@ -624,6 +595,26 @@ export class TokenList extends React.PureComponent<Props> {
       // the DOM focus without updating our state yet so we should force the
       // focus back to the text region.
       this.updateFocus();
+    }
+  }
+
+  editToken(index: number) {
+    const tokenText = this.state.tokens[index];
+    this.deleteToken(index);
+
+    this.setState(
+      {
+        focusRegion: FocusRegion.TextInput,
+        focusIndex: 0,
+        text: tokenText,
+      },
+      () => this.updateFocus()
+    );
+
+    // deleteToken will call onTokensChange but we still need to call
+    // onTextChange.
+    if (this.props.onTextChange) {
+      this.props.onTextChange(tokenText);
     }
   }
 
