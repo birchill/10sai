@@ -310,23 +310,14 @@ export class TokenList extends React.PureComponent<Props> {
             return;
           }
         }
-
-        // If we selsected the tokens area, then fall through since the handling
-        // is mostly the same as for Enter.
-        if (this.state.focusRegion !== FocusRegion.Tokens) {
-          break;
-        }
-      // ~~~ Fall through ~~~
+        break;
 
       case 'Enter':
         {
           // If we press Enter while focussing on a token, it probably means we
           // want to edit it.
           if (this.state.focusRegion === FocusRegion.Tokens) {
-            let tokenText = this.state.tokens[this.state.focusIndex];
-            if (e.key === 'Backspace') {
-              tokenText = tokenText.substring(0, tokenText.length - 1);
-            }
+            const tokenText = this.state.tokens[this.state.focusIndex];
             this.deleteToken(this.state.focusIndex);
 
             this.setState(
