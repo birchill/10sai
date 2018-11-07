@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { getAncestorWithClass } from '../utils/dom';
 import LoadingIndicator from './LoadingIndicator';
 
 export interface Props {
@@ -67,6 +68,7 @@ export class TokenList extends React.PureComponent<Props> {
     this.handleTextKeyPress = this.handleTextKeyPress.bind(this);
     this.handleTextKeyDown = this.handleTextKeyDown.bind(this);
     this.handleTokenClick = this.handleTokenClick.bind(this);
+    this.handleTokenButtonClick = this.handleTokenButtonClick.bind(this);
     this.handleTokenKeyDown = this.handleTokenKeyDown.bind(this);
     this.handleTokenKeyUp = this.handleTokenKeyUp.bind(this);
     this.handleSuggestionClick = this.handleSuggestionClick.bind(this);
@@ -534,9 +536,39 @@ export class TokenList extends React.PureComponent<Props> {
     }
   }
 
-  handleTokenClick(e: React.MouseEvent<HTMLButtonElement>) {
+  handleTokenClick(e: React.MouseEvent<HTMLSpanElement>) {
+    const chip = getAncestorWithClass(e.target as HTMLElement, 'chip');
+    if (!chip) {
+      return;
+    }
+    const index = parseInt(chip.dataset.index!);
+    const tokenText = this.state.tokens[index];
+    this.deleteToken(index);
+
+    this.setState(
+      {
+        focusRegion: FocusRegion.TextInput,
+        focusIndex: 0,
+        text: tokenText,
+      },
+      () => this.updateFocus()
+    );
     e.preventDefault();
-    const index = parseInt((e.target as HTMLButtonElement).dataset.index!);
+
+    if (this.props.onTextChange) {
+      this.props.onTextChange(tokenText);
+    }
+  }
+
+  handleTokenButtonClick(e: React.MouseEvent<HTMLButtonElement>) {
+    const chip = getAncestorWithClass(e.target as HTMLElement, 'chip');
+    if (!chip) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    const index = parseInt(chip.dataset.index!);
     this.deleteToken(index);
   }
 
@@ -549,8 +581,13 @@ export class TokenList extends React.PureComponent<Props> {
   }
 
   handleTokenKeyUp(e: React.KeyboardEvent<HTMLButtonElement>) {
+    const chip = getAncestorWithClass(e.target as HTMLElement, 'chip');
+    if (!chip) {
+      return;
+    }
+
     if (e.key === 'Delete' || e.key === 'Backspace') {
-      const index = parseInt((e.target as HTMLButtonElement).dataset.index!);
+      const index = parseInt(chip.dataset.index!);
       this.deleteToken(index);
     }
   }
@@ -715,16 +752,21 @@ export class TokenList extends React.PureComponent<Props> {
           }
           const tooltip = (linked && this.props.linkedTooltip) || undefined;
           return (
-            <span key={i} className={chipClassName} title={tooltip}>
+            <span
+              key={i}
+              className={chipClassName}
+              title={tooltip}
+              onClick={this.handleTokenClick}
+              data-index={i}
+            >
               <span className="label">{token}</span>
               <button
                 className="clear"
                 aria-label="Delete"
-                onClick={this.handleTokenClick}
+                onClick={this.handleTokenButtonClick}
                 onKeyDown={this.handleTokenKeyDown}
                 onKeyUp={this.handleTokenKeyUp}
                 tabIndex={-1}
-                data-index={i}
               >
                 &#x2715;
               </button>
