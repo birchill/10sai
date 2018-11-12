@@ -46,6 +46,12 @@ export const hasCommandModifierOnly = (e: React.KeyboardEvent<{}>): boolean => {
     : isCtrlKeyCommandOnly(e);
 };
 
+export const hasAllTheKeys = (e: React.KeyboardEvent<{}>): boolean =>
+  (isMac ? !!e.metaKey : !!e.ctrlKey) && e.altKey && e.shiftKey;
+
+export const hasNoModifiers = (e: React.KeyboardEvent<{}>): boolean =>
+  !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+
 const getZCommand = (e: React.KeyboardEvent<{}>): string | null => {
   if (!hasCommandModifier(e)) {
     return null;

@@ -9,6 +9,7 @@ import { getReviewProgress } from '../review/selectors.ts';
 import CardList from '../CardList.ts';
 import KeywordSuggester from '../suggestions/KeywordSuggester.ts';
 import TagSuggester from '../suggestions/TagSuggester.ts';
+import { hasCommandModifier } from '../text/key-bindings.ts';
 
 import EditCardScreen from './EditCardScreen.tsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
@@ -45,6 +46,8 @@ class App extends React.PureComponent {
       }),
       onClosePopup: PropTypes.func,
       onNewCard: PropTypes.func,
+      onGoHome: PropTypes.func,
+      onGoReview: PropTypes.func,
     };
   }
 
@@ -63,6 +66,14 @@ class App extends React.PureComponent {
     this.keywordSuggester = new KeywordSuggester(props.dataStore);
     this.tagSuggester = new TagSuggester(props.dataStore);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+  }
+
+  componentDidMount() {
+    document.documentElement.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  componentWillUnmount() {
+    document.documentElement.removeEventListener('keydown', this.handleKeyDown);
   }
 
   getChildContext() {
@@ -89,14 +100,77 @@ class App extends React.PureComponent {
 
   handleKeyDown(e) {
     // App-wide keyboard shortcuts
-
     if (e.defaultPrevented) {
       return;
     }
 
-    // Ctrl+Shift+C
-    if (e.key === 'C' && (e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey) {
+    // There are two kinds of global shortcuts:
+    //
+    // a) Single keys pressed when the focus is not in some sort of text area,
+    //    e.g. 'c' to create a new card.
+    //
+    // b) Ctrl+Shift+<letter> for the equivalent shortcut that can be used even
+    //    when some sort of text area is in focus.
+    //
+    // The reason we use Ctrl+Shift+<letter> is that:
+    //
+    // - Ctrl+<letter> is typically already assigned something for formatting
+    //   etc.
+    // - Alt+<letter> often triggers menus and is not overridable in some
+    //   browsers
+    // - Ctrl+Alt+<letter> maps to AltGr+<letter> on some Windows systems and
+    //   might therefore be used by someone simply trying to use AltGr.
+    //   Similarly, AltGr is often reported as having both Ctrl and Alt active.
+
+    const isTextBoxTarget = target => {
+      if (!target instanceof HTMLElement) {
+        return false;
+      }
+
+      // We treat all <input> elements as text boxes since even those ones that
+      // aren't normally text boxes could, on some platforms, accept key
+      // strokes (e.g. type="color" may be a textbox on platforms that don't
+      // have a picker, or might allow textentry for inputting hex codes).
+      if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+        return true;
+      }
+
+      // Treat <select> as a textbox since you can often type to select an entry
+      // and we don't want to catch that.
+      if (target.tagName === 'SELECT') {
+        return true;
+      }
+
+      if (target.isContentEditable) {
+        return true;
+      }
+
+      return false;
+    };
+
+    // Check it is a global shortcut
+    if (
+      (isTextBoxTarget(e.target) ||
+        e.altKey ||
+        e.ctrlKey ||
+        e.metaKey ||
+        e.shiftKey) &&
+      (!hasCommandModifier(e) || !e.shiftKey)
+    ) {
+      return;
+    }
+
+    // c = New card. This matches Gmail (compose message) and Github (new issue)
+    if (e.key.toLowerCase() === 'c') {
       this.props.onNewCard();
+      e.preventDefault();
+      // h = home screen
+    } else if (e.key.toLowerCase() === 'h') {
+      this.props.onGoHome();
+      e.preventDefault();
+      // r = review screen
+    } else if (e.key.toLowerCase() === 'r') {
+      this.props.onGoReview();
       e.preventDefault();
     }
   }
@@ -130,7 +204,7 @@ class App extends React.PureComponent {
         <DataStoreContext.Provider value={this.props.dataStore}>
           <TagSuggesterContext.Provider value={this.tagSuggester}>
             <KeywordSuggesterContext.Provider value={this.keywordSuggester}>
-              <div className="app" onKeyDown={this.handleKeyDown}>
+              <div className="app">
                 <div className="screens">
                   <HomeScreenContainer />
                   <TabPanel
@@ -200,8 +274,14 @@ const mapStateToProps = state => ({
   reviewProgress: getReviewProgress(state),
 });
 const mapDispatchToProps = (dispatch, props) => ({
-  onNewCard: href => {
+  onNewCard: () => {
     dispatch(routeActions.followLink('/cards/new', 'forwards', true));
+  },
+  onGoHome: () => {
+    dispatch(routeActions.followLink('/', 'forwards', false));
+  },
+  onGoReview: () => {
+    dispatch(routeActions.followLink('/review', 'forwards', false));
   },
 });
 

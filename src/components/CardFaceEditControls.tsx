@@ -10,8 +10,10 @@ import {
 } from './FormatToolbar';
 import { ColorKeywordOrBlack } from '../text/rich-text-styles';
 import {
+  hasAllTheKeys,
   hasCommandModifier,
   hasCommandModifierOnly,
+  hasNoModifiers,
 } from '../text/key-bindings';
 
 import { Card } from '../model';
@@ -254,21 +256,37 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       return;
     }
 
-    if (e.key === '/' && this.formatToolbarRef.current) {
-      if (hasCommandModifierOnly(e)) {
-        this.formatToolbarRef.current.toggleColor();
-        e.preventDefault();
-      } else if (e.ctrlKey || e.metaKey) {
-        this.formatToolbarRef.current.selectColor();
-        e.preventDefault();
-      }
-    } else if (e.key === '[') {
-      if (hasCommandModifierOnly(e)) {
-        // XXX Pass in the actual color here... probably easier to do once we
-        // store it.
-        this.makeCloze('blue');
-        e.preventDefault();
-      }
+    const isToggleColorKey = (e: React.KeyboardEvent<{}>): boolean =>
+      (e.key === '/' && hasCommandModifierOnly(e)) ||
+      (e.key === 'F7' && hasNoModifiers(e));
+    const isSelectColorKey = (e: React.KeyboardEvent<{}>): boolean =>
+      (e.key === '\\' && hasCommandModifierOnly(e)) ||
+      (e.key === 'F8' && hasNoModifiers(e));
+
+    if (this.formatToolbarRef.current && isToggleColorKey(e)) {
+      this.formatToolbarRef.current.toggleColor();
+      e.preventDefault();
+    } else if (this.formatToolbarRef.current && isSelectColorKey(e)) {
+      this.formatToolbarRef.current.selectColor();
+      e.preventDefault();
+      // Cloze shortcuts:
+      //
+      //  Ctrl+[
+      //  Ctrl+Shift+Alt+C
+      //
+      // We'd like to include Ctrl+Shift+C like Anki does but we already use
+      // Ctrl+Shift+C as our global "Add card" keystroke.
+      //
+      // Also, Anki supports Ctrl+Shift+Alt+C for adding clozes so hopefully
+      // it's not too unfamiliar.
+    } else if (
+      (e.key === '[' && hasCommandModifierOnly(e)) ||
+      (e.key === 'C' && hasAllTheKeys(e))
+    ) {
+      // XXX Pass in the actual color here... probably easier to do once we
+      // store it.
+      this.makeCloze('blue');
+      e.preventDefault();
     }
   }
 
@@ -355,20 +373,20 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       {
         type: 'color',
         label: 'Text color',
-        accelerator: 'Ctrl+/',
+        accelerator: 'Ctrl+/ or F7',
         state: FormatButtonState.Normal,
         initialColor: 'blue',
       },
       {
         type: 'color-dropdown',
         label: 'Select text color',
-        accelerator: 'Ctrl+Alt+/',
+        accelerator: 'Ctrl+\\ or F8',
         state: FormatButtonState.Normal,
       },
       {
         type: 'cloze',
         label: 'Cloze',
-        accelerator: 'Ctrl+[',
+        accelerator: 'Ctrl+[ or Ctrl+Shift+Alt+C',
         state: hasSelection
           ? FormatButtonState.Normal
           : FormatButtonState.Disabled,
