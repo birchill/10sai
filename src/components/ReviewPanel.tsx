@@ -8,7 +8,7 @@ import { NoteState } from '../notes/reducer';
 interface Props {
   className?: string;
   showAnswer?: boolean;
-  onSelectCard: () => void;
+  onShowAnswer: () => void;
   onPassCard: () => void;
   onFailCard: () => void;
   previousCard: Card;
@@ -44,7 +44,7 @@ export const ReviewPanel: React.SFC<Props> = (props: Props) => {
     <ReviewCard
       key={getUniqueKey(props.currentCard._id)}
       className="current"
-      onSelectCard={props.onSelectCard}
+      onShowAnswer={props.onShowAnswer}
       showAnswer={props.showAnswer}
       {...props.currentCard}
     />

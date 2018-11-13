@@ -9,7 +9,7 @@ interface Props {
   answer: string;
   showAnswer?: boolean | null;
   className?: string | null;
-  onSelectCard?: () => void;
+  onShowAnswer?: () => void;
 }
 
 export const ReviewCard: React.SFC<Props> = (props: Props) => {
@@ -24,13 +24,13 @@ export const ReviewCard: React.SFC<Props> = (props: Props) => {
   return (
     <div
       className={className}
-      onClick={props.onSelectCard}
+      onClick={props.onShowAnswer}
       onKeyPress={evt => {
         if (
-          props.onSelectCard &&
+          props.onShowAnswer &&
           (evt.key === 'Enter' || evt.key === 'Space')
         ) {
-          props.onSelectCard();
+          props.onShowAnswer();
         }
       }}
     >
@@ -57,7 +57,7 @@ ReviewCard.propTypes = {
   answer: PropTypes.string.isRequired,
   showAnswer: PropTypes.bool,
   className: PropTypes.string,
-  onSelectCard: PropTypes.func.isRequired,
+  onShowAnswer: PropTypes.func.isRequired,
 };
 
 export default ReviewCard;

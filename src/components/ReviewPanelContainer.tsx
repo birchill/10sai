@@ -23,7 +23,7 @@ const mapStateToProps = (state: State) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
-  onSelectCard: () => {
+  onShowAnswer: () => {
     dispatch(reviewActions.showAnswer());
   },
   onPassCard: () => {

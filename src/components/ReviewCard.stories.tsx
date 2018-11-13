@@ -19,7 +19,7 @@ storiesOf('Components|ReviewCard', module)
       <ReviewCard
         question="短い"
         answer="みじかい"
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -29,7 +29,7 @@ storiesOf('Components|ReviewCard', module)
         question="短い"
         answer="みじかい"
         showAnswer
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -38,7 +38,7 @@ storiesOf('Components|ReviewCard', module)
       <ReviewCard
         question="短い"
         answer="みじかい"
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -48,7 +48,7 @@ storiesOf('Components|ReviewCard', module)
         question="短い"
         answer="みじかい"
         showAnswer
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -57,7 +57,7 @@ storiesOf('Components|ReviewCard', module)
       <ReviewCard
         question="{短|みじか}い"
         answer="みじかい"
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -67,7 +67,7 @@ storiesOf('Components|ReviewCard', module)
         question="{短|みじか}い"
         answer="{ミジカイ|み|じ|か|い}"
         showAnswer
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -76,7 +76,7 @@ storiesOf('Components|ReviewCard', module)
       <ReviewCard
         question="This is the question that never ends. It just goes on and on my friend. Somebody started writing it not know what it was..."
         answer="This answer is also long, but not quite as long"
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -86,7 +86,7 @@ storiesOf('Components|ReviewCard', module)
         question="This is the question that never ends. It just goes on and on my friend. Somebody started writing it not know what it was..."
         answer="This answer is also long, but not quite as long"
         showAnswer
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -95,7 +95,7 @@ storiesOf('Components|ReviewCard', module)
       <ReviewCard
         question="􅨐b􅨑Bold􅨜, 􅨐i􅨑italic􅨜, 􅨐u􅨑underline􅨜, 􅨐.􅨑emphasis􅨜"
         answer="􅨐b􅨝i􅨝u􅨝e􅨑Everything at once!􅨜"
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -105,7 +105,7 @@ storiesOf('Components|ReviewCard', module)
         question="􅨐b􅨑Bold􅨜, 􅨐i􅨑italic􅨜, 􅨐u􅨑underline􅨜, 􅨐.􅨑emphasis􅨜"
         answer="􅨐b􅨝i􅨝u􅨝.􅨑Everything at once!􅨜"
         showAnswer
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ))
@@ -115,7 +115,7 @@ storiesOf('Components|ReviewCard', module)
       <ReviewCard
         question="􅨐b􅨑Bold"
         answer=""
-        onSelectCard={action('onSelectCard')}
+        onShowAnswer={action('onShowAnswer')}
       />
     </div>
   ));
@@ -153,7 +153,7 @@ class UpdatingReviewCard extends React.PureComponent<{}, State> {
           <ReviewCard
             question={this.strings[this.state.index]}
             answer=""
-            onSelectCard={action('onSelectCard')}
+            onShowAnswer={action('onShowAnswer')}
           />
         </div>
         <button className="button" onClick={this.handleClick}>
