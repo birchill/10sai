@@ -5,7 +5,7 @@ import ReviewPhase from '../review/ReviewPhase.ts';
 
 import Link from './Link.tsx';
 import LoadingIndicator from './LoadingIndicator.tsx';
-import ReviewPanelContainer from './ReviewPanelContainer.jsx';
+import ReviewPanelContainer from './ReviewPanelContainer.tsx';
 import TricolorProgress from './TricolorProgress.tsx';
 
 const nextReviewNumCards = props => {

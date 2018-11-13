@@ -1,10 +1,23 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-import DynamicNoteList from './DynamicNoteList';
-import ReviewCard from './ReviewCard.tsx';
+import { DynamicNoteList } from './DynamicNoteList';
+import { ReviewCard } from './ReviewCard';
+import { Card } from '../model';
+import { NoteState } from '../notes/reducer';
 
-function ReviewPanel(props) {
+interface Props {
+  className?: string;
+  showAnswer?: boolean;
+  onSelectCard: () => void;
+  onPassCard: () => void;
+  onFailCard: () => void;
+  previousCard: Card;
+  currentCard: Card;
+  nextCard: Card;
+  notes: Array<NoteState>;
+}
+
+const ReviewPanel: React.SFC<Props> = (props: Props) => {
   // There is one case where both the previous card and the next card might be
   // the same card (if the current card and previous card are the same we remove
   // the current card from the history). In that case we still need unique keys
@@ -15,20 +28,21 @@ function ReviewPanel(props) {
   // deduplicated keys for subsequent renders but that's quite messy. Instead,
   // We just take care to assign the undeduped ID to the *next* card so that at
   // least the card appears to transition from the right.
-  const keysInUse = new Set();
-  keysInUse.getUnique = function getUniqueKey(key) {
-    let keyToTry = key;
-    let index = 1;
-    while (this.has(keyToTry)) {
+  const keysInUse = new Set<string>();
+
+  const getUniqueKey = (key: string) => {
+    let keyToTry: string = key;
+    let index: number = 1;
+    while (keysInUse.has(keyToTry)) {
       keyToTry = `${key}-${++index}`;
     }
-    this.add(keyToTry);
+    keysInUse.add(keyToTry);
     return keyToTry;
   };
 
   const currentCard = (
     <ReviewCard
-      key={keysInUse.getUnique(props.currentCard._id)}
+      key={getUniqueKey(props.currentCard._id)}
       className="current"
       onSelectCard={props.onSelectCard}
       showAnswer={props.showAnswer}
@@ -40,7 +54,7 @@ function ReviewPanel(props) {
   if (props.nextCard) {
     nextCard = (
       <ReviewCard
-        key={keysInUse.getUnique(props.nextCard._id)}
+        key={getUniqueKey(props.nextCard._id)}
         className="next"
         {...props.nextCard}
       />
@@ -51,7 +65,7 @@ function ReviewPanel(props) {
   if (props.previousCard) {
     previousCard = (
       <ReviewCard
-        key={keysInUse.getUnique(props.previousCard._id)}
+        key={getUniqueKey(props.previousCard._id)}
         className="previous"
         showAnswer
         {...props.previousCard}
@@ -124,41 +138,6 @@ function ReviewPanel(props) {
       {answerButtons}
     </div>
   );
-}
-
-ReviewPanel.propTypes = {
-  className: PropTypes.string,
-  showAnswer: PropTypes.bool,
-  onSelectCard: PropTypes.func.isRequired,
-  onPassCard: PropTypes.func.isRequired,
-  onFailCard: PropTypes.func.isRequired,
-  previousCard: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    question: PropTypes.string.isRequired,
-    answer: PropTypes.string,
-    keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
-  }),
-  currentCard: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    question: PropTypes.string.isRequired,
-    answer: PropTypes.string,
-    keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
-  }).isRequired,
-  nextCard: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    question: PropTypes.string.isRequired,
-    answer: PropTypes.string,
-    keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
-  }),
-  notes: PropTypes.arrayOf(
-    PropTypes.shape({
-      formId: PropTypes.number,
-      note: PropTypes.object.isRequired,
-      dirtyFields: PropTypes.instanceOf(Set),
-      saveState: PropTypes.string.isRequired,
-      saveError: PropTypes.object,
-    })
-  ).isRequired,
 };
 
 export default ReviewPanel;

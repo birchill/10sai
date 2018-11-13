@@ -121,7 +121,9 @@ const mapDispatchToProps = (
   },
 });
 
-export default connect(
+export const DynamicNoteList = connect(
   undefined,
   mapDispatchToProps
 )(DynamicNoteListInner);
+
+export default DynamicNoteList;
