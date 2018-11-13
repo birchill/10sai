@@ -22,15 +22,6 @@ const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
   onNewReview: (maxNewCards: number, maxCards: number) => {
     dispatch(reviewActions.newReview(maxNewCards, maxCards));
   },
-  onSelectCard: () => {
-    dispatch(reviewActions.showAnswer());
-  },
-  onPassCard: () => {
-    dispatch(reviewActions.passCard());
-  },
-  onFailCard: () => {
-    dispatch(reviewActions.failCard());
-  },
 });
 
 export const ReviewScreenContainer = connect(
