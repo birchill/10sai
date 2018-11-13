@@ -22,7 +22,7 @@ interface DefaultProps {
   direction: 'forwards';
 }
 
-class Link extends React.PureComponent<Props> {
+export class Link extends React.PureComponent<Props> {
   static get defaultProps(): DefaultProps {
     return {
       direction: 'forwards',

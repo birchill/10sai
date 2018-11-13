@@ -2,7 +2,7 @@
 /* eslint arrow-body-style: [ "off" ] */
 
 import { review as subject, ReviewState } from './reducer';
-import ReviewPhase from './ReviewPhase';
+import { ReviewPhase } from './ReviewPhase';
 import * as actions from './actions';
 import * as noteActions from '../notes/actions';
 import { getReviewSummary } from './selectors';
@@ -59,7 +59,7 @@ describe('reducer:review', () => {
   it('should go to the loading state on NEW_REVIEW', () => {
     const updatedState = subject(undefined, actions.newReview(2, 10));
 
-    expect(updatedState.phase).toBe(ReviewPhase.LOADING);
+    expect(updatedState.phase).toBe(ReviewPhase.Loading);
     expect(updatedState.maxNewCards).toBe(2);
     expect(updatedState.maxCards).toBe(10);
   });
@@ -69,7 +69,7 @@ describe('reducer:review', () => {
 
     const updatedState = subject(initialState, actions.setReviewLimit(2, 10));
 
-    expect(updatedState.phase).toBe(ReviewPhase.LOADING);
+    expect(updatedState.phase).toBe(ReviewPhase.Loading);
     expect(updatedState.maxNewCards).toBe(2);
     expect(updatedState.maxCards).toBe(10);
     expect(updatedState.reviewTime).toBe(reviewTime);
@@ -106,7 +106,7 @@ describe('reducer:review', () => {
 
     const updatedState = subject(initialState, actions.reviewLoaded([]));
 
-    expect(updatedState.phase).toBe(ReviewPhase.COMPLETE);
+    expect(updatedState.phase).toBe(ReviewPhase.Complete);
     expect(updatedState.currentCard).toBe(null);
     expect(updatedState.nextCard).toBe(null);
   });
@@ -116,7 +116,7 @@ describe('reducer:review', () => {
 
     const updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
-    expect(updatedState.phase).toBe(ReviewPhase.QUESTION);
+    expect(updatedState.phase).toBe(ReviewPhase.Question);
     expect(updatedState.currentCard).toBe(cards[0]);
     expect(updatedState.nextCard).toBe(cards[1]);
   });
@@ -160,11 +160,11 @@ describe('reducer:review', () => {
     const [initialState, cards] = newReview(1, 3);
 
     let updatedState = subject(initialState, actions.reviewLoaded([]));
-    expect(updatedState.phase).toBe(ReviewPhase.COMPLETE);
+    expect(updatedState.phase).toBe(ReviewPhase.Complete);
 
     updatedState = subject(updatedState, actions.reviewLoaded(cards));
 
-    expect(updatedState.phase).toBe(ReviewPhase.QUESTION);
+    expect(updatedState.phase).toBe(ReviewPhase.Question);
   });
 
   it('should update the review state on SHOW_ANSWER', () => {
@@ -173,7 +173,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, actions.showAnswer());
 
-    expect(updatedState.phase).toBe(ReviewPhase.ANSWER);
+    expect(updatedState.phase).toBe(ReviewPhase.Answer);
   });
 
   it('should update the failed cards queues on PASS_CARD for a recently failed card', () => {
@@ -503,7 +503,7 @@ describe('reducer:review', () => {
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
     updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.phase).toBe(ReviewPhase.QUESTION);
+    expect(updatedState.phase).toBe(ReviewPhase.Question);
     expect(updatedState.currentCard).toEqual(cards[0]);
     expect(updatedState.nextCard).toEqual(null);
     expect(updatedState.failedCardsLevel2).toEqual(cards);
@@ -594,7 +594,7 @@ describe('reducer:review', () => {
     expect(updatedState.currentCard).toBe(null);
     expect(updatedState.nextCard).toBe(null);
     expect(updatedState.history).toHaveLength(0);
-    expect(updatedState.phase).toBe(ReviewPhase.COMPLETE);
+    expect(updatedState.phase).toBe(ReviewPhase.Complete);
   });
 
   it('should update the next card on DELETE_REVIEW_CARD', () => {
@@ -652,7 +652,7 @@ describe('reducer:review', () => {
     updatedState = subject(updatedState, actions.loadReview(review));
 
     expect(updatedState).toMatchObject({
-      phase: ReviewPhase.LOADING,
+      phase: ReviewPhase.Loading,
       completed: 1,
       newCardsInPlay: 1,
     });

@@ -1,14 +1,41 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-import ReviewPhase from '../review/ReviewPhase.ts';
+import { ReviewPhase } from '../review/ReviewPhase';
 
-import Link from './Link.tsx';
-import LoadingIndicator from './LoadingIndicator.tsx';
-import ReviewPanelContainer from './ReviewPanelContainer.tsx';
-import TricolorProgress from './TricolorProgress.tsx';
+import { Link } from './Link';
+import { LoadingIndicator } from './LoadingIndicator';
+import { ReviewPanelContainer } from './ReviewPanelContainer';
+import { TricolorProgress } from './TricolorProgress';
 
-const nextReviewNumCards = props => {
+interface Props {
+  active: boolean;
+  phase: ReviewPhase;
+  onNewReview: (maxNewCards: number, maxCards: number) => void;
+  availableCards: {
+    newCards: number;
+    overdueCards: number;
+  };
+  maxNewCards: number;
+  maxCards: number;
+  reviewProgress: {
+    failedCardsLevel1: number;
+    failedCardsLevel2: number;
+    completedCards: number;
+    unreviewedCards: number;
+  };
+}
+
+interface ReviewButtonProps {
+  onNewReview: (maxNewCards: number, maxCards: number) => void;
+  availableCards: {
+    newCards: number;
+    overdueCards: number;
+  };
+  maxNewCards: number;
+  maxCards: number;
+}
+
+const nextReviewNumCards = (props: ReviewButtonProps): number => {
   return Math.min(
     Math.min(props.availableCards.newCards, props.maxNewCards) +
       props.availableCards.overdueCards,
@@ -16,7 +43,9 @@ const nextReviewNumCards = props => {
   );
 };
 
-const renderReviewButton = props => {
+const ReviewButton: React.SFC<ReviewButtonProps> = (
+  props: ReviewButtonProps
+) => {
   const numCards = nextReviewNumCards(props);
   return (
     <button
@@ -30,24 +59,18 @@ const renderReviewButton = props => {
   );
 };
 
-renderReviewButton.propTypes = {
-  onNewReview: PropTypes.func.isRequired,
-  maxNewCards: PropTypes.number.isRequired,
-  maxCards: PropTypes.number.isRequired,
-};
-
-function ReviewScreen(props) {
+export const ReviewScreen: React.SFC<Props> = (props: Props) => {
   const settingsButton = (
     <Link href="/review/settings" className="settings-button">
       Settings
     </Link>
   );
 
-  const pluralCards = num => (num === 1 ? 'card' : 'cards');
+  const pluralCards = (num: number) => (num === 1 ? 'card' : 'cards');
 
   const loading =
-    props.phase === ReviewPhase.LOADING ||
-    ([ReviewPhase.IDLE, ReviewPhase.COMPLETE].includes(props.phase) &&
+    props.phase === ReviewPhase.Loading ||
+    ([ReviewPhase.Idle, ReviewPhase.Complete].includes(props.phase) &&
       !props.availableCards);
 
   let content;
@@ -59,7 +82,7 @@ function ReviewScreen(props) {
         </div>
       </div>
     );
-  } else if (props.phase === ReviewPhase.IDLE) {
+  } else if (props.phase === ReviewPhase.Idle) {
     const numCards = nextReviewNumCards(props);
     if (numCards === 0) {
       content = (
@@ -88,12 +111,12 @@ function ReviewScreen(props) {
               You can adjust the number of cards to review from the{' '}
               <span className="icon -settings -grey" /> settings above.
             </p>
-            {renderReviewButton(props)}
+            <ReviewButton {...props} />
           </div>
         </div>
       );
     }
-  } else if (props.phase === ReviewPhase.COMPLETE) {
+  } else if (props.phase === ReviewPhase.Complete) {
     // TODO: Stats here about review -- num cards reviewed, % correct on first
     // attempt.
 
@@ -137,7 +160,7 @@ function ReviewScreen(props) {
       nextReviewPrompt = (
         <React.Fragment>
           {promptText}
-          {renderReviewButton(props)}
+          <ReviewButton {...props} />
         </React.Fragment>
       );
     }
@@ -155,8 +178,8 @@ function ReviewScreen(props) {
 
   let progressBar;
   if (
-    props.phase === ReviewPhase.QUESTION ||
-    props.phase === ReviewPhase.ANSWER
+    props.phase === ReviewPhase.Question ||
+    props.phase === ReviewPhase.Answer
   ) {
     // We want to roughly represent the number of reviews. Bear in mind that
     // a failed card will need to be reviewed twice before it is considered to
@@ -189,7 +212,7 @@ function ReviewScreen(props) {
   return (
     <section className="review-screen" aria-hidden={!props.active}>
       <div className="buttons">
-        {props.phase !== ReviewPhase.LOADING ? settingsButton : ''}
+        {props.phase !== ReviewPhase.Loading ? settingsButton : ''}
         <Link href="/" className="close-button" direction="backwards">
           Close
         </Link>
@@ -198,28 +221,6 @@ function ReviewScreen(props) {
       {progressBar}
     </section>
   );
-}
-
-ReviewScreen.propTypes = {
-  active: PropTypes.bool.isRequired,
-  phase: PropTypes.symbol.isRequired,
-  // eslint-disable-next-line react/no-unused-prop-types
-  onNewReview: PropTypes.func.isRequired,
-  availableCards: PropTypes.shape({
-    newCards: PropTypes.number.isRequired,
-    overdueCards: PropTypes.number.isRequired,
-  }),
-  // Can't wait to switch to TypeScript and check this properly
-  // eslint-disable-next-line react/no-unused-prop-types
-  maxNewCards: PropTypes.number,
-  // eslint-disable-next-line react/no-unused-prop-types
-  maxCards: PropTypes.number,
-  reviewProgress: PropTypes.shape({
-    failedCardsLevel1: PropTypes.number.isRequired,
-    failedCardsLevel2: PropTypes.number.isRequired,
-    completedCards: PropTypes.number.isRequired,
-    unreviewedCards: PropTypes.number.isRequired,
-  }),
 };
 
 export default ReviewScreen;

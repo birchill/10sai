@@ -1,7 +1,7 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import * as reviewActions from './actions';
 import { getReviewSummary } from './selectors';
-import ReviewPhase from './ReviewPhase';
+import { ReviewPhase } from './ReviewPhase';
 import { beforeNotesScreenChange } from '../notes/sagas';
 import { DataStore } from '../store/DataStore';
 import { ReviewState } from './reducer';
@@ -43,7 +43,7 @@ export function* updateHeap(
 
   // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
   // action.
-  if (reviewInfo.phase === ReviewPhase.IDLE) {
+  if (reviewInfo.phase === ReviewPhase.Idle) {
     return;
   }
 
@@ -147,7 +147,7 @@ export function* updateProgress(
   }
 
   try {
-    if (reviewInfo.phase === ReviewPhase.COMPLETE) {
+    if (reviewInfo.phase === ReviewPhase.Complete) {
       yield call([dataStore, 'deleteReview']);
     } else {
       yield call([dataStore, 'putReview'], yield select(getReviewSummary));

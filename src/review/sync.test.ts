@@ -5,7 +5,7 @@ import { queryAvailableCards, updateReviewCard } from './actions';
 import reducer, { ReviewState } from './reducer';
 import { getReviewSummary } from './selectors';
 import EventEmitter from 'event-emitter';
-import ReviewPhase from './ReviewPhase';
+import { ReviewPhase } from './ReviewPhase';
 import { Card } from '../model';
 
 jest.useFakeTimers();
@@ -520,7 +520,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialReviewState,
-          phase: ReviewPhase.QUESTION,
+          phase: ReviewPhase.Question,
         },
       });
 

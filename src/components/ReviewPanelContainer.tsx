@@ -1,10 +1,10 @@
 import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
 
-import ReviewPhase from '../review/ReviewPhase';
+import { ReviewPhase } from '../review/ReviewPhase';
 import * as reviewActions from '../review/actions';
 
-import ReviewPanel from './ReviewPanel';
+import { ReviewPanel } from './ReviewPanel';
 
 // XXX Use the actual state once we have it
 type State = any;
@@ -14,7 +14,7 @@ const mapStateToProps = (state: State) => {
   const previousCard = history.length ? history[history.length - 1] : undefined;
 
   return {
-    showAnswer: state.review.phase === ReviewPhase.ANSWER,
+    showAnswer: state.review.phase === ReviewPhase.Answer,
     previousCard,
     currentCard: state.review.currentCard,
     nextCard: state.review.nextCard,
@@ -34,7 +34,7 @@ const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
   },
 });
 
-const ReviewPanelContainer = connect(
+export const ReviewPanelContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(ReviewPanel);

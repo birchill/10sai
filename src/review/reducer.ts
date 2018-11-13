@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 
-import ReviewPhase from './ReviewPhase';
+import { ReviewPhase } from './ReviewPhase';
 import { AvailableCards, Card } from '../model';
 import * as actions from './actions';
 import { notes as notesReducer, NoteState } from '../notes/reducer';
@@ -9,7 +9,7 @@ import { isNoteAction, NoteAction } from '../notes/actions';
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export interface ReviewState {
-  phase: symbol;
+  phase: ReviewPhase;
 
   // The time to use to update cards and calculating their next level etc.
   reviewTime: Date;
@@ -74,7 +74,7 @@ export interface ReviewState {
 }
 
 const initialState: ReviewState = {
-  phase: ReviewPhase.IDLE,
+  phase: ReviewPhase.Idle,
   reviewTime: new Date(),
   maxCards: 0,
   maxNewCards: 0,
@@ -113,7 +113,7 @@ export function review(
     case 'NEW_REVIEW': {
       return {
         ...initialState,
-        phase: ReviewPhase.LOADING,
+        phase: ReviewPhase.Loading,
         reviewTime: state.reviewTime,
         maxCards: reviewAction.maxCards,
         maxNewCards: reviewAction.maxNewCards,
@@ -124,7 +124,7 @@ export function review(
     case 'SET_REVIEW_LIMIT': {
       return {
         ...state,
-        phase: ReviewPhase.LOADING,
+        phase: ReviewPhase.Loading,
         maxCards: reviewAction.maxCards,
         maxNewCards: reviewAction.maxNewCards,
       };
@@ -180,20 +180,20 @@ export function review(
       // If we were complete but now have cards we need to go back to the
       // question state.
       if (
-        (updatedState.phase === ReviewPhase.COMPLETE ||
-          updatedState.phase === ReviewPhase.LOADING) &&
+        (updatedState.phase === ReviewPhase.Complete ||
+          updatedState.phase === ReviewPhase.Loading) &&
         updatedState.currentCard
       ) {
-        updatedState.phase = ReviewPhase.QUESTION;
+        updatedState.phase = ReviewPhase.Question;
       }
 
       // If we are complete but this is the initial load, then it makes more
       // sense to show the user the idle state.
       if (
-        updatedState.phase === ReviewPhase.COMPLETE &&
+        updatedState.phase === ReviewPhase.Complete &&
         reviewAction.initialReview
       ) {
-        updatedState.phase = ReviewPhase.IDLE;
+        updatedState.phase = ReviewPhase.Idle;
       }
 
       return updatedState;
@@ -201,8 +201,8 @@ export function review(
 
     case 'PASS_CARD': {
       if (
-        state.phase !== ReviewPhase.ANSWER &&
-        state.phase !== ReviewPhase.QUESTION
+        state.phase !== ReviewPhase.Answer &&
+        state.phase !== ReviewPhase.Question
       ) {
         return state;
       }
@@ -269,7 +269,7 @@ export function review(
 
       const intermediateState = {
         ...state,
-        phase: ReviewPhase.QUESTION,
+        phase: ReviewPhase.Question,
         completed,
         failedCardsLevel2,
         failedCardsLevel1,
@@ -286,20 +286,20 @@ export function review(
     }
 
     case 'SHOW_ANSWER': {
-      if (state.phase !== ReviewPhase.QUESTION) {
+      if (state.phase !== ReviewPhase.Question) {
         return state;
       }
 
       return {
         ...state,
-        phase: ReviewPhase.ANSWER,
+        phase: ReviewPhase.Answer,
       };
     }
 
     case 'FAIL_CARD': {
       if (
-        state.phase !== ReviewPhase.ANSWER &&
-        state.phase !== ReviewPhase.QUESTION
+        state.phase !== ReviewPhase.Answer &&
+        state.phase !== ReviewPhase.Question
       ) {
         return state;
       }
@@ -345,7 +345,7 @@ export function review(
 
       const intermediateState = {
         ...state,
-        phase: ReviewPhase.QUESTION,
+        phase: ReviewPhase.Question,
         failedCardsLevel1,
         failedCardsLevel2,
         history,
@@ -382,7 +382,7 @@ export function review(
       // If we're mid-review and we get a stray update to the available cards
       // we should be careful to clear availableCards so that when we actually
       // need them, we immediately fetch them.
-      if (![ReviewPhase.IDLE, ReviewPhase.COMPLETE].includes(state.phase)) {
+      if (![ReviewPhase.Idle, ReviewPhase.Complete].includes(state.phase)) {
         return {
           ...state,
           availableCards: undefined,
@@ -503,7 +503,7 @@ export function review(
     case 'LOAD_REVIEW': {
       return {
         ...state,
-        phase: ReviewPhase.LOADING,
+        phase: ReviewPhase.Loading,
         maxCards: reviewAction.review.maxCards,
         maxNewCards: reviewAction.review.maxNewCards,
         completed: reviewAction.review.completed,
@@ -517,15 +517,15 @@ export function review(
 
     case 'CANCEL_REVIEW': {
       if (
-        state.phase === ReviewPhase.IDLE ||
-        state.phase === ReviewPhase.COMPLETE
+        state.phase === ReviewPhase.Idle ||
+        state.phase === ReviewPhase.Complete
       ) {
         return state;
       }
 
       return {
         ...state,
-        phase: ReviewPhase.IDLE,
+        phase: ReviewPhase.Idle,
         maxCards: 0,
         maxNewCards: 0,
         completed: 0,
@@ -568,7 +568,7 @@ function updateNextCard(
     heap.length;
   if (!cardsAvailable) {
     if (updateMode === Update.UpdateCurrentCard || !currentCard) {
-      phase = ReviewPhase.COMPLETE;
+      phase = ReviewPhase.Complete;
       currentCard = null;
       nextCard = null;
     } else {

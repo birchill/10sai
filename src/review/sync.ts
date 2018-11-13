@@ -10,7 +10,7 @@ import {
   getReviewPhase,
 } from './selectors';
 import * as reviewActions from './actions';
-import ReviewPhase from './ReviewPhase';
+import { ReviewPhase } from './ReviewPhase';
 import { DataStore } from '../store/DataStore';
 import { ReviewState } from './reducer';
 
@@ -108,8 +108,8 @@ function sync(dataStore: DataStore, store: Store<State>) {
     // Review document was deleted
     if (!review) {
       if (
-        currentPhase !== ReviewPhase.IDLE &&
-        currentPhase !== ReviewPhase.COMPLETE
+        currentPhase !== ReviewPhase.Idle &&
+        currentPhase !== ReviewPhase.Complete
       ) {
         store.dispatch(reviewActions.cancelReview());
       }

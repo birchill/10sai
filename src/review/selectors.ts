@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 import { getScreen } from '../route/selectors';
-import ReviewPhase from './ReviewPhase';
+import { ReviewPhase } from './ReviewPhase';
 import { ReviewState } from './reducer';
 import { Card, Review } from '../model';
 
@@ -54,7 +54,7 @@ export const getReviewPhase = (state: State) => state.review.phase;
 // and we are in the idle or complete state.
 export const getNeedAvailableCards = (state: State) =>
   getScreen(state) === 'review' &&
-  [ReviewPhase.IDLE, ReviewPhase.COMPLETE].includes(getReviewPhase(state));
+  [ReviewPhase.Idle, ReviewPhase.Complete].includes(getReviewPhase(state));
 
 export const getAvailableCards = (state: State) => state.review.availableCards;
 export const getLoadingAvailableCards = (state: State) =>

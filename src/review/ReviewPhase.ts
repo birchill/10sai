@@ -1,10 +1,10 @@
-export const ReviewPhase = {
-  IDLE: Symbol('IDLE'), // No review in progress
-  LOADING: Symbol('LOADING'), // Currently loading cards for review or
+export const enum ReviewPhase {
+  Idle = 'idle', // No review in progress
+  Loading = 'loading', // Currently loading cards for review or
   // performing initial load
-  QUESTION: Symbol('QUESTION'), // Showing the question part of a card
-  ANSWER: Symbol('ANSWER'), // Showing the answer part of a card
-  COMPLETE: Symbol('COMPLETE'), // Review is finished
-};
+  Question = 'question', // Showing the question part of a card
+  Answer = 'answer', // Showing the answer part of a card
+  Complete = 'complete', // Review is finished
+}
 
 export default ReviewPhase;

@@ -17,7 +17,7 @@ interface Props {
   notes: Array<NoteState>;
 }
 
-const ReviewPanel: React.SFC<Props> = (props: Props) => {
+export const ReviewPanel: React.SFC<Props> = (props: Props) => {
   // There is one case where both the previous card and the next card might be
   // the same card (if the current card and previous card are the same we remove
   // the current card from the history). In that case we still need unique keys

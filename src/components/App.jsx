@@ -18,7 +18,7 @@ import KeywordSuggesterContext from './KeywordSuggesterContext.ts';
 import LookupScreen from './LookupScreen.jsx';
 import MainTabBlock from './MainTabBlock.tsx';
 import Popup from './Popup.jsx';
-import ReviewScreenContainer from './ReviewScreenContainer.jsx';
+import { ReviewScreenContainer } from './ReviewScreenContainer.tsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.tsx';
 import TabPanel from './TabPanel.jsx';
