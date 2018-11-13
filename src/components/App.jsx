@@ -48,6 +48,7 @@ class App extends React.PureComponent {
       onNewCard: PropTypes.func,
       onGoHome: PropTypes.func,
       onGoReview: PropTypes.func,
+      onGoLookup: PropTypes.func,
     };
   }
 
@@ -172,6 +173,10 @@ class App extends React.PureComponent {
     } else if (e.key.toLowerCase() === 'r') {
       this.props.onGoReview();
       e.preventDefault();
+      // l = lookup screen
+    } else if (e.key.toLowerCase() === 'l') {
+      this.props.onGoLookup();
+      e.preventDefault();
     }
   }
 
@@ -282,6 +287,9 @@ const mapDispatchToProps = (dispatch, props) => ({
   },
   onGoReview: () => {
     dispatch(routeActions.followLink('/review', 'forwards', false));
+  },
+  onGoLookup: () => {
+    dispatch(routeActions.followLink('/lookup', 'forwards', false));
   },
 });
 
