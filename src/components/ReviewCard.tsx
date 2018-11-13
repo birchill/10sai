@@ -27,10 +27,10 @@ export const ReviewCard: React.SFC<Props> = (props: Props) => {
       onClick={props.onSelectCard}
       onKeyPress={evt => {
         if (
-          (props.onSelectCard && evt.key === 'Enter') ||
-          evt.key === 'Space'
+          props.onSelectCard &&
+          (evt.key === 'Enter' || evt.key === 'Space')
         ) {
-          props.onSelectCard!();
+          props.onSelectCard();
         }
       }}
     >
