@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { FormattedText } from './FormattedText';
 import { TextRegion } from './TextRegion';
@@ -22,18 +21,7 @@ export const ReviewCard: React.SFC<Props> = (props: Props) => {
   }
 
   return (
-    <div
-      className={className}
-      onClick={props.onShowAnswer}
-      onKeyPress={evt => {
-        if (
-          props.onShowAnswer &&
-          (evt.key === 'Enter' || evt.key === 'Space')
-        ) {
-          props.onShowAnswer();
-        }
-      }}
-    >
+    <div className={className} onClick={props.onShowAnswer}>
       <div className="front">
         <TextRegion className="question">
           <FormattedText text={props.question} key={props.question} />
@@ -50,14 +38,6 @@ export const ReviewCard: React.SFC<Props> = (props: Props) => {
       </div>
     </div>
   );
-};
-
-ReviewCard.propTypes = {
-  question: PropTypes.string.isRequired,
-  answer: PropTypes.string.isRequired,
-  showAnswer: PropTypes.bool,
-  className: PropTypes.string,
-  onShowAnswer: PropTypes.func.isRequired,
 };
 
 export default ReviewCard;
