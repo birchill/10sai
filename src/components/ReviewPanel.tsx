@@ -18,21 +18,50 @@ interface Props {
 }
 
 export class ReviewPanel extends React.Component<Props> {
+  passButtonRef: React.RefObject<HTMLButtonElement>;
+  failButtonRef: React.RefObject<HTMLButtonElement>;
+  cardsRef: React.RefObject<HTMLDivElement>;
+
   constructor(props: Props) {
     super(props);
 
-    this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.passButtonRef = React.createRef<HTMLButtonElement>();
+    this.failButtonRef = React.createRef<HTMLButtonElement>();
+    this.cardsRef = React.createRef<HTMLDivElement>();
+
+    this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
   componentDidMount() {
-    window.addEventListener('keyup', this.handleKeyUp);
+    window.addEventListener('keydown', this.handleKeyDown);
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keyup', this.handleKeyUp);
+    window.removeEventListener('keydown', this.handleKeyDown);
   }
 
-  handleKeyUp(e: KeyboardEvent) {
+  componentDidUpdate(prevProps: Props) {
+    // If we've hidden the answer buttons, we need to remove focus from them so
+    // that you can't, for example, press 'Enter' and have them respond.
+    if (
+      prevProps.showAnswer &&
+      !this.props.showAnswer &&
+      document.activeElement &&
+      (document.activeElement === this.failButtonRef.current ||
+        document.activeElement === this.passButtonRef.current)
+    ) {
+      // Try to focus the wrapper element so that, for example, when it becomes
+      // scrollable (e.g. when displaying notes), you can use space to scroll
+      // it.
+      if (this.cardsRef.current) {
+        this.cardsRef.current.focus();
+      } else {
+        (document.activeElement as HTMLElement).blur();
+      }
+    }
+  }
+
+  handleKeyDown(e: KeyboardEvent) {
     if (!this.props.showAnswer && (e.key === 'Enter' || e.key === ' ')) {
       this.props.onShowAnswer();
       e.preventDefault();
@@ -98,8 +127,10 @@ export class ReviewPanel extends React.Component<Props> {
     const answerButtons = (
       <div className="answer-buttons" hidden={!this.props.showAnswer}>
         <button
+          ref={this.failButtonRef}
           className="fail"
           aria-label="Incorrect"
+          tabIndex={this.props.showAnswer ? 0 : -1}
           onClick={this.props.onFailCard}
         >
           <span className="buttonface">
@@ -117,8 +148,10 @@ export class ReviewPanel extends React.Component<Props> {
           </span>
         </button>
         <button
+          ref={this.passButtonRef}
           className="pass"
           aria-label="Correct"
+          tabIndex={this.props.showAnswer ? 0 : -1}
           onClick={this.props.onPassCard}
         >
           <span className="buttonface">
@@ -140,7 +173,7 @@ export class ReviewPanel extends React.Component<Props> {
 
     return (
       <div className={`review-panel ${this.props.className || ''}`}>
-        <div className="cards">
+        <div className="cards" ref={this.cardsRef} tabIndex={0}>
           <div className="cardwrapper">
             {previousCard}
             {currentCard}
