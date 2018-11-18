@@ -1,56 +1,10 @@
-import UAParser from 'ua-parser-js';
-
-const parser = new UAParser();
-const os = parser.getOS();
-
-const isWindows = os.name === 'Windows';
-const isMac = os.name === 'Mac OS';
-
-// Draft-js recommends using the default key bindings but we don't because:
-//
-// - They are not strict enough (e.g. treating Ctrl+Shift+B as Bold)
-// - They permit commands we don't ever expect to support (e.g. Ctrl+J for
-//   'code')
-// - They have cruft we don't need (e.g. Firefox pre-29 support)
-// - We don't control them so they might add new commands at any point that
-//   could break us unless we carefully audit each update of draft-js.
-//
-// That said, there is some good stuff there so we basically just fork it
-// and will need to check occasionally for any useful updates to it.
-//
-// For what it's worth, this current version is based on Draft 0.10.24 so any
-// bug fixes to the default keybindings since then should possibly be added
-// here.
-
-const isCtrlKeyCommand = (e: React.KeyboardEvent<{}>): boolean => {
-  // As per draft-js, we need to check that the altKey modifier is not being
-  // used since if they are, the result is an `altGraph` key modifier.
-  return !!e.ctrlKey && !e.altKey;
-};
-
-const isCtrlKeyCommandOnly = (e: React.KeyboardEvent<{}>): boolean => {
-  // As with isCtrlKeyCommand but also check that Shift is NOT being used since
-  // that has been known to conflict with browser UI shortcuts (e.g.
-  // Ctrl+Shift+B to open bookmarks).
-  return !!e.ctrlKey && !e.altKey && !e.shiftKey;
-};
-
-export const hasCommandModifier = (e: React.KeyboardEvent<{}>): boolean => {
-  return isMac ? !!e.metaKey && !e.altKey : isCtrlKeyCommand(e);
-};
-
-export const hasCommandModifierOnly = (e: React.KeyboardEvent<{}>): boolean => {
-  // Likewise, we also check that Shift is NOT being used here.
-  return isMac
-    ? !!e.metaKey && !e.altKey && !e.shiftKey
-    : isCtrlKeyCommandOnly(e);
-};
-
-export const hasAllTheKeys = (e: React.KeyboardEvent<{}>): boolean =>
-  (isMac ? !!e.metaKey : !!e.ctrlKey) && e.altKey && e.shiftKey;
-
-export const hasNoModifiers = (e: React.KeyboardEvent<{}>): boolean =>
-  !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+import {
+  hasCommandModifier,
+  isCtrlKeyCommand,
+  hasCommandModifierOnly,
+  isCtrlKeyCommandOnly,
+} from '../utils/keyboard';
+import { isMac, isWindows } from '../utils/ua';
 
 const getZCommand = (e: React.KeyboardEvent<{}>): string | null => {
   if (!hasCommandModifier(e)) {

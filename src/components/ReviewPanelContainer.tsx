@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import { ReviewPhase } from '../review/ReviewPhase';
 import * as reviewActions from '../review/actions';
+import * as routeActions from '../route/actions';
 
 import { ReviewPanel } from './ReviewPanel';
 
@@ -31,6 +32,9 @@ const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
   },
   onFailCard: () => {
     dispatch(reviewActions.failCard());
+  },
+  onEditCard: (id: string) => {
+    dispatch(routeActions.followLink(`/cards/${id}`, 'forwards', false));
   },
 });
 

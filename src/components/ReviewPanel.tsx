@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { isTextBox } from '../utils/keyboard';
+import { hasNoModifiers, isTextBox } from '../utils/keyboard';
 
 import { DynamicNoteList } from './DynamicNoteList';
 import { ReviewCard } from './ReviewCard';
@@ -13,6 +13,7 @@ interface Props {
   onShowAnswer: () => void;
   onPassCard: () => void;
   onFailCard: () => void;
+  onEditCard: (id: string) => void;
   previousCard: Card;
   currentCard: Card;
   nextCard: Card;
@@ -75,6 +76,25 @@ export class ReviewPanel extends React.Component<Props> {
     // TODO: Eventually we should make space the key for flipping cards
     if (!this.props.showAnswer && (e.key === 'Enter' || e.key === ' ')) {
       this.props.onShowAnswer();
+      e.preventDefault();
+    } else if (hasNoModifiers(e)) {
+      switch (e.key) {
+        case 'e':
+          this.props.onEditCard(this.props.currentCard._id);
+          break;
+
+        case 'x':
+        case '1':
+          this.props.onFailCard();
+
+        case '3':
+        case 'Enter':
+          this.props.onPassCard();
+
+        default:
+          // Don't call preventDefault
+          return;
+      }
       e.preventDefault();
     }
   }

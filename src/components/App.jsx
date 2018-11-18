@@ -9,8 +9,7 @@ import { getReviewProgress } from '../review/selectors.ts';
 import CardList from '../CardList.ts';
 import KeywordSuggester from '../suggestions/KeywordSuggester.ts';
 import TagSuggester from '../suggestions/TagSuggester.ts';
-import { hasCommandModifier } from '../text/key-bindings.ts';
-import { isTextBox } from '../utils/keyboard.ts';
+import { hasCommandModifier, isTextBox } from '../utils/keyboard.ts';
 
 import EditCardScreen from './EditCardScreen.tsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';

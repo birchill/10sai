@@ -44,9 +44,7 @@ class LinkInner extends React.PureComponent<Props> {
       return;
     }
 
-    console.log('click');
     if (this.props.onClick) {
-      console.log('onClick');
       this.props.onClick(this.props.href);
     }
 

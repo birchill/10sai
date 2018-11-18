@@ -14,7 +14,7 @@ import {
   hasCommandModifier,
   hasCommandModifierOnly,
   hasNoModifiers,
-} from '../text/key-bindings';
+} from '../utils/keyboard';
 
 import { Card } from '../model';
 import KeyboardFocusHelper from '../utils/KeyboardFocusHelper';
