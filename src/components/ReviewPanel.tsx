@@ -32,15 +32,15 @@ export class ReviewPanel extends React.Component<Props> {
     this.failButtonRef = React.createRef<HTMLButtonElement>();
     this.cardsRef = React.createRef<HTMLDivElement>();
 
-    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
   }
 
   componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('keyup', this.handleKeyUp);
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -64,7 +64,12 @@ export class ReviewPanel extends React.Component<Props> {
     }
   }
 
-  handleKeyDown(e: KeyboardEvent) {
+  // We use keyup simply so that if the user holds down Enter too long they
+  // don't end up passing all the cards accidentally.
+  //
+  // TODO: Once we implement flipping back and forth using Space we should
+  // probably use keydown for that.
+  handleKeyUp(e: KeyboardEvent) {
     if (e.defaultPrevented) {
       return;
     }
