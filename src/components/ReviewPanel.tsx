@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { isTextBox } from '../utils/keyboard';
+
 import { DynamicNoteList } from './DynamicNoteList';
 import { ReviewCard } from './ReviewCard';
 import { Card } from '../model';
@@ -62,6 +64,15 @@ export class ReviewPanel extends React.Component<Props> {
   }
 
   handleKeyDown(e: KeyboardEvent) {
+    if (e.defaultPrevented) {
+      return;
+    }
+
+    if (isTextBox(e.target)) {
+      return;
+    }
+
+    // TODO: Eventually we should make space the key for flipping cards
     if (!this.props.showAnswer && (e.key === 'Enter' || e.key === ' ')) {
       this.props.onShowAnswer();
       e.preventDefault();

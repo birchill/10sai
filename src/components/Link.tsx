@@ -22,7 +22,7 @@ interface DefaultProps {
   direction: 'forwards';
 }
 
-export class Link extends React.PureComponent<Props> {
+class LinkInner extends React.PureComponent<Props> {
   static get defaultProps(): DefaultProps {
     return {
       direction: 'forwards',
@@ -44,7 +44,9 @@ export class Link extends React.PureComponent<Props> {
       return;
     }
 
+    console.log('click');
     if (this.props.onClick) {
+      console.log('onClick');
       this.props.onClick(this.props.href);
     }
 
@@ -100,8 +102,10 @@ const mergeProps = (
   return Object.assign({}, ownProps, stateProps, dispatchProps, onClickWrapper);
 };
 
-export default connect(
+export const Link = connect(
   null,
   mapDispatchToProps,
   mergeProps
-)(Link);
+)(LinkInner);
+
+export default Link;
