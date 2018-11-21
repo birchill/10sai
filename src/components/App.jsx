@@ -15,7 +15,7 @@ import EditCardScreen from './EditCardScreen.tsx';
 import HomeScreenContainer from './HomeScreenContainer.jsx';
 import DataStoreContext from './DataStoreContext.ts';
 import KeywordSuggesterContext from './KeywordSuggesterContext.ts';
-import LookupScreen from './LookupScreen.jsx';
+import { LookupScreen } from './LookupScreen.tsx';
 import MainTabBlock from './MainTabBlock.tsx';
 import Popup from './Popup.jsx';
 import { ReviewScreenContainer } from './ReviewScreenContainer.tsx';

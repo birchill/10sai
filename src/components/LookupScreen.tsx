@@ -1,28 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import LookupToolbar from './LookupToolbar.tsx';
+import { LookupToolbar } from './LookupToolbar';
 
-class LookupScreen extends React.PureComponent {
+interface Props {
+  active: boolean;
+}
+
+export class LookupScreen extends React.PureComponent<Props> {
   static get propTypes() {
     return {
       active: PropTypes.bool.isRequired,
     };
   }
 
-  constructor(props) {
+  toolbarRef: React.RefObject<LookupToolbar>;
+
+  constructor(props: Props) {
     super(props);
 
-    this.assignToolbar = elem => {
-      this.toolbar = elem;
-    };
+    this.toolbarRef = React.createRef<LookupToolbar>();
   }
 
   componentDidMount() {
-    if (this.props.active) this.activate();
+    if (this.props.active) {
+      this.activate();
+    }
   }
 
-  componentDidUpdate(previousProps) {
+  componentDidUpdate(previousProps: Props) {
     if (previousProps.active === this.props.active) {
       return;
     }
@@ -33,15 +39,15 @@ class LookupScreen extends React.PureComponent {
   }
 
   activate() {
-    if (this.toolbar) {
-      this.toolbar.focus();
+    if (this.toolbarRef.current) {
+      this.toolbarRef.current.focus();
     }
   }
 
   render() {
     return (
       <section className="lookup-screen" aria-hidden={!this.props.active}>
-        <LookupToolbar ref={this.assignToolbar} />
+        <LookupToolbar ref={this.toolbarRef} />
       </section>
     );
   }
