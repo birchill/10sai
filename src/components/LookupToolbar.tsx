@@ -1,18 +1,21 @@
 import React from 'react';
 
-import Link from './Link.tsx';
+import Link from './Link';
 
-class LookupToolbar extends React.PureComponent {
-  constructor(props) {
+interface Props {}
+
+export class LookupToolbar extends React.PureComponent<Props> {
+  searchBoxRef: React.RefObject<HTMLInputElement>;
+
+  constructor(props: Props) {
     super(props);
-    this.assignSearchBox = elem => {
-      this.searchBox = elem;
-    };
+
+    this.searchBoxRef = React.createRef<HTMLInputElement>();
   }
 
   focus() {
-    if (this.searchBox) {
-      this.searchBox.focus();
+    if (this.searchBoxRef.current) {
+      this.searchBoxRef.current.focus();
     }
   }
 
@@ -25,9 +28,9 @@ class LookupToolbar extends React.PureComponent {
             type="search"
             placeholder="Lookup"
             className="search -compact -rounded -icon -search"
-            spellCheck="false"
+            spellCheck={false}
             aria-label="Lookup"
-            ref={this.assignSearchBox}
+            ref={this.searchBoxRef}
           />
         </div>
         <Link href="/lookup/settings" className="settings-button -right">

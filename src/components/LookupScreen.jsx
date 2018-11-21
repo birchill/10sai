@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import LookupToolbar from './LookupToolbar.jsx';
+import LookupToolbar from './LookupToolbar.tsx';
 
 class LookupScreen extends React.PureComponent {
   static get propTypes() {
