@@ -7,22 +7,19 @@ import DataStore from './DataStore';
 import { ReviewContent, ReviewStore } from './ReviewStore';
 import { Review } from '../model';
 import { waitForEvents } from '../utils/testing';
-import {
-  syncWithWaitableRemote,
-  waitForHackilyTypedChangeEvents,
-} from './test-utils';
+import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
-const waitForMs = ms =>
+const waitForMs = (ms: number) =>
   new Promise(resolve => {
     setTimeout(resolve, ms);
   });
 
 // Note: Using numbers other than 1 for 'num' might be unsafe since, if the
 // changes are to the same document they might get batched together.
-const waitForNumReviewChanges = (db, num) => {
-  let resolver;
+const waitForNumReviewChanges = (db: PouchDB.Database, num: number) => {
+  let resolver: () => void;
   const promise = new Promise(resolve => {
     resolver = resolve;
   });
@@ -99,7 +96,7 @@ describe('ReviewStore', () => {
     // We should have updated the one document
     expect(reviews.rows).toHaveLength(1);
     expect(reviews.rows[0].value.rev).toEqual(expect.stringMatching(/^2-/));
-    expect(reviews.rows[0].doc.completed).toBe(2);
+    expect(reviews.rows[0].doc!.completed).toBe(2);
   });
 
   it('returns the latest review', async () => {
@@ -122,7 +119,8 @@ describe('ReviewStore', () => {
 
     // Check the result of getReview
     const review = await subject.getReview();
-    expect(review.completed).toBe(2);
+    expect(review).not.toBe(null);
+    expect(review!.completed).toBe(2);
   });
 
   it('allows deleting reviews', async () => {
@@ -165,7 +163,9 @@ describe('ReviewStore', () => {
   it('resolves conflicts by choosing the furthest review progress', async () => {
     // Create a new review and get the ID
     await subject.putReview(typicalReview);
-    const localReview = await subject._getReview();
+    const localReview = (await subject._getReview()) as PouchDB.Core.ExistingDocument<
+      ReviewContent
+    >;
 
     // Create a new review with the same ID on the remote but with a greater
     // completed value.
@@ -189,7 +189,7 @@ describe('ReviewStore', () => {
   });
 
   it('reports new review docs', async () => {
-    const changesPromise = waitForHackilyTypedChangeEvents(
+    const changesPromise = waitForChangeEvents<Review | null>(
       dataStore,
       'review',
       1
@@ -203,7 +203,7 @@ describe('ReviewStore', () => {
 
   it('reports deleted review docs', async () => {
     await subject.putReview(typicalReview);
-    const changesPromise = waitForHackilyTypedChangeEvents(
+    const changesPromise = waitForChangeEvents<Review | null>(
       dataStore,
       'review',
       1
@@ -215,7 +215,7 @@ describe('ReviewStore', () => {
 
   it('does not report new review docs older than current', async () => {
     // Create regular review and wait for it to be reported
-    const changesPromise = waitForHackilyTypedChangeEvents(
+    const changesPromise = waitForChangeEvents<Review | null>(
       dataStore,
       'review',
       1
@@ -224,7 +224,7 @@ describe('ReviewStore', () => {
     await changesPromise;
 
     // Start monitoring for further changes
-    const changes = [];
+    const changes: Array<Review | null> = [];
     dataStore.changes.on('review', change => {
       changes.push(change);
     });

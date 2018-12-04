@@ -12,8 +12,11 @@ export interface ReviewContent {
   failedCardsLevel2: string[];
 }
 
-type ExistingReviewDoc = PouchDB.Core.ExistingDocument<ReviewContent>;
 type ReviewDoc = PouchDB.Core.Document<ReviewContent>;
+type ExistingReviewDoc = PouchDB.Core.ExistingDocument<ReviewContent>;
+type ExistingReviewDocWithChanges = PouchDB.Core.ExistingDocument<
+  ReviewContent & PouchDB.Core.ChangesMeta
+>;
 
 export const REVIEW_PREFIX = 'review-';
 
@@ -28,12 +31,10 @@ const parseReview = (review: ExistingReviewDoc | ReviewDoc): Review => {
 
 const isReviewChangeDoc = (
   changeDoc:
-    | PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
+    | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
     | undefined
-): changeDoc is PouchDB.Core.ExistingDocument<
-  ReviewContent & PouchDB.Core.ChangesMeta
-> => {
-  return !!changeDoc && changeDoc._id.startsWith(REVIEW_PREFIX);
+): changeDoc is ExistingReviewDocWithChanges => {
+  return changeDoc && changeDoc._id.startsWith(REVIEW_PREFIX);
 };
 
 type EmitFunction = (type: string, ...args: any[]) => void;
