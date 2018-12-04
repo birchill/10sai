@@ -4,13 +4,10 @@
 import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
-import { CardStore, CardContent } from './CardStore';
+import { CardStore, CardContent, CardChange } from './CardStore';
 import { Card } from '../model';
 import { generateUniqueTimestampId } from './utils';
-import {
-  syncWithWaitableRemote,
-  waitForHackilyTypedChangeEvents,
-} from './test-utils';
+import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 import '../../jest/customMatchers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -158,7 +155,7 @@ describe('CardStore', () => {
   });
 
   it('reports added cards', async () => {
-    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+    const changesPromise = waitForChangeEvents<CardChange>(
       dataStore,
       'card',
       1
@@ -167,7 +164,7 @@ describe('CardStore', () => {
     const addedCard = await subject.putCard({ question: 'Q1', answer: 'A1' });
 
     const changes = await changesPromise;
-    expect(changes[0]).toMatchObject(addedCard);
+    expect(changes[0].card).toMatchObject(addedCard);
   });
 
   it('does not return deleted cards', async () => {
@@ -252,7 +249,7 @@ describe('CardStore', () => {
   });
 
   it('reports deleted cards', async () => {
-    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+    const changesPromise = waitForChangeEvents<CardChange>(
       dataStore,
       'card',
       2
@@ -265,8 +262,8 @@ describe('CardStore', () => {
     await subject.deleteCard(addedCard._id);
 
     const changes = await changesPromise;
-    expect(changes[1]._id).toBe(addedCard._id);
-    expect(changes[1]._deleted).toBeTruthy();
+    expect(changes[1].card._id).toBe(addedCard._id);
+    expect(changes[1].deleted).toBeTruthy();
   });
 
   it('updates the specified field of cards', async () => {
@@ -420,7 +417,7 @@ describe('CardStore', () => {
   });
 
   it('reports changes to cards', async () => {
-    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+    const changesPromise = waitForChangeEvents<CardChange>(
       dataStore,
       'card',
       2
@@ -433,6 +430,6 @@ describe('CardStore', () => {
     await subject.putCard({ ...card, question: 'Updated question' });
 
     const changes = await changesPromise;
-    expect(changes[1].question).toBe('Updated question');
+    expect(changes[1].card.question).toBe('Updated question');
   });
 });

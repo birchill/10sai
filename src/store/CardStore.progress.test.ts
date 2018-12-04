@@ -4,14 +4,14 @@
 import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
-import CardStore from './CardStore';
-import { waitForHackilyTypedChangeEvents } from './test-utils';
+import { CardStore, CardChange } from './CardStore';
+import { waitForChangeEvents } from './test-utils';
 import { Card } from '../model';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 // Let tests override generateUniqueTimestampId;
-let mockGenerateUniqueTimestampId;
+let mockGenerateUniqueTimestampId: (() => string) | undefined;
 jest.mock('./utils', () => {
   const utils = require.requireActual('./utils');
   const originalGenerateUniqueTimestampId = utils.generateUniqueTimestampId;
@@ -86,7 +86,7 @@ describe('CardStore progress reporting', () => {
   });
 
   it('returns the progress when reporting added cards', async () => {
-    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+    const changesPromise = waitForChangeEvents<CardChange>(
       dataStore,
       'card',
       1
@@ -96,9 +96,11 @@ describe('CardStore progress reporting', () => {
 
     const changes = await changesPromise;
     expect(changes[0]).toMatchObject({
-      progress: {
-        level: 0,
-        reviewed: null,
+      card: {
+        progress: {
+          level: 0,
+          reviewed: null,
+        },
       },
     });
   });
@@ -198,7 +200,7 @@ describe('CardStore progress reporting', () => {
   });
 
   it('reports changes to the progress', async () => {
-    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+    const changesPromise = waitForChangeEvents<CardChange>(
       dataStore,
       'card',
       2
@@ -212,13 +214,13 @@ describe('CardStore progress reporting', () => {
 
     const changes = await changesPromise;
 
-    expect(changes[1].progress.level).toBe(1);
-    expect(changes[1].progress.reviewed).toEqual(relativeTime(-3));
-    expect(changes[1].question).toBe('Q1');
+    expect(changes[1].card.progress!.level).toBe(1);
+    expect(changes[1].card.progress!.reviewed).toEqual(relativeTime(-3));
+    expect(changes[1].card.question).toBe('Q1');
   });
 
   it('only reports once when a card and its progress are deleted', async () => {
-    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
+    const changesPromise = waitForChangeEvents<CardChange>(
       dataStore,
       'card',
       2
@@ -230,11 +232,11 @@ describe('CardStore progress reporting', () => {
     const changes = await changesPromise;
 
     expect(changes).toHaveLength(2);
-    expect(changes[1]._deleted).toBe(true);
+    expect(changes[1].deleted).toBe(true);
 
     // Progress information won't be included because it's too difficult to look
     // up the latest revision and return it.
-    expect(changes[1].progress).toBe(undefined);
+    expect(changes[1].card.progress).toBe(undefined);
   });
 
   it('deletes the card when the corresponding progress document cannot be created', async () => {
@@ -249,7 +251,7 @@ describe('CardStore progress reporting', () => {
       await testRemote.put({ _id: 'progress-abc' });
 
       // Sync it to our subject
-      let resolveIdle;
+      let resolveIdle: () => void;
       const idlePromise = new Promise(resolve => {
         resolveIdle = resolve;
       });
@@ -299,7 +301,7 @@ describe('CardStore progress reporting', () => {
     expect(await subject.hasProgressDocument(card._id)).toBe(false);
   });
 
-  async function addCards(num) {
+  async function addCards(num: number) {
     const cards = new Array(num);
     for (let i = 0; i < cards.length; i++) {
       // eslint-disable-next-line no-await-in-loop

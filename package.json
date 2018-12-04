@@ -107,10 +107,17 @@
     ],
     "transform": {
       "^.+\\.jsx?$": "./node_modules/babel-jest",
-      "^.+\\.tsx?$": "./node_modules/ts-jest/preprocessor.js"
+      "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": ".test.(tsx?|jsx?)$",
-    "setupTestFrameworkScriptFile": "./jest/customMatchers.ts"
+    "setupTestFrameworkScriptFile": "./jest/customMatchers.ts",
+    "globals": {
+      "ts-jest": {
+        "tsConfig": {
+          "esModuleInterop": true
+        }
+      }
+    }
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,css}": [

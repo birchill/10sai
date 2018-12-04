@@ -240,13 +240,13 @@ export function edit(state = initialState, action: Action): EditState {
 
     case 'SYNC_EDIT_CARD': {
       if (
-        editAction.change._id !== state.forms.active.card._id ||
+        editAction.change.card._id !== state.forms.active.card._id ||
         state.forms.active.formState === FormState.Deleted
       ) {
         return state;
       }
 
-      if (editAction.change._deleted) {
+      if (editAction.change.deleted) {
         return {
           forms: {
             active: {
@@ -264,20 +264,14 @@ export function edit(state = initialState, action: Action): EditState {
       // that are currently marked as dirty--for those we choose the value in
       // the state.
       const card: Partial<Card> = {};
-      // The type of editAction.change includes the properties of Card as well
-      // as ChangesMeta (e.g. _deleted, _attachments, _conflicts). We don't
-      // expect those other things to be present here, but just to make TS
-      // happy...
-      const isCardField = (field: string): field is keyof Card =>
-        !field.startsWith('_') || field === '_id';
-      for (const field of Object.keys(editAction.change)) {
-        if (isCardField(field)) {
-          card[field] =
-            state.forms.active.dirtyFields &&
-            state.forms.active.dirtyFields.has(field)
-              ? state.forms.active.card[field]
-              : editAction.change[field];
-        }
+      for (const field of Object.keys(editAction.change.card) as Array<
+        keyof Card
+      >) {
+        card[field] =
+          state.forms.active.dirtyFields &&
+          state.forms.active.dirtyFields.has(field)
+            ? state.forms.active.card[field]
+            : editAction.change.card[field];
       }
 
       return {

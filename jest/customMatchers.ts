@@ -16,7 +16,7 @@ function toBeInDateRange(
   beginDate: Date,
   endDate: Date
 ) {
-  const ensureIsDate = (actual, label) => {
+  const ensureIsDate = (actual: any, label: any) => {
     if (!(actual instanceof Date)) {
       throw new Error(
         this.utils.matcherHint('[.not].toBeInDateRange', undefined, '') +

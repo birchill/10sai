@@ -15,9 +15,6 @@ export interface GetCardsOptions {
   skipFailedCards?: boolean;
 }
 
-export type CardChange = MakeOptional<Card, 'progress'> &
-  PouchDB.Core.ChangesMeta;
-
 export interface CardContent {
   question: string;
   answer: string;
@@ -35,9 +32,20 @@ export interface ProgressContent {
 
 type ExistingCardDoc = PouchDB.Core.ExistingDocument<CardContent>;
 type CardDoc = PouchDB.Core.Document<CardContent>;
+type ExistingCardDocWithChanges = PouchDB.Core.ExistingDocument<
+  CardContent & PouchDB.Core.ChangesMeta
+>;
 
 type ExistingProgressDoc = PouchDB.Core.ExistingDocument<ProgressContent>;
 type ProgressDoc = PouchDB.Core.Document<ProgressContent>;
+type ExistingProgressDocWithChanges = PouchDB.Core.ExistingDocument<
+  ProgressContent & PouchDB.Core.ChangesMeta
+>;
+
+export interface CardChange {
+  card: MakeOptional<Card, 'progress'>;
+  deleted?: boolean;
+}
 
 export const CARD_PREFIX = 'card-';
 export const PROGRESS_PREFIX = 'progress-';
@@ -613,19 +621,15 @@ export class CardStore {
     }
 
     const isCardChangeDoc = (
-      changeDoc: PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
-    ): changeDoc is PouchDB.Core.ExistingDocument<
-      CardContent & PouchDB.Core.ChangesMeta
-    > => {
-      return changeDoc._id.startsWith(CARD_PREFIX);
+      changeDoc: PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+    ): changeDoc is ExistingCardDocWithChanges => {
+      return changeDoc && changeDoc._id.startsWith(CARD_PREFIX);
     };
 
     const isProgressChangeDoc = (
-      changeDoc: PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
-    ): changeDoc is PouchDB.Core.ExistingDocument<
-      ProgressContent & PouchDB.Core.ChangesMeta
-    > => {
-      return changeDoc._id.startsWith(PROGRESS_PREFIX);
+      changeDoc: PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+    ): changeDoc is ExistingProgressDocWithChanges => {
+      return changeDoc && changeDoc._id.startsWith(PROGRESS_PREFIX);
     };
 
     // When a new card is added we'll get a change callback for both the card
@@ -693,10 +697,15 @@ export class CardStore {
         cardRev: change.doc._rev,
         progressRev: progress && progress._rev ? progress._rev : null,
       };
-      const changeDoc: CardChange = progress
-        ? mergeDocs(change.doc, progress)
-        : parseCard(change.doc);
-      emit('card', changeDoc);
+      const result: CardChange = {
+        card: progress
+          ? mergeDocs(change.doc, progress)
+          : parseCard(change.doc),
+      };
+      if (change.deleted) {
+        result.deleted = true;
+      }
+      emit('card', result);
     } else if (isProgressChangeDoc(change.doc)) {
       // If the progress has been deleted, we'll report the deletion when
       // the corresponding card is dropped.
@@ -722,7 +731,7 @@ export class CardStore {
         cardRev: card._rev,
         progressRev: change.doc._rev,
       };
-      emit('card', mergeDocs(card, change.doc));
+      emit('card', { card: mergeDocs(card, change.doc) });
     }
 
     return undefined;
