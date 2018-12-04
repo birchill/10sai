@@ -9,21 +9,6 @@ import unicodeSubstring from 'unicode-substring';
 
 import { Block, Inline } from './rich-text';
 
-// draft-js typings here make all these members required but most of them are
-// optional.
-declare module 'draft-js' {
-  interface RawDraftContentBlock {
-    key?: string;
-    type: string;
-    text: string;
-    depth?: number;
-    inlineStyleRanges?: Array<RawDraftInlineStyleRange>;
-    entityRanges?: Array<RawDraftEntityRange>;
-    data?: any;
-    children?: Array<RawDraftContentBlock>;
-  }
-}
-
 const styleMappingFromDraft: { [key: string]: string } = {
   BOLD: 'b',
   ITALIC: 'i',
