@@ -1,14 +1,16 @@
 import PouchDB from 'pouchdb';
 
 import DataStore from './DataStore';
+import { CardDoc, CardChange } from './CardStore';
 import { generateUniqueTimestampId } from './utils';
-import { waitForHackilyTypedChangeEvents } from './test-utils';
+import { waitForChangeEvents } from './test-utils';
 import { Card } from '../model';
 import { waitForEvents } from '../utils/testing';
+import { Omit, MakeOptional } from '../utils/type-helpers';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
-const cardForDirectPut = card => ({
+const cardForDirectPut = (card: Omit<Card, 'progress'>): CardDoc => ({
   ...card,
   _id: 'card-' + card._id,
 });
@@ -22,12 +24,12 @@ const cardForDirectPut = card => ({
 function idleSync(): [({}) => any, Promise<{}>] {
   const idleTimeout = 50; // ms
 
-  let resolver;
+  let resolver: () => void;
   const idlePromise = new Promise(resolve => {
     resolver = resolve;
   });
 
-  let timeout = setTimeout(resolver, idleTimeout);
+  let timeout = setTimeout(resolver!, idleTimeout);
   const idleCallback = () => {
     clearTimeout(timeout);
     timeout = setTimeout(resolver, idleTimeout);
@@ -39,7 +41,7 @@ function idleSync(): [({}) => any, Promise<{}>] {
 describe('DataStore remote sync', () => {
   let subject: DataStore;
   let testRemote: PouchDB.Database;
-  let failedAssertion: Error;
+  let failedAssertion: Error | undefined;
 
   // PouchDB swallows exceptions thrown from certain callbacks like the on
   // 'changes' callback which, unfortunately, includes exceptions which are
@@ -48,8 +50,8 @@ describe('DataStore remote sync', () => {
   // (not the CLI version) so we can't use that. Instead, we just wrap such
   // callbacks to set a global variable if an assertion fails and then re-throw
   // when the test shuts down.
-  function wrapAssertingFunction(fn) {
-    return (...args) => {
+  function wrapAssertingFunction(fn: Function) {
+    return (...args: any) => {
       try {
         fn.apply(this, args);
       } catch (e) {
@@ -139,7 +141,7 @@ describe('DataStore remote sync', () => {
 
   it('downloads existing cards on the remote server', async () => {
     const now = JSON.parse(JSON.stringify(new Date()));
-    const firstCard: Partial<Card> = {
+    const firstCard: MakeOptional<Card, 'progress'> = {
       question: 'Question 1',
       answer: 'Answer 1',
       _id: generateUniqueTimestampId(),
@@ -149,7 +151,7 @@ describe('DataStore remote sync', () => {
       tags: [],
       starred: false,
     };
-    const secondCard: Partial<Card> = {
+    const secondCard: MakeOptional<Card, 'progress'> = {
       question: 'Question 2',
       answer: 'Answer 2',
       _id: generateUniqueTimestampId(),
@@ -166,11 +168,7 @@ describe('DataStore remote sync', () => {
 
     const expectedCards = [firstCard, secondCard];
 
-    const changesPromise = waitForHackilyTypedChangeEvents<Card>(
-      subject,
-      'card',
-      2
-    );
+    const changesPromise = waitForChangeEvents<CardChange>(subject, 'card', 2);
 
     await testRemote.put(cardForDirectPut(firstCard));
     await testRemote.put({
@@ -189,16 +187,20 @@ describe('DataStore remote sync', () => {
     await subject.setSyncServer(testRemote);
 
     const changes = await changesPromise;
-    expect(changes[0]).toEqual(expectedCards[0]);
-    expect(changes[1]).toEqual(expectedCards[1]);
+    expect(changes[0].card).toEqual(expectedCards[0]);
+    expect(changes[1].card).toEqual(expectedCards[1]);
   });
 
   it('disassociates from previous remote sync server when a new one is set', async () => {
     const card = {
+      _id: generateUniqueTimestampId(),
       question: 'Question',
       answer: 'Answer',
-      _id: generateUniqueTimestampId(),
+      keywords: [],
+      tags: [],
+      starred: false,
       created: JSON.parse(JSON.stringify(new Date())),
+      modified: JSON.parse(JSON.stringify(new Date())),
     };
 
     const alternateRemote = new PouchDB('cards_remote_2', {
@@ -256,10 +258,12 @@ describe('DataStore remote sync', () => {
 
   it('reports when download starts and stops', done => {
     subject.setSyncServer(testRemote, {
-      onActive: wrapAssertingFunction(info => {
-        expect(info.direction).toBe('pull');
-        done();
-      }),
+      onActive: wrapAssertingFunction(
+        (info: PouchDB.Replication.SyncResult<{}>) => {
+          expect(info.direction).toBe('pull');
+          done();
+        }
+      ),
     });
 
     testRemote.put({
@@ -271,10 +275,12 @@ describe('DataStore remote sync', () => {
 
   it('reports when uploads starts and stops', done => {
     subject.setSyncServer(testRemote, {
-      onActive: wrapAssertingFunction(info => {
-        expect(info.direction).toBe('push');
-        done();
-      }),
+      onActive: wrapAssertingFunction(
+        (info: PouchDB.Replication.SyncResult<{}>) => {
+          expect(info.direction).toBe('push');
+          done();
+        }
+      ),
     });
 
     subject.putCard({ question: 'Question', answer: 'Answer' });
@@ -291,12 +297,12 @@ describe('DataStore remote sync', () => {
       });
     }
 
-    let resolveAllDone;
+    let resolveAllDone: () => void;
     const allDone = new Promise(resolve => {
       resolveAllDone = resolve;
     });
 
-    const progressValues = [];
+    const progressValues: Array<number | null> = [];
     await testRemote.bulkDocs(docs);
     await subject.setSyncServer(testRemote, {
       onProgress: progress => progressValues.push(progress),
@@ -330,12 +336,12 @@ describe('DataStore remote sync', () => {
       );
     }
 
-    let resolveAllDone;
+    let resolveAllDone: () => void;
     const allDone = new Promise(resolve => {
       resolveAllDone = resolve;
     });
 
-    const progressValues = [];
+    const progressValues: Array<number | null> = [];
     await Promise.all(putPromises);
     await subject.setSyncServer(testRemote, {
       onProgress: progress => progressValues.push(progress),
@@ -349,9 +355,9 @@ describe('DataStore remote sync', () => {
     // batch sizes: 3, 3, 3, 1.
     expect(progressValues).toHaveLength(4);
     expect(progressValues[0]).toBeLessThan(1);
-    expect(progressValues[0]).toBeLessThan(progressValues[1]);
-    expect(progressValues[1]).toBeLessThan(progressValues[2]);
-    expect(progressValues[2]).toBeLessThan(progressValues[3]);
+    expect(progressValues[0]).toBeLessThan(progressValues[1] as number);
+    expect(progressValues[1]).toBeLessThan(progressValues[2] as number);
+    expect(progressValues[2]).toBeLessThan(progressValues[3] as number);
     // We should check that progressValues[3] is 1, but it can actually go to
     // 1.1 due to the design doc. Not sure why actually. Oh well.
   });
@@ -378,12 +384,12 @@ describe('DataStore remote sync', () => {
       });
     }
 
-    let resolveAllDone;
+    let resolveAllDone: () => void;
     const allDone = new Promise(resolve => {
       resolveAllDone = resolve;
     });
 
-    const progressValues = [];
+    const progressValues: Array<number | null> = [];
     await Promise.all(putPromises);
     await testRemote.bulkDocs(remoteDocs);
     await subject.setSyncServer(testRemote, {
@@ -413,12 +419,12 @@ describe('DataStore remote sync', () => {
       });
     }
 
-    let resolveIdle;
+    let resolveIdle: () => void;
     const waitForIdle = new Promise(resolve => {
       resolveIdle = resolve;
     });
 
-    const progressValues = [];
+    const progressValues: Array<number | null> = [];
     await subject.setSyncServer(testRemote, {
       onProgress: progress => progressValues.push(progress),
       onIdle: () => resolveIdle(),

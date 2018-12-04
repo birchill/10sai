@@ -30,8 +30,8 @@ export interface ProgressContent {
   reviewed: number | null;
 }
 
+export type CardDoc = PouchDB.Core.Document<CardContent>;
 type ExistingCardDoc = PouchDB.Core.ExistingDocument<CardContent>;
-type CardDoc = PouchDB.Core.Document<CardContent>;
 type ExistingCardDocWithChanges = PouchDB.Core.ExistingDocument<
   CardContent & PouchDB.Core.ChangesMeta
 >;

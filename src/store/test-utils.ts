@@ -28,18 +28,6 @@ export const syncWithWaitableRemote = async (
   };
 };
 
-export const waitForHackilyTypedChangeEvents = <Type>(
-  dataStore: DataStore,
-  type: string,
-  num: number
-) => {
-  return waitForChangeEvents<Partial<Type> & { _deleted?: boolean }>(
-    dataStore,
-    type,
-    num
-  );
-};
-
 export const waitForChangeEvents = <EventType>(
   dataStore: DataStore,
   type: string,
