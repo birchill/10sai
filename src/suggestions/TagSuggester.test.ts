@@ -22,7 +22,7 @@ class MockDataStore {
     } as EventEmitter;
   }
 
-  __triggerChange(type, change) {
+  __triggerChange(type: string, change: any) {
     if (!this._cbs[type]) {
       return;
     }
