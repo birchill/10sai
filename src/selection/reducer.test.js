@@ -123,10 +123,7 @@ describe('reducer:selection', () => {
     };
 
     state = subject(state, editActions.finishLoadCard(formId, card));
-    state = subject(
-      state,
-      editActions.syncEditCard({ ...card, _deleted: true })
-    );
+    state = subject(state, editActions.syncEditCard({ card, deleted: true }));
 
     expect(state.selection.activeCardId).toBe(undefined);
   });
