@@ -675,7 +675,7 @@ describe('reducer:notes', () => {
       actions.updateNoteList(
         baseContext,
         [noteState2.note as Note],
-        [noteState1.note.id]
+        [noteState1.note.id!]
       )
     );
 

@@ -57,7 +57,7 @@ describe('NoteListWatcher', () => {
     };
 
     if (num === 0) {
-      resolver([]);
+      resolver!([]);
     }
 
     return [callback, promise];

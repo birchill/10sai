@@ -44,7 +44,7 @@ const noteState = (
 
 describe('sagas:notes watchNoteEdits', () => {
   it('saves the note', () => {
-    const dataStore = { putNote: note => note };
+    const dataStore = { putNote: (note: Partial<Note>) => note };
     const note = {
       content: 'Noterifictastical!',
       keywords: ['abc', 'def'],
@@ -68,7 +68,7 @@ describe('sagas:notes watchNoteEdits', () => {
 
   it('deletes note from the store even if the initial save is in progress', () => {
     const dataStore = {
-      putNote: async note => {
+      putNote: async (note: Partial<Note>) => {
         // This needs to take a tick or two so that the delete runs before we
         // finish saving.
         return new Promise(resolve => {
