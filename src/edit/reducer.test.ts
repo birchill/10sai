@@ -597,7 +597,7 @@ describe('reducer:edit', () => {
 
   it(
     'should update to NOT_FOUND (deleted) state on SYNC_CARD' +
-      ' (_deleted: true)',
+      ' (deleted: true)',
     () => {
       const initialState = dirtyState(
         15,
