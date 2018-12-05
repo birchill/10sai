@@ -333,7 +333,8 @@ describe('fromDraft', () => {
             {
               length: 3,
               offset: 2,
-              style: 'SELECTION',
+              // TODO: Extend the definition of this to include SELECTION
+              style: 'SELECTION' as any,
             },
           ],
           key: 'yer',
