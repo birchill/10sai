@@ -1,5 +1,3 @@
-/* global describe, expect, it */
-
 import { edit as subject, EditState } from './reducer';
 import { FormState } from './FormState';
 import * as actions from './actions';
@@ -559,10 +557,12 @@ describe('reducer:edit', () => {
       { _id: 'abc', question: 'Question A', answer: 'Answer' },
       toDirtyFields('question')
     );
-    const change = {
-      ...generateCard('abc'),
-      question: 'Question B',
-      answer: 'Answer B',
+    const change: CardChange = {
+      card: {
+        ...generateCard('abc'),
+        question: 'Question B',
+        answer: 'Answer B',
+      },
     };
 
     const updatedState = subject(initialState, actions.syncEditCard(change));
@@ -570,7 +570,7 @@ describe('reducer:edit', () => {
     expect(updatedState).toEqual(
       dirtyState(
         15,
-        { ...change, question: 'Question A' },
+        { ...change.card, question: 'Question A' },
         toDirtyFields('question')
       )
     );
@@ -582,10 +582,12 @@ describe('reducer:edit', () => {
       { _id: 'abc', question: 'Question A', answer: 'Answer' },
       toDirtyFields('question')
     );
-    const change = {
-      ...generateCard('def'),
-      question: 'Question B',
-      answer: 'Answer B',
+    const change: CardChange = {
+      card: {
+        ...generateCard('def'),
+        question: 'Question B',
+        answer: 'Answer B',
+      },
     };
 
     const updatedState = subject(initialState, actions.syncEditCard(change));
@@ -603,8 +605,8 @@ describe('reducer:edit', () => {
         toDirtyFields('question')
       );
       const change: CardChange = {
-        ...generateCard('abc'),
-        _deleted: true,
+        card: generateCard('abc'),
+        deleted: true,
       };
 
       const updatedState = subject(initialState, actions.syncEditCard(change));

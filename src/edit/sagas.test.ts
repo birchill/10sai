@@ -3,8 +3,6 @@
  *
  * Why this? See my complaint about jest in ../route/sagas.test.js
  */
-/* global beforeEach, describe, it */
-/* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
 
@@ -66,7 +64,7 @@ const initialState = reducer(undefined, { type: 'none' });
 
 describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
-    const dataStore = { getCard: id => ({ _id: id }) };
+    const dataStore = { getCard: (id: string) => ({ _id: id }) };
 
     // The load action increments a global counter so we need to read where it
     // is up to.
@@ -84,7 +82,7 @@ describe('sagas:edit navigate', () => {
   });
 
   it('triggers a load action if the route is for editing a card (path)', () => {
-    const dataStore = { getCard: id => ({ _id: id }) };
+    const dataStore = { getCard: (id: string) => ({ _id: id }) };
     const formId = editActions.loadCard('123').newFormId + 1;
 
     return expectSaga(
@@ -99,7 +97,7 @@ describe('sagas:edit navigate', () => {
   });
 
   it('triggers a new action if the route is for adding a card', () => {
-    const dataStore = { getCard: id => ({ _id: id }) };
+    const dataStore = { getCard: (id: string) => ({ _id: id }) };
     const formId = editActions.newCard().newFormId + 1;
 
     return expectSaga(
@@ -113,7 +111,7 @@ describe('sagas:edit navigate', () => {
   });
 
   it('does not triggers a load action if the route is something else', () => {
-    const dataStore = { getCard: id => ({ _id: id }) };
+    const dataStore = { getCard: (id: string) => ({ _id: id }) };
     const formId = editActions.loadCard('123').newFormId + 1;
 
     return expectSaga(
@@ -128,7 +126,7 @@ describe('sagas:edit navigate', () => {
 
   it('dispatches a finished action if the load successfully complete', () => {
     const card = generateCard('123');
-    const dataStore = { getCard: id => ({ ...card, _id: id }) };
+    const dataStore = { getCard: (id: string) => ({ ...card, _id: id }) };
     const formId = editActions.loadCard('123').newFormId + 1;
 
     return expectSaga(
@@ -215,7 +213,7 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('saves the card', () => {
-    const dataStore = { putCard: card => card };
+    const dataStore = { putCard: (card: Partial<Card>) => card };
     const card = { question: 'yer' };
     const formId = 5;
 
@@ -228,7 +226,7 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('does NOT save the card if it is not dirty', () => {
-    const dataStore = { putCard: card => card };
+    const dataStore = { putCard: (card: Partial<Card>) => card };
     const card = { question: 'yer' };
     const formId = 5;
 
@@ -241,7 +239,7 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('fails if there is no card to save', () => {
-    const dataStore = { putCard: card => card };
+    const dataStore = { putCard: (card: Partial<Card>) => card };
     const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
@@ -259,7 +257,7 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('reports the ID of the saved card', () => {
     const dataStore = {
-      putCard: card => ({ ...card, _id: 'generated-id' }),
+      putCard: (card: Partial<Card>) => ({ ...card, _id: 'generated-id' }),
     };
     const card = { question: 'yer' };
     const formId = 5;
@@ -274,7 +272,7 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('updates the history so the current URL reflects the saved card', () => {
     const dataStore = {
-      putCard: card => ({ ...card, _id: '1234' }),
+      putCard: (card: Partial<Card>) => ({ ...card, _id: '1234' }),
     };
     const card = { question: 'yer' };
     const formId = 5;
@@ -290,7 +288,7 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('does NOT update history if the card is not new', () => {
-    const dataStore = { putCard: card => card };
+    const dataStore = { putCard: (card: Partial<Card>) => card };
     const card = { question: 'yer', _id: '1234' };
     const formId = 5;
     global.location.pathname = '/cards/new';
@@ -306,7 +304,7 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('does NOT update history if we are no longer on the new card screen', () => {
     const dataStore = {
-      putCard: card => ({ ...card, _id: '2345' }),
+      putCard: (card: Partial<Card>) => ({ ...card, _id: '2345' }),
     };
     const card = { question: 'yer' };
     const formId = 18;
@@ -398,7 +396,7 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('deletes the card even if the initial save is in progress', () => {
     const dataStore = {
-      putCard: async card => {
+      putCard: async (card: Partial<Card>) => {
         // This needs to take a tick or two so that the delete runs before we
         // finish saving.
         return new Promise(resolve => {
@@ -431,7 +429,7 @@ describe('sagas:edit watchCardEdits', () => {
 describe('sagas:edit save', () => {
   it('does NOT update history if the app is navigated while saving', () => {
     const dataStore = {
-      putCard: card => ({ ...card, _id: '4567' }),
+      putCard: (card: Partial<Card>) => ({ ...card, _id: '4567' }),
     };
     const card = { question: 'yer' };
     const oldFormId = 17;
