@@ -1,6 +1,3 @@
-/* global describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
-
 import { review as subject, ReviewState } from './reducer';
 import { ReviewPhase } from './ReviewPhase';
 import * as actions from './actions';
@@ -14,7 +11,10 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 // Wrappers that creates a new review, new review time, and the appropriate
 // number of cards.
 
-function newReview(maxNewCards, maxCards): [ReviewState, Card[], Date] {
+function newReview(
+  maxNewCards: number,
+  maxCards: number
+): [ReviewState, Card[], Date] {
   const initialState = subject(
     undefined,
     actions.newReview(maxNewCards, maxCards)
@@ -30,26 +30,30 @@ function newReview(maxNewCards, maxCards): [ReviewState, Card[], Date] {
 
 // Wrappers for action creators that also set the random seed values
 
-function reviewLoaded(cards, currentCardSeed, nextCardSeed) {
+function reviewLoaded(
+  cards: Array<Card>,
+  currentCardSeed: number,
+  nextCardSeed: number
+) {
   const action = actions.reviewLoaded(cards);
   action.currentCardSeed = currentCardSeed;
   action.nextCardSeed = nextCardSeed;
   return action;
 }
 
-function passCard(nextCardSeed) {
+function passCard(nextCardSeed: number) {
   const action = actions.passCard();
   action.nextCardSeed = nextCardSeed;
   return action;
 }
 
-function failCard(nextCardSeed) {
+function failCard(nextCardSeed: number) {
   const action = actions.failCard();
   action.nextCardSeed = nextCardSeed;
   return action;
 }
 
-function deleteReviewCard(id, nextCardSeed) {
+function deleteReviewCard(id: string, nextCardSeed: number) {
   const action = actions.deleteReviewCard(id);
   action.nextCardSeed = nextCardSeed;
   return action;
@@ -284,7 +288,8 @@ describe('reducer:review', () => {
   it('should update the card level on for a new card on PASS_CARD', () => {
     const [initialState, cards] = newReview(1, 1);
     let updatedState = subject(initialState, actions.reviewLoaded(cards));
-    expect(updatedState.currentCard.progress.level).toBe(0);
+    expect(updatedState.currentCard).not.toBeNull();
+    expect(updatedState.currentCard!.progress.level).toBe(0);
 
     updatedState = subject(updatedState, actions.passCard());
 
@@ -513,8 +518,9 @@ describe('reducer:review', () => {
   it('should update the current card on UPDATE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview(0, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
-    const updatedCurrentCard = {
-      ...updatedState.currentCard,
+    expect(updatedState.currentCard).not.toBeNull();
+    const updatedCurrentCard: Card = {
+      ...updatedState.currentCard!,
       question: 'Updated question',
     };
     updatedState = subject(
@@ -527,8 +533,9 @@ describe('reducer:review', () => {
   it('should update the next card on UPDATE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview(0, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
-    const updatedNextCard = {
-      ...updatedState.nextCard,
+    expect(updatedState.nextCard).not.toBeNull();
+    const updatedNextCard: Card = {
+      ...updatedState.nextCard!,
       question: 'Updated question',
     };
     updatedState = subject(
@@ -569,11 +576,13 @@ describe('reducer:review', () => {
   it('should update the current card on DELETE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview(0, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    expect(updatedState.currentCard).not.toBeNull();
     const originalCurrentCard = updatedState.currentCard;
     const originalNextCard = updatedState.nextCard;
+
     updatedState = subject(
       updatedState,
-      deleteReviewCard(updatedState.currentCard._id, 0)
+      deleteReviewCard(updatedState.currentCard!._id, 0)
     );
     expect(updatedState.currentCard).toBe(originalNextCard);
     expect(updatedState.nextCard).not.toBe(originalNextCard);
@@ -584,12 +593,13 @@ describe('reducer:review', () => {
   it('should got to COMPLETED state if the last card is deleted', () => {
     const [initialState, cards] = newReview(0, 1);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    expect(updatedState.currentCard).not.toBeNull();
     expect(updatedState.nextCard).toBe(null);
     expect(updatedState.heap).toHaveLength(0);
 
     updatedState = subject(
       updatedState,
-      deleteReviewCard(updatedState.currentCard._id, 0)
+      deleteReviewCard(updatedState.currentCard!._id, 0)
     );
     expect(updatedState.currentCard).toBe(null);
     expect(updatedState.nextCard).toBe(null);
@@ -600,9 +610,10 @@ describe('reducer:review', () => {
   it('should update the next card on DELETE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview(0, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
+    expect(updatedState.nextCard).not.toBeNull();
     updatedState = subject(
       updatedState,
-      deleteReviewCard(updatedState.nextCard._id, 0)
+      deleteReviewCard(updatedState.nextCard!._id, 0)
     );
     expect(updatedState.nextCard).toBe(updatedState.heap[0]);
   });

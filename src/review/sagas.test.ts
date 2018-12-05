@@ -1,7 +1,7 @@
 /* global describe, it, expect */
 /* eslint arrow-body-style: [ 'off' ] */
 
-import { expectSaga } from 'redux-saga-test-plan';
+import { expectSaga, ExpectApiEffects } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
 
 import {
@@ -11,8 +11,16 @@ import {
 } from './sagas';
 import * as reviewActions from './actions';
 import reducer from '../reducer';
+import { Card } from '../model';
+import { ReviewState } from './reducer';
+import { EffectProviders } from 'redux-saga-test-plan/providers';
+import { CallEffectDescriptor } from 'redux-saga/effects';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+interface State {
+  review: ReviewState;
+}
 
 describe('sagas:review updateHeap', () => {
   const dataStore = {
@@ -20,9 +28,12 @@ describe('sagas:review updateHeap', () => {
     putReview: () => {},
   };
 
-  const getDataStoreProvider = (newCards, overdueCards) => {
+  const getDataStoreProvider = (
+    newCards: Array<string>,
+    overdueCards: Array<string>
+  ): EffectProviders => {
     return {
-      call(effect, next) {
+      call(effect: CallEffectDescriptor, next: () => Object) {
         if (effect.fn === dataStore.getCards) {
           const type = effect.args[0] ? effect.args[0].type : '';
           if (type === 'new') {
@@ -158,7 +169,7 @@ describe('sagas:review updateHeap', () => {
     const action = reviewActions.setReviewTime(new Date());
 
     return expectSaga(updateHeapSaga, dataStore, action)
-      .provide(getDataStoreProvider({}, []))
+      .provide(getDataStoreProvider([], []))
       .withState(state)
       .not.put.like({ action: { type: 'REVIEW_LOADED' } })
       .run();
@@ -210,12 +221,16 @@ describe('sagas:review updateHeap', () => {
 
 describe('sagas:review updateProgress', () => {
   const dataStore = {
-    putCard: card => card,
+    putCard: (card: Partial<Card>) => card,
     putReview: () => {},
     deleteReview: () => {},
   };
 
-  const getCards = (maxNewCards, maxExistingCards, reviewTime) => {
+  const getCards = (
+    maxNewCards: number,
+    maxExistingCards: number,
+    reviewTime: Date
+  ) => {
     const cards = new Array(Math.max(maxNewCards, maxExistingCards));
     for (let i = 0; i < cards.length; i++) {
       const newCard = i < maxNewCards;
@@ -225,33 +240,39 @@ describe('sagas:review updateProgress', () => {
         answer: `Answer ${i + 1}`,
         progress: {
           level: newCard ? 0 : 1,
-          reviewed: newCard ? null : new Date(reviewTime - 3 * MS_PER_DAY),
+          reviewed: newCard
+            ? null
+            : new Date(reviewTime.getTime() - 3 * MS_PER_DAY),
         },
       };
     }
     return cards;
   };
 
-  const reviewLoaded = (cards, seed1, seed2) => {
+  const reviewLoaded = (
+    cards: Array<Card>,
+    currentCardSeed: number,
+    nextCardSeed: number
+  ) => {
     const action = reviewActions.reviewLoaded(cards);
-    action.currentCardSeed = seed1;
-    action.nextCardSeed = seed2;
+    action.currentCardSeed = currentCardSeed;
+    action.nextCardSeed = nextCardSeed;
     return action;
   };
 
-  const passCard = seed => {
+  const passCard = (seed: number) => {
     const action = reviewActions.passCard();
     action.nextCardSeed = seed;
     return action;
   };
 
-  const failCard = seed => {
+  const failCard = (seed: number) => {
     const action = reviewActions.failCard();
     action.nextCardSeed = seed;
     return action;
   };
 
-  const cardInHistory = (card, state) => {
+  const cardInHistory = (card: Card, state: State) => {
     const { history } = state.review;
     return history.some(
       elem => elem.question === card.question && elem.answer === card.answer
@@ -402,7 +423,9 @@ describe('sagas:review loadReview', () => {
     getCardsById: () => {},
   };
 
-  const getDataStoreProvider = cards => {
+  const getDataStoreProvider = (
+    cards: Array<Partial<Card>>
+  ): EffectProviders => {
     return {
       call(effect, next) {
         if (effect.fn === dataStore.getCardsById) {
@@ -451,7 +474,7 @@ describe('sagas:review loadReview', () => {
   it('fills in the cards when the review is synced', async () => {
     let state = reducer(undefined, { type: 'none' });
 
-    const cards = [
+    const cards: Array<Partial<Card>> = [
       { _id: 'a', question: 'Question A', answer: 'Answer A' },
       { _id: 'b', question: 'Question B', answer: 'Answer B' },
       { _id: 'c', question: 'Question C', answer: 'Answer C' },

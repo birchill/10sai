@@ -1,12 +1,12 @@
-/* global beforeEach, describe, expect, it, jest */
-
 import subject from './sync';
 import { queryAvailableCards, updateReviewCard } from './actions';
-import reducer, { ReviewState } from './reducer';
+import { review as reducer, ReviewState } from './reducer';
+import { ReviewAction } from './actions';
 import { getReviewSummary } from './selectors';
-import EventEmitter from 'event-emitter';
 import { ReviewPhase } from './ReviewPhase';
 import { Card } from '../model';
+import DataStore from '../store/DataStore';
+import { Store } from 'redux';
 
 jest.useFakeTimers();
 
@@ -31,7 +31,7 @@ class MockDataStore {
     } as EventEmitter;
   }
 
-  __triggerChange(type, change) {
+  __triggerChange(type: string, change: any) {
     if (!this.cbs[type]) {
       return;
     }
@@ -57,7 +57,7 @@ const initialReviewState = reducer(undefined, { type: 'NONE' } as any);
 class MockStore {
   cb?: () => void;
   state: State;
-  actions: any[];
+  actions: Array<ReviewAction>;
 
   constructor() {
     this.state = {
@@ -67,11 +67,11 @@ class MockStore {
     this.actions = [];
   }
 
-  subscribe(cb) {
+  subscribe(cb: () => void) {
     this.cb = cb;
   }
 
-  dispatch(action) {
+  dispatch(action: ReviewAction) {
     this.actions.push(action);
   }
 
@@ -79,7 +79,7 @@ class MockStore {
     return this.state;
   }
 
-  __update(newState) {
+  __update(newState: State) {
     this.state = newState;
 
     if (this.cb) {
@@ -90,12 +90,12 @@ class MockStore {
 
 // Mock selectors from other modules we depend on
 jest.mock('../route/selectors', () => ({
-  getScreen: state => state.screen,
+  getScreen: (state: State) => state.screen,
 }));
 
 describe('review:sync', () => {
-  let dataStore;
-  let store;
+  let dataStore: MockDataStore;
+  let store: MockStore;
 
   beforeEach(() => {
     dataStore = new MockDataStore();
@@ -109,7 +109,7 @@ describe('review:sync', () => {
 
   describe('available cards', () => {
     it('triggers an update immediately when cards are needed and there are none', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: initialReviewState,
@@ -120,7 +120,7 @@ describe('review:sync', () => {
     });
 
     it('triggers an update immediately when cards are newly-needed due to a state change, even if there are some', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: {
@@ -134,7 +134,7 @@ describe('review:sync', () => {
     });
 
     it('triggers a delayed update when a card is added', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: initialReviewState,
@@ -154,7 +154,7 @@ describe('review:sync', () => {
     });
 
     it('cancels a delayed update when cards are needed immediately', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: {
@@ -184,7 +184,7 @@ describe('review:sync', () => {
     });
 
     it('cancels a delayed update when cards are no longer needed', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: {
@@ -208,7 +208,7 @@ describe('review:sync', () => {
     });
 
     it('does NOT trigger an update when cards are already being loaded', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: {
@@ -222,7 +222,7 @@ describe('review:sync', () => {
     });
 
     it('does NOT trigger an update when the progress is being saved', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: {
@@ -236,7 +236,7 @@ describe('review:sync', () => {
     });
 
     it('does NOT trigger an update when a card is added when not in an appropriate state', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'home',
         review: initialReviewState,
@@ -251,7 +251,7 @@ describe('review:sync', () => {
     });
 
     it('batches updates from multiple card changes', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: initialReviewState,
@@ -272,7 +272,7 @@ describe('review:sync', () => {
 
   describe('review cards', () => {
     it('triggers an update when the current card is updated', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card: Card = {
         _id: 'abc',
@@ -300,7 +300,7 @@ describe('review:sync', () => {
     });
 
     it('triggers an update when an unreviewed card is updated', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
         _id: 'abc',
@@ -328,7 +328,7 @@ describe('review:sync', () => {
     });
 
     it('triggers an update when a failed card is updated', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
         _id: 'abc',
@@ -356,13 +356,13 @@ describe('review:sync', () => {
     });
 
     it('triggers an update when the current card is deleted', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
-      };
+      } as Card;
       store.__update({
         screen: 'review',
         review: {
@@ -390,7 +390,7 @@ describe('review:sync', () => {
     });
 
     it('does NOT trigger an update when there is no change to the card', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
         _id: 'abc',
@@ -414,7 +414,7 @@ describe('review:sync', () => {
     });
 
     it('does NOT trigger an update when an unrelated card is updated', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
         _id: 'abc',
@@ -441,13 +441,13 @@ describe('review:sync', () => {
     });
 
     it('does NOT trigger an update when an unrelated card is deleted', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
         _id: 'abc',
         question: 'Question',
         answer: 'Answer',
-      };
+      } as Card;
       store.__update({
         screen: 'review',
         review: {
@@ -474,7 +474,7 @@ describe('review:sync', () => {
 
   describe('review state', () => {
     it('triggers a sync when the review has changed', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       store.__update({
         screen: 'review',
@@ -498,7 +498,7 @@ describe('review:sync', () => {
     });
 
     it('does NOT trigger a sync when nothing has changed', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       store.__update({
         screen: 'review',
@@ -515,7 +515,7 @@ describe('review:sync', () => {
     });
 
     it('cancels the review when the review is deleted', () => {
-      subject(dataStore, store);
+      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
         review: {
