@@ -11,10 +11,6 @@ import SyncServerForm from './SyncServerForm';
 
 configure({ adapter: new Adapter() });
 
-global.document = {
-  addEventListener: () => {},
-};
-
 describe('<SyncSettingsPanel />', () => {
   const stub = jest.fn();
 
@@ -36,7 +32,9 @@ describe('<SyncSettingsPanel />', () => {
         onResume={stub}
       />
     );
-    for (const state of Object.keys(SyncState)) {
+    for (const state of Object.keys(SyncState) as Array<
+      keyof typeof SyncState
+    >) {
       subject.setProps({ syncState: SyncState[state] });
       subject.update();
       expect(subject.find('.heading').text().length).toBeGreaterThan(0);
@@ -57,7 +55,9 @@ describe('<SyncSettingsPanel />', () => {
       />
     );
 
-    for (const state of ['OK', 'PAUSED', 'ERROR', 'OFFLINE']) {
+    for (const state of ['OK', 'PAUSED', 'ERROR', 'OFFLINE'] as Array<
+      keyof typeof SyncState
+    >) {
       subject.setProps({ syncState: SyncState[state] });
       expect(subject.find('ServerStatus').prop('lastSyncTime')).toBeInstanceOf(
         Date
@@ -165,7 +165,9 @@ describe('<SyncSettingsPanel />', () => {
         onResume={stub}
       />
     );
-    for (const state of Object.keys(SyncState)) {
+    for (const state of Object.keys(SyncState) as Array<
+      keyof typeof SyncState
+    >) {
       if (state === 'IN_PROGRESS') {
         continue;
       }
