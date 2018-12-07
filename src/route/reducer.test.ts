@@ -1,7 +1,5 @@
-/* global describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
-
-import subject from './reducer';
+import { route as subject } from './reducer';
+import { Route } from './router';
 import * as actions from './actions';
 
 // We'd like to make this test independent of the router in use but rather than
@@ -9,20 +7,20 @@ import * as actions from './actions';
 // just define a few standard URLs/paths with corresponding routes here.
 const urlA = '/';
 const pathA = { path: '/', search: '', fragment: '' };
-const routeA = { screen: '' };
+const routeA: Route = { screen: '' };
 
 const urlB = '/?abc=123';
 const pathB = { path: '/', search: '?abc=123', fragment: '' };
-const routeB = { screen: '', search: { abc: '123' } };
+const routeB: Route = { screen: '', search: { abc: '123' } };
 
 const urlC = '/#hash'; // eslint-disable-line no-unused-vars
 // eslint-disable-next-line no-unused-vars
 const pathC = { path: '/', search: '', fragment: '#hash' };
-const routeC = { screen: '', fragment: 'hash' };
+const routeC: Route = { screen: '', fragment: 'hash' };
 
 const urlD = '/?abc=123#hash'; // eslint-disable-line no-unused-vars
 const pathD = { path: '/', search: '?abc=123', fragment: '#hash' };
-const routeD = { screen: '', search: { abc: '123' }, fragment: 'hash' };
+const routeD: Route = { screen: '', search: { abc: '123' }, fragment: 'hash' };
 
 describe('reducer:route', () => {
   it('updates the current route on an initial NAVIGATE', () => {
@@ -118,8 +116,7 @@ describe('reducer:route', () => {
     () => {
       const initialState = { history: [routeA, routeB, routeC], index: 2 };
       const action = actions.navigate({
-        index: 1,
-        source: 'history',
+        source: { type: 'history', index: 1 },
         ...pathB,
       });
 
@@ -141,8 +138,7 @@ describe('reducer:route', () => {
         index: 3,
       };
       const action = actions.navigate({
-        index: 1,
-        source: 'history',
+        source: { type: 'history', index: 1 },
         ...pathB,
       });
 
@@ -158,8 +154,7 @@ describe('reducer:route', () => {
   it('does nothing on NAVIGATE (source:history) when index is current item', () => {
     const initialState = { history: [routeA, routeB, routeC], index: 1 };
     const action = actions.navigate({
-      index: 1,
-      source: 'history',
+      source: { type: 'history', index: 1 },
       ...pathB,
     });
 
@@ -174,8 +169,7 @@ describe('reducer:route', () => {
   it('updates the index on NAVIGATE (source:history) when index is zero', () => {
     const initialState = { history: [routeA, routeB, routeC], index: 2 };
     const action = actions.navigate({
-      index: 0,
-      source: 'history',
+      source: { type: 'history', index: 0 },
       ...pathA,
     });
 
@@ -184,34 +178,6 @@ describe('reducer:route', () => {
     expect(updatedState).toEqual({
       history: [routeA, routeB, routeC],
       index: 0,
-    });
-  });
-
-  it('does nothing on NAVIGATE (source:history) when index is null', () => {
-    const initialState = { history: [routeA, routeB, routeC], index: 2 };
-    const action = actions.navigate({
-      index: null,
-      source: 'history',
-      ...pathA,
-    });
-
-    const updatedState = subject(initialState, action);
-
-    expect(updatedState).toEqual({
-      history: [routeA, routeB, routeC],
-      index: 2,
-    });
-  });
-
-  it('does nothing on NAVIGATE (source:history) when index is missing', () => {
-    const initialState = { history: [routeA, routeB, routeC], index: 2 };
-    const action = actions.navigate({ source: 'history', ...pathB });
-
-    const updatedState = subject(initialState, action);
-
-    expect(updatedState).toEqual({
-      history: [routeA, routeB, routeC],
-      index: 2,
     });
   });
 
@@ -221,8 +187,7 @@ describe('reducer:route', () => {
     () => {
       const initialState = { history: [routeA, routeB, routeC], index: 0 };
       const action = actions.navigate({
-        source: 'history',
-        index: 2,
+        source: { type: 'history', index: 2 },
         ...pathC,
       });
 
@@ -241,8 +206,7 @@ describe('reducer:route', () => {
     () => {
       const initialState = { history: [routeA, routeB, routeC], index: 2 };
       const action = actions.navigate({
-        source: 'history',
-        index: 4,
+        source: { type: 'history', index: 4 },
         ...pathD,
       });
 
@@ -261,8 +225,7 @@ describe('reducer:route', () => {
     () => {
       const initialState = { history: [routeA, routeB, routeC], index: 2 };
       const action = actions.navigate({
-        source: 'history',
-        index: 1,
+        source: { type: 'history', index: 1 },
         ...pathA,
       });
 

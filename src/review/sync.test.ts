@@ -1,6 +1,7 @@
 import subject from './sync';
 import { queryAvailableCards, updateReviewCard } from './actions';
-import { review as reducer, ReviewState } from './reducer';
+import { ReviewState } from './reducer';
+import reducer from '../reducer';
 import { ReviewAction } from './actions';
 import { getReviewSummary } from './selectors';
 import { ReviewPhase } from './ReviewPhase';
@@ -52,7 +53,7 @@ interface State {
   review: ReviewState;
 }
 
-const initialReviewState = reducer(undefined, { type: 'NONE' } as any);
+const initialState = reducer(undefined, { type: 'NONE' } as any);
 
 class MockStore {
   cb?: () => void;
@@ -61,8 +62,8 @@ class MockStore {
 
   constructor() {
     this.state = {
-      screen: '',
-      review: initialReviewState,
+      screen: initialState.route.screen,
+      review: initialState.review,
     };
     this.actions = [];
   }
@@ -112,7 +113,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
-        review: initialReviewState,
+        review: initialState.review,
       });
 
       expect(store.actions).toEqual([queryAvailableCards()]);
@@ -124,7 +125,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           availableCards: { newCards: 2, overdueCards: 3 },
         },
       });
@@ -137,7 +138,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
-        review: initialReviewState,
+        review: initialState.review,
       });
       expect(store.actions).toEqual([queryAvailableCards()]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
@@ -158,7 +159,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           availableCards: { newCards: 2, overdueCards: 3 },
         },
       });
@@ -172,7 +173,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           availableCards: undefined,
         },
       });
@@ -188,7 +189,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           availableCards: { newCards: 2, overdueCards: 3 },
         },
       });
@@ -201,7 +202,7 @@ describe('review:sync', () => {
       // Then change screen
       store.__update({
         screen: 'home',
-        review: initialReviewState,
+        review: initialState.review,
       });
       expect(clearTimeout).toHaveBeenCalledTimes(1);
       expect(store.actions).toEqual([queryAvailableCards()]);
@@ -212,7 +213,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           loadingAvailableCards: true,
         },
       });
@@ -226,7 +227,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           savingProgress: true,
         },
       });
@@ -239,7 +240,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'home',
-        review: initialReviewState,
+        review: initialState.review,
       });
       expect(store.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
@@ -254,7 +255,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
       store.__update({
         screen: 'review',
-        review: initialReviewState,
+        review: initialState.review,
       });
       expect(store.actions).toEqual([queryAvailableCards()]);
 
@@ -282,7 +283,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           currentCard: card,
         },
       });
@@ -310,7 +311,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           heap: [card],
         },
       });
@@ -338,7 +339,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           failedCardsLevel2: [card],
         },
       });
@@ -366,7 +367,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           currentCard: card,
         },
       });
@@ -400,7 +401,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           currentCard: card,
         },
       });
@@ -424,7 +425,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           currentCard: card,
         },
       });
@@ -451,7 +452,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           currentCard: card,
         },
       });
@@ -478,7 +479,7 @@ describe('review:sync', () => {
 
       store.__update({
         screen: 'review',
-        review: initialReviewState,
+        review: initialState.review,
       });
 
       const review = {
@@ -502,11 +503,9 @@ describe('review:sync', () => {
 
       store.__update({
         screen: 'review',
-        review: initialReviewState,
+        review: initialState.review,
       });
-      const reviewSummary = getReviewSummary({
-        review: initialReviewState,
-      });
+      const reviewSummary = getReviewSummary(initialState);
 
       dataStore.__triggerChange('review', reviewSummary);
       expect(store.actions).not.toContainEqual(
@@ -519,7 +518,7 @@ describe('review:sync', () => {
       store.__update({
         screen: 'review',
         review: {
-          ...initialReviewState,
+          ...initialState.review,
           phase: ReviewPhase.Question,
         },
       });

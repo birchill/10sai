@@ -20,12 +20,34 @@ import deepEqual from 'deep-equal';
 // We don't anticipate sharing cards between subjects. But what about reviewing
 // across subjects?
 
-export function routeFromURL(url) {
+interface SearchParams {
+  // The OutputParams in @types/query-string seems to ignore the null case.
+  [key: string]: string | string[] | undefined | null;
+}
+
+interface RouteBase {
+  popup?: 'settings';
+  search?: SearchParams;
+  fragment?: string;
+}
+
+interface GenericRoute extends RouteBase {
+  screen: '' | 'lookup' | 'review';
+}
+
+interface EditCardRoute extends RouteBase {
+  screen: 'edit-card';
+  card?: string;
+}
+
+export type Route = GenericRoute | EditCardRoute;
+
+export function routeFromURL(url: string): Route {
   let path = url;
 
   // Helper function to split string |str| into two parts at the first
   // occurrence of |delim|.
-  const splitAtFirst = (str, delim) => {
+  const splitAtFirst = (str: string, delim: string) => {
     let splitStart = str.indexOf(delim);
     if (splitStart === -1) {
       splitStart = str.length;
@@ -34,37 +56,39 @@ export function routeFromURL(url) {
   };
 
   // Strip fragment
-  let fragment;
-  // eslint-disable-next-line prefer-const
+  let fragment: string;
   [path, fragment] = splitAtFirst(path, '#');
 
   // Strip and parse query string
-  let search;
-  // eslint-disable-next-line prefer-const
+  let search: string;
   [path, search] = splitAtFirst(path, '?');
 
   return routeFromPath(path, search, fragment);
 }
 
-export function routeFromPath(path, search, fragment) {
-  const route = {};
+export function routeFromPath(
+  path?: string,
+  search?: string | null,
+  fragment?: string | null
+): Route {
+  let route: Route = { screen: '' };
 
   // Trim leading /
   if (path && path[0] === '/') {
     path = path.substr(1);
   }
 
-  route.screen = '';
-
   if (path === 'settings') {
     route.popup = 'settings';
   } else if (path === 'lookup') {
     route.screen = 'lookup';
   } else if (path === 'cards/new') {
-    route.screen = 'edit-card';
+    route = { screen: 'edit-card' };
   } else if (path && path.startsWith('cards/')) {
-    route.screen = 'edit-card';
-    route.card = path.substr('cards/'.length);
+    route = {
+      screen: 'edit-card',
+      card: path.substr('cards/'.length),
+    };
   } else if (path === 'review') {
     route.screen = 'review';
   }
@@ -93,7 +117,7 @@ export function routeFromPath(path, search, fragment) {
   return route;
 }
 
-export function URLFromRoute(route = {}) {
+export function URLFromRoute(route: Route = { screen: '' }): string {
   let url = '/';
 
   // Map route to URL
@@ -104,7 +128,7 @@ export function URLFromRoute(route = {}) {
   } else if (route.screen === 'lookup') {
     url += 'lookup';
   } else if (route.screen === 'edit-card') {
-    url += 'cards/' + (route.card || 'new');
+    url += 'cards/' + ((route as EditCardRoute).card || 'new');
   } else if (route.screen === 'review') {
     url += 'review';
   }
@@ -122,6 +146,6 @@ export function URLFromRoute(route = {}) {
   return url;
 }
 
-export function routesEqual(a, b) {
+export function routesEqual(a: Route, b: Route): boolean {
   return deepEqual(a, b);
 }

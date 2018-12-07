@@ -22,6 +22,7 @@
     "@types/event-emitter": "^0.3.2",
     "@types/pouchdb-find": "^6.3.3",
     "@types/pouchdb-upsert": "^2.2.4",
+    "@types/query-string": "^6.1.1",
     "@types/storybook__react": "^4.0.0",
     "@types/ua-parser-js": "^0.7.32",
     "babel-preset-env": "^1.7.0",

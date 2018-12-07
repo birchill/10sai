@@ -116,8 +116,10 @@ window.addEventListener('popstate', evt => {
       path: window.location.pathname,
       search: window.location.search,
       fragment: window.location.hash,
-      index: evt.state ? evt.state.index : 0,
-      source: 'history',
+      source: {
+        type: 'history',
+        index: evt.state ? evt.state.index : 0,
+      },
     })
   );
 });

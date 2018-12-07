@@ -1,12 +1,15 @@
 import { createSelector } from 'reselect';
+
 import { getScreen } from '../route/selectors';
 import { ReviewPhase } from './ReviewPhase';
 import { ReviewState } from './reducer';
+import { RouteState } from '../route/reducer';
 import { Card, Review } from '../model';
 
 // XXX Move this to root reducer once it gets converted to TS.
 interface State {
   review: ReviewState;
+  route: RouteState;
 }
 
 const getHeapLength = (state: State) => state.review.heap.length;

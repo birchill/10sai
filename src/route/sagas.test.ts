@@ -7,8 +7,6 @@
  * It also has absolutely woeful documentation.
  * That is all.
  */
-/* global beforeEach, describe, it */
-/* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
@@ -20,6 +18,21 @@ import {
 import { FormState } from '../edit/FormState';
 import * as routeActions from './actions';
 import * as editActions from '../edit/actions';
+import reducer from '../reducer';
+
+declare global {
+  namespace NodeJS {
+    interface Global {
+      history: {
+        pushState: (data: any, title: string, url?: string) => void;
+        replaceState: (data: any, title: string, url?: string) => void;
+        back: () => void;
+      };
+    }
+  }
+}
+
+const initialState = reducer(undefined, { type: 'none' });
 
 describe('sagas:route followLink', () => {
   beforeEach(() => {
@@ -32,6 +45,7 @@ describe('sagas:route followLink', () => {
 
   it('does forwards navigation when direction is forwards', () => {
     return expectSaga(followLinkSaga, routeActions.followLink('/', 'forwards'))
+      .withState(initialState)
       .provide([[matchers.call.fn(beforeScreenChangeSaga), {}]])
       .call([history, 'pushState'], { index: 0 }, '', '/')
       .put(routeActions.navigate({ url: '/' }))
@@ -40,6 +54,7 @@ describe('sagas:route followLink', () => {
 
   it('does forwards navigation when direction is not specified', () => {
     return expectSaga(followLinkSaga, routeActions.followLink('/'))
+      .withState(initialState)
       .provide([[matchers.call.fn(beforeScreenChangeSaga), {}]])
       .call([history, 'pushState'], { index: 0 }, '', '/')
       .put(routeActions.navigate({ url: '/' }))
@@ -51,6 +66,7 @@ describe('sagas:route followLink', () => {
       ' history',
     () => {
       return expectSaga(followLinkSaga, routeActions.followLink('/', 'replace'))
+        .withState(initialState)
         .provide([[matchers.call.fn(beforeScreenChangeSaga), {}]])
         .call([history, 'pushState'], { index: 0 }, '', '/')
         .put(routeActions.navigate({ url: '/' }))
@@ -164,6 +180,7 @@ describe('sagas:route followLink', () => {
         followLinkSaga,
         routeActions.followLink('/#abc', 'backwards')
       )
+        .withState(initialState)
         .provide([[matchers.call.fn(beforeScreenChangeSaga), {}]])
         .call([history, 'pushState'], { index: 0 }, '', '/#abc')
         .put(routeActions.navigate({ url: '/#abc' }))
@@ -230,7 +247,7 @@ describe('sagas:route beforeScreenChange', () => {
         history: [{ screen: 'edit-card' }],
       },
     };
-    const error = { message: 'too bad' };
+    const error = { name: 'bad', message: 'too bad' };
 
     return expectSaga(beforeScreenChangeSaga)
       .withState(state)

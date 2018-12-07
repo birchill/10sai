@@ -5,8 +5,16 @@ import * as noteActions from '../notes/actions';
 import { getReviewSummary } from './selectors';
 import { generateCards } from '../utils/testing';
 import { Card, Review } from '../model';
+import reducer from '../reducer';
+import { RouteState } from '../route/reducer';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+// XXX Move this to root reducer once it gets converted to TS.
+interface State {
+  review: ReviewState;
+  route: RouteState;
+}
 
 // Wrappers that creates a new review, new review time, and the appropriate
 // number of cards.
@@ -14,18 +22,23 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 function newReview(
   maxNewCards: number,
   maxCards: number
-): [ReviewState, Card[], Date] {
-  const initialState = subject(
+): [ReviewState, Card[], Date, State] {
+  const initialState = reducer(
     undefined,
     actions.newReview(maxNewCards, maxCards)
   );
   const cards = generateCards(
     maxNewCards,
     maxCards,
-    initialState.reviewTime.getTime()
+    initialState.review.reviewTime.getTime()
   );
 
-  return [initialState, cards, initialState.reviewTime];
+  return [
+    initialState.review,
+    cards,
+    initialState.review.reviewTime,
+    initialState,
+  ];
 }
 
 // Wrappers for action creators that also set the random seed values
@@ -651,10 +664,13 @@ describe('reducer:review', () => {
   });
 
   it('should integrate changes to the review state on LOAD_REVIEW', () => {
-    const [initialState, cards] = newReview(1, 3);
+    const [initialState, cards, reviewTime, fullInitialState] = newReview(1, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
-    const reviewSummary = getReviewSummary({ review: updatedState });
+    const reviewSummary = getReviewSummary({
+      ...fullInitialState,
+      review: updatedState,
+    });
     const review: Review = {
       ...reviewSummary,
       completed: 1,

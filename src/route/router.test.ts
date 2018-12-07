@@ -1,6 +1,3 @@
-/* global describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
-
 import {
   routeFromURL,
   routeFromPath,

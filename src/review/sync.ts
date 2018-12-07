@@ -13,6 +13,7 @@ import * as reviewActions from './actions';
 import { ReviewPhase } from './ReviewPhase';
 import { DataStore } from '../store/DataStore';
 import { ReviewState } from './reducer';
+import { RouteState } from '../route/reducer';
 
 // In some circumstances we delay querying available cards. We do this so that
 // changes that occur in rapid succession are batched, but also because when
@@ -25,6 +26,7 @@ const QUERY_AVAILABLE_CARDS_DELAY = 3000;
 // XXX Move this to root reducer once it gets converted to TS.
 interface State {
   review: ReviewState;
+  route: RouteState;
 }
 
 function sync(dataStore: DataStore, store: Store<State>) {

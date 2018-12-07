@@ -15,6 +15,12 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
   Pick<Partial<T>, K>;
 
 /**
+ * The inverse of MakeOptional -- make only the specified members required.
+ */
+export type MakeOnlyRequired<T, K extends keyof T> = Omit<Partial<T>, K> &
+  Pick<T, K>;
+
+/**
  * A variant on Partial that applies to nested members too.
  */
 export type DeepPartial<T> = {
