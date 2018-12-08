@@ -12,7 +12,7 @@ import TagSuggester from '../suggestions/TagSuggester.ts';
 import { hasCommandModifier, isTextBox } from '../utils/keyboard.ts';
 
 import EditCardScreen from './EditCardScreen.tsx';
-import HomeScreenContainer from './HomeScreenContainer.jsx';
+import { HomeScreenContainer } from './HomeScreenContainer.tsx';
 import DataStoreContext from './DataStoreContext.ts';
 import KeywordSuggesterContext from './KeywordSuggesterContext.ts';
 import { LookupScreen } from './LookupScreen.tsx';

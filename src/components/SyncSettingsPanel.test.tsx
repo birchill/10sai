@@ -5,11 +5,21 @@
 import React from 'react';
 import { configure, shallow, ShallowWrapper } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import SyncState from '../sync/states';
-import SyncSettingsPanel from './SyncSettingsPanel';
-import SyncServerForm from './SyncServerForm';
+
+import { SyncDisplayState } from '../sync/SyncDisplayState';
+import { SyncSettingsPanel } from './SyncSettingsPanel';
+import { SyncServerForm } from './SyncServerForm';
 
 configure({ adapter: new Adapter() });
+
+const allSyncStates: Array<SyncDisplayState> = [
+  SyncDisplayState.Ok,
+  SyncDisplayState.InProgress,
+  SyncDisplayState.Paused,
+  SyncDisplayState.Error,
+  SyncDisplayState.Offline,
+  SyncDisplayState.NotConfigured,
+];
 
 describe('<SyncSettingsPanel />', () => {
   const stub = jest.fn();
@@ -23,7 +33,7 @@ describe('<SyncSettingsPanel />', () => {
   it('has a summary label in all states', () => {
     const subject = shallow(
       <SyncSettingsPanel
-        syncState={SyncState.NOT_CONFIGURED}
+        syncState={SyncDisplayState.NotConfigured}
         onSubmit={stub}
         onRetry={stub}
         onEdit={stub}
@@ -32,10 +42,8 @@ describe('<SyncSettingsPanel />', () => {
         onResume={stub}
       />
     );
-    for (const state of Object.keys(SyncState) as Array<
-      keyof typeof SyncState
-    >) {
-      subject.setProps({ syncState: SyncState[state] });
+    for (const syncState of allSyncStates) {
+      subject.setProps({ syncState });
       subject.update();
       expect(subject.find('.heading').text().length).toBeGreaterThan(0);
     }
@@ -44,7 +52,7 @@ describe('<SyncSettingsPanel />', () => {
   it('shows the last updated information state', () => {
     const subject = shallow(
       <SyncSettingsPanel
-        syncState={SyncState.OK}
+        syncState={SyncDisplayState.Ok}
         onSubmit={stub}
         onRetry={stub}
         onEdit={stub}
@@ -55,10 +63,13 @@ describe('<SyncSettingsPanel />', () => {
       />
     );
 
-    for (const state of ['OK', 'PAUSED', 'ERROR', 'OFFLINE'] as Array<
-      keyof typeof SyncState
-    >) {
-      subject.setProps({ syncState: SyncState[state] });
+    for (const syncState of [
+      SyncDisplayState.Ok,
+      SyncDisplayState.Paused,
+      SyncDisplayState.Error,
+      SyncDisplayState.Offline,
+    ]) {
+      subject.setProps({ syncState });
       expect(subject.find('ServerStatus').prop('lastSyncTime')).toBeInstanceOf(
         Date
       );
@@ -75,7 +86,7 @@ describe('<SyncSettingsPanel />', () => {
     const onEdit = jest.fn();
     const subject = shallow(
       <SyncSettingsPanel
-        syncState={SyncState.NOT_CONFIGURED}
+        syncState={SyncDisplayState.NotConfigured}
         onSubmit={stub}
         onRetry={stub}
         onEdit={onEdit}
@@ -94,7 +105,7 @@ describe('<SyncSettingsPanel />', () => {
     const onCancel = jest.fn();
     const subject = shallow<SyncSettingsPanel>(
       <SyncSettingsPanel
-        syncState={SyncState.NOT_CONFIGURED}
+        syncState={SyncDisplayState.NotConfigured}
         onSubmit={stub}
         onRetry={stub}
         onEdit={stub}
@@ -115,7 +126,7 @@ describe('<SyncSettingsPanel />', () => {
     const onSubmit = jest.fn();
     const subject = shallow(
       <SyncSettingsPanel
-        syncState={SyncState.NOT_CONFIGURED}
+        syncState={SyncDisplayState.NotConfigured}
         onSubmit={onSubmit}
         onRetry={stub}
         onEdit={stub}
@@ -140,7 +151,7 @@ describe('<SyncSettingsPanel />', () => {
   it("shows a progress bar in 'in progress' state", () => {
     const subject = shallow(
       <SyncSettingsPanel
-        syncState={SyncState.IN_PROGRESS}
+        syncState={SyncDisplayState.InProgress}
         onSubmit={stub}
         onRetry={stub}
         onEdit={stub}
@@ -156,7 +167,7 @@ describe('<SyncSettingsPanel />', () => {
   it('does NOT show progress bar in other states', () => {
     const subject = shallow(
       <SyncSettingsPanel
-        syncState={SyncState.IN_PROGRESS}
+        syncState={SyncDisplayState.InProgress}
         onSubmit={stub}
         onRetry={stub}
         onEdit={stub}
@@ -165,14 +176,12 @@ describe('<SyncSettingsPanel />', () => {
         onResume={stub}
       />
     );
-    for (const state of Object.keys(SyncState) as Array<
-      keyof typeof SyncState
-    >) {
-      if (state === 'IN_PROGRESS') {
+    for (const syncState of allSyncStates) {
+      if (syncState === SyncDisplayState.InProgress) {
         continue;
       }
 
-      subject.setProps({ syncState: SyncState[state] });
+      subject.setProps({ syncState });
       expect(subject.find('progress')).toHaveLength(0);
     }
   });
@@ -181,7 +190,7 @@ describe('<SyncSettingsPanel />', () => {
     const onPause = jest.fn();
     const subject = shallow(
       <SyncSettingsPanel
-        syncState={SyncState.IN_PROGRESS}
+        syncState={SyncDisplayState.InProgress}
         onSubmit={stub}
         onRetry={stub}
         onEdit={stub}
@@ -206,7 +215,7 @@ describe('<SyncSettingsPanel />', () => {
     const errorMessage = { message: 'Oh dear' };
     const subject = shallow(
       <SyncSettingsPanel
-        syncState={SyncState.ERROR}
+        syncState={SyncDisplayState.Error}
         onSubmit={stub}
         onRetry={stub}
         onEdit={stub}

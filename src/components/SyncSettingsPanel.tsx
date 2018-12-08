@@ -1,7 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-import SyncState from '../sync/states';
+import { SyncDisplayState } from '../sync/SyncDisplayState';
 import { SyncStatusMessages } from '../sync/status-messages';
 import { SyncServer } from '../sync/SyncServer';
 
@@ -51,16 +50,16 @@ function translateError(error: any) {
   return <p>Unknown error</p>;
 }
 
-const iconClasses = new Map<symbol, string>();
-iconClasses.set(SyncState.OK, '-uptodate');
-iconClasses.set(SyncState.IN_PROGRESS, '-inprogress');
-iconClasses.set(SyncState.PAUSED, '-paused');
-iconClasses.set(SyncState.OFFLINE, '-offline');
-iconClasses.set(SyncState.ERROR, '-error');
-iconClasses.set(SyncState.NOT_CONFIGURED, '-notconfigured');
+const iconClasses = new Map<SyncDisplayState, string>();
+iconClasses.set(SyncDisplayState.Ok, '-uptodate');
+iconClasses.set(SyncDisplayState.InProgress, '-inprogress');
+iconClasses.set(SyncDisplayState.Paused, '-paused');
+iconClasses.set(SyncDisplayState.Offline, '-offline');
+iconClasses.set(SyncDisplayState.Error, '-error');
+iconClasses.set(SyncDisplayState.NotConfigured, '-notconfigured');
 
 interface Props {
-  syncState: symbol;
+  syncState: SyncDisplayState;
   server?: SyncServer;
   lastSyncTime?: Date;
   errorDetail?: any;
@@ -235,7 +234,7 @@ export class SyncSettingsPanel extends React.PureComponent<Props> {
 
   render() {
     const iconClass = this.props.editingServer
-      ? iconClasses.get(SyncState.NOT_CONFIGURED)
+      ? iconClasses.get(SyncDisplayState.NotConfigured)
       : iconClasses.get(this.props.syncState);
 
     const summary = this.props.editingServer
@@ -256,27 +255,27 @@ export class SyncSettingsPanel extends React.PureComponent<Props> {
       );
     } else {
       switch (this.props.syncState) {
-        case SyncState.OK:
-        case SyncState.OFFLINE:
+        case SyncDisplayState.Ok:
+        case SyncDisplayState.Offline:
           body = this.renderOkOrOffline();
           break;
-        case SyncState.IN_PROGRESS:
+        case SyncDisplayState.InProgress:
           body = this.renderInProgress();
           break;
-        case SyncState.PAUSED:
+        case SyncDisplayState.Paused:
           body = this.renderPaused();
           break;
-        case SyncState.ERROR:
+        case SyncDisplayState.Error:
           body = this.renderError();
           break;
-        case SyncState.NOT_CONFIGURED:
+        case SyncDisplayState.NotConfigured:
           body = this.renderNotConfigured();
           break;
       }
     }
 
     let subheading;
-    if (this.props.syncState === SyncState.NOT_CONFIGURED) {
+    if (this.props.syncState === SyncDisplayState.NotConfigured) {
       subheading = (
         <div className="subheading">
           Adding a sync server lets you access your cards from another computer,

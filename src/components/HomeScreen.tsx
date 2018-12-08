@@ -1,14 +1,19 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import CardGrid from './CardGrid.jsx';
-import Link from './Link.tsx';
-import LoadingIndicator from './LoadingIndicator.tsx';
-import Navbar from './Navbar.jsx';
-import SyncState from '../sync/states';
+import { Link } from './Link';
+import { LoadingIndicator } from './LoadingIndicator';
+import { Navbar } from './Navbar';
+import { SyncDisplayState } from '../sync/SyncDisplayState';
 
-function HomeScreen(props) {
-  let content;
+interface Props {
+  loading: boolean;
+  hasCards: boolean;
+  syncState: SyncDisplayState;
+}
+
+export const HomeScreen: React.SFC<Props> = (props: Props) => {
+  let content: React.ReactNode;
   if (props.loading) {
     content = (
       <div className="summary-panel">
@@ -34,7 +39,7 @@ function HomeScreen(props) {
           >
             Add a card
           </Link>
-          {props.syncState === SyncState.NOT_CONFIGURED ? (
+          {props.syncState === SyncDisplayState.NotConfigured ? (
             <p>
               <Link
                 className="button -center -icon -settings"
@@ -54,17 +59,11 @@ function HomeScreen(props) {
   return (
     <div className="home-screen">
       <Navbar syncState={props.syncState} />
-      <section className="content-screen" tabIndex="-1">
+      <section className="content-screen" tabIndex={-1}>
         {content}
       </section>
     </div>
   );
-}
-
-HomeScreen.propTypes = {
-  loading: PropTypes.bool.isRequired,
-  hasCards: PropTypes.bool.isRequired,
-  syncState: PropTypes.symbol.isRequired,
 };
 
 export default HomeScreen;

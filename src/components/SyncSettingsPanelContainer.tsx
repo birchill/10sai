@@ -1,21 +1,31 @@
 import { connect } from 'react-redux';
-import { Dispatch, Action } from 'redux';
+import { Dispatch } from 'redux';
 import SyncSettingsPanel from './SyncSettingsPanel';
 import { SyncServer } from '../sync/SyncServer';
+import {
+  getSyncDisplayState,
+  SyncDisplayState,
+} from '../sync/SyncDisplayState';
+import * as syncActions from '../sync/actions';
+import { Action } from '../actions';
+import { SyncState } from '../sync/reducer';
 
 // XXX Use actual state here
-type State = any;
+type State = {
+  sync: SyncState;
+};
 
 interface StateProps {
-  syncState: symbol;
+  syncState: SyncDisplayState;
   server?: SyncServer;
   lastSyncTime?: Date;
-  progress?: number;
+  progress: number | null | undefined;
   editingServer?: boolean;
+  errorDetail?: any;
 }
 
-const mapStateToProps = (state: State) => ({
-  syncState: state.sync.state,
+const mapStateToProps = (state: State): StateProps => ({
+  syncState: getSyncDisplayState(state.sync),
   server: state.sync.server,
   lastSyncTime: state.sync.lastSyncTime
     ? new Date(state.sync.lastSyncTime)
@@ -34,14 +44,14 @@ interface DispatchProps {
   onResume: () => void;
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
+const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
   onSubmit: (server?: SyncServer) =>
-    dispatch({ type: 'SET_SYNC_SERVER', server }),
-  onRetry: (server?: SyncServer) => dispatch({ type: 'RETRY_SYNC', server }),
-  onEdit: () => dispatch({ type: 'EDIT_SYNC_SERVER' }),
-  onCancel: () => dispatch({ type: 'FINISH_EDIT_SYNC_SERVER' }),
-  onPause: () => dispatch({ type: 'PAUSE_SYNC' }),
-  onResume: () => dispatch({ type: 'RESUME_SYNC' }),
+    dispatch(syncActions.setSyncServer(server)),
+  onRetry: () => dispatch(syncActions.retrySync()),
+  onEdit: () => dispatch(syncActions.editSyncServer()),
+  onCancel: () => dispatch(syncActions.finishEditSyncServer()),
+  onPause: () => dispatch(syncActions.pauseSync()),
+  onResume: () => dispatch(syncActions.resumeSync()),
 });
 
 const SyncSettingsPanelContainer = connect<StateProps, DispatchProps>(

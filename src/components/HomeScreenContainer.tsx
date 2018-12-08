@@ -1,21 +1,33 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import {
+  getSyncDisplayState,
+  SyncDisplayState,
+} from '../sync/SyncDisplayState';
+import { Card } from '../model';
 
-import HomeScreen from './HomeScreen.jsx';
+import { HomeScreen } from './HomeScreen';
+import { SyncState } from '../sync/reducer';
 
-class HomeScreenContainer extends React.PureComponent {
+interface Props {
+  syncState: SyncDisplayState;
+}
+
+interface HomeScreenContainerState {
+  loading: boolean;
+  hasCards: boolean;
+}
+
+class HomeScreenContainer extends React.PureComponent<
+  Props,
+  HomeScreenContainerState
+> {
   static get contextTypes() {
     return { cardList: PropTypes.object };
   }
 
-  static get propTypes() {
-    return {
-      syncState: PropTypes.symbol.isRequired,
-    };
-  }
-
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
     this.state = { loading: true, hasCards: false };
 
@@ -23,7 +35,7 @@ class HomeScreenContainer extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.context.cardList.getCards().then(cards => {
+    this.context.cardList.getCards().then((cards: Array<Card>) => {
       this.setState({ loading: false });
       if (cards.length) {
         this.setState({ hasCards: true });
@@ -37,7 +49,7 @@ class HomeScreenContainer extends React.PureComponent {
     this.context.cardList.unsubscribe(this.handleCardsChange);
   }
 
-  handleCardsChange(cards) {
+  handleCardsChange(cards: Array<Card>) {
     if (cards.length && !this.state.hasCards) {
       this.setState({ hasCards: true });
     } else if (!cards.length && this.state.hasCards) {
@@ -56,6 +68,12 @@ class HomeScreenContainer extends React.PureComponent {
   }
 }
 
-const mapStateToProps = state => ({ syncState: state.sync.state });
+interface State {
+  sync: SyncState;
+}
+
+const mapStateToProps = (state: State) => ({
+  syncState: getSyncDisplayState(state.sync),
+});
 
 export default connect(mapStateToProps)(HomeScreenContainer);

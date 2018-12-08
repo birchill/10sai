@@ -1,13 +1,13 @@
-import SyncState from './states';
+import { SyncDisplayState } from './SyncDisplayState';
 
 // Eventually we'll localize this...
-export const SyncStatusMessages = new Map<symbol, string>([
-  [SyncState.OK, 'Sync is up to date'],
-  [SyncState.IN_PROGRESS, 'Sync is in progress'],
-  [SyncState.PAUSED, 'Sync is paused'],
-  [SyncState.OFFLINE, 'Sync offline'],
-  [SyncState.ERROR, 'Sync had a problem'],
-  [SyncState.NOT_CONFIGURED, 'Sync is not configured'],
+export const SyncStatusMessages = new Map<SyncDisplayState, string>([
+  [SyncDisplayState.Ok, 'Sync is up to date'],
+  [SyncDisplayState.InProgress, 'Sync is in progress'],
+  [SyncDisplayState.Paused, 'Sync is paused'],
+  [SyncDisplayState.Offline, 'Sync offline'],
+  [SyncDisplayState.Error, 'Sync had a problem'],
+  [SyncDisplayState.NotConfigured, 'Sync is not configured'],
 ]);
 
 export default SyncStatusMessages;

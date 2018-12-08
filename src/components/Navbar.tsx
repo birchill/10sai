@@ -1,27 +1,24 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-import SyncState from '../sync/states';
-import Link from './Link.tsx';
+import { SyncDisplayState } from '../sync/SyncDisplayState';
+import { Link } from './Link';
 
-export class Navbar extends React.PureComponent {
-  static get propTypes() {
-    return {
-      syncState: PropTypes.symbol.isRequired,
-    };
-  }
+interface Props {
+  syncState: SyncDisplayState;
+}
 
+export class Navbar extends React.PureComponent<Props> {
   renderSyncIcon() {
-    if (this.props.syncState === SyncState.NOT_CONFIGURED) {
+    if (this.props.syncState === SyncDisplayState.NotConfigured) {
       return null;
     }
 
     const syncClasses = [];
-    syncClasses[SyncState.OK] = '-ok';
-    syncClasses[SyncState.IN_PROGRESS] = '-inprogress';
-    syncClasses[SyncState.PAUSED] = '-paused';
-    syncClasses[SyncState.OFFLINE] = '-offline';
-    syncClasses[SyncState.ERROR] = '-error';
+    syncClasses[SyncDisplayState.Ok] = '-ok';
+    syncClasses[SyncDisplayState.InProgress] = '-inprogress';
+    syncClasses[SyncDisplayState.Paused] = '-paused';
+    syncClasses[SyncDisplayState.Offline] = '-offline';
+    syncClasses[SyncDisplayState.Error] = '-error';
 
     const syncClass = `nav-icon -sync ${syncClasses[this.props.syncState]}`;
 

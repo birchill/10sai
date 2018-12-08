@@ -1,6 +1,6 @@
 import PouchDB from 'pouchdb';
 
-type Settings = {
+export type Settings = {
   [key: string]: any;
 };
 

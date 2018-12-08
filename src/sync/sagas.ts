@@ -1,53 +1,46 @@
 import { call, takeEvery, takeLatest, put, select } from 'redux-saga/effects';
 import { delay } from 'redux-saga';
-import { waitForDocLoad } from '../utils.ts';
+import { Dispatch } from 'redux';
 
-// Selector wrappers
+import { waitForDocLoad } from '../utils';
+import { SyncState } from './reducer';
+import { SyncServer } from './SyncServer';
+import { DataStore } from '../store/DataStore';
+import * as syncActions from './actions';
+import { Action } from '../actions';
+import * as settingsActions from '../settings/actions';
+import { SyncServerSetting } from './settings';
+import {
+  getLastSyncTime,
+  getOffline,
+  getPaused,
+  getServer,
+  normalizeServer,
+} from './selectors';
 
-const getFromSync = func => state => func(state.sync);
-
-// Sync-selectors
-//
-// (These actually expect |obj| to be just the 'sync' member of the state and
-// need to be combined with getFromSync when using in select())
-
-const getServer = obj => {
-  if (!obj || !obj.server || !obj.server.name || !obj.server.name.trim()) {
-    return undefined;
-  }
-  const server = { name: obj.server.name.trim() };
-  if (obj.server.username && obj.server.username.trim()) {
-    server.username = obj.server.username.trim();
-    server.password = obj.server.password.trim() || undefined;
-  }
-  return server;
-};
-const getLastSyncTime = obj => (obj ? obj.lastSyncTime : undefined);
-const getPaused = obj => !!(obj && obj.paused);
-const getOffline = obj => !!(obj && obj.offline);
+interface State {
+  sync: SyncState;
+}
 
 // Replication helpers
 
-function* startReplication(dataStore, server, dispatch) {
-  const offline = yield select(getFromSync(getOffline));
-  if (offline) {
+function* startReplication(
+  dataStore: DataStore,
+  server: SyncServer | undefined,
+  dispatch: Dispatch<Action>
+) {
+  if (yield select(getOffline)) {
     return;
   }
 
   const syncServer = server ? server.name : undefined;
   const options = {
-    onProgress: progress =>
-      dispatch({
-        type: 'UPDATE_SYNC_PROGRESS',
-        progress,
-      }),
-    onIdle: () => dispatch({ type: 'FINISH_SYNC', lastSyncTime: Date.now() }),
-    onActive: () =>
-      dispatch({
-        type: 'UPDATE_SYNC_PROGRESS',
-        progress: undefined,
-      }),
-    onError: details => dispatch({ type: 'NOTIFY_SYNC_ERROR', details }),
+    onProgress: (progress: number | null) =>
+      dispatch(syncActions.updateSyncProgress(progress)),
+    onIdle: () => dispatch(syncActions.finishSync(new Date())),
+    onActive: () => dispatch(syncActions.updateSyncProgress(null)),
+    onError: (details: PouchDB.Core.Error) =>
+      dispatch(syncActions.notifySyncError(details)),
     username: server ? server.username : undefined,
     password: server && server.username ? server.password : undefined,
   };
@@ -58,7 +51,7 @@ function* startReplication(dataStore, server, dispatch) {
   yield waitForDocLoad();
 
   if (server) {
-    yield put({ type: 'UPDATE_SYNC_PROGRESS', progress: undefined });
+    yield put(syncActions.updateSyncProgress(null));
   }
 
   try {
@@ -89,14 +82,18 @@ function* startReplication(dataStore, server, dispatch) {
   }
 }
 
-function* stopReplication(dataStore) {
+function* stopReplication(dataStore: DataStore) {
   yield dataStore.setSyncServer();
 }
 
-function* setSyncServer(dataStore, dispatch, action) {
+function* setSyncServer(
+  dataStore: DataStore,
+  dispatch: Dispatch<Action>,
+  action: syncActions.SetSyncServerAction
+) {
   // Normalize server so we can reliably compare the new server with the old
   // in updateSetting.
-  const server = getServer(action);
+  const server = normalizeServer(action.server);
 
   // Update the settings store next so that if the initial replication is
   // interrupted or protracted, we have the up-to-date information stored.
@@ -104,89 +101,105 @@ function* setSyncServer(dataStore, dispatch, action) {
     // Since this is a new server, just blow away old data like lastSyncTime.
     // Here and below we clear the paused state--presumably if the user is
     // setting a new sync server they want to perform a sync.
-    const updatedServer = { server };
+    const updatedServer: SyncServerSetting = { server };
     yield dataStore.updateSetting('syncServer', updatedServer, 'local');
   } else {
     yield dataStore.clearSetting('syncServer');
   }
 
   // Update UI state
-  yield put({
-    type: 'UPDATE_SYNC_SERVER',
-    server,
-    lastSyncTime: undefined,
-    paused: false,
-  });
-  yield put({ type: 'FINISH_EDIT_SYNC_SERVER' });
+  yield put(
+    syncActions.updateSyncServer({
+      server,
+      lastSyncTime: undefined,
+      paused: false,
+    })
+  );
+  yield put(syncActions.finishEditSyncServer());
 
   // Kick off and/or cancel replication
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* retrySync(dataStore, dispatch) {
-  const server = yield select(getFromSync(getServer));
+function* retrySync(dataStore: DataStore, dispatch: Dispatch<Action>) {
+  const server = yield select(getServer);
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* finishSync(dataStore, action) {
-  const server = yield select(getFromSync(getServer));
-  const updatedServer = { server, lastSyncTime: action.lastSyncTime };
+function* finishSync(
+  dataStore: DataStore,
+  action: syncActions.FinishSyncAction
+) {
+  const server = yield select(getServer);
+  const updatedServer: SyncServerSetting = {
+    server,
+    lastSyncTime: action.lastSyncTime,
+  };
 
-  const paused = yield select(getFromSync(getPaused));
-  if (paused) {
+  if (yield select(getPaused)) {
     updatedServer.paused = true;
   }
 
   yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 }
 
-function* pauseSync(dataStore) {
+function* pauseSync(dataStore: DataStore) {
   // Update stored paused state
-  const server = yield select(getFromSync(getServer));
-  const lastSyncTime = yield select(getFromSync(getLastSyncTime));
+  const server = yield select(getServer);
+  const lastSyncTime = yield select(getLastSyncTime);
 
   if (!server) {
     return;
   }
 
-  const updatedServer = { server, lastSyncTime, paused: true };
+  const updatedServer: SyncServerSetting = {
+    server,
+    lastSyncTime,
+    paused: true,
+  };
   yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 
   yield stopReplication(dataStore);
 }
 
-function* resumeSync(dataStore, dispatch) {
+function* resumeSync(dataStore: DataStore, dispatch: Dispatch<Action>) {
   // Update stored paused state
-  const server = yield select(getFromSync(getServer));
-  const lastSyncTime = yield select(getFromSync(getLastSyncTime));
+  const server = yield select(getServer);
+  const lastSyncTime = yield select(getLastSyncTime);
 
   if (!server) {
     return;
   }
 
-  const updatedServer = { server, lastSyncTime };
+  const updatedServer: SyncServerSetting = { server, lastSyncTime };
   yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* updateSetting(dataStore, dispatch, action) {
+function* updateSetting(
+  dataStore: DataStore,
+  dispatch: Dispatch<Action>,
+  action: settingsActions.UpdateSettingAction
+) {
   if (action.key !== 'syncServer') {
     return;
   }
 
-  const updatedServer = getServer(action.value);
-  const updatedPaused = getPaused(action.value);
-  let updatedLastSyncTime = getLastSyncTime(action.value);
+  const settingValue = action.value as SyncServerSetting;
+  const updatedServer = normalizeServer(settingValue.server);
+  const updatedPaused = !!settingValue.paused;
+  let updatedLastSyncTime = settingValue.lastSyncTime;
 
-  const server = yield select(getFromSync(getServer));
-  const paused = yield select(getFromSync(getPaused));
-  const lastSyncTime = yield select(getFromSync(getLastSyncTime));
+  const server = yield select(getServer);
+  const paused = yield select(getPaused);
+  const lastSyncTime = yield select(getLastSyncTime);
 
   // Ignore updated sync times that are in the past
   if (
     typeof lastSyncTime === typeof updatedLastSyncTime &&
-    updatedLastSyncTime < lastSyncTime
+    typeof lastSyncTime !== 'undefined' &&
+    updatedLastSyncTime! < lastSyncTime
   ) {
     updatedLastSyncTime = lastSyncTime;
   }
@@ -203,12 +216,13 @@ function* updateSetting(dataStore, dispatch, action) {
   }
 
   // Update UI with changes
-  yield put({
-    type: 'UPDATE_SYNC_SERVER',
-    server: updatedServer,
-    lastSyncTime: updatedLastSyncTime,
-    paused: updatedPaused,
-  });
+  yield put(
+    syncActions.updateSyncServer({
+      server: updatedServer,
+      lastSyncTime: updatedLastSyncTime,
+      paused: updatedPaused,
+    })
+  );
 
   // Check if we need to trigger replication due to a change in server
   // name or being unpaused.
@@ -223,7 +237,7 @@ function* updateSetting(dataStore, dispatch, action) {
     // (The proper way to do this would be to make this saga cancelable and then
     // have other sagas cancel it as appropriate, but that's quite a significant
     // refactoring for something we don't expect to happen.)
-    const serverAfterDelay = yield select(getFromSync(getServer));
+    const serverAfterDelay = yield select(getServer);
     if (JSON.stringify(serverAfterDelay) !== JSON.stringify(updatedServer)) {
       return;
     }
@@ -236,21 +250,20 @@ function* updateSetting(dataStore, dispatch, action) {
   }
 }
 
-function* goOnline(dataStore, dispatch) {
-  const paused = yield select(getFromSync(getPaused));
-  if (paused) {
+function* goOnline(dataStore: DataStore, dispatch: Dispatch<Action>) {
+  if (yield select(getPaused)) {
     return;
   }
 
-  const server = yield select(getFromSync(getServer));
+  const server = yield select(getServer);
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* goOffline(dataStore) {
+function* goOffline(dataStore: DataStore) {
   yield stopReplication(dataStore);
 }
 
-function* syncSagas(dataStore, dispatch) {
+function* syncSagas(dataStore: DataStore, dispatch: Dispatch<Action>) {
   yield* [
     takeLatest('SET_SYNC_SERVER', setSyncServer, dataStore, dispatch),
     takeLatest('RETRY_SYNC', retrySync, dataStore, dispatch),

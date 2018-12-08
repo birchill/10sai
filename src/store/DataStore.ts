@@ -12,7 +12,7 @@ import {
 } from './CardStore';
 import { NoteStore, NOTE_PREFIX } from './NoteStore';
 import { ReviewStore, REVIEW_PREFIX } from './ReviewStore';
-import { SettingsStore, SETTING_PREFIX } from './SettingsStore';
+import { Settings, SettingsStore, SETTING_PREFIX } from './SettingsStore';
 
 PouchDB.plugin(require('pouchdb-upsert'));
 PouchDB.plugin(PouchDBFind);
@@ -160,7 +160,7 @@ export class DataStore {
 
   // Settings API
   settingsDocPrefix = '_local/setting-';
-  async getSettings(): Promise<object> {
+  async getSettings(): Promise<Settings> {
     return this.settingsStore.getSettings();
   }
 
