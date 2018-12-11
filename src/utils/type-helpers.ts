@@ -44,3 +44,5 @@ export function stripFields<T extends object, K extends keyof T>(
   }
   return <Omit<T, K>>result;
 }
+
+export type Return<T> = T extends (...args: any[]) => infer R ? R : never;

@@ -6,10 +6,14 @@ import * as editActions from '../edit/actions';
 import * as reviewActions from '../review/actions';
 import * as routeActions from '../route/actions';
 import { generateCards } from '../utils/testing';
+import { Action } from '../actions';
+import { Card } from '../model';
 
 describe('reducer:selection', () => {
   it('should initially populate the active card field with undefined', () => {
-    const initialState = subject(undefined, { type: 'yer' });
+    const initialState = subject(undefined, ({
+      type: 'yer',
+    } as unknown) as Action);
 
     expect(initialState.selection.activeCardId).toBe(undefined);
   });
@@ -19,9 +23,9 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'abc',
-      prompt: 'Prompt',
+      question: 'Prompt',
       answer: 'Answer',
-    };
+    } as Card;
 
     state = subject(state, editActions.finishLoadCard(formId, card));
 
@@ -34,14 +38,14 @@ describe('reducer:selection', () => {
 
     state = subject(
       state,
-      editActions.editCard(formId, { prompt: 'Prompt', answer: 'Answer' })
+      editActions.editCard(formId, { question: 'Prompt', answer: 'Answer' })
     );
     state = subject(state, editActions.saveCard(formId));
     state = subject(
       state,
       editActions.finishSaveCard(formId, {
         _id: 'def',
-        prompt: 'Prompt',
+        question: 'Prompt',
         answer: 'Answer',
       })
     );
@@ -54,9 +58,9 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'tuv',
-      prompt: 'Prompt',
+      question: 'Prompt',
       answer: 'Answer',
-    };
+    } as Card;
 
     state = subject(state, editActions.finishLoadCard(formId, card));
     state = subject(state, editActions.newCard());
@@ -69,9 +73,9 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'ghi',
-      prompt: 'Prompt',
+      question: 'Prompt',
       answer: 'Answer',
-    };
+    } as Card;
 
     state = subject(state, editActions.finishLoadCard(formId, card));
     state = subject(state, editActions.deleteCard(formId, 'ghi'));
@@ -103,9 +107,9 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'ghi',
-      prompt: 'Prompt',
+      question: 'Prompt',
       answer: 'Answer',
-    };
+    } as Card;
 
     state = subject(state, editActions.finishLoadCard(formId, card));
     state = subject(state, editActions.deleteCard(formId, 'ghi'));
@@ -118,9 +122,9 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       _id: 'xyz',
-      prompt: 'Prompt',
+      question: 'Prompt',
       answer: 'Answer',
-    };
+    } as Card;
 
     state = subject(state, editActions.finishLoadCard(formId, card));
     state = subject(state, editActions.syncEditCard({ card, deleted: true }));
@@ -129,16 +133,16 @@ describe('reducer:selection', () => {
   });
 
   it('should update the active card when navigating to the review screen', () => {
-    let state = subject(undefined, reviewActions.newReview(2, 3, new Date()));
+    let state = subject(undefined, reviewActions.newReview(2, 3));
     const cards = generateCards(2, 3);
     state = subject(state, reviewActions.reviewLoaded(cards));
     state = subject(state, routeActions.navigate({ url: '/review' }));
 
-    expect(state.selection.activeCardId).toBe(state.review.currentCard._id);
+    expect(state.selection.activeCardId).toBe(state.review.currentCard!._id);
   });
 
   it('should clear the active card when navigating to the home screen', () => {
-    let state = subject(undefined, reviewActions.newReview(2, 3, new Date()));
+    let state = subject(undefined, reviewActions.newReview(2, 3));
     const cards = generateCards(2, 3);
     state = subject(state, reviewActions.reviewLoaded(cards));
     state = subject(state, routeActions.navigate({ url: '/review' }));
@@ -149,31 +153,31 @@ describe('reducer:selection', () => {
 
   it('should update the active card when a review is loaded', () => {
     let state = subject(undefined, routeActions.navigate({ url: '/review' }));
-    state = subject(state, reviewActions.newReview(2, 3, new Date()));
+    state = subject(state, reviewActions.newReview(2, 3));
     const cards = generateCards(2, 3);
     state = subject(state, reviewActions.reviewLoaded(cards));
 
-    expect(state.selection.activeCardId).toBe(state.review.currentCard._id);
+    expect(state.selection.activeCardId).toBe(state.review.currentCard!._id);
   });
 
   it('should update the active card when the current review card changes', () => {
     let state = subject(undefined, routeActions.navigate({ url: '/review' }));
-    state = subject(state, reviewActions.newReview(2, 3, new Date()));
+    state = subject(state, reviewActions.newReview(2, 3));
     const cards = generateCards(2, 3);
     state = subject(state, reviewActions.reviewLoaded(cards));
     state = subject(state, reviewActions.passCard());
 
-    expect(state.selection.activeCardId).toBe(state.review.currentCard._id);
+    expect(state.selection.activeCardId).toBe(state.review.currentCard!._id);
   });
 
   it('should clear the active card when the current review card is deleted', () => {
     let state = subject(undefined, routeActions.navigate({ url: '/review' }));
-    state = subject(state, reviewActions.newReview(2, 3, new Date()));
+    state = subject(state, reviewActions.newReview(2, 3));
     const cards = generateCards(2, 3);
     state = subject(state, reviewActions.reviewLoaded(cards));
     state = subject(
       state,
-      reviewActions.deleteReviewCard(state.review.currentCard._id)
+      reviewActions.deleteReviewCard(state.review.currentCard!._id)
     );
 
     expect(state.selection.activeCardId).toBe(undefined);

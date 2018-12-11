@@ -7,7 +7,7 @@
 import { expectSaga } from 'redux-saga-test-plan';
 
 import { watchNoteEdits, beforeNotesScreenChange } from './sagas';
-import reducer from '../reducer';
+import reducer, { AppState } from '../reducer';
 import { Note } from '../model';
 import * as noteActions from './actions';
 import { EditNoteContext, EditScreenContext } from './actions';
@@ -15,25 +15,31 @@ import { FormState } from '../edit/FormState';
 import { SaveState, NoteState } from '../notes/reducer';
 import { StoreError } from '../store/DataStore';
 
+const initialState = reducer(undefined, { type: 'none' } as any);
+
 const noteState = (
   cardFormId: number,
   noteFormId: number,
   note: Partial<Note>,
   dirtyFields?: Set<keyof Note>
-) => {
+): AppState => {
   return {
-    route: { index: 0 },
+    ...initialState,
+    route: { ...initialState.route, index: 0 },
     edit: {
       forms: {
         active: {
           formId: cardFormId,
           formState: FormState.Ok,
           card: {},
+          isNew: false,
           notes: [
             {
               formId: noteFormId,
               note,
+              saveState: note.id ? SaveState.New : SaveState.Ok,
               dirtyFields,
+              originalKeywords: new Set<string>(),
             },
           ],
         },

@@ -61,8 +61,10 @@ class MockStore {
   actions: Array<ReviewAction>;
 
   constructor() {
+    const { history } = initialState.route;
+    const screen = history.length ? history[history.length - 1].screen : '';
     this.state = {
-      screen: initialState.route.screen,
+      screen,
       review: initialState.review,
     };
     this.actions = [];

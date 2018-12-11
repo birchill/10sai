@@ -20,7 +20,6 @@ import { EditState, EditFormState } from './reducer';
 import { getActiveRecord, isDirty, hasDataToSave } from './selectors';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
-import { FormState } from './FormState';
 import { DataStore, StoreError } from '../store/DataStore';
 import { Card } from '../model';
 import { DeleteCardAction } from './actions';

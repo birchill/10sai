@@ -1,3 +1,6 @@
+import { AppState } from '../reducer';
+import { Action } from '../actions';
+
 // This is a special reducer that takes the whole updated state object as its
 // input.
 //
@@ -12,7 +15,11 @@
 // active card being tied to reviewing is confusing and I'll overhaul the whole
 // thing somehow.)
 
-export default function selection(state, action) {
+export interface SelectionState {
+  activeCardId: string | undefined;
+}
+
+export function selection(state: AppState, action: Action): AppState {
   const reviewCardId = state.review.currentCard
     ? state.review.currentCard._id
     : undefined;
@@ -153,3 +160,5 @@ export default function selection(state, action) {
       return state;
   }
 }
+
+export default selection;

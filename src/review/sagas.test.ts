@@ -15,6 +15,7 @@ import { Card } from '../model';
 import { ReviewState } from './reducer';
 import { EffectProviders } from 'redux-saga-test-plan/providers';
 import { CallEffectDescriptor } from 'redux-saga/effects';
+import { Action } from '../actions';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -119,7 +120,7 @@ describe('sagas:review updateHeap', () => {
     state = reducer(state, action);
     state.review.newCardsInPlay = 1;
     state.review.completed = 2;
-    state.review.failedCardsLevel1 = [{}];
+    state.review.failedCardsLevel1 = [{} as Card];
 
     return expectSaga(updateHeapSaga, dataStore, action)
       .withState(state)
@@ -165,7 +166,7 @@ describe('sagas:review updateHeap', () => {
   });
 
   it('does not put review loaded due to a change in review time if we are not reviewing', async () => {
-    const state = reducer(undefined, { type: 'NOTHING' });
+    const state = reducer(undefined, { type: 'NOTHING' } as any);
     const action = reviewActions.setReviewTime(new Date());
 
     return expectSaga(updateHeapSaga, dataStore, action)
@@ -181,7 +182,7 @@ describe('sagas:review updateHeap', () => {
     state = reducer(state, action);
     state.review.newCardsInPlay = 2;
     state.review.completed = 2;
-    state.review.currentCard = {};
+    state.review.currentCard = {} as Card;
 
     const newCards = ['New card 3'];
 
@@ -292,9 +293,9 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        _id: cardToUpdate._id,
+        _id: cardToUpdate!._id,
         progress: {
-          level: cardToUpdate.progress.level,
+          level: cardToUpdate!.progress.level,
           reviewed: state.review.reviewTime,
         },
       })
@@ -314,7 +315,7 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        _id: cardToUpdate._id,
+        _id: cardToUpdate!._id,
         progress: { level: 0, reviewed: state.review.reviewTime },
       })
       .run();
@@ -331,14 +332,14 @@ describe('sagas:review updateProgress', () => {
     state = reducer(state, action);
     expect(state.review.nextCard).toBe(null);
     expect(state.review.currentCard).toBe(null);
-    expect(cardInHistory(cardToUpdate, state)).toBe(true);
+    expect(cardInHistory(cardToUpdate!, state)).toBe(true);
 
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        _id: cardToUpdate._id,
+        _id: cardToUpdate!._id,
         progress: {
-          level: cardToUpdate.progress.level,
+          level: cardToUpdate!.progress.level,
           reviewed: state.review.reviewTime,
         },
       })
@@ -362,12 +363,12 @@ describe('sagas:review updateProgress', () => {
     state = reducer(state, action);
     expect(state.review.nextCard).toBe(null);
     expect(state.review.currentCard).toEqual(cardToUpdate);
-    expect(cardInHistory(cardToUpdate, state)).toBe(false);
+    expect(cardInHistory(cardToUpdate!, state)).toBe(false);
 
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        _id: cardToUpdate._id,
+        _id: cardToUpdate!._id,
         progress: { level: 0, reviewed: state.review.reviewTime },
       })
       .run();
@@ -472,7 +473,7 @@ describe('sagas:review loadReview', () => {
   };
 
   it('fills in the cards when the review is synced', async () => {
-    let state = reducer(undefined, { type: 'none' });
+    let state = reducer(undefined, { type: 'none' } as any);
 
     const cards: Array<Partial<Card>> = [
       { _id: 'a', question: 'Question A', answer: 'Answer A' },

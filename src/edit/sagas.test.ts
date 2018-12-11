@@ -13,11 +13,12 @@ import {
   beforeEditScreenChange as beforeEditScreenChangeSaga,
 } from './sagas';
 import { Card } from '../model';
-import reducer from '../reducer';
+import reducer, { AppState } from '../reducer';
 import { FormState } from './FormState';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
 import { generateCard } from '../utils/testing';
+import { Action } from '../actions';
 
 declare global {
   namespace NodeJS {
@@ -60,7 +61,7 @@ const dirtyState = (formId: number, cardToUse: Partial<Card> | undefined) => {
   };
 };
 
-const initialState = reducer(undefined, { type: 'none' });
+const initialState = reducer(undefined, { type: 'none' } as any);
 
 describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
@@ -164,15 +165,24 @@ describe('sagas:edit navigate', () => {
   });
 });
 
-const okState = (formId: number, cardToUse: Partial<Card> | undefined) => {
-  const card = cardToUse || { prompt: 'Prompt', answer: 'Answer' };
+const okState = (
+  formId: number,
+  cardToUse: Partial<Card> | undefined
+): AppState => {
+  const card: Partial<Card> = cardToUse || {
+    question: 'Prompt',
+    answer: 'Answer',
+  };
   return {
+    ...initialState,
     edit: {
       forms: {
         active: {
           formId,
           formState: FormState.Ok,
+          isNew: typeof card._id === 'undefined',
           card,
+          notes: [],
         },
       },
     },

@@ -32,7 +32,7 @@ declare global {
   }
 }
 
-const initialState = reducer(undefined, { type: 'none' });
+const initialState = reducer(undefined, { type: 'none' } as any);
 
 describe('sagas:route followLink', () => {
   beforeEach(() => {
