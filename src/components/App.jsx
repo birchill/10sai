@@ -19,7 +19,7 @@ import { LookupScreen } from './LookupScreen.tsx';
 import MainTabBlock from './MainTabBlock.tsx';
 import Popup from './Popup.jsx';
 import { ReviewScreenContainer } from './ReviewScreenContainer.tsx';
-import SettingsPanel from './SettingsPanel.jsx';
+import { SettingsPanel } from './SettingsPanel.tsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.tsx';
 import { TabPanel } from './TabPanel.tsx';
 import TagSuggesterContext from './TagSuggesterContext.ts';

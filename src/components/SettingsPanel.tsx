@@ -1,18 +1,17 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-function SettingsPanel(props) {
+interface Props {
+  heading: string;
+  children?: React.ReactElement<any>;
+}
+
+export const SettingsPanel: React.SFC<Props> = (props: Props) => {
   return (
     <div className="settings-panel">
       <h3 className="heading">{props.heading}</h3>
       {props.children}
     </div>
   );
-}
-
-SettingsPanel.propTypes = {
-  heading: PropTypes.string.isRequired,
-  children: PropTypes.node,
 };
 
 export default SettingsPanel;
