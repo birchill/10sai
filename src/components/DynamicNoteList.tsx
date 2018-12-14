@@ -98,9 +98,6 @@ interface Props {
   className?: string;
 }
 
-// XXX Use the actual state once we have it
-type State = any;
-
 const mapDispatchToProps = (
   dispatch: Dispatch<Action<any>>,
   ownProps: Props
