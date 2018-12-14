@@ -21,7 +21,7 @@ import Popup from './Popup.jsx';
 import { ReviewScreenContainer } from './ReviewScreenContainer.tsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.tsx';
-import TabPanel from './TabPanel.jsx';
+import { TabPanel } from './TabPanel.tsx';
 import TagSuggesterContext from './TagSuggesterContext.ts';
 
 class App extends React.PureComponent {
