@@ -17,7 +17,7 @@ import DataStoreContext from './DataStoreContext.ts';
 import KeywordSuggesterContext from './KeywordSuggesterContext.ts';
 import { LookupScreen } from './LookupScreen.tsx';
 import MainTabBlock from './MainTabBlock.tsx';
-import Popup from './Popup.jsx';
+import { Popup } from './Popup.tsx';
 import { ReviewScreenContainer } from './ReviewScreenContainer.tsx';
 import { SettingsPanel } from './SettingsPanel.tsx';
 import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.tsx';
