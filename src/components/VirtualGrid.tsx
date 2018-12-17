@@ -10,106 +10,8 @@ import * as React from 'react';
 // At some point it could probably benefit from a rewrite or at least
 // a significant tidy up but for now it seems to work.
 
-interface Layout {
-  itemWidth: number | null;
-  itemHeight: number | null;
-  itemsPerRow: number;
-  itemScale: number;
-  containerHeight: number | null;
-}
-
-interface Slot {
-  index: number | string;
-  added?: boolean;
-  recycled?: boolean;
-  changedRow?: boolean;
-  transitionDelay?: number;
-}
-
-type SlotAssignment = { [id: string]: number };
-
 interface Item {
   _id: string;
-}
-
-function getScrollContainer(elem: Element | null): HTMLElement | null {
-  if (elem === null) {
-    return null;
-  }
-
-  // The + 1 is a fudge factor needed for Chrome on Linux.
-  return elem instanceof HTMLElement &&
-    elem.scrollHeight > elem.clientHeight + 1
-    ? elem
-    : getScrollContainer(elem.parentElement);
-}
-
-function getInclusiveAncestorWithClass(
-  elem: Element | null,
-  className: string
-) {
-  while (elem && !elem.classList.contains(className)) {
-    elem = elem.parentElement;
-  }
-  return elem;
-}
-
-const enum FillMode {
-  Add,
-  Fill,
-}
-
-function fillInMissingSlots(
-  startIndex: number,
-  endIndex: number,
-  emptySlots: Array<number>,
-  existingItems: Array<number>,
-  slots: Array<Slot | null>,
-  fillMode: FillMode
-) {
-  let firstAddition: number | undefined;
-
-  for (let i = startIndex; i < endIndex; i++) {
-    // Check if the item is already assigned a slot
-    if (typeof existingItems[i] === 'number') {
-      continue;
-    }
-
-    if (typeof firstAddition === 'undefined') {
-      firstAddition = i;
-    }
-
-    const entry: Slot = { index: i };
-    if (fillMode === FillMode.Add) {
-      entry.added = true;
-    }
-
-    // Otherwise take the first empty slot
-    if (emptySlots.length) {
-      const emptyIndex = emptySlots.shift() as number;
-      entry.recycled = true;
-      slots[emptyIndex] = entry;
-    } else {
-      slots.push(entry);
-    }
-  }
-
-  return firstAddition;
-}
-
-// Returns the minimum of |a| and |b| such that undefined is treated as
-// Infinity.
-function definedMin(
-  a: number | undefined,
-  b: number | undefined
-): number | undefined {
-  if (typeof a === 'undefined') {
-    return b;
-  }
-  if (typeof b === 'undefined') {
-    return a;
-  }
-  return Math.min(a, b);
 }
 
 // Record the number of potentially recursive calls to updateLayout. This is
@@ -137,6 +39,22 @@ interface Props {
   renderItem: (item: Item) => React.ReactNode;
   renderTemplateItem: () => React.ReactNode;
   className?: string;
+}
+
+interface Layout {
+  itemWidth: number | null;
+  itemHeight: number | null;
+  itemsPerRow: number;
+  itemScale: number;
+  containerHeight: number | null;
+}
+
+interface Slot {
+  index: number | string;
+  added?: boolean;
+  recycled?: boolean;
+  changedRow?: boolean;
+  transitionDelay?: number;
 }
 
 type DeletingItems = { [key: string]: { index: number; item: Item } };
@@ -170,6 +88,8 @@ interface State extends Layout {
   // while animating is stored here, indexed by _id.
   deletingItems: DeletingItems;
 }
+
+type SlotAssignment = { [id: string]: number };
 
 export class VirtualGrid extends React.Component<Props, State> {
   state: State;
@@ -798,6 +718,86 @@ export class VirtualGrid extends React.Component<Props, State> {
       </div>
     );
   }
+}
+
+function getScrollContainer(elem: Element | null): HTMLElement | null {
+  if (elem === null) {
+    return null;
+  }
+
+  // The + 1 is a fudge factor needed for Chrome on Linux.
+  return elem instanceof HTMLElement &&
+    elem.scrollHeight > elem.clientHeight + 1
+    ? elem
+    : getScrollContainer(elem.parentElement);
+}
+
+function getInclusiveAncestorWithClass(
+  elem: Element | null,
+  className: string
+) {
+  while (elem && !elem.classList.contains(className)) {
+    elem = elem.parentElement;
+  }
+  return elem;
+}
+
+const enum FillMode {
+  Add,
+  Fill,
+}
+
+function fillInMissingSlots(
+  startIndex: number,
+  endIndex: number,
+  emptySlots: Array<number>,
+  existingItems: Array<number>,
+  slots: Array<Slot | null>,
+  fillMode: FillMode
+) {
+  let firstAddition: number | undefined;
+
+  for (let i = startIndex; i < endIndex; i++) {
+    // Check if the item is already assigned a slot
+    if (typeof existingItems[i] === 'number') {
+      continue;
+    }
+
+    if (typeof firstAddition === 'undefined') {
+      firstAddition = i;
+    }
+
+    const entry: Slot = { index: i };
+    if (fillMode === FillMode.Add) {
+      entry.added = true;
+    }
+
+    // Otherwise take the first empty slot
+    if (emptySlots.length) {
+      const emptyIndex = emptySlots.shift() as number;
+      entry.recycled = true;
+      slots[emptyIndex] = entry;
+    } else {
+      slots.push(entry);
+    }
+  }
+
+  return firstAddition;
+}
+
+// Returns the minimum of |a| and |b| such that undefined is treated as
+// Infinity.
+function definedMin(
+  a: number | undefined,
+  b: number | undefined
+): number | undefined {
+  if (typeof a === 'undefined') {
+    return b;
+  }
+  if (typeof b === 'undefined') {
+    return a;
+  }
+  return Math.min(a, b);
 }
 
 export default VirtualGrid;
