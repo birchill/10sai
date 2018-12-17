@@ -1,5 +1,8 @@
-import React from 'react';
+import * as React from 'react';
+import { DataStore } from '../store/DataStore';
 
-export const DataStoreContext = React.createContext(undefined);
+export const DataStoreContext = React.createContext<DataStore | undefined>(
+  undefined
+);
 
 export default DataStoreContext;

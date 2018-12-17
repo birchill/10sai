@@ -1,16 +1,18 @@
-import React from 'react';
+import * as React from 'react';
 
-import Link from './Link';
-import TabBlock from './TabBlock';
+import { Link } from './Link';
+import { TabBlock } from './TabBlock';
+
+export type TabName = 'lookup' | 'edit-card' | 'review';
 
 interface Props {
   className?: string;
-  activeTab?: 'lookup' | 'edit-card' | 'review';
+  activeTab?: TabName;
   activeCardId?: string;
   remainingReviews?: number;
 }
 
-const MainTabBlock: React.SFC<Props> = props => {
+export const MainTabBlock: React.SFC<Props> = props => {
   const classes: string[] = ['tabbar'];
   if (props.className) {
     classes.push(...props.className.trim().split(/\s+/));
@@ -66,5 +68,3 @@ const MainTabBlock: React.SFC<Props> = props => {
     </TabBlock>
   );
 };
-
-export default MainTabBlock;

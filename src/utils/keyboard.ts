@@ -16,24 +16,32 @@ import { isMac } from './ua';
 // bug fixes to the default keybindings since then should possibly be added
 // here.
 
-export const isCtrlKeyCommand = (e: React.KeyboardEvent<{}>): boolean => {
+export const isCtrlKeyCommand = (
+  e: React.KeyboardEvent<{}> | KeyboardEvent
+): boolean => {
   // As per draft-js, we need to check that the altKey modifier is not being
   // used since if they are, the result is an `altGraph` key modifier.
   return !!e.ctrlKey && !e.altKey;
 };
 
-export const isCtrlKeyCommandOnly = (e: React.KeyboardEvent<{}>): boolean => {
+export const isCtrlKeyCommandOnly = (
+  e: React.KeyboardEvent<{}> | KeyboardEvent
+): boolean => {
   // As with isCtrlKeyCommand but also check that Shift is NOT being used since
   // that has been known to conflict with browser UI shortcuts (e.g.
   // Ctrl+Shift+B to open bookmarks).
   return !!e.ctrlKey && !e.altKey && !e.shiftKey;
 };
 
-export const hasCommandModifier = (e: React.KeyboardEvent<{}>): boolean => {
+export const hasCommandModifier = (
+  e: React.KeyboardEvent<{}> | KeyboardEvent
+): boolean => {
   return isMac ? !!e.metaKey && !e.altKey : isCtrlKeyCommand(e);
 };
 
-export const hasCommandModifierOnly = (e: React.KeyboardEvent<{}>): boolean => {
+export const hasCommandModifierOnly = (
+  e: React.KeyboardEvent<{}> | KeyboardEvent
+): boolean => {
   // Likewise, we also check that Shift is NOT being used here.
   return isMac
     ? !!e.metaKey && !e.altKey && !e.shiftKey

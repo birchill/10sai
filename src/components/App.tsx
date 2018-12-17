@@ -1,68 +1,64 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import DocumentTitle from 'react-document-title';
 
-import { URLFromRoute } from '../route/router';
+import { AppState } from '../reducer';
+import { Action } from '../actions';
+import { DataStore } from '../store/DataStore';
+import { URLFromRoute, Route } from '../route/router';
 import * as routeActions from '../route/actions';
-import { getReviewProgress } from '../review/selectors.ts';
-import CardList from '../CardList.ts';
-import KeywordSuggester from '../suggestions/KeywordSuggester.ts';
-import TagSuggester from '../suggestions/TagSuggester.ts';
-import { hasCommandModifier, isTextBox } from '../utils/keyboard.ts';
+import { getReviewProgress } from '../review/selectors';
+import { CardList } from '../CardList';
+import { KeywordSuggester } from '../suggestions/KeywordSuggester';
+import { TagSuggester } from '../suggestions/TagSuggester';
+import { hasCommandModifier, isTextBox } from '../utils/keyboard';
+import { Return } from '../utils/type-helpers';
 
-import EditCardScreen from './EditCardScreen.tsx';
-import HomeScreenContainer from './HomeScreenContainer.tsx';
-import { CardListContext } from './CardListContext.ts';
-import DataStoreContext from './DataStoreContext.ts';
-import KeywordSuggesterContext from './KeywordSuggesterContext.ts';
-import { LookupScreen } from './LookupScreen.tsx';
-import MainTabBlock from './MainTabBlock.tsx';
-import { Popup } from './Popup.tsx';
-import { ReviewScreenContainer } from './ReviewScreenContainer.tsx';
-import { SettingsPanel } from './SettingsPanel.tsx';
-import SyncSettingsPanelContainer from './SyncSettingsPanelContainer.tsx';
-import { TabPanel } from './TabPanel.tsx';
-import TagSuggesterContext from './TagSuggesterContext.ts';
+import { EditCardScreen } from './EditCardScreen';
+import { HomeScreenContainer } from './HomeScreenContainer';
+import { CardListContext } from './CardListContext';
+import { DataStoreContext } from './DataStoreContext';
+import { KeywordSuggesterContext } from './KeywordSuggesterContext';
+import { LookupScreen } from './LookupScreen';
+import { MainTabBlock, TabName } from './MainTabBlock';
+import { Popup } from './Popup';
+import { ReviewScreenContainer } from './ReviewScreenContainer';
+import { SettingsPanel } from './SettingsPanel';
+import { SyncSettingsPanelContainer } from './SyncSettingsPanelContainer';
+import { TabPanel } from './TabPanel';
+import { TagSuggesterContext } from './TagSuggesterContext';
 
-class App extends React.PureComponent {
-  static get propTypes() {
-    return {
-      // eslint-disable-next-line react/forbid-prop-types
-      dataStore: PropTypes.object.isRequired,
-      route: PropTypes.shape({
-        screen: PropTypes.string,
-        popup: PropTypes.string,
-        // eslint-disable-next-line react/forbid-prop-types
-        search: PropTypes.object,
-        hash: PropTypes.string,
-        card: PropTypes.string,
-      }),
-      activeCardId: PropTypes.string,
-      reviewProgress: PropTypes.shape({
-        failedCardsLevel1: PropTypes.number.isRequired,
-        failedCardsLevel2: PropTypes.number.isRequired,
-        completedCards: PropTypes.number.isRequired,
-        unreviewedCards: PropTypes.number.isRequired,
-      }),
-      onClosePopup: PropTypes.func,
-      onNewCard: PropTypes.func,
-      onGoHome: PropTypes.func,
-      onGoReview: PropTypes.func,
-      onGoLookup: PropTypes.func,
-    };
-  }
+interface Props {
+  dataStore: DataStore;
+  route: Route;
+  activeCardId?: string;
+  reviewProgress: {
+    failedCardsLevel1: number;
+    failedCardsLevel2: number;
+    completedCards: number;
+    unreviewedCards: number;
+  };
+  onNewCard: () => void;
+  onGoHome: () => void;
+  onGoReview: () => void;
+  onGoLookup: () => void;
+}
 
-  static get defaultProps() {
-    return { route: {} };
-  }
+class AppInner extends React.PureComponent<Props> {
+  cardList: CardList;
+  keywordSuggester: KeywordSuggester;
+  tagSuggester: TagSuggester;
 
-  constructor(props) {
+  static defaultProps: Pick<Props, 'route'> = { route: { screen: '' } };
+
+  constructor(props: Props) {
     super(props);
-    this.closePopup = this.closePopup.bind(this);
+
     this.cardList = new CardList(props.dataStore);
     this.keywordSuggester = new KeywordSuggester(props.dataStore);
     this.tagSuggester = new TagSuggester(props.dataStore);
+
     this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
@@ -74,8 +70,8 @@ class App extends React.PureComponent {
     document.documentElement.removeEventListener('keydown', this.handleKeyDown);
   }
 
-  get currentScreenLink() {
-    const routeWithoutPopup = {
+  get currentScreenLink(): string {
+    const routeWithoutPopup: Route = {
       ...this.props.route,
       popup: undefined,
       // Generally the fragment is targetting something in the popup so we
@@ -86,13 +82,7 @@ class App extends React.PureComponent {
     return URLFromRoute(routeWithoutPopup);
   }
 
-  closePopup() {
-    if (this.props.onClosePopup) {
-      this.props.onClosePopup();
-    }
-  }
-
-  handleKeyDown(e) {
+  handleKeyDown(e: KeyboardEvent) {
     // App-wide keyboard shortcuts
     if (e.defaultPrevented) {
       return;
@@ -150,17 +140,22 @@ class App extends React.PureComponent {
   render() {
     let title = '10sai';
     if (this.props.route.popup) {
-      const toTitle = str => str[0].toUpperCase() + str.substring(1);
+      const toTitle = (str: string): string =>
+        str[0].toUpperCase() + str.substring(1);
       title += ` - ${toTitle(this.props.route.popup)}`;
     }
 
-    const tabSelected = ['lookup', 'edit-card', 'review'].includes(
-      this.props.route.screen
-    );
-    const tabPanelClass = tabSelected ? '' : '-allhidden';
+    const activeTab: TabName | undefined = [
+      'lookup',
+      'edit-card',
+      'review',
+    ].includes(this.props.route.screen)
+      ? (this.props.route.screen as TabName)
+      : undefined;
+    const tabPanelClass = activeTab ? '' : '-allhidden';
 
     // Review handling
-    let remainingReviews;
+    let remainingReviews: number | undefined;
     if (this.props.reviewProgress) {
       const {
         failedCardsLevel1,
@@ -201,7 +196,6 @@ class App extends React.PureComponent {
                   >
                     <EditCardScreen
                       active={this.props.route.screen === 'edit-card'}
-                      card={this.props.route.card}
                     />
                   </TabPanel>
                   <TabPanel
@@ -218,7 +212,7 @@ class App extends React.PureComponent {
                 </div>
                 <MainTabBlock
                   className="-white"
-                  activeTab={this.props.route.screen}
+                  activeTab={activeTab}
                   activeCardId={this.props.activeCardId}
                   remainingReviews={remainingReviews}
                 />
@@ -239,7 +233,7 @@ class App extends React.PureComponent {
   }
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state: AppState) => ({
   route:
     state.route && state.route.history && state.route.history.length
       ? state.route.history[state.route.index]
@@ -247,7 +241,8 @@ const mapStateToProps = state => ({
   activeCardId: state.selection.activeCardId,
   reviewProgress: getReviewProgress(state),
 });
-const mapDispatchToProps = (dispatch, props) => ({
+
+const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
   onNewCard: () => {
     dispatch(routeActions.followLink('/cards/new', 'forwards', true));
   },
@@ -262,9 +257,18 @@ const mapDispatchToProps = (dispatch, props) => ({
   },
 });
 
-const ConnectedApp = connect(
+interface OwnProps {
+  dataStore: DataStore;
+}
+
+export const App = connect<
+  Return<typeof mapStateToProps>,
+  Return<typeof mapDispatchToProps>,
+  OwnProps,
+  AppState
+>(
   mapStateToProps,
   mapDispatchToProps
-)(App);
+)(AppInner);
 
-export default ConnectedApp;
+export default App;

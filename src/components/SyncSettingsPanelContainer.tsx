@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
+
 import SyncSettingsPanel from './SyncSettingsPanel';
 import { SyncServer } from '../sync/SyncServer';
 import {
@@ -54,7 +55,7 @@ const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
   onResume: () => dispatch(syncActions.resumeSync()),
 });
 
-const SyncSettingsPanelContainer = connect<StateProps, DispatchProps>(
+export const SyncSettingsPanelContainer = connect<StateProps, DispatchProps>(
   mapStateToProps,
   mapDispatchToProps
 )(SyncSettingsPanel);

@@ -80,12 +80,10 @@ const mapStateToProps = (state: State): Props => ({
   syncState: getSyncDisplayState(state.sync),
 });
 
-const HomeScreenContainer = connect(mapStateToProps)((props: Props) => (
+export const HomeScreenContainer = connect(mapStateToProps)((props: Props) => (
   <CardListContext.Consumer>
     {(cardList: CardList) => (
       <HomeScreenContainerInner cardList={cardList} {...props} />
     )}
   </CardListContext.Consumer>
 ));
-
-export default HomeScreenContainer;

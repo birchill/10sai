@@ -18,7 +18,7 @@ import reviewSync from './review/sync.ts';
 import * as routeActions from './route/actions';
 
 import DataStore from './store/DataStore.ts';
-import App from './components/App.jsx';
+import App from './components/App.tsx';
 
 import 'main.scss'; // eslint-disable-line
 

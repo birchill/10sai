@@ -1,33 +1,39 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Dispatch, Action } from 'redux';
+import * as React from 'react';
+import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import { Card, Note } from '../model';
+import { Action } from '../actions';
+import { AppState } from '../reducer';
+import { FormState } from '../edit/FormState';
+import { EditFormState, EditState } from '../edit/reducer';
+import * as editActions from '../edit/actions';
+import { hasDataToSave } from '../edit/selectors';
+import * as routeActions from '../route/actions';
+import { EditScreenContext } from '../notes/actions';
+import { Return } from '../utils/type-helpers';
+
 import EditCardToolbar from './EditCardToolbar';
 import { EditCardForm } from './EditCardForm';
 import EditCardNotFound from './EditCardNotFound';
 import DynamicNoteList from './DynamicNoteList';
-import { FormState } from '../edit/FormState';
-import * as editActions from '../edit/actions';
-import { EditFormState, EditState } from '../edit/reducer';
-import { hasDataToSave } from '../edit/selectors';
-import * as routeActions from '../route/actions';
-import { EditScreenContext } from '../notes/actions';
 
 interface Props {
+  active: boolean;
+}
+
+interface PropsInner extends Props {
   forms: {
     active: EditFormState;
   };
-  active: boolean;
   onEdit: (formId: number, change: Partial<Card>) => void;
   onDelete: (formId: number, cardId?: string) => void;
 }
 
-export class EditCardScreen extends React.PureComponent<Props> {
+class EditCardScreenInner extends React.PureComponent<PropsInner> {
   activeFormRef: React.RefObject<EditCardForm>;
 
-  constructor(props: Props) {
+  constructor(props: PropsInner) {
     super(props);
 
     this.activeFormRef = React.createRef<EditCardForm>();
@@ -42,7 +48,7 @@ export class EditCardScreen extends React.PureComponent<Props> {
     }
   }
 
-  componentDidUpdate(previousProps: Props) {
+  componentDidUpdate(previousProps: PropsInner) {
     // If we are newly active, or if we've just changed cards (e.g. by creating
     // a new card) then focus the card if it's new.
     if (
@@ -120,13 +126,11 @@ export class EditCardScreen extends React.PureComponent<Props> {
   }
 }
 
-// XXX Use the actual state once we have it
-type State = any;
-
-const mapStateToProps = (state: State) => ({
+const mapStateToProps = (state: AppState) => ({
   forms: (state.edit as EditState).forms,
 });
-const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
+
+const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
   onEdit: (formId: number, change: Partial<Card>) => {
     dispatch(editActions.editCard(formId, change));
   },
@@ -136,7 +140,12 @@ const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
   },
 });
 
-export default connect(
+export const EditCardScreen = connect<
+  Return<typeof mapStateToProps>,
+  Return<typeof mapDispatchToProps>,
+  Props,
+  AppState
+>(
   mapStateToProps,
   mapDispatchToProps
-)(EditCardScreen);
+)(EditCardScreenInner);
