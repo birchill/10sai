@@ -3,8 +3,8 @@ import React from 'react';
 
 import 'main.scss'; // eslint-disable-line
 
-import CardPreview from './components/CardPreview.tsx';
-import VirtualGrid from './components/VirtualGrid.jsx';
+import { CardPreview } from './components/CardPreview.tsx';
+import { VirtualGrid } from './components/VirtualGrid.tsx';
 
 function renderTemplateCard() {
   return <CardPreview _id="template" question="Template" />;

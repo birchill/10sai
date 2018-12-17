@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { CardPreview } from './CardPreview.tsx';
-import Link from './Link.tsx';
-import VirtualGrid from './VirtualGrid.jsx';
+import { Link } from './Link.tsx';
+import { VirtualGrid } from './VirtualGrid.tsx';
 
 export class CardGrid extends React.PureComponent {
   static get contextTypes() {
