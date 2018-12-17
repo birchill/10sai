@@ -1,52 +1,52 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
 import { connect } from 'react-redux';
+
 import {
   getSyncDisplayState,
   SyncDisplayState,
 } from '../sync/SyncDisplayState';
 import { Card } from '../model';
+import { CardListContext } from './CardListContext';
 
 import { HomeScreen } from './HomeScreen';
 import { SyncState } from '../sync/reducer';
+import { CardList } from '../CardList';
 
-interface Props {
+interface PropsInner {
   syncState: SyncDisplayState;
+  cardList: CardList;
 }
 
-interface HomeScreenContainerState {
+interface StateInner {
   loading: boolean;
   hasCards: boolean;
 }
 
-class HomeScreenContainer extends React.PureComponent<
-  Props,
-  HomeScreenContainerState
+class HomeScreenContainerInner extends React.PureComponent<
+  PropsInner,
+  StateInner
 > {
-  static get contextTypes() {
-    return { cardList: PropTypes.object };
-  }
-
-  constructor(props: Props) {
+  constructor(props: PropsInner) {
     super(props);
+
     this.state = { loading: true, hasCards: false };
 
     this.handleCardsChange = this.handleCardsChange.bind(this);
   }
 
   componentDidMount() {
-    this.context.cardList.getCards().then((cards: Array<Card>) => {
+    this.props.cardList.getCards().then((cards: Array<Card>) => {
       this.setState({ loading: false });
       if (cards.length) {
         this.setState({ hasCards: true });
       }
     });
 
-    this.context.cardList.subscribe(this.handleCardsChange);
+    this.props.cardList.subscribe(this.handleCardsChange);
   }
 
   componentWillUnmount() {
-    this.context.cardList.unsubscribe(this.handleCardsChange);
+    this.props.cardList.unsubscribe(this.handleCardsChange);
   }
 
   handleCardsChange(cards: Array<Card>) {
@@ -68,12 +68,24 @@ class HomeScreenContainer extends React.PureComponent<
   }
 }
 
+interface Props {
+  syncState: SyncDisplayState;
+}
+
 interface State {
   sync: SyncState;
 }
 
-const mapStateToProps = (state: State) => ({
+const mapStateToProps = (state: State): Props => ({
   syncState: getSyncDisplayState(state.sync),
 });
 
-export default connect(mapStateToProps)(HomeScreenContainer);
+const HomeScreenContainer = connect(mapStateToProps)((props: Props) => (
+  <CardListContext.Consumer>
+    {(cardList: CardList) => (
+      <HomeScreenContainerInner cardList={cardList} {...props} />
+    )}
+  </CardListContext.Consumer>
+));
+
+export default HomeScreenContainer;

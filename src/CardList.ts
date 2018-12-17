@@ -39,7 +39,7 @@ const findCard = (id: string, cards: Card[]): [boolean, number] => {
 
 type CardListListener = (cards: Card[]) => void;
 
-class CardList {
+export class CardList {
   dataStore: DataStore;
   cards: Card[];
   listeners: CardListListener[];

@@ -1,6 +1,6 @@
-import React from 'react';
+import * as React from 'react';
 
-import CardGrid from './CardGrid.jsx';
+import { CardGrid } from './CardGrid';
 import { Link } from './Link';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Navbar } from './Navbar';

@@ -13,6 +13,7 @@ import { hasCommandModifier, isTextBox } from '../utils/keyboard.ts';
 
 import EditCardScreen from './EditCardScreen.tsx';
 import HomeScreenContainer from './HomeScreenContainer.tsx';
+import { CardListContext } from './CardListContext.ts';
 import DataStoreContext from './DataStoreContext.ts';
 import KeywordSuggesterContext from './KeywordSuggesterContext.ts';
 import { LookupScreen } from './LookupScreen.tsx';
@@ -56,10 +57,6 @@ class App extends React.PureComponent {
     return { route: {} };
   }
 
-  static get childContextTypes() {
-    return { cardList: PropTypes.object };
-  }
-
   constructor(props) {
     super(props);
     this.closePopup = this.closePopup.bind(this);
@@ -75,10 +72,6 @@ class App extends React.PureComponent {
 
   componentWillUnmount() {
     document.documentElement.removeEventListener('keydown', this.handleKeyDown);
-  }
-
-  getChildContext() {
-    return { cardList: this.cardList };
   }
 
   get currentScreenLink() {
@@ -185,7 +178,9 @@ class App extends React.PureComponent {
             <KeywordSuggesterContext.Provider value={this.keywordSuggester}>
               <div className="app">
                 <div className="screens">
-                  <HomeScreenContainer />
+                  <CardListContext.Provider value={this.cardList}>
+                    <HomeScreenContainer />
+                  </CardListContext.Provider>
                   <TabPanel
                     id="lookup-page"
                     role="tabpanel"
