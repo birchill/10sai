@@ -1,12 +1,11 @@
-import DataStore from './store/DataStore.ts';
+import { DataStore } from './store/DataStore';
 
 const dataStore = new DataStore();
 
 async function listOrphans() {
   const orphans = await dataStore.cardStore.getOrphanedCards();
 
-  // Empty container
-  const container = document.getElementById('orphaned-cards');
+  const container = document.getElementById('orphaned-cards')!;
   while (container.firstChild) {
     container.removeChild(container.firstChild);
   }
@@ -17,6 +16,10 @@ async function listOrphans() {
   }
 
   for (const card of orphans) {
+    if (!card) {
+      continue;
+    }
+
     const id = `orphan-${card._id}`;
 
     const div = document.createElement('div');
@@ -48,7 +51,7 @@ async function listOrphans() {
     async () => {
       const checkedCards = document.querySelectorAll(
         'input[type=checkbox][name=orphan-card]:checked'
-      );
+      ) as NodeListOf<HTMLInputElement>;
       const putResults = [];
       for (const checkbox of checkedCards) {
         putResults.push(
@@ -69,7 +72,7 @@ async function listOrphans() {
 async function listOrphanedProgress() {
   const orphans = await dataStore.cardStore.getOrphanedProgress();
 
-  const container = document.getElementById('orphaned-progress');
+  const container = document.getElementById('orphaned-progress')!;
   while (container.firstChild) {
     container.removeChild(container.firstChild);
   }
@@ -80,6 +83,10 @@ async function listOrphanedProgress() {
   }
 
   for (const progress of orphans) {
+    if (!progress) {
+      continue;
+    }
+
     const id = `orphan-${progress._id}`;
 
     const div = document.createElement('div');
@@ -111,7 +118,7 @@ async function listOrphanedProgress() {
     async () => {
       const checkedProgress = document.querySelectorAll(
         'input[type=checkbox][name=orphan-progress]:checked'
-      );
+      ) as NodeListOf<HTMLInputElement>;
       const deleteResults = [];
       for (const checkbox of checkedProgress) {
         deleteResults.push(
@@ -132,7 +139,7 @@ async function listOrphanedProgress() {
 async function listUnrecognizedDocs() {
   const unrecognizedDocs = await dataStore.getUnrecognizedDocs();
 
-  const container = document.getElementById('unrecognized-docs');
+  const container = document.getElementById('unrecognized-docs')!;
   while (container.firstChild) {
     container.removeChild(container.firstChild);
   }
@@ -143,6 +150,10 @@ async function listUnrecognizedDocs() {
   }
 
   for (const doc of unrecognizedDocs) {
+    if (!doc) {
+      continue;
+    }
+
     const id = `unrecognized-${doc._id}`;
 
     const div = document.createElement('div');
@@ -174,7 +185,7 @@ async function listUnrecognizedDocs() {
     async () => {
       const checkedUnrecognized = document.querySelectorAll(
         'input[type=checkbox][name=unrecognized-doc]:checked'
-      );
+      ) as NodeListOf<HTMLInputElement>;
       const ids = Array.from(checkedUnrecognized).map(
         checkbox => checkbox.value
       );
@@ -186,7 +197,7 @@ async function listUnrecognizedDocs() {
 }
 
 function watchForDeletion() {
-  document.getElementById('delete-db').addEventListener('click', () => {
+  document.getElementById('delete-db')!.addEventListener('click', () => {
     dataStore.destroy();
   });
 }
