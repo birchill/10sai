@@ -6,7 +6,7 @@ module.exports = {
   entry: {
     '10sai': ['@babel/polyfill', './src/index.tsx'],
     _database: ['@babel/polyfill', './src/_database.js'],
-    _grid: ['@babel/polyfill', './src/_grid.js'],
+    _grid: ['@babel/polyfill', './src/_grid.tsx'],
   },
   output: {
     path: path.resolve(__dirname, 'public'),
