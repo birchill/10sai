@@ -3,7 +3,7 @@ import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 
 import { SyncSettingsPanel } from './SyncSettingsPanel';
-import { SyncState } from '../sync/states';
+import { SyncDisplayState } from '../sync/SyncDisplayState';
 
 const server = {
   name: 'http://server.server.server/path',
@@ -14,7 +14,7 @@ const server = {
 storiesOf('Components|SyncSettingsPanel', module)
   .add('not configured', () => (
     <SyncSettingsPanel
-      syncState={SyncState.NOT_CONFIGURED}
+      syncState={SyncDisplayState.NotConfigured}
       onSubmit={action('onSubmit')}
       onRetry={action('onRetry')}
       onEdit={action('onEdit')}
@@ -25,7 +25,7 @@ storiesOf('Components|SyncSettingsPanel', module)
   ))
   .add('up to date', () => (
     <SyncSettingsPanel
-      syncState={SyncState.OK}
+      syncState={SyncDisplayState.Ok}
       server={server}
       lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
       onSubmit={action('onSubmit')}
@@ -38,7 +38,7 @@ storiesOf('Components|SyncSettingsPanel', module)
   ))
   .add('in progress', () => (
     <SyncSettingsPanel
-      syncState={SyncState.IN_PROGRESS}
+      syncState={SyncDisplayState.InProgress}
       onSubmit={action('onSubmit')}
       onRetry={action('onRetry')}
       onEdit={action('onEdit')}
@@ -49,7 +49,7 @@ storiesOf('Components|SyncSettingsPanel', module)
   ))
   .add('paused', () => (
     <SyncSettingsPanel
-      syncState={SyncState.PAUSED}
+      syncState={SyncDisplayState.Paused}
       server={server}
       lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
       onSubmit={action('onSubmit')}
@@ -62,7 +62,7 @@ storiesOf('Components|SyncSettingsPanel', module)
   ))
   .add('offline', () => (
     <SyncSettingsPanel
-      syncState={SyncState.OFFLINE}
+      syncState={SyncDisplayState.Offline}
       server={server}
       lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
       onSubmit={action('onSubmit')}
@@ -75,7 +75,7 @@ storiesOf('Components|SyncSettingsPanel', module)
   ))
   .add('error', () => (
     <SyncSettingsPanel
-      syncState={SyncState.ERROR}
+      syncState={SyncDisplayState.Error}
       server={server}
       lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
       errorDetail={{ status: 0 }}
@@ -89,7 +89,7 @@ storiesOf('Components|SyncSettingsPanel', module)
   ))
   .add('configure', () => (
     <SyncSettingsPanel
-      syncState={SyncState.OK}
+      syncState={SyncDisplayState.Ok}
       server={server}
       lastSyncTime={new Date(Date.now() - 1 * 1000 * 60 * 60 * 24)}
       editingServer
