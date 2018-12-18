@@ -49,12 +49,11 @@ const initialSelection: SelectionState = {
 
 export type AppState = InnerState & { selection: SelectionState };
 
-export default function rootReducer(
-  state: AppState | undefined,
-  action: Action
-) {
+export function reducer(state: AppState | undefined, action: Action) {
   return selection(
     { selection: initialSelection, ...innerReducer(state, action) },
     action
   );
 }
+
+export default reducer;

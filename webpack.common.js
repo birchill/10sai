@@ -4,7 +4,7 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    '10sai': ['@babel/polyfill', './src/index.js'],
+    '10sai': ['@babel/polyfill', './src/index.tsx'],
     _database: ['@babel/polyfill', './src/_database.js'],
     _grid: ['@babel/polyfill', './src/_grid.js'],
   },

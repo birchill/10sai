@@ -263,7 +263,7 @@ function* goOffline(dataStore: DataStore) {
   yield stopReplication(dataStore);
 }
 
-function* syncSagas(dataStore: DataStore, dispatch: Dispatch<Action>) {
+export function* syncSagas(dataStore: DataStore, dispatch: Dispatch<Action>) {
   yield* [
     takeLatest('SET_SYNC_SERVER', setSyncServer, dataStore, dispatch),
     takeLatest('RETRY_SYNC', retrySync, dataStore, dispatch),

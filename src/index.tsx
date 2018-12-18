@@ -1,26 +1,35 @@
-import ReactDOM from 'react-dom';
-import React from 'react';
-import { createStore, applyMiddleware, compose } from 'redux';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+
+import { createStore, applyMiddleware, compose, Store } from 'redux';
 import { Provider } from 'react-redux';
 import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
 
-import reducer from './reducer';
+import { Action } from './actions';
+import { reducer, AppState } from './reducer';
 
-import { editSagas, syncEditChanges } from './edit/sagas.ts';
-import noteSagas from './notes/sagas.ts';
-import reviewSagas from './review/sagas.ts';
-import routeSagas from './route/sagas';
-import syncSagas from './sync/sagas';
+import { editSagas, syncEditChanges } from './edit/sagas';
+import { noteSagas } from './notes/sagas';
+import { reviewSagas } from './review/sagas';
+import { routeSagas } from './route/sagas';
+import { syncSagas } from './sync/sagas';
 
-import reviewSync from './review/sync.ts';
+import reviewSync from './review/sync';
 
 import * as routeActions from './route/actions';
 
-import DataStore from './store/DataStore.ts';
-import App from './components/App.tsx';
+import { DataStore } from './store/DataStore';
+import { SettingChange, Settings } from './store/SettingsStore';
+import { App } from './components/App';
 
-import 'main.scss'; // eslint-disable-line
+import 'main.scss';
+
+declare global {
+  interface Window {
+    __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: <F extends Function>(f: F) => F;
+  }
+}
 
 //
 // Redux store
@@ -28,26 +37,29 @@ import 'main.scss'; // eslint-disable-line
 
 const sagaMiddleware = createSagaMiddleware();
 
-let store;
+let store: Store<AppState, Action>;
+
 if (process.env.NODE_ENV === 'development') {
-  // eslint-disable-next-line global-require, import/no-extraneous-dependencies
   const { createLogger } = require('redux-logger');
   const loggerMiddleware = createLogger();
-  const composeEnhancers =
+  const composeEnhancers: <F extends Function>(f: F) => F =
     window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-  store = createStore(
+  store = createStore<AppState, Action, {}, {}>(
     reducer,
     composeEnhancers(applyMiddleware(sagaMiddleware, loggerMiddleware))
   );
 } else {
-  store = createStore(reducer, applyMiddleware(sagaMiddleware));
+  store = createStore<AppState, Action, {}, {}>(
+    reducer,
+    applyMiddleware(sagaMiddleware)
+  );
 }
 
 //
 // Local data stores
 //
 
-const getReviewTime = () => {
+const getReviewTime = (): Date => {
   const reviewTime = new Date();
   reviewTime.setMinutes(0);
   reviewTime.setSeconds(0);
@@ -60,7 +72,7 @@ const dataStore = new DataStore({ reviewTime: getReviewTime() });
 syncEditChanges(dataStore, store);
 reviewSync(dataStore, store);
 
-const dispatchSettingUpdates = settings => {
+const dispatchSettingUpdates = (settings: Settings) => {
   for (const key in settings) {
     if (settings.hasOwnProperty(key)) {
       store.dispatch({
@@ -73,7 +85,7 @@ const dispatchSettingUpdates = settings => {
 };
 
 dataStore.getSettings().then(dispatchSettingUpdates);
-dataStore.changes.on('setting', change => {
+dataStore.changes.on('setting', (change: SettingChange) => {
   dispatchSettingUpdates(change.setting);
 });
 

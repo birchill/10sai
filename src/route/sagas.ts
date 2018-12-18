@@ -139,7 +139,7 @@ export function* updateUrl(action: routeActions.UpdateUrlAction) {
   }
 }
 
-function* routeSagas() {
+export function* routeSagas() {
   yield* [
     takeEvery('FOLLOW_LINK', followLink),
     takeEvery('BEFORE_SCREEN_CHANGE', beforeScreenChange),

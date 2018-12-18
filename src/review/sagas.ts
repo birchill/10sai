@@ -233,7 +233,7 @@ export function* cancelReview(dataStore: DataStore) {
   yield call([dataStore, 'deleteReview']);
 }
 
-function* reviewSagas(dataStore: DataStore) {
+export function* reviewSagas(dataStore: DataStore) {
   yield* [
     takeEvery(
       ['NEW_REVIEW', 'SET_REVIEW_LIMITS', 'SET_REVIEW_TIME'],
