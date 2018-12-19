@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 import { ColorKeywordOrBlack } from '../text/rich-text-styles';
 import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
@@ -319,5 +319,3 @@ export class FormatToolbar extends React.Component<Props, State> {
     );
   }
 }
-
-export default FormatToolbar;

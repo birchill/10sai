@@ -1,14 +1,13 @@
 /* global describe, expect, it, jest */
-/* eslint-disable react/jsx-first-prop-new-line */
-/* eslint-disable react/jsx-max-props-per-line */
 
-import React from 'react';
+import * as React from 'react';
 import { configure, shallow, ShallowWrapper } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 
 import { SyncDisplayState } from '../sync/SyncDisplayState';
 import { SyncSettingsPanel } from './SyncSettingsPanel';
 import { SyncServerForm } from './SyncServerForm';
+import { ServerStatus } from './ServerStatus';
 
 configure({ adapter: new Adapter() });
 
@@ -70,7 +69,7 @@ describe('<SyncSettingsPanel />', () => {
       SyncDisplayState.Offline,
     ]) {
       subject.setProps({ syncState });
-      expect(subject.find('ServerStatus').prop('lastSyncTime')).toBeInstanceOf(
+      expect(subject.find(ServerStatus).prop('lastSyncTime')).toBeInstanceOf(
         Date
       );
     }

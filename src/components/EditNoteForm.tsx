@@ -1,13 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 
 import { Note } from '../model';
 import { SaveState } from '../notes/reducer';
 import { getKeywordVariants, getKeywordsToMatch } from '../text/keywords';
-import NoteFrame from './NoteFrame';
-import SaveStatus from './SaveStatus';
-import TokenList from './TokenList';
+import { NoteFrame } from './NoteFrame';
+import { SaveStatus } from './SaveStatus';
+import { TokenList } from './TokenList';
 import { ContentState, Editor, EditorState } from 'draft-js';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 
@@ -309,5 +309,3 @@ export class EditNoteForm extends React.Component<Props, State> {
     );
   }
 }
-
-export default EditNoteForm;

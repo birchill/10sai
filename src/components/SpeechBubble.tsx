@@ -1,6 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import * as PropTypes from 'prop-types';
 
 export interface Props {
   className?: string;
@@ -285,5 +285,3 @@ export class SpeechBubble extends React.Component<Props> {
     return this.containerRef.current.getBoundingClientRect();
   }
 }
-
-export default SpeechBubble;

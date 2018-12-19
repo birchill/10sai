@@ -799,5 +799,3 @@ function definedMin(
   }
   return Math.min(a, b);
 }
-
-export default VirtualGrid;

@@ -1,6 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import KeywordSuggesterContext from './KeywordSuggesterContext';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
+import { KeywordSuggesterContext } from './KeywordSuggesterContext';
 import {
   SuggestionProvider,
   SuggestionProviderProps,
@@ -78,5 +78,3 @@ export const KeywordSuggestionProvider = (props: Props) => (
     )}
   </KeywordSuggesterContext.Consumer>
 );
-
-export default KeywordSuggestionProvider;

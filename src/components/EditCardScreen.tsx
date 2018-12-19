@@ -13,10 +13,10 @@ import * as routeActions from '../route/actions';
 import { EditScreenContext } from '../notes/actions';
 import { Return } from '../utils/type-helpers';
 
-import EditCardToolbar from './EditCardToolbar';
+import { EditCardToolbar } from './EditCardToolbar';
 import { EditCardForm } from './EditCardForm';
-import EditCardNotFound from './EditCardNotFound';
-import DynamicNoteList from './DynamicNoteList';
+import { EditCardNotFound } from './EditCardNotFound';
+import { DynamicNoteList } from './DynamicNoteList';
 
 interface Props {
   active: boolean;

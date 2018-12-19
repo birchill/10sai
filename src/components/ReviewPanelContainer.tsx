@@ -42,5 +42,3 @@ export const ReviewPanelContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(ReviewPanel);
-
-export default ReviewPanelContainer;

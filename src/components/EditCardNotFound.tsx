@@ -1,13 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
-import Link from './Link';
+import { Link } from './Link';
 
 interface Props {
   deleted: boolean;
 }
 
-const EditCardNotFound: React.SFC<Props> = props => {
+export const EditCardNotFound: React.SFC<Props> = props => {
   return (
     <div className="summary-panel editcard-notfound -notfound">
       <div className="icon -notfound" />
@@ -24,5 +24,3 @@ const EditCardNotFound: React.SFC<Props> = props => {
 EditCardNotFound.propTypes = {
   deleted: PropTypes.bool.isRequired,
 };
-
-export default EditCardNotFound;

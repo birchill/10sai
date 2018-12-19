@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 import * as Immutable from 'immutable';
 
 import {
@@ -721,5 +721,3 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
     this.setState({ editorState, selectionHighlight: SelectionHighlight.None });
   }
 }
-
-export default CardFaceInput;

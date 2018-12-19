@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 import { CardFaceEditControls } from './CardFaceEditControls';
-import KeywordSuggestionProvider from './KeywordSuggestionProvider';
-import TagSuggestionProvider from './TagSuggestionProvider';
-import TokenList from './TokenList';
+import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
+import { TagSuggestionProvider } from './TagSuggestionProvider';
+import { TokenList } from './TokenList';
 
 import { Card } from '../model';
 import KeywordSuggester from '../suggestions/KeywordSuggester';
@@ -194,5 +194,3 @@ export class EditCardForm extends React.Component<Props, State> {
     this.cardControlsRef.current && this.cardControlsRef.current.focus();
   }
 }
-
-export default EditCardForm;

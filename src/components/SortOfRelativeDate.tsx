@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 // A half-hearted attempt at a date thing.
 //
@@ -71,5 +71,3 @@ export class SortOfRelativeDate extends React.PureComponent<Props> {
     return <time dateTime={this.props.value.toISOString()}>{dateString}</time>;
   }
 }
-
-export default SortOfRelativeDate;

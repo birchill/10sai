@@ -1,11 +1,11 @@
-import React from 'react';
+import * as React from 'react';
 
 import { SyncDisplayState } from '../sync/SyncDisplayState';
 import { SyncStatusMessages } from '../sync/status-messages';
 import { SyncServer } from '../sync/SyncServer';
 
-import SyncServerForm from './SyncServerForm';
-import ServerStatus from './ServerStatus';
+import { SyncServerForm } from './SyncServerForm';
+import { ServerStatus } from './ServerStatus';
 
 function translateError(error: any) {
   if (typeof error === 'undefined') {
@@ -294,5 +294,3 @@ export class SyncSettingsPanel extends React.PureComponent<Props> {
     );
   }
 }
-
-export default SyncSettingsPanel;

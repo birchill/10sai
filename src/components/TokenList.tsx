@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 import { getAncestorWithClass } from '../utils/dom';
-import LoadingIndicator from './LoadingIndicator';
+import { LoadingIndicator } from './LoadingIndicator';
 
 export interface Props {
   className?: string;
@@ -823,5 +823,3 @@ export class TokenList extends React.PureComponent<Props> {
     );
   }
 }
-
-export default TokenList;

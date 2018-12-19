@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 import { SyncServer } from '../sync/SyncServer';
-import CancelableTextbox from './CancelableTextbox';
+import { CancelableTextbox } from './CancelableTextbox';
 
 interface Props {
   className?: string;
@@ -210,5 +210,3 @@ export class SyncServerForm extends React.PureComponent<Props, State> {
     );
   }
 }
-
-export default SyncServerForm;

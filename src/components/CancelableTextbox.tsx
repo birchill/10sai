@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 import { Omit } from '../utils/type-helpers';
 
@@ -84,5 +84,3 @@ export class CancelableTextbox extends React.PureComponent<Props, State> {
     );
   }
 }
-
-export default CancelableTextbox;

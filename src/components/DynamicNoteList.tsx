@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
-import DataStoreContext from './DataStoreContext';
+import { DataStoreContext } from './DataStoreContext';
 // This is really weird, but if we write the following as:
 //
 //   import NoteList from './NoteList';
@@ -17,7 +17,7 @@ import { NoteListWatcher } from '../notes/NoteListWatcher';
 import * as noteActions from '../notes/actions';
 import { NoteState } from '../notes/reducer';
 import { Note } from '../model';
-import DataStore from '../store/DataStore';
+import { DataStore } from '../store/DataStore';
 
 interface WatcherProps {
   dataStore: DataStore;
@@ -122,5 +122,3 @@ export const DynamicNoteList = connect(
   undefined,
   mapDispatchToProps
 )(DynamicNoteListInner);
-
-export default DynamicNoteList;

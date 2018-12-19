@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 
-import SyncSettingsPanel from './SyncSettingsPanel';
+import { SyncSettingsPanel } from './SyncSettingsPanel';
 import { SyncServer } from '../sync/SyncServer';
 import {
   getSyncDisplayState,
@@ -59,5 +59,3 @@ export const SyncSettingsPanelContainer = connect<StateProps, DispatchProps>(
   mapStateToProps,
   mapDispatchToProps
 )(SyncSettingsPanel);
-
-export default SyncSettingsPanelContainer;

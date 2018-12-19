@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import { hasNoModifiers, isTextBox } from '../utils/keyboard';
 
@@ -235,5 +235,3 @@ export class ReviewPanel extends React.Component<Props> {
     );
   }
 }
-
-export default ReviewPanel;

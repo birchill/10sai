@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 // A bar with three colored regions.
 
@@ -40,5 +40,3 @@ TricolorProgress.propTypes = {
   title: PropTypes.string,
   className: PropTypes.string,
 };
-
-export default TricolorProgress;

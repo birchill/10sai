@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
@@ -120,5 +120,3 @@ export const Popup = connect<{}, DispatchProps, Props>(
   undefined,
   mapDispatchToProps
 )(PopupInner);
-
-export default Popup;

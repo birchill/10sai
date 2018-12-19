@@ -16,5 +16,3 @@ export const TabPanel: React.SFC<Props> = (props: Props) => {
     </div>
   );
 };
-
-export default TabPanel;

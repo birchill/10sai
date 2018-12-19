@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 import { ColorKeywordOrBlack } from '../text/rich-text-styles';
 
@@ -153,5 +153,3 @@ export class ColorPicker extends React.PureComponent<Props, State> {
     );
   }
 }
-
-export default ColorPicker;

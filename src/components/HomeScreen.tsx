@@ -65,5 +65,3 @@ export const HomeScreen: React.SFC<Props> = (props: Props) => {
     </div>
   );
 };
-
-export default HomeScreen;

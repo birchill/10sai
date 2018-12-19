@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 interface Props {
   heading: string;
@@ -13,5 +13,3 @@ export const SettingsPanel: React.SFC<Props> = (props: Props) => {
     </div>
   );
 };
-
-export default SettingsPanel;

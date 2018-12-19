@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import { SyncDisplayState } from '../sync/SyncDisplayState';
 import { Link } from './Link';
@@ -46,5 +46,3 @@ export class Navbar extends React.PureComponent<Props> {
     );
   }
 }
-
-export default Navbar;

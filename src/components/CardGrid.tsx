@@ -74,5 +74,3 @@ export const CardGrid = () => (
     {(cardList: CardList) => <CardGridInner cardList={cardList} />}
   </CardListContext.Consumer>
 );
-
-export default CardGrid;

@@ -1,5 +1,5 @@
-import React, { ReactPropTypes } from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 import { SuggestionResult } from '../suggestions/SuggestionResult';
 import { debounce } from '../utils';
 
@@ -121,5 +121,3 @@ export abstract class SuggestionProvider<
     );
   }
 }
-
-export default SuggestionProvider;

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import { FormattedText } from './FormattedText';
 import { TextRegion } from './TextRegion';
@@ -39,5 +39,3 @@ export const ReviewCard: React.SFC<Props> = (props: Props) => {
     </div>
   );
 };
-
-export default ReviewCard;

@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
-import NoteCorner from './NoteCorner';
+import { NoteCorner } from './NoteCorner';
 
 interface Props {
   className?: string;
@@ -175,5 +175,3 @@ export class AddNoteButton extends React.PureComponent<Props> {
     );
   }
 }
-
-export default AddNoteButton;

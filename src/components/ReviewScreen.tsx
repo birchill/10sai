@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import { ReviewPhase } from '../review/ReviewPhase';
 
@@ -222,5 +222,3 @@ export const ReviewScreen: React.SFC<Props> = (props: Props) => {
     </section>
   );
 };
-
-export default ReviewScreen;

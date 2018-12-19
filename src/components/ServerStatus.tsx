@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
-import SortOfRelativeDate from './SortOfRelativeDate';
+import { SortOfRelativeDate } from './SortOfRelativeDate';
 
 interface Props {
   className?: string | null;
@@ -10,7 +10,7 @@ interface Props {
   onEdit: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const ServerStatus: React.SFC<Props> = (props: Props) => {
+export const ServerStatus: React.SFC<Props> = (props: Props) => {
   return (
     <fieldset
       className={`${props.className || ''} server-status`}
@@ -40,5 +40,3 @@ ServerStatus.propTypes = {
   lastSyncTime: PropTypes.instanceOf(Date),
   onEdit: PropTypes.func.isRequired,
 };
-
-export default ServerStatus;

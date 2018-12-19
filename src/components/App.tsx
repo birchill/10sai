@@ -270,5 +270,3 @@ export const App = connect<
   mapStateToProps,
   mapDispatchToProps
 )(AppInner);
-
-export default App;

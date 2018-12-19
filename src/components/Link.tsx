@@ -1,5 +1,5 @@
-import React, { AnchorHTMLAttributes } from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
 import { Overwrite } from '../utils/type-helpers';
@@ -16,7 +16,10 @@ interface LocalProps {
   active?: boolean;
 }
 
-type Props = Overwrite<AnchorHTMLAttributes<HTMLAnchorElement>, LocalProps>;
+type Props = Overwrite<
+  React.AnchorHTMLAttributes<HTMLAnchorElement>,
+  LocalProps
+>;
 
 interface DefaultProps {
   direction: 'forwards';
@@ -105,5 +108,3 @@ export const Link = connect(
   mapDispatchToProps,
   mergeProps
 )(LinkInner);
-
-export default Link;

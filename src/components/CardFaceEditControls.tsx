@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
 import { CardFaceInput, MarkType } from './CardFaceInput';
 import {
@@ -452,5 +452,3 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     this.questionTextBoxRef.current && this.questionTextBoxRef.current.focus();
   }
 }
-
-export default CardFaceEditControls;

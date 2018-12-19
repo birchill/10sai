@@ -4,5 +4,3 @@ import { DataStore } from '../store/DataStore';
 export const DataStoreContext = React.createContext<DataStore | undefined>(
   undefined
 );
-
-export default DataStoreContext;

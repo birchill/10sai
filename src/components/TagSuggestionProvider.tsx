@@ -1,6 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import TagSuggesterContext from './TagSuggesterContext';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
+import { TagSuggesterContext } from './TagSuggesterContext';
 import {
   SuggestionProvider,
   SuggestionProviderProps,
@@ -44,5 +44,3 @@ export const TagSuggestionProvider = (props: SuggestionProviderProps) => (
     )}
   </TagSuggesterContext.Consumer>
 );
-
-export default TagSuggestionProvider;

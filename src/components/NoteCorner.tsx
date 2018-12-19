@@ -1,6 +1,6 @@
-import React from 'react';
+import * as React from 'react';
 
-function NoteCorner() {
+export function NoteCorner() {
   return (
     <svg className="corner" viewBox="0 0 100 100">
       <polygon fill="#FEFACF" points="0,0 100,100 0,100" />
@@ -15,5 +15,3 @@ function NoteCorner() {
     </svg>
   );
 }
-
-export default NoteCorner;

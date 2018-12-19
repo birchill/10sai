@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
 type SizeKeyword = 'x-small' | 'small' | 'medium' | 'large' | 'x-large';
@@ -206,5 +206,3 @@ export class TextRegion extends React.Component<Props, State> {
     );
   }
 }
-
-export default TextRegion;

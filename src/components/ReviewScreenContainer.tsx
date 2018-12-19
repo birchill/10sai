@@ -28,5 +28,3 @@ export const ReviewScreenContainer = connect(
   mapStateToProps,
   mapDispatchToProps
 )(ReviewScreen);
-
-export default ReviewScreenContainer;

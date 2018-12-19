@@ -1,13 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
-import NoteCorner from './NoteCorner';
+import { NoteCorner } from './NoteCorner';
 
 interface Props {
   className?: string | null;
 }
 
-const NoteFrame: React.SFC<Props> = props => {
+export const NoteFrame: React.SFC<Props> = props => {
   let className = 'note-frame';
   if (props.className) {
     className += ' ' + props.className;
@@ -29,5 +29,3 @@ const NoteFrame: React.SFC<Props> = props => {
 NoteFrame.propTypes = {
   className: PropTypes.string,
 };
-
-export default NoteFrame;

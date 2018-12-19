@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
-import Link from './Link';
+import { Link } from './Link';
 
 interface Props {
   canDelete: boolean;
@@ -51,5 +51,3 @@ export class EditCardToolbar extends React.PureComponent<Props> {
     );
   }
 }
-
-export default EditCardToolbar;

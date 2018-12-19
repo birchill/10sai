@@ -1,6 +1,6 @@
-import React from 'react';
+import * as React from 'react';
 
-import Link from './Link';
+import { Link } from './Link';
 
 interface Props {}
 
@@ -43,5 +43,3 @@ export class LookupToolbar extends React.PureComponent<Props> {
     );
   }
 }
-
-export default LookupToolbar;
