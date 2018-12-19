@@ -3,5 +3,3 @@ export interface SyncServer {
   username?: string;
   password?: string;
 }
-
-export default SyncServer;

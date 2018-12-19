@@ -28,5 +28,3 @@ export const getSyncDisplayState = (state: SyncState): SyncDisplayState => {
 
   return SyncDisplayState.Ok;
 };
-
-export default SyncDisplayState;

@@ -102,5 +102,3 @@ export function sync(state = initialState, action: Action) {
       return state;
   }
 }
-
-export default sync;

@@ -7,7 +7,7 @@ import edit from './edit/reducer';
 import review from './review/reducer';
 import route from './route/reducer';
 import { selection, SelectionState } from './selection/reducer';
-import sync from './sync/reducer';
+import { sync } from './sync/reducer';
 
 const componentReducers = {
   edit,

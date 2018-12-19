@@ -275,5 +275,3 @@ export function* syncSagas(dataStore: DataStore, dispatch: Dispatch<Action>) {
     takeEvery('GO_OFFLINE', goOffline, dataStore),
   ];
 }
-
-export default syncSagas;

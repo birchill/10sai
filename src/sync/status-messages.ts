@@ -9,5 +9,3 @@ export const SyncStatusMessages = new Map<SyncDisplayState, string>([
   [SyncDisplayState.Error, 'Sync had a problem'],
   [SyncDisplayState.NotConfigured, 'Sync is not configured'],
 ]);
-
-export default SyncStatusMessages;
