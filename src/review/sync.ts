@@ -1,5 +1,6 @@
 import deepEqual from 'deep-equal';
 import { Store } from 'redux';
+
 import {
   getAvailableCards,
   getLoadingAvailableCards,
@@ -29,7 +30,7 @@ interface State {
   route: RouteState;
 }
 
-function sync(dataStore: DataStore, store: Store<State>) {
+export function sync(dataStore: DataStore, store: Store<State>) {
   let needAvailableCards: boolean;
   let delayedCallback: number | undefined;
 
@@ -130,5 +131,3 @@ function sync(dataStore: DataStore, store: Store<State>) {
     }
   });
 }
-
-export default sync;

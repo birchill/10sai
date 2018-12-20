@@ -146,5 +146,3 @@ export function* routeSagas() {
     takeEvery('UPDATE_URL', updateUrl),
   ];
 }
-
-export default routeSagas;

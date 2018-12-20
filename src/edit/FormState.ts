@@ -15,5 +15,3 @@ export enum FormState {
   // Card not found because it was deleted
   Deleted = 'deleted',
 }
-
-export default FormState;

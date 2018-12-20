@@ -333,5 +333,3 @@ export function edit(state = initialState, action: Action): EditState {
 
   return state;
 }
-
-export default edit;

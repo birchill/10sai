@@ -251,5 +251,3 @@ export function* reviewSagas(dataStore: DataStore) {
 export function* beforeReviewScreenChange() {
   return yield* beforeNotesScreenChange({ screen: 'review' });
 }
-
-export default reviewSagas;

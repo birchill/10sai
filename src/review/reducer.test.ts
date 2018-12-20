@@ -5,7 +5,7 @@ import * as noteActions from '../notes/actions';
 import { getReviewSummary } from './selectors';
 import { generateCards } from '../utils/testing';
 import { Card, Review } from '../model';
-import reducer from '../reducer';
+import { reducer } from '../reducer';
 import { RouteState } from '../route/reducer';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;

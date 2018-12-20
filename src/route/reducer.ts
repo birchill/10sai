@@ -56,5 +56,3 @@ export function route(state = initialState, action: Action): RouteState {
       return state;
   }
 }
-
-export default route;

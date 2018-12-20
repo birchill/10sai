@@ -1,5 +1,4 @@
 /* global describe, it, expect */
-/* eslint arrow-body-style: [ 'off' ] */
 
 import { expectSaga, ExpectApiEffects } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';

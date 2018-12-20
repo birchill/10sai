@@ -1,5 +1,4 @@
 /* global describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
 
 import * as actions from './actions';
 

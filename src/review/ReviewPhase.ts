@@ -6,5 +6,3 @@ export const enum ReviewPhase {
   Answer = 'answer', // Showing the answer part of a card
   Complete = 'complete', // Review is finished
 }
-
-export default ReviewPhase;

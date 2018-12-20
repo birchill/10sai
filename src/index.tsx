@@ -15,7 +15,7 @@ import { reviewSagas } from './review/sagas';
 import { routeSagas } from './route/sagas';
 import { syncSagas } from './sync/sagas';
 
-import reviewSync from './review/sync';
+import { sync as reviewSync } from './review/sync';
 
 import * as routeActions from './route/actions';
 

@@ -200,5 +200,3 @@ export function syncEditChanges(dataStore: DataStore, store: Store<State>) {
     }
   });
 }
-
-export default editSagas;

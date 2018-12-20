@@ -1,12 +1,12 @@
-import subject from './sync';
+import { sync as subject } from './sync';
 import { queryAvailableCards, updateReviewCard } from './actions';
 import { ReviewState } from './reducer';
-import reducer from '../reducer';
+import { reducer } from '../reducer';
 import { ReviewAction } from './actions';
 import { getReviewSummary } from './selectors';
 import { ReviewPhase } from './ReviewPhase';
 import { Card } from '../model';
-import DataStore from '../store/DataStore';
+import { DataStore } from '../store/DataStore';
 import { Store } from 'redux';
 
 jest.useFakeTimers();

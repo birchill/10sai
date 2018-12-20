@@ -656,5 +656,3 @@ function updateNextCard(
     nextCard,
   };
 }
-
-export default review;
