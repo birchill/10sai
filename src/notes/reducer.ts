@@ -1,5 +1,6 @@
 import deepEqual from 'deep-equal';
 import { collate } from 'pouchdb-collate';
+
 import * as actions from './actions';
 import { Note } from '../model';
 import { StoreError } from '../store/DataStore';
@@ -332,5 +333,3 @@ function updateState(
   updatedState.splice(noteStateIndex, 1, updatedNoteState);
   return updatedState;
 }
-
-export default notes;

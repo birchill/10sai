@@ -1,10 +1,9 @@
 /* global afterEach, beforeEach, describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
 
 import { NoteListWatcher } from './NoteListWatcher';
-import DataStore from '../store/DataStore';
+import { DataStore } from '../store/DataStore';
 import { Note } from '../model';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));

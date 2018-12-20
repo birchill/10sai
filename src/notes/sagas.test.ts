@@ -7,7 +7,7 @@
 import { expectSaga } from 'redux-saga-test-plan';
 
 import { watchNoteEdits, beforeNotesScreenChange } from './sagas';
-import reducer, { AppState } from '../reducer';
+import { reducer, AppState } from '../reducer';
 import { Note } from '../model';
 import * as noteActions from './actions';
 import { EditNoteContext, EditScreenContext } from './actions';

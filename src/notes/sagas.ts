@@ -1,4 +1,5 @@
 import { call, put, select, CallEffect, take } from 'redux-saga/effects';
+
 import { watchEdits, ResourceState } from '../utils/autosave-saga';
 import * as noteActions from './actions';
 import {
@@ -137,5 +138,3 @@ export function* beforeNotesScreenChange(context: NoteListContext) {
 
   return true;
 }
-
-export default noteSagas;

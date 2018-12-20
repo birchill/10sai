@@ -1,9 +1,10 @@
 import { collate } from 'pouchdb-collate';
+import deepEqual from 'deep-equal';
+
 import { Note } from '../model';
 import { DataStore } from '../store/DataStore';
 import { NoteChange } from '../store/NoteStore';
 import { getKeywordVariants } from '../text/keywords';
-import deepEqual from 'deep-equal';
 
 // A wrapper around a Store that watches for Notes that match a given set of
 // keywords.
@@ -165,5 +166,3 @@ const findNote = (id: string, notes: Note[]): [boolean, number] => {
 
   return [false, Math.max(min, max)];
 };
-
-export default NoteListWatcher;

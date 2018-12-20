@@ -36,5 +36,3 @@ export const sortNotesByKeywordMatches = (
   // Unwrap
   return notesWithScores.map(noteAndScore => noteAndScore.noteState);
 };
-
-export default sortNotesByKeywordMatches;
