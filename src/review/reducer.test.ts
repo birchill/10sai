@@ -5,16 +5,9 @@ import * as noteActions from '../notes/actions';
 import { getReviewSummary } from './selectors';
 import { generateCards } from '../utils/testing';
 import { Card, Review } from '../model';
-import { reducer } from '../reducer';
-import { RouteState } from '../route/reducer';
+import { AppState, reducer } from '../reducer';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-// XXX Move this to root reducer once it gets converted to TS.
-interface State {
-  review: ReviewState;
-  route: RouteState;
-}
 
 // Wrappers that creates a new review, new review time, and the appropriate
 // number of cards.
@@ -22,7 +15,7 @@ interface State {
 function newReview(
   maxNewCards: number,
   maxCards: number
-): [ReviewState, Card[], Date, State] {
+): [ReviewState, Card[], Date, AppState] {
   const initialState = reducer(
     undefined,
     actions.newReview(maxNewCards, maxCards)

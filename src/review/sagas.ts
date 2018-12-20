@@ -4,6 +4,7 @@ import { getReviewSummary } from './selectors';
 import { ReviewPhase } from './ReviewPhase';
 import { beforeNotesScreenChange } from '../notes/sagas';
 import { DataStore } from '../store/DataStore';
+import { AppState } from '../reducer';
 import { ReviewState } from './reducer';
 import { GetCardsOptions } from '../store/CardStore';
 import { AvailableCards, Card } from '../model';
@@ -25,11 +26,6 @@ const CardsToSelect = {
   SkipFailed: Symbol('SkipFailed'),
 };
 
-// XXX Move this to root reducer once it gets converted to TS.
-interface State {
-  review: ReviewState;
-}
-
 export function* updateHeap(
   dataStore: DataStore,
   action:
@@ -38,7 +34,7 @@ export function* updateHeap(
     | reviewActions.SetReviewTimeAction
 ) {
   const reviewInfo = yield select(
-    (state: State) => (state ? state.review : {})
+    (state: AppState) => (state ? state.review : {})
   );
 
   // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
@@ -111,7 +107,7 @@ export function* updateProgress(
   action: reviewActions.PassCardAction | reviewActions.FailCardAction
 ) {
   const reviewInfo: ReviewState = yield select(
-    (state: State) => (state ? state.review : {})
+    (state: AppState) => (state ? state.review : {})
   );
 
   // Fetch the updated card from the state. Normally this is the last card in
@@ -205,7 +201,7 @@ export function* loadReview(
   // Fetch and update reviewInfo so that getCardsForHeap knows how many slots it
   // needs to fill.
   const reviewInfo = yield select(
-    (state: State) => (state ? state.review : {})
+    (state: AppState) => (state ? state.review : {})
   );
   reviewInfo.history = history;
   reviewInfo.failedCardsLevel1 = failedCardsLevel1;

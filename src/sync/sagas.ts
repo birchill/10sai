@@ -3,7 +3,6 @@ import { delay } from 'redux-saga';
 import { Dispatch } from 'redux';
 
 import { waitForDocLoad } from '../utils';
-import { SyncState } from './reducer';
 import { SyncServer } from './SyncServer';
 import { DataStore } from '../store/DataStore';
 import * as syncActions from './actions';
@@ -17,10 +16,6 @@ import {
   getServer,
   normalizeServer,
 } from './selectors';
-
-interface State {
-  sync: SyncState;
-}
 
 // Replication helpers
 

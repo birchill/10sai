@@ -1,15 +1,11 @@
-import { EditState, EditFormState } from './reducer';
+import { AppState } from '../reducer';
+import { EditFormState } from './reducer';
 import { Card } from '../model';
 
-// XXX Move this to root reducer once it gets converted to TS.
-interface State {
-  edit: EditState;
-}
-
-export const getActiveRecord = (state: State): EditFormState =>
+export const getActiveRecord = (state: AppState): EditFormState =>
   state.edit.forms.active;
 
-export const isDirty = (state: State): boolean => {
+export const isDirty = (state: AppState): boolean => {
   const activeRecord = getActiveRecord(state);
   return (
     typeof activeRecord.dirtyFields !== 'undefined' &&

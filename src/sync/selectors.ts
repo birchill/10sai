@@ -1,10 +1,5 @@
-import { SyncState } from './reducer';
+import { AppState } from '../reducer';
 import { SyncServer } from './SyncServer';
-
-// XXX
-interface State {
-  sync: SyncState;
-}
 
 export const normalizeServer = (
   server: SyncServer | undefined
@@ -21,9 +16,9 @@ export const normalizeServer = (
   return normalizedServer;
 };
 
-export const getServer = (state: State): SyncServer | undefined =>
+export const getServer = (state: AppState): SyncServer | undefined =>
   normalizeServer(state.sync.server);
-export const getPaused = (state: State): boolean => state.sync.paused;
-export const getOffline = (state: State): boolean => state.sync.offline;
-export const getLastSyncTime = (state: State): Date | undefined =>
+export const getPaused = (state: AppState): boolean => state.sync.paused;
+export const getOffline = (state: AppState): boolean => state.sync.offline;
+export const getLastSyncTime = (state: AppState): Date | undefined =>
   state.sync.lastSyncTime;

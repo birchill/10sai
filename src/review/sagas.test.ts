@@ -11,16 +11,12 @@ import {
 import * as reviewActions from './actions';
 import { reducer } from '../reducer';
 import { Card } from '../model';
-import { ReviewState } from './reducer';
+import { AppState } from '../reducer';
 import { EffectProviders } from 'redux-saga-test-plan/providers';
 import { CallEffectDescriptor } from 'redux-saga/effects';
 import { Action } from '../actions';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-interface State {
-  review: ReviewState;
-}
 
 describe('sagas:review updateHeap', () => {
   const dataStore = {
@@ -272,7 +268,7 @@ describe('sagas:review updateProgress', () => {
     return action;
   };
 
-  const cardInHistory = (card: Card, state: State) => {
+  const cardInHistory = (card: Card, state: AppState) => {
     const { history } = state.review;
     return history.some(
       elem => elem.question === card.question && elem.answer === card.answer

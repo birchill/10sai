@@ -1,16 +1,9 @@
-import { EditState } from '../edit/reducer';
-import { ReviewState } from '../review/reducer';
+import { AppState } from '../reducer';
 import { NoteState } from '../notes/reducer';
 import { NoteContext, NoteListContext } from './actions';
 
-// XXX Move this to root reducer once it gets converted to TS.
-interface State {
-  edit: EditState;
-  review: ReviewState;
-}
-
 export const getNoteListSelector = (context: NoteListContext) => {
-  return (state: State): Array<NoteState> => {
+  return (state: AppState): Array<NoteState> => {
     if (context.screen === 'edit-card') {
       return state.edit.forms.active.notes;
     }
@@ -23,7 +16,7 @@ export const getNoteListSelector = (context: NoteListContext) => {
 };
 
 export const getNoteStateSelector = (context: NoteContext) => {
-  return (state: State): NoteState | undefined => {
+  return (state: AppState): NoteState | undefined => {
     const notes = getNoteListSelector(context)(state);
     return notes.find(
       (noteState: NoteState) => noteState.formId === context.noteFormId

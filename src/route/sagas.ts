@@ -4,18 +4,14 @@ import { beforeEditScreenChange } from '../edit/sagas';
 import { beforeReviewScreenChange } from '../review/sagas';
 import * as routeActions from './actions';
 import { Route } from './router';
+import { AppState } from '../reducer';
 import { RouteState } from './reducer';
-
-// XXX Move this to root reducer once it gets converted to TS.
-interface State {
-  route: RouteState;
-}
 
 // Selectors
 
-const getRoute = (state: State): RouteState => state.route;
-const getHistoryIndex = (state: State): number => state.route.index;
-const getCurrentRoute = (state: State): Route | null => {
+const getRoute = (state: AppState): RouteState => state.route;
+const getHistoryIndex = (state: AppState): number => state.route.index;
+const getCurrentRoute = (state: AppState): Route | null => {
   const index = getHistoryIndex(state);
   return index >= state.route.history.length
     ? null

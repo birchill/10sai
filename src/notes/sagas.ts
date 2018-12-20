@@ -10,16 +10,9 @@ import {
 import { DataStore } from '../store/DataStore';
 import { Note } from '../model';
 import { NoteContext, NoteListContext } from './actions';
-import { EditState } from '../edit/reducer';
-import { ReviewState } from '../review/reducer';
+import { AppState } from '../reducer';
 
 const SAVE_DELAY = 2000;
-
-// XXX This doesn't belong here
-interface State {
-  edit: EditState;
-  review: ReviewState;
-}
 
 export function* save(
   dataStore: DataStore,
@@ -54,7 +47,9 @@ export function* watchNoteEdits(dataStore: DataStore) {
     ) => {
       const noteStateSelector = getNoteStateSelector(action.context);
 
-      return (state: State): ResourceState<Note, NoteContext> | undefined => {
+      return (
+        state: AppState
+      ): ResourceState<Note, NoteContext> | undefined => {
         // If we are deleting a note, we won't have any resource left
         if (action.type === 'DELETE_NOTE') {
           return {

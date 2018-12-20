@@ -16,7 +16,8 @@ import {
   URLFromRoute,
   routesEqual,
 } from '../route/router';
-import { EditState, EditFormState } from './reducer';
+import { AppState } from '../reducer';
+import { EditFormState } from './reducer';
 import { getActiveRecord, isDirty, hasDataToSave } from './selectors';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';
@@ -25,11 +26,6 @@ import { Card } from '../model';
 import { DeleteCardAction } from './actions';
 
 const SAVE_DELAY = 2000;
-
-// XXX Move this to root reducer once it gets converted to TS.
-interface State {
-  edit: EditState;
-}
 
 // XXX This should move to route/actions.ts once converted to TS
 interface NavigateAction {
@@ -128,7 +124,7 @@ export function* watchCardEdits(dataStore: DataStore) {
         | editActions.DeleteCardAction
     ) => {
       return (
-        state: State
+        state: AppState
       ): ResourceState<Card, EditSaveContext> | undefined => {
         const card = state.edit.forms.active.card;
         return {
@@ -192,7 +188,7 @@ function* saveBeforeScreenChange(formId: number) {
   return action.type !== 'FAIL_SAVE_CARD';
 }
 
-export function syncEditChanges(dataStore: DataStore, store: Store<State>) {
+export function syncEditChanges(dataStore: DataStore, store: Store<AppState>) {
   dataStore.changes.on('card', change => {
     const cardBeingEdited = getActiveRecord(store.getState()).card;
     if (cardBeingEdited && cardBeingEdited._id === change._id) {
