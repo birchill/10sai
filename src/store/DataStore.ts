@@ -467,7 +467,6 @@ export class DataStore {
       denied: 'onError',
     };
     if (options) {
-      // eslint-disable-next-line guard-for-in
       for (const [evt, callbackKey] of Object.entries(callbackMap)) {
         // If we have any callbacks at all then we need to listen for 'active'
         // otherwise we won't get the expected number of callbacks it seems.

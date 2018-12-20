@@ -204,7 +204,6 @@ export class VirtualGrid extends React.Component<Props, State> {
       const addedItems = this.gridRef.current.querySelectorAll('.item.-adding');
       // If we have items, force a style flush so that transitions run
       if (addedItems.length) {
-        // eslint-disable-next-line no-unused-expressions
         getComputedStyle(this.gridRef.current).backgroundColor;
       }
       [].forEach.call(addedItems, (item: HTMLElement) => {
@@ -672,7 +671,6 @@ export class VirtualGrid extends React.Component<Props, State> {
           let itemIndex: number;
           if (typeof data.index === 'string') {
             const deletingRecord = this.state.deletingItems[data.index];
-            // eslint-disable-next-line prefer-destructuring
             item = deletingRecord.item;
             itemIndex = deletingRecord.index;
             classes.push('-deleting');
@@ -707,7 +705,6 @@ export class VirtualGrid extends React.Component<Props, State> {
             <div
               style={styles}
               className={classes.join(' ')}
-              // eslint-disable-next-line react/no-array-index-key
               key={i}
               data-item-id={item._id}
             >

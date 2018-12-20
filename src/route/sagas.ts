@@ -109,7 +109,6 @@ export function* beforeScreenChange() {
     // then we should return false so we know _not_ to navigate... for some
     // reason.
 
-    // eslint-disable-next-line no-unused-vars
     const { beforeChangeResult, navigate } = yield race({
       beforeChangeResult: call(beforeEditScreenChange),
       navigate: take('NAVIGATE'),

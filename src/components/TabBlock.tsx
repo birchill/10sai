@@ -54,7 +54,6 @@ export class TabBlock extends React.Component<Props> {
         this.props.active}%)`;
 
       // Flush the old style
-      // eslint-disable-next-line no-unused-expressions
       getComputedStyle(this.highlightBarRef.current).transform;
 
       // Re-enable transitions

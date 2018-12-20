@@ -303,7 +303,6 @@ describe('CardStore progress reporting', () => {
   async function addCards(num: number) {
     const cards = new Array(num);
     for (let i = 0; i < cards.length; i++) {
-      // eslint-disable-next-line no-await-in-loop
       cards[i] = await subject.putCard({
         question: `Question ${i + 1}`,
         answer: `Answer ${i + 1}`,
@@ -370,7 +369,6 @@ describe('CardStore progress reporting', () => {
     const reviewed = new Date(dataStore.reviewTime.getTime() - 3 * MS_PER_DAY);
     for (const card of cards) {
       reviewed.setTime(reviewed.getTime() - MS_PER_DAY);
-      // eslint-disable-next-line no-await-in-loop
       await subject.putCard({
         _id: card._id,
         progress: { reviewed, level: 3 },
@@ -487,12 +485,10 @@ describe('CardStore progress reporting', () => {
       });
     const cards = new Array(3);
     for (let i = 0; i < cards.length; i++) {
-      // eslint-disable-next-line no-await-in-loop
       cards[i] = await subject.putCard({
         question: `Question ${i + 1}`,
         answer: `Answer ${i + 1}`,
       });
-      // eslint-disable-next-line no-await-in-loop
       await waitASec();
     }
 

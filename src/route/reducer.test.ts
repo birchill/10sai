@@ -13,12 +13,11 @@ const urlB = '/?abc=123';
 const pathB = { path: '/', search: '?abc=123', fragment: '' };
 const routeB: Route = { screen: '', search: { abc: '123' } };
 
-const urlC = '/#hash'; // eslint-disable-line no-unused-vars
-// eslint-disable-next-line no-unused-vars
+const urlC = '/#hash';
 const pathC = { path: '/', search: '', fragment: '#hash' };
 const routeC: Route = { screen: '', fragment: 'hash' };
 
-const urlD = '/?abc=123#hash'; // eslint-disable-line no-unused-vars
+const urlD = '/?abc=123#hash';
 const pathD = { path: '/', search: '?abc=123', fragment: '#hash' };
 const routeD: Route = { screen: '', search: { abc: '123' }, fragment: 'hash' };
 
