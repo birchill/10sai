@@ -18,7 +18,7 @@ import {
 import { FormState } from '../edit/FormState';
 import * as routeActions from './actions';
 import * as editActions from '../edit/actions';
-import reducer from '../reducer';
+import { reducer } from '../reducer';
 
 declare global {
   namespace NodeJS {

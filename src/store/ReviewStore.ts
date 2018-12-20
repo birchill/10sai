@@ -183,5 +183,3 @@ export class ReviewStore {
     });
   }
 }
-
-export default ReviewStore;

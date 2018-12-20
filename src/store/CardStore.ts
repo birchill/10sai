@@ -753,7 +753,6 @@ export class CardStore {
 
     for (const card of cards.rows) {
       try {
-        // eslint-disable-next-line no-await-in-loop
         await this.db.get(PROGRESS_PREFIX + stripCardPrefix(card.id));
       } catch (e) {
         orphans.push(card.doc);
@@ -788,7 +787,6 @@ export class CardStore {
 
     for (const progress of docs.rows) {
       try {
-        // eslint-disable-next-line no-await-in-loop
         await this.db.get(CARD_PREFIX + stripProgressPrefix(progress.id));
       } catch (e) {
         orphans.push(progress.doc);
@@ -825,5 +823,3 @@ export class CardStore {
     }
   }
 }
-
-export default CardStore;

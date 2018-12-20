@@ -1,6 +1,6 @@
 import PouchDB from 'pouchdb';
 
-import DataStore from './DataStore';
+import { DataStore } from './DataStore';
 import { CardDoc, CardChange } from './CardStore';
 import { generateUniqueTimestampId } from './utils';
 import { waitForChangeEvents } from './test-utils';

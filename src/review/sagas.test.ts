@@ -9,7 +9,7 @@ import {
   updateProgress as updateProgressSaga,
 } from './sagas';
 import * as reviewActions from './actions';
-import reducer from '../reducer';
+import { reducer } from '../reducer';
 import { Card } from '../model';
 import { ReviewState } from './reducer';
 import { EffectProviders } from 'redux-saga-test-plan/providers';

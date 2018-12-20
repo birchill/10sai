@@ -150,5 +150,3 @@ export class SettingsStore {
       });
   }
 }
-
-export default SettingsStore;

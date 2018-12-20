@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { debounce } from '../utils';
 
 export interface KeyboardFocusHelperCallbacks {
@@ -36,5 +36,3 @@ export class KeyboardFocusHelper {
       this.callbacks.onFocus({ ...e, wasKeyboard: this.gotTab });
   }
 }
-
-export default KeyboardFocusHelper;

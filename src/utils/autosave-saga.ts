@@ -9,7 +9,7 @@ import {
   select,
   CallEffect,
 } from 'redux-saga/effects';
-import DataStore from '../store/DataStore';
+import { DataStore } from '../store/DataStore';
 import { Action } from 'redux';
 import { Task, delay } from 'redux-saga';
 

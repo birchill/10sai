@@ -1,9 +1,8 @@
 /* global afterEach, beforeEach, describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
 
-import DataStore from './DataStore';
+import { DataStore } from './DataStore';
 import { NoteStore, NoteContent, NoteChange, NOTE_PREFIX } from './NoteStore';
 import { Note } from '../model';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';

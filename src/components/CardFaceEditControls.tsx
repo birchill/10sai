@@ -17,7 +17,7 @@ import {
 } from '../utils/keyboard';
 
 import { Card } from '../model';
-import KeyboardFocusHelper from '../utils/KeyboardFocusHelper';
+import { KeyboardFocusHelper } from '../utils/KeyboardFocusHelper';
 
 interface Props {
   card: Partial<Card>;

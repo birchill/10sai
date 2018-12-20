@@ -1,10 +1,9 @@
 /* global afterEach, beforeEach, describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
 
-import DataStore from './DataStore';
-import CardStore from './CardStore';
+import { DataStore } from './DataStore';
+import { CardStore } from './CardStore';
 import { Card } from '../model';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));

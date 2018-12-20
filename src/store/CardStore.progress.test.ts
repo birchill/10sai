@@ -1,9 +1,8 @@
 /* global afterEach, beforeEach, describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
 
-import DataStore from './DataStore';
+import { DataStore } from './DataStore';
 import { CardStore, CardChange } from './CardStore';
 import { waitForChangeEvents } from './test-utils';
 import { Card } from '../model';

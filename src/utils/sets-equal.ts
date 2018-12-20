@@ -11,5 +11,3 @@ export function setsEqual<T>(a: Set<T>, b: Set<T>) {
 
   return true;
 }
-
-export default setsEqual;

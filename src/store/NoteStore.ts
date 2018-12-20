@@ -268,5 +268,3 @@ export class NoteStore {
     return result.docs.map(doc => parseNote(doc));
   }
 }
-
-export default NoteStore;

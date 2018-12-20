@@ -584,5 +584,3 @@ export class DataStore {
     return this.remoteDb;
   }
 }
-
-export default DataStore;

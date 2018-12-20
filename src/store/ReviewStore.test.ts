@@ -1,9 +1,8 @@
 /* global afterEach, beforeEach, describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
 
 import PouchDB from 'pouchdb';
 
-import DataStore from './DataStore';
+import { DataStore } from './DataStore';
 import { ReviewContent, ReviewStore } from './ReviewStore';
 import { Review } from '../model';
 import { waitForEvents } from '../utils/testing';

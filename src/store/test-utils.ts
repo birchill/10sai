@@ -1,4 +1,4 @@
-import DataStore from './DataStore';
+import { DataStore } from './DataStore';
 
 export const syncWithWaitableRemote = async (
   dataStore: DataStore,

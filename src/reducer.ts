@@ -55,5 +55,3 @@ export function reducer(state: AppState | undefined, action: Action) {
     action
   );
 }
-
-export default reducer;

@@ -13,7 +13,7 @@ import {
   beforeEditScreenChange as beforeEditScreenChangeSaga,
 } from './sagas';
 import { Card } from '../model';
-import reducer, { AppState } from '../reducer';
+import { reducer, AppState } from '../reducer';
 import { FormState } from './FormState';
 import * as editActions from './actions';
 import * as routeActions from '../route/actions';

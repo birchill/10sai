@@ -103,5 +103,3 @@ export class CardList {
     }
   }
 }
-
-export default CardList;
