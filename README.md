@@ -1,6 +1,8 @@
 10sai
 =====
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/birtles/10sai.svg)](https://greenkeeper.io/)
+
 Setup
 -----
 
