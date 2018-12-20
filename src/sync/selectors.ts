@@ -20,5 +20,5 @@ export const getServer = (state: AppState): SyncServer | undefined =>
   normalizeServer(state.sync.server);
 export const getPaused = (state: AppState): boolean => state.sync.paused;
 export const getOffline = (state: AppState): boolean => state.sync.offline;
-export const getLastSyncTime = (state: AppState): Date | undefined =>
-  state.sync.lastSyncTime;
+export const getLastSyncTimeAsNumber = (state: AppState): number | undefined =>
+  state.sync.lastSyncTime ? state.sync.lastSyncTime.getTime() : undefined;

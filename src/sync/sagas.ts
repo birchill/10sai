@@ -8,7 +8,7 @@ import { DataStore } from '../store/DataStore';
 import * as Actions from '../actions';
 import { SyncServerSetting } from './settings';
 import {
-  getLastSyncTime,
+  getLastSyncTimeAsNumber,
   getOffline,
   getPaused,
   getServer,
@@ -123,7 +123,7 @@ function* finishSync(dataStore: DataStore, action: Actions.FinishSyncAction) {
   const server = yield select(getServer);
   const updatedServer: SyncServerSetting = {
     server,
-    lastSyncTime: action.lastSyncTime,
+    lastSyncTime: action.lastSyncTime.getTime(),
   };
 
   if (yield select(getPaused)) {
@@ -136,7 +136,7 @@ function* finishSync(dataStore: DataStore, action: Actions.FinishSyncAction) {
 function* pauseSync(dataStore: DataStore) {
   // Update stored paused state
   const server = yield select(getServer);
-  const lastSyncTime = yield select(getLastSyncTime);
+  const lastSyncTime = yield select(getLastSyncTimeAsNumber);
 
   if (!server) {
     return;
@@ -155,7 +155,7 @@ function* pauseSync(dataStore: DataStore) {
 function* resumeSync(dataStore: DataStore, dispatch: Dispatch<Actions.Action>) {
   // Update stored paused state
   const server = yield select(getServer);
-  const lastSyncTime = yield select(getLastSyncTime);
+  const lastSyncTime = yield select(getLastSyncTimeAsNumber);
 
   if (!server) {
     return;
@@ -183,7 +183,7 @@ function* updateSetting(
 
   const server = yield select(getServer);
   const paused = yield select(getPaused);
-  const lastSyncTime = yield select(getLastSyncTime);
+  const lastSyncTime = yield select(getLastSyncTimeAsNumber);
 
   // Ignore updated sync times that are in the past
   if (
@@ -209,7 +209,9 @@ function* updateSetting(
   yield put(
     Actions.updateSyncServer({
       server: updatedServer,
-      lastSyncTime: updatedLastSyncTime,
+      lastSyncTime: updatedLastSyncTime
+        ? new Date(updatedLastSyncTime)
+        : undefined,
       paused: updatedPaused,
     })
   );
