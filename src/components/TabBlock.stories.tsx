@@ -64,14 +64,17 @@ class TabBlockExample extends React.PureComponent<{}, State> {
   }
 }
 
-storiesOf('Components|TabBlock', module).add(
-  'default',
-  withMarkdownNotes(`
+storiesOf('Components|TabBlock', module)
+  .addDecorator(
+    withMarkdownNotes(
+      `
 Each of the tab pages should have, e.g.:
 
 * \`id="lookup-page"\`
 * \`role="tabpanel"\`
 * \`aria-labelledby="lookup-tab"\`
 * \`aria-hidden="true"\` or just hidden boolean attribute
-  `)(() => <TabBlockExample />)
-);
+  `
+    )
+  )
+  .add('default', () => <TabBlockExample />);
