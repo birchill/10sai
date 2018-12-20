@@ -1,4 +1,4 @@
-import TagSuggester from './TagSuggester';
+import { TagSuggester } from './TagSuggester';
 
 type ChangeCallback = (change: any) => void;
 

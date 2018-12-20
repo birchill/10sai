@@ -1,4 +1,4 @@
-import DataStore from '../store/DataStore';
+import { DataStore } from '../store/DataStore';
 import { LRUMap } from '../utils/lru';
 import { SuggestionResult } from './SuggestionResult';
 import { findSubstringMatch, mergeAndTrimSuggestions } from './utils';
@@ -133,5 +133,3 @@ export class TagSuggester {
     return result;
   }
 }
-
-export default TagSuggester;

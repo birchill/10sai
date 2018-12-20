@@ -72,5 +72,3 @@ export function cardKeyBindings(e: React.KeyboardEvent<{}>): string | null {
       return null;
   }
 }
-
-export default cardKeyBindings;

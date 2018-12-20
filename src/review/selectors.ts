@@ -93,5 +93,3 @@ export const getReviewSummary = (state: State): Review => ({
   failedCardsLevel1: state.review.failedCardsLevel1.map(extractId),
   failedCardsLevel2: state.review.failedCardsLevel2.map(extractId),
 });
-
-export default getReviewProgress;

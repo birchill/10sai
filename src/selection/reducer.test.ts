@@ -1,7 +1,6 @@
 /* global describe, expect, it */
-/* eslint arrow-body-style: [ "off" ] */
 
-import subject from '../reducer';
+import { reducer as subject } from '../reducer';
 import * as editActions from '../edit/actions';
 import * as reviewActions from '../review/actions';
 import * as routeActions from '../route/actions';
