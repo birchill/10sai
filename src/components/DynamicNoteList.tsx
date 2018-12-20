@@ -3,13 +3,8 @@ import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
+import { AppState } from '../reducer';
 import { DataStoreContext } from './DataStoreContext';
-// This is really weird, but if we write the following as:
-//
-//   import NoteList from './NoteList';
-//
-// then _in_production_builds_only_ React will end up destroying and
-// re-constructing the NoteList component every time it re-renders.
 import { NoteList } from './NoteList';
 import { NoteListContext } from '../notes/actions';
 import { NoteListWatcher } from '../notes/NoteListWatcher';
@@ -17,6 +12,7 @@ import * as Actions from '../actions';
 import { NoteState } from '../notes/reducer';
 import { Note } from '../model';
 import { DataStore } from '../store/DataStore';
+import { Return } from '../utils/type-helpers';
 
 interface WatcherProps {
   dataStore: DataStore;
@@ -55,7 +51,7 @@ export class NoteListWatcherWrapper extends React.PureComponent<WatcherProps> {
   }
 }
 
-interface InnerProps {
+interface PropsInner {
   notes: Array<NoteState>;
   keywords: Array<string>;
   priority: 'reading' | 'writing';
@@ -66,7 +62,7 @@ interface InnerProps {
   onUpdateNoteList: (notes: Array<Note>, deletedIds: Array<string>) => void;
 }
 
-const DynamicNoteListInner = (props: InnerProps) => (
+const DynamicNoteListInner: React.SFC<PropsInner> = (props: PropsInner) => (
   <>
     <DataStoreContext.Consumer>
       {(dataStore?: DataStore) => (
@@ -115,7 +111,11 @@ const mapDispatchToProps = (
   },
 });
 
-export const DynamicNoteList = connect(
+export const DynamicNoteList = connect<
+  {},
+  Return<typeof mapDispatchToProps>,
+  Props
+>(
   undefined,
   mapDispatchToProps
 )(DynamicNoteListInner);
