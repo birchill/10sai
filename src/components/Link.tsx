@@ -68,9 +68,6 @@ interface DispatchProps {
   onClick: (href: string) => void;
 }
 
-// XXX Use the actual state once we have it
-type State = any;
-
 const mapDispatchToProps = (
   dispatch: Dispatch<Action<any>>,
   props: Props

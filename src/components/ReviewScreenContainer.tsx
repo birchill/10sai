@@ -3,13 +3,11 @@ import { connect } from 'react-redux';
 
 import * as reviewActions from '../review/actions';
 import { getReviewProgress } from '../review/selectors';
+import { AppState } from '../reducer';
 
 import { ReviewScreen } from './ReviewScreen';
 
-// XXX Use the actual state once we have it
-type State = any;
-
-const mapStateToProps = (state: State) => ({
+const mapStateToProps = (state: AppState) => ({
   phase: state.review.phase,
   availableCards: state.review.availableCards,
   // TODO: Actually get these from somewhere

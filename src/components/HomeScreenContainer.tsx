@@ -9,7 +9,7 @@ import { Card } from '../model';
 import { CardListContext } from './CardListContext';
 
 import { HomeScreen } from './HomeScreen';
-import { SyncState } from '../sync/reducer';
+import { AppState } from '../reducer';
 import { CardList } from '../CardList';
 
 interface PropsInner {
@@ -72,11 +72,7 @@ interface Props {
   syncState: SyncDisplayState;
 }
 
-interface State {
-  sync: SyncState;
-}
-
-const mapStateToProps = (state: State): Props => ({
+const mapStateToProps = (state: AppState): Props => ({
   syncState: getSyncDisplayState(state.sync),
 });
 

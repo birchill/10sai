@@ -9,12 +9,7 @@ import {
 } from '../sync/SyncDisplayState';
 import * as syncActions from '../sync/actions';
 import { Action } from '../actions';
-import { SyncState } from '../sync/reducer';
-
-// XXX Use actual state here
-type State = {
-  sync: SyncState;
-};
+import { AppState } from '../reducer';
 
 interface StateProps {
   syncState: SyncDisplayState;
@@ -25,12 +20,10 @@ interface StateProps {
   errorDetail?: any;
 }
 
-const mapStateToProps = (state: State): StateProps => ({
+const mapStateToProps = (state: AppState): StateProps => ({
   syncState: getSyncDisplayState(state.sync),
   server: state.sync.server,
-  lastSyncTime: state.sync.lastSyncTime
-    ? new Date(state.sync.lastSyncTime)
-    : undefined,
+  lastSyncTime: state.sync.lastSyncTime,
   editingServer: !!state.sync.editingServer,
   errorDetail: state.sync.errorDetail,
   progress: state.sync.progress,

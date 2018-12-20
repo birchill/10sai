@@ -4,13 +4,11 @@ import { connect } from 'react-redux';
 import { ReviewPhase } from '../review/ReviewPhase';
 import * as reviewActions from '../review/actions';
 import * as routeActions from '../route/actions';
+import { AppState } from '../reducer';
 
 import { ReviewPanel } from './ReviewPanel';
 
-// XXX Use the actual state once we have it
-type State = any;
-
-const mapStateToProps = (state: State) => {
+const mapStateToProps = (state: AppState) => {
   const { history } = state.review;
   const previousCard = history.length ? history[history.length - 1] : undefined;
 
