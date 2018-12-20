@@ -29,7 +29,9 @@ jobs:
 
       - run:
           name: Run tests
-          command: npm test
+          # Limit the number of workers to avoid out of memory issues
+          # See: https://discuss.circleci.com/t/memory-problems-with-jest-and-workers/10297/3
+          command: npm test -- --maxWorkers 2
 
       - run:
           name: Verify build
