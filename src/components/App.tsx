@@ -4,10 +4,9 @@ import { Dispatch } from 'redux';
 import DocumentTitle from 'react-document-title';
 
 import { AppState } from '../reducer';
-import { Action } from '../actions';
+import * as Actions from '../actions';
 import { DataStore } from '../store/DataStore';
 import { URLFromRoute, Route } from '../route/router';
-import * as routeActions from '../route/actions';
 import { getReviewProgress } from '../review/selectors';
 import { CardList } from '../CardList';
 import { KeywordSuggester } from '../suggestions/KeywordSuggester';
@@ -242,18 +241,18 @@ const mapStateToProps = (state: AppState) => ({
   reviewProgress: getReviewProgress(state),
 });
 
-const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
+const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   onNewCard: () => {
-    dispatch(routeActions.followLink('/cards/new', 'forwards', true));
+    dispatch(Actions.followLink('/cards/new', 'forwards', true));
   },
   onGoHome: () => {
-    dispatch(routeActions.followLink('/', 'forwards', false));
+    dispatch(Actions.followLink('/', 'forwards', false));
   },
   onGoReview: () => {
-    dispatch(routeActions.followLink('/review', 'forwards', false));
+    dispatch(Actions.followLink('/review', 'forwards', false));
   },
   onGoLookup: () => {
-    dispatch(routeActions.followLink('/lookup', 'forwards', false));
+    dispatch(Actions.followLink('/lookup', 'forwards', false));
   },
 });
 

@@ -6,7 +6,7 @@ import { Provider } from 'react-redux';
 import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
 
-import { Action } from './actions';
+import * as Actions from './actions';
 import { reducer, AppState } from './reducer';
 
 import { editSagas, syncEditChanges } from './edit/sagas';
@@ -16,8 +16,6 @@ import { routeSagas } from './route/sagas';
 import { syncSagas } from './sync/sagas';
 
 import { sync as reviewSync } from './review/sync';
-
-import * as routeActions from './route/actions';
 
 import { DataStore } from './store/DataStore';
 import { SettingChange, Settings } from './store/SettingsStore';
@@ -37,19 +35,19 @@ declare global {
 
 const sagaMiddleware = createSagaMiddleware();
 
-let store: Store<AppState, Action>;
+let store: Store<AppState, Actions.Action>;
 
 if (process.env.NODE_ENV === 'development') {
   const { createLogger } = require('redux-logger');
   const loggerMiddleware = createLogger();
   const composeEnhancers: <F extends Function>(f: F) => F =
     window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-  store = createStore<AppState, Action, {}, {}>(
+  store = createStore<AppState, Actions.Action, {}, {}>(
     reducer,
     composeEnhancers(applyMiddleware(sagaMiddleware, loggerMiddleware))
   );
 } else {
-  store = createStore<AppState, Action, {}, {}>(
+  store = createStore<AppState, Actions.Action, {}, {}>(
     reducer,
     applyMiddleware(sagaMiddleware)
   );
@@ -108,7 +106,7 @@ sagaMiddleware.run(function* allSagas() {
 //
 
 store.dispatch(
-  routeActions.navigate({
+  Actions.navigate({
     path: window.location.pathname,
     search: window.location.search,
     fragment: window.location.hash,
@@ -122,9 +120,9 @@ window.addEventListener('popstate', evt => {
   // This requires that the beforeScreenChange fetches anything it needs from
   // the current state in a synchronous state (as the navigate action might
   // cause parts of the current state to be clobbered).
-  store.dispatch(routeActions.beforeScreenChange());
+  store.dispatch(Actions.beforeScreenChange());
   store.dispatch(
-    routeActions.navigate({
+    Actions.navigate({
       path: window.location.pathname,
       search: window.location.search,
       fragment: window.location.hash,

@@ -10,7 +10,7 @@ import {
   getSavingProgress,
   getReviewPhase,
 } from './selectors';
-import * as reviewActions from './actions';
+import * as Actions from '../actions';
 import { ReviewPhase } from './ReviewPhase';
 import { DataStore } from '../store/DataStore';
 import { AppState } from '../reducer';
@@ -52,7 +52,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
       return;
     }
 
-    store.dispatch(reviewActions.queryAvailableCards());
+    store.dispatch(Actions.queryAvailableCards());
   });
 
   dataStore.changes.on('card', change => {
@@ -69,7 +69,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
       // anything changes. Since we debounce and delay these updates, and only
       // do them when we're looking at the review screen it should be fine.
       delayedCallback = window.setTimeout(() => {
-        store.dispatch(reviewActions.queryAvailableCards());
+        store.dispatch(Actions.queryAvailableCards());
         delayedCallback = undefined;
       }, QUERY_AVAILABLE_CARDS_DELAY);
     }
@@ -84,7 +84,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     }
 
     if (change.deleted) {
-      store.dispatch(reviewActions.deleteReviewCard(change.id));
+      store.dispatch(Actions.deleteReviewCard(change.id));
       return;
     }
 
@@ -93,7 +93,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
       return;
     }
 
-    store.dispatch(reviewActions.updateReviewCard(change.doc));
+    store.dispatch(Actions.updateReviewCard(change.doc));
   });
 
   // Synchronize changes to review document
@@ -107,20 +107,20 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
         currentPhase !== ReviewPhase.Idle &&
         currentPhase !== ReviewPhase.Complete
       ) {
-        store.dispatch(reviewActions.cancelReview());
+        store.dispatch(Actions.cancelReview());
       }
       return;
     }
 
     if (!deepEqual(currentState, review)) {
-      store.dispatch(reviewActions.loadReview(review));
+      store.dispatch(Actions.loadReview(review));
     }
   });
 
   // Do initial sync
   dataStore.getReview().then(review => {
     if (review) {
-      store.dispatch(reviewActions.loadInitialReview(review));
+      store.dispatch(Actions.loadInitialReview(review));
     }
   });
 }

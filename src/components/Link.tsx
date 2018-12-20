@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import { Dispatch, Action } from 'redux';
+import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { Overwrite } from '../utils/type-helpers';
-import * as routeActions from '../route/actions';
+import * as Actions from '../actions';
 
 // This function is copied from react-router.
 const isModifiedEvent = (evt: React.MouseEvent<HTMLAnchorElement>) =>
@@ -69,11 +69,11 @@ interface DispatchProps {
 }
 
 const mapDispatchToProps = (
-  dispatch: Dispatch<Action<any>>,
+  dispatch: Dispatch<Actions.Action>,
   props: Props
 ): DispatchProps => ({
   onClick: (href: string) => {
-    dispatch(routeActions.followLink(href, props.direction, props.active));
+    dispatch(Actions.followLink(href, props.direction, props.active));
   },
 });
 

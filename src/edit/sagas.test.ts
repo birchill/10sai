@@ -15,10 +15,8 @@ import {
 import { Card } from '../model';
 import { reducer, AppState } from '../reducer';
 import { FormState } from './FormState';
-import * as editActions from './actions';
-import * as routeActions from '../route/actions';
+import * as Actions from '../actions';
 import { generateCard } from '../utils/testing';
-import { Action } from '../actions';
 
 declare global {
   namespace NodeJS {
@@ -69,58 +67,54 @@ describe('sagas:edit navigate', () => {
 
     // The load action increments a global counter so we need to read where it
     // is up to.
-    const formId = editActions.loadCard('123').newFormId + 1;
+    const formId = Actions.loadCard('123').newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
-      routeActions.navigate({ url: '/cards/123' })
+      Actions.navigate({ url: '/cards/123' })
     )
       .withState(initialState)
-      .put(editActions.loadCard('123', formId))
+      .put(Actions.loadCard('123', formId))
       .call([dataStore, 'getCard'], '123')
       .run();
   });
 
   it('triggers a load action if the route is for editing a card (path)', () => {
     const dataStore = { getCard: (id: string) => ({ _id: id }) };
-    const formId = editActions.loadCard('123').newFormId + 1;
+    const formId = Actions.loadCard('123').newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
-      routeActions.navigate({ path: '/cards/123' })
+      Actions.navigate({ path: '/cards/123' })
     )
       .withState(initialState)
-      .put(editActions.loadCard('123', formId))
+      .put(Actions.loadCard('123', formId))
       .call([dataStore, 'getCard'], '123')
       .run();
   });
 
   it('triggers a new action if the route is for adding a card', () => {
     const dataStore = { getCard: (id: string) => ({ _id: id }) };
-    const formId = editActions.newCard().newFormId + 1;
+    const formId = Actions.newCard().newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
-      routeActions.navigate({ url: '/cards/new' })
+      Actions.navigate({ url: '/cards/new' })
     )
-      .put(editActions.newCard(formId))
+      .put(Actions.newCard(formId))
       .not.call.fn(dataStore.getCard)
       .run();
   });
 
   it('does not triggers a load action if the route is something else', () => {
     const dataStore = { getCard: (id: string) => ({ _id: id }) };
-    const formId = editActions.loadCard('123').newFormId + 1;
+    const formId = Actions.loadCard('123').newFormId + 1;
 
-    return expectSaga(
-      navigateSaga,
-      dataStore,
-      routeActions.navigate({ url: '/' })
-    )
-      .not.put(editActions.loadCard('123', formId))
+    return expectSaga(navigateSaga, dataStore, Actions.navigate({ url: '/' }))
+      .not.put(Actions.loadCard('123', formId))
       .not.call([dataStore, 'getCard'], '123')
       .run();
   });
@@ -128,17 +122,17 @@ describe('sagas:edit navigate', () => {
   it('dispatches a finished action if the load successfully complete', () => {
     const card = generateCard('123');
     const dataStore = { getCard: (id: string) => ({ ...card, _id: id }) };
-    const formId = editActions.loadCard('123').newFormId + 1;
+    const formId = Actions.loadCard('123').newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
-      routeActions.navigate({ url: '/cards/123' })
+      Actions.navigate({ url: '/cards/123' })
     )
-      .put(editActions.loadCard('123', formId))
+      .put(Actions.loadCard('123', formId))
       .call([dataStore, 'getCard'], '123')
       .withState(loadingState(formId))
-      .put(editActions.finishLoadCard(formId, card))
+      .put(Actions.finishLoadCard(formId, card))
       .run();
   });
 
@@ -150,17 +144,17 @@ describe('sagas:edit navigate', () => {
           reject(error);
         }),
     };
-    const formId = editActions.loadCard('123').newFormId + 1;
+    const formId = Actions.loadCard('123').newFormId + 1;
 
     return expectSaga(
       navigateSaga,
       dataStore,
-      routeActions.navigate({ url: '/cards/123' })
+      Actions.navigate({ url: '/cards/123' })
     )
-      .put(editActions.loadCard('123', formId))
+      .put(Actions.loadCard('123', formId))
       .call([dataStore, 'getCard'], '123')
       .withState(loadingState(formId))
-      .put(editActions.failLoadCard(formId, error))
+      .put(Actions.failLoadCard(formId, error))
       .silentRun(100);
   });
 });
@@ -229,9 +223,9 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveCard(formId))
+      .dispatch(Actions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
-      .put(editActions.finishSaveCard(formId, card))
+      .put(Actions.finishSaveCard(formId, card))
       .silentRun(100);
   });
 
@@ -242,9 +236,9 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(okState(formId, card))
-      .dispatch(editActions.saveCard(formId))
+      .dispatch(Actions.saveCard(formId))
       .not.call([dataStore, 'putCard'], card)
-      .put(editActions.finishSaveCard(formId, card))
+      .put(Actions.finishSaveCard(formId, card))
       .silentRun(100);
   });
 
@@ -254,10 +248,10 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(emptyState(formId))
-      .dispatch(editActions.saveCard(formId))
+      .dispatch(Actions.saveCard(formId))
       .not.call([dataStore, 'putCard'], {})
       .not.put(
-        editActions.failSaveCard(formId, {
+        Actions.failSaveCard(formId, {
           name: 'no_card',
           message: 'No card to save',
         })
@@ -274,9 +268,9 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveCard(formId))
+      .dispatch(Actions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
-      .put(editActions.finishSaveCard(formId, { ...card, _id: 'generated-id' }))
+      .put(Actions.finishSaveCard(formId, { ...card, _id: 'generated-id' }))
       .silentRun(100);
   });
 
@@ -290,10 +284,10 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveCard(formId))
+      .dispatch(Actions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
-      .put(editActions.finishSaveCard(formId, { ...card, _id: '1234' }))
-      .put(routeActions.updateUrl('/cards/1234'))
+      .put(Actions.finishSaveCard(formId, { ...card, _id: '1234' }))
+      .put(Actions.updateUrl('/cards/1234'))
       .silentRun(100);
   });
 
@@ -305,10 +299,10 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveCard(formId))
+      .dispatch(Actions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
-      .put(editActions.finishSaveCard(formId, card))
-      .not.put(routeActions.updateUrl('/cards/1234'))
+      .put(Actions.finishSaveCard(formId, card))
+      .not.put(Actions.updateUrl('/cards/1234'))
       .silentRun(100);
   });
 
@@ -322,10 +316,10 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveCard(formId))
+      .dispatch(Actions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
-      .put(editActions.finishSaveCard(formId, { ...card, _id: '2345' }))
-      .not.put(routeActions.updateUrl('/cards/2345'))
+      .put(Actions.finishSaveCard(formId, { ...card, _id: '2345' }))
+      .not.put(Actions.updateUrl('/cards/2345'))
       .silentRun(100);
   });
 
@@ -342,9 +336,9 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.saveCard(formId))
+      .dispatch(Actions.saveCard(formId))
       .call([dataStore, 'putCard'], card)
-      .put(editActions.failSaveCard(formId, error))
+      .put(Actions.failSaveCard(formId, error))
       .silentRun(100);
   });
 
@@ -354,7 +348,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(deletedState(formId))
-      .dispatch(editActions.deleteCard(formId, 'abc'))
+      .dispatch(Actions.deleteCard(formId, 'abc'))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
@@ -366,7 +360,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(dirtyState(formId, card))
-      .dispatch(editActions.deleteCard(formId, 'abc'))
+      .dispatch(Actions.deleteCard(formId, 'abc'))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
@@ -383,7 +377,7 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withState(deletedState(formId))
-      .dispatch(editActions.deleteCard(formId, 'abc'))
+      .dispatch(Actions.deleteCard(formId, 'abc'))
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
   });
@@ -396,10 +390,8 @@ describe('sagas:edit watchCardEdits', () => {
     return expectSaga(watchCardEditsSaga, dataStore)
       .withReducer(reducer)
       .withState(okState(formId, card))
-      .dispatch(
-        editActions.editCard(formId, { ...card, answer: 'Updated answer' })
-      )
-      .dispatch(editActions.deleteCard(formId, 'abc'))
+      .dispatch(Actions.editCard(formId, { ...card, answer: 'Updated answer' }))
+      .dispatch(Actions.deleteCard(formId, 'abc'))
       .not.call.fn(dataStore.putCard)
       .silentRun(500);
   });
@@ -422,11 +414,9 @@ describe('sagas:edit watchCardEdits', () => {
 
     return expectSaga(watchCardEditsSaga, dataStore)
       .withReducer(reducer, okState(formId, card))
-      .dispatch(
-        editActions.editCard(formId, { ...card, answer: 'Updated answer' })
-      )
-      .dispatch(editActions.saveCard(formId))
-      .dispatch(editActions.deleteCard(formId))
+      .dispatch(Actions.editCard(formId, { ...card, answer: 'Updated answer' }))
+      .dispatch(Actions.saveCard(formId))
+      .dispatch(Actions.deleteCard(formId))
       .call([dataStore, 'putCard'], { ...card, answer: 'Updated answer' })
       .call([dataStore, 'deleteCard'], 'abc')
       .silentRun(100);
@@ -448,8 +438,8 @@ describe('sagas:edit save', () => {
     return expectSaga(saveSaga, dataStore, oldFormId, card)
       .withState(emptyState(newFormId))
       .call([dataStore, 'putCard'], card)
-      .put(editActions.finishSaveCard(oldFormId, { ...card, _id: '4567' }))
-      .not.put(routeActions.updateUrl('/cards/4567'))
+      .put(Actions.finishSaveCard(oldFormId, { ...card, _id: '4567' }))
+      .not.put(Actions.updateUrl('/cards/4567'))
       .silentRun(100);
   });
 });
@@ -472,8 +462,8 @@ describe('sagas:edit beforeEditScreenChange', () => {
 
     return expectSaga(beforeEditScreenChangeSaga)
       .withState(state)
-      .put(editActions.saveCard(formId))
-      .dispatch(editActions.finishSaveCard(formId, {}))
+      .put(Actions.saveCard(formId))
+      .dispatch(Actions.finishSaveCard(formId, {}))
       .returns(true)
       .run();
   });
@@ -488,7 +478,7 @@ describe('sagas:edit beforeEditScreenChange', () => {
 
     return expectSaga(beforeEditScreenChangeSaga)
       .withState(state)
-      .not.put(editActions.saveCard(formId))
+      .not.put(Actions.saveCard(formId))
       .returns(true)
       .run();
   });
@@ -511,8 +501,8 @@ describe('sagas:edit beforeEditScreenChange', () => {
 
     return expectSaga(beforeEditScreenChangeSaga)
       .withState(state)
-      .put(editActions.saveCard(formId))
-      .dispatch(editActions.failSaveCard(formId, error))
+      .put(Actions.saveCard(formId))
+      .dispatch(Actions.failSaveCard(formId, error))
       .returns(false)
       .run();
   });

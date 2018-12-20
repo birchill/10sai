@@ -9,7 +9,7 @@ import { expectSaga } from 'redux-saga-test-plan';
 import { watchNoteEdits, beforeNotesScreenChange } from './sagas';
 import { reducer, AppState } from '../reducer';
 import { Note } from '../model';
-import * as noteActions from './actions';
+import * as Actions from '../actions';
 import { EditNoteContext, EditScreenContext } from './actions';
 import { FormState } from '../edit/FormState';
 import { SaveState, NoteState } from '../notes/reducer';
@@ -66,9 +66,9 @@ describe('sagas:notes watchNoteEdits', () => {
 
     return expectSaga(watchNoteEdits, dataStore)
       .withState(noteState(cardFormId, noteFormId, note, dirtyFields))
-      .dispatch(noteActions.saveNote(context))
+      .dispatch(Actions.saveNote(context))
       .call([dataStore, 'putNote'], note)
-      .put(noteActions.finishSaveNote(context, note))
+      .put(Actions.finishSaveNote(context, note))
       .silentRun(100);
   });
 
@@ -101,8 +101,8 @@ describe('sagas:notes watchNoteEdits', () => {
 
     return expectSaga(watchNoteEdits, dataStore)
       .withReducer(reducer, initialState)
-      .dispatch(noteActions.saveNote(context))
-      .dispatch(noteActions.deleteNote(context))
+      .dispatch(Actions.saveNote(context))
+      .dispatch(Actions.deleteNote(context))
       .call([dataStore, 'putNote'], note)
       .call([dataStore, 'deleteNote'], 'abc')
       .silentRun(100);
@@ -177,10 +177,10 @@ describe('sagas:notes beforeNotesScreenChange', () => {
 
     return expectSaga(beforeNotesScreenChange, screenContext)
       .withState(state)
-      .put(noteActions.saveNote(firstNoteContext))
-      .put(noteActions.saveNote(thirdNoteContext))
-      .dispatch(noteActions.finishSaveNote(firstNoteContext, firstNote.note))
-      .dispatch(noteActions.finishSaveNote(thirdNoteContext, thirdNote.note))
+      .put(Actions.saveNote(firstNoteContext))
+      .put(Actions.saveNote(thirdNoteContext))
+      .dispatch(Actions.finishSaveNote(firstNoteContext, firstNote.note))
+      .dispatch(Actions.finishSaveNote(thirdNoteContext, thirdNote.note))
       .returns(true)
       .run();
   });
@@ -217,8 +217,8 @@ describe('sagas:notes beforeNotesScreenChange', () => {
 
     return expectSaga(beforeNotesScreenChange, screenContext)
       .withState(state)
-      .not.put(noteActions.saveNote(firstNoteContext))
-      .not.put(noteActions.saveNote(secondNoteContext))
+      .not.put(Actions.saveNote(firstNoteContext))
+      .not.put(Actions.saveNote(secondNoteContext))
       .returns(true)
       .run();
   });
@@ -256,11 +256,11 @@ describe('sagas:notes beforeNotesScreenChange', () => {
 
     return expectSaga(beforeNotesScreenChange, screenContext)
       .withState(state)
-      .put(noteActions.saveNote(firstNoteContext))
-      .put(noteActions.saveNote(secondNoteContext))
-      .dispatch(noteActions.finishSaveNote(firstNoteContext, firstNote.note))
+      .put(Actions.saveNote(firstNoteContext))
+      .put(Actions.saveNote(secondNoteContext))
+      .dispatch(Actions.finishSaveNote(firstNoteContext, firstNote.note))
       .dispatch(
-        noteActions.failSaveNote(
+        Actions.failSaveNote(
           secondNoteContext,
           new StoreError(400, 'bad', 'This is bad')
         )

@@ -2,8 +2,7 @@ import * as React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import * as routeActions from '../route/actions';
-import { Action } from '../actions';
+import * as Actions from '../actions';
 import { Link } from './Link';
 import { Omit } from '../utils/type-helpers';
 
@@ -110,9 +109,12 @@ class PopupInner extends React.PureComponent<PropsInner> {
 
 type DispatchProps = Omit<PropsInner, keyof Props>;
 
-const mapDispatchToProps = (dispatch: Dispatch<Action>, ownProps: Props) => ({
+const mapDispatchToProps = (
+  dispatch: Dispatch<Actions.Action>,
+  ownProps: Props
+) => ({
   onClose: () => {
-    dispatch(routeActions.followLink(ownProps.currentScreenLink, 'backwards'));
+    dispatch(Actions.followLink(ownProps.currentScreenLink, 'backwards'));
   },
 });
 

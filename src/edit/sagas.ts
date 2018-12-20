@@ -19,25 +19,16 @@ import {
 import { AppState } from '../reducer';
 import { EditFormState } from './reducer';
 import { getActiveRecord, isDirty, hasDataToSave } from './selectors';
-import * as editActions from './actions';
-import * as routeActions from '../route/actions';
+import * as Actions from '../actions';
 import { DataStore, StoreError } from '../store/DataStore';
 import { Card } from '../model';
-import { DeleteCardAction } from './actions';
 
 const SAVE_DELAY = 2000;
 
-// XXX This should move to route/actions.ts once converted to TS
-interface NavigateAction {
-  url?: string;
-  path?: string;
-  search?: string;
-  fragment?: string;
-  source?: 'history';
-  replace?: boolean;
-}
-
-export function* navigate(dataStore: DataStore, action: NavigateAction) {
+export function* navigate(
+  dataStore: DataStore,
+  action: Actions.NavigateAction
+) {
   // Look for navigation actions that should load a card
   const route = action.url
     ? routeFromURL(action.url)
@@ -47,24 +38,24 @@ export function* navigate(dataStore: DataStore, action: NavigateAction) {
   }
 
   if (!route.card) {
-    yield put(editActions.newCard());
+    yield put(Actions.newCard());
     return;
   }
 
-  yield put(editActions.loadCard(route.card));
+  yield put(Actions.loadCard(route.card));
 
   const activeRecord = yield select(getActiveRecord);
   const { formId } = activeRecord;
 
   try {
     const card = yield call([dataStore, 'getCard'], route.card);
-    yield put(editActions.finishLoadCard(formId, card));
+    yield put(Actions.finishLoadCard(formId, card));
   } catch (error) {
     const storeError: StoreError = error;
     if (storeError.reason !== 'deleted') {
       console.error(`Failed to load card: ${JSON.stringify(storeError)}`);
     }
-    yield put(editActions.failLoadCard(formId, storeError));
+    yield put(Actions.failLoadCard(formId, storeError));
   }
 }
 
@@ -96,17 +87,17 @@ export function* save(
         screen: 'edit-card',
         card: savedCard._id,
       });
-      yield put(routeActions.updateUrl(newUrl));
+      yield put(Actions.updateUrl(newUrl));
     }
 
     // This needs to happen after we inspect the location above since it may
     // trigger a NAVIGATE action.
-    yield put(editActions.finishSaveCard(formId, savedCard));
+    yield put(Actions.finishSaveCard(formId, savedCard));
 
     return savedCard;
   } catch (error) {
     console.error(`Failed to save: ${JSON.stringify(error)}`);
-    yield put(editActions.failSaveCard(formId, error));
+    yield put(Actions.failSaveCard(formId, error));
 
     return card;
   }
@@ -119,9 +110,9 @@ export function* watchCardEdits(dataStore: DataStore) {
     deleteActionType: 'DELETE_CARD',
     resourceStateSelector: (
       action:
-        | editActions.EditCardAction
-        | editActions.SaveCardAction
-        | editActions.DeleteCardAction
+        | Actions.EditCardAction
+        | Actions.SaveCardAction
+        | Actions.DeleteCardAction
     ) => {
       return (
         state: AppState
@@ -136,7 +127,7 @@ export function* watchCardEdits(dataStore: DataStore) {
     },
     delete: (
       dataStore: DataStore,
-      action: DeleteCardAction,
+      action: Actions.DeleteCardAction,
       card: Partial<Card>
     ): CallEffect | undefined => {
       if (typeof card._id === 'string' || typeof action.cardId === 'string') {
@@ -145,11 +136,11 @@ export function* watchCardEdits(dataStore: DataStore) {
     },
     save,
     saveActionCreator: (saveContext: EditSaveContext) =>
-      editActions.saveCard(saveContext),
+      Actions.saveCard(saveContext),
     finishSaveActionCreator: (
       saveContext: EditSaveContext,
       resource: Partial<Card>
-    ) => editActions.finishSaveCard(saveContext, resource),
+    ) => Actions.finishSaveCard(saveContext, resource),
   };
 
   yield* watchEdits(dataStore, SAVE_DELAY, params);
@@ -181,7 +172,7 @@ function* saveBeforeScreenChange(formId: number) {
     return true;
   }
 
-  yield put(editActions.saveCard(formId));
+  yield put(Actions.saveCard(formId));
 
   const action = yield take(['FINISH_SAVE_CARD', 'FAIL_SAVE_CARD']);
 

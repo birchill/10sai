@@ -1,7 +1,6 @@
 import { edit as subject, EditState } from './reducer';
 import { FormState } from './FormState';
-import * as actions from './actions';
-import * as noteActions from '../notes/actions';
+import * as Actions from '../actions';
 import { Card } from '../model';
 import { CardChange } from '../store/CardStore';
 import { StoreError } from '../store/DataStore';
@@ -120,7 +119,7 @@ describe('reducer:edit', () => {
   });
 
   it('should update formId on NEW_CARD', () => {
-    const updatedState = subject(undefined, actions.newCard(1));
+    const updatedState = subject(undefined, Actions.newCard(1));
 
     expect(updatedState).toEqual(emptyState(1));
   });
@@ -132,7 +131,7 @@ describe('reducer:edit', () => {
       toDirtyFields('question', 'answer')
     );
 
-    const updatedState = subject(initialState, actions.newCard(2));
+    const updatedState = subject(initialState, Actions.newCard(2));
 
     expect(updatedState).toEqual(emptyState(2));
   });
@@ -140,7 +139,7 @@ describe('reducer:edit', () => {
   it('should persist the tags on NEW_CARD if the previous card was also new', () => {
     const initialState = emptyState(4, ['Tag 1', 'Tag 2']);
 
-    const updatedState = subject(initialState, actions.newCard(5));
+    const updatedState = subject(initialState, Actions.newCard(5));
 
     expect(updatedState.forms.active.card.tags).toEqual(['Tag 1', 'Tag 2']);
   });
@@ -152,13 +151,13 @@ describe('reducer:edit', () => {
       toDirtyFields('question', 'answer')
     );
 
-    const updatedState = subject(initialState, actions.newCard(5));
+    const updatedState = subject(initialState, Actions.newCard(5));
 
     expect(updatedState.forms.active.card.tags).toBeUndefined();
   });
 
   it('should update formId and state on LOAD_CARD', () => {
-    const updatedState = subject(undefined, actions.loadCard('abc', 2));
+    const updatedState = subject(undefined, Actions.loadCard('abc', 2));
 
     expect(updatedState).toEqual(loadingState(2));
   });
@@ -170,7 +169,7 @@ describe('reducer:edit', () => {
       toDirtyFields('question', 'answer')
     );
 
-    const updatedState = subject(initialState, actions.loadCard('def', 3));
+    const updatedState = subject(initialState, Actions.loadCard('def', 3));
 
     expect(updatedState).toEqual(loadingState(3));
   });
@@ -179,7 +178,7 @@ describe('reducer:edit', () => {
     const initialState = loadingState(5);
     const card = generateCard('abc');
 
-    const updatedState = subject(initialState, actions.finishLoadCard(5, card));
+    const updatedState = subject(initialState, Actions.finishLoadCard(5, card));
 
     expect(updatedState).toEqual(okState(5, card));
   });
@@ -193,7 +192,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(
         initialState,
-        actions.finishLoadCard(8, card)
+        Actions.finishLoadCard(8, card)
       );
 
       expect(updatedState).toEqual(initialState);
@@ -205,7 +204,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.failLoadCard(7, { name: 'Error', message: 'Error' })
+      Actions.failLoadCard(7, { name: 'Error', message: 'Error' })
     );
 
     expect(updatedState).toEqual(notFoundState(7));
@@ -216,7 +215,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.failLoadCard(9, { name: 'Error', message: 'Error' })
+      Actions.failLoadCard(9, { name: 'Error', message: 'Error' })
     );
 
     expect(updatedState).toEqual(initialState);
@@ -226,7 +225,7 @@ describe('reducer:edit', () => {
     const initialState = loadingState(8);
     const error = { name: 'Error', message: 'Error', reason: 'deleted' };
 
-    const updatedState = subject(initialState, actions.failLoadCard(8, error));
+    const updatedState = subject(initialState, Actions.failLoadCard(8, error));
 
     expect(updatedState).toEqual(deletedState(8));
   });
@@ -243,7 +242,7 @@ describe('reducer:edit', () => {
       answer: 'Answer',
     };
 
-    const updatedState = subject(initialState, actions.editCard(4, change));
+    const updatedState = subject(initialState, Actions.editCard(4, change));
 
     expect(updatedState).toEqual(
       dirtyState(
@@ -264,7 +263,7 @@ describe('reducer:edit', () => {
         answer: 'Updated answer',
       };
 
-      const updatedState = subject(initialState, actions.editCard(7, change));
+      const updatedState = subject(initialState, Actions.editCard(7, change));
 
       expect(updatedState).toEqual(
         dirtyState(
@@ -292,7 +291,7 @@ describe('reducer:edit', () => {
         question: 'Updated question',
         answer: 'Answer',
       };
-      const updatedState = subject(initialState, actions.editCard(5, change));
+      const updatedState = subject(initialState, Actions.editCard(5, change));
 
       expect(updatedState).toEqual(initialState);
     }
@@ -306,7 +305,7 @@ describe('reducer:edit', () => {
     );
     const change = { answer: 'Updated answer' };
 
-    const updatedState = subject(initialState, actions.editCard(6, change));
+    const updatedState = subject(initialState, Actions.editCard(6, change));
 
     expect(updatedState).toEqual(
       dirtyState(
@@ -328,7 +327,7 @@ describe('reducer:edit', () => {
       message: 'Bad bad bad',
     });
 
-    const updatedState = subject(initialState, actions.saveCard(11));
+    const updatedState = subject(initialState, Actions.saveCard(11));
 
     expect(updatedState).toEqual(withoutErrorState);
   });
@@ -347,7 +346,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.finishSaveCard(11, card)
+      Actions.finishSaveCard(11, card)
     );
 
     expect(updatedState).toEqual(
@@ -376,7 +375,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(
         initialState,
-        actions.finishSaveCard(12, card)
+        Actions.finishSaveCard(12, card)
       );
 
       expect(updatedState).toEqual(
@@ -403,7 +402,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.finishSaveCard(13, card)
+      Actions.finishSaveCard(13, card)
     );
 
     expect(updatedState).toEqual(initialState);
@@ -423,7 +422,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.finishSaveCard(12, card)
+      Actions.finishSaveCard(12, card)
     );
 
     expect(updatedState).toEqual(
@@ -448,7 +447,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(
         initialState,
-        actions.finishSaveCard(17, card)
+        Actions.finishSaveCard(17, card)
       );
 
       expect(updatedState).toEqual(
@@ -478,7 +477,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(
         initialState,
-        actions.finishSaveCard(11, card)
+        Actions.finishSaveCard(11, card)
       );
 
       expect(updatedState).toEqual(initialState);
@@ -498,7 +497,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.finishSaveCard(15, card)
+      Actions.finishSaveCard(15, card)
     );
 
     expect(updatedState).toEqual(initialState);
@@ -513,7 +512,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.failSaveCard(15, { name: 'bad', message: 'Bad bad bad' })
+      Actions.failSaveCard(15, { name: 'bad', message: 'Bad bad bad' })
     );
 
     expect(updatedState).toEqual(
@@ -533,7 +532,7 @@ describe('reducer:edit', () => {
 
       const updatedState = subject(
         initialState,
-        actions.failSaveCard(15, { name: 'bad', message: 'Bad bad bad' })
+        Actions.failSaveCard(15, { name: 'bad', message: 'Bad bad bad' })
       );
 
       expect(updatedState).toEqual(initialState);
@@ -545,7 +544,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      actions.failSaveCard(15, { name: 'uhoh', message: 'Uh oh' })
+      Actions.failSaveCard(15, { name: 'uhoh', message: 'Uh oh' })
     );
 
     expect(updatedState).toEqual(initialState);
@@ -565,7 +564,7 @@ describe('reducer:edit', () => {
       },
     };
 
-    const updatedState = subject(initialState, actions.syncEditCard(change));
+    const updatedState = subject(initialState, Actions.syncEditCard(change));
 
     expect(updatedState).toEqual(
       dirtyState(
@@ -590,7 +589,7 @@ describe('reducer:edit', () => {
       },
     };
 
-    const updatedState = subject(initialState, actions.syncEditCard(change));
+    const updatedState = subject(initialState, Actions.syncEditCard(change));
 
     expect(updatedState).toEqual(initialState);
   });
@@ -609,7 +608,7 @@ describe('reducer:edit', () => {
         deleted: true,
       };
 
-      const updatedState = subject(initialState, actions.syncEditCard(change));
+      const updatedState = subject(initialState, Actions.syncEditCard(change));
 
       expect(updatedState).toEqual(deletedState(15));
     }
@@ -622,7 +621,7 @@ describe('reducer:edit', () => {
       toDirtyFields('question')
     );
 
-    const updatedState = subject(initialState, actions.deleteCard(15, 'abc'));
+    const updatedState = subject(initialState, Actions.deleteCard(15, 'abc'));
 
     expect(updatedState).toEqual(deletedState(15));
   });
@@ -634,7 +633,7 @@ describe('reducer:edit', () => {
       toDirtyFields('question')
     );
 
-    const updatedState = subject(initialState, actions.deleteCard(89));
+    const updatedState = subject(initialState, Actions.deleteCard(89));
 
     expect(updatedState).toEqual(emptyState(89));
   });
@@ -646,7 +645,7 @@ describe('reducer:edit', () => {
       toDirtyFields('question')
     );
 
-    const updatedState = subject(initialState, actions.deleteCard(15, 'abc'));
+    const updatedState = subject(initialState, Actions.deleteCard(15, 'abc'));
 
     expect(updatedState).toEqual(initialState);
   });
@@ -656,7 +655,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      noteActions.addNote({ screen: 'edit-card', cardFormId: 7 })
+      Actions.addNote({ screen: 'edit-card', cardFormId: 7 })
     );
 
     expect(updatedState.forms.active.notes).toHaveLength(1);
@@ -667,7 +666,7 @@ describe('reducer:edit', () => {
 
     const updatedState = subject(
       initialState,
-      noteActions.addNote({ screen: 'edit-card', cardFormId: 6 })
+      Actions.addNote({ screen: 'edit-card', cardFormId: 6 })
     );
 
     expect(updatedState).toEqual(initialState);

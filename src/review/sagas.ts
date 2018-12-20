@@ -1,5 +1,5 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
-import * as reviewActions from './actions';
+import * as Actions from '../actions';
 import { getReviewSummary } from './selectors';
 import { ReviewPhase } from './ReviewPhase';
 import { beforeNotesScreenChange } from '../notes/sagas';
@@ -29,9 +29,9 @@ const CardsToSelect = {
 export function* updateHeap(
   dataStore: DataStore,
   action:
-    | reviewActions.NewReviewAction
-    | reviewActions.SetReviewLimitAction
-    | reviewActions.SetReviewTimeAction
+    | Actions.NewReviewAction
+    | Actions.SetReviewLimitAction
+    | Actions.SetReviewTimeAction
 ) {
   const reviewInfo = yield select(
     (state: AppState) => (state ? state.review : {})
@@ -48,7 +48,7 @@ export function* updateHeap(
       ? CardsToSelect.SkipFailed
       : CardsToSelect.IncludeFailed;
   const cards = yield* getCardsForHeap(dataStore, reviewInfo, cardsToSelect);
-  yield put(reviewActions.reviewLoaded(cards));
+  yield put(Actions.reviewLoaded(cards));
 
   try {
     yield call([dataStore, 'putReview'], yield select(getReviewSummary));
@@ -104,7 +104,7 @@ function* getCardsForHeap(
 
 export function* updateProgress(
   dataStore: DataStore,
-  action: reviewActions.PassCardAction | reviewActions.FailCardAction
+  action: Actions.PassCardAction | Actions.FailCardAction
 ) {
   const reviewInfo: ReviewState = yield select(
     (state: AppState) => (state ? state.review : {})
@@ -133,13 +133,13 @@ export function* updateProgress(
 
   try {
     yield call([dataStore, 'putCard'], update);
-    yield put(reviewActions.finishUpdateProgress());
+    yield put(Actions.finishUpdateProgress());
   } catch (error) {
     console.error(`Failed to update progress of card: ${error}`);
     // TODO: Define the following action
-    // yield put(reviewActions.failUpdateProgress(error));
+    // yield put(Actions.failUpdateProgress(error));
     // For now just pretend it worked:
-    yield put(reviewActions.finishUpdateProgress());
+    yield put(Actions.finishUpdateProgress());
   }
 
   try {
@@ -155,7 +155,7 @@ export function* updateProgress(
 
 export function* updateReviewTime(
   dataStore: DataStore,
-  action: reviewActions.SetReviewTimeAction
+  action: Actions.SetReviewTimeAction
 ) {
   yield call([dataStore, 'setReviewTime'], action.reviewTime);
 }
@@ -166,12 +166,12 @@ export function* queryAvailableCards(dataStore: DataStore) {
     dataStore,
     'getAvailableCards',
   ]);
-  yield put(reviewActions.updateAvailableCards(availableCards));
+  yield put(Actions.updateAvailableCards(availableCards));
 }
 
 export function* loadReview(
   dataStore: DataStore,
-  action: reviewActions.LoadReviewAction
+  action: Actions.LoadReviewAction
 ) {
   // Load cards from history
   const history = yield call(
@@ -214,7 +214,7 @@ export function* loadReview(
   );
 
   yield put(
-    reviewActions.reviewLoaded(
+    Actions.reviewLoaded(
       heap,
       history,
       failedCardsLevel1,

@@ -1,5 +1,5 @@
 import { sync as subject } from './reducer';
-import * as syncActions from './actions';
+import * as Actions from '../actions';
 
 describe('reducer:sync', () => {
   it('updates the server', () => {
@@ -7,7 +7,7 @@ describe('reducer:sync', () => {
 
     const updatedState = subject(
       initialState,
-      syncActions.updateSyncServer({
+      Actions.updateSyncServer({
         server: { name: 'server-name' },
         lastSyncTime: undefined,
         paused: false,

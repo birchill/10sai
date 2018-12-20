@@ -1,7 +1,7 @@
 import { call, put, select, CallEffect, take } from 'redux-saga/effects';
 
 import { watchEdits, ResourceState } from '../utils/autosave-saga';
-import * as noteActions from './actions';
+import * as Actions from '../actions';
 import {
   getNoteListSelector,
   getNoteStateSelector,
@@ -22,12 +22,12 @@ export function* save(
   try {
     const savedNote = yield call([dataStore, 'putNote'], note);
 
-    yield put(noteActions.finishSaveNote(context, savedNote));
+    yield put(Actions.finishSaveNote(context, savedNote));
 
     return savedNote;
   } catch (error) {
     console.error(`Failed to save: ${JSON.stringify(error)}`);
-    yield put(noteActions.failSaveNote(context, error));
+    yield put(Actions.failSaveNote(context, error));
 
     return note;
   }
@@ -41,9 +41,9 @@ export function* watchNoteEdits(dataStore: DataStore) {
 
     resourceStateSelector: (
       action:
-        | noteActions.EditNoteAction
-        | noteActions.SaveNoteAction
-        | noteActions.DeleteNoteAction
+        | Actions.EditNoteAction
+        | Actions.SaveNoteAction
+        | Actions.DeleteNoteAction
     ) => {
       const noteStateSelector = getNoteStateSelector(action.context);
 
@@ -77,7 +77,7 @@ export function* watchNoteEdits(dataStore: DataStore) {
     },
     delete: (
       dataStore: DataStore,
-      action: noteActions.DeleteNoteAction,
+      action: Actions.DeleteNoteAction,
       note: Partial<Note>
     ): CallEffect | undefined => {
       if (typeof note.id === 'string' || typeof action.noteId === 'string') {
@@ -85,9 +85,9 @@ export function* watchNoteEdits(dataStore: DataStore) {
       }
     },
     save,
-    saveActionCreator: (context: NoteContext) => noteActions.saveNote(context),
+    saveActionCreator: (context: NoteContext) => Actions.saveNote(context),
     finishSaveActionCreator: (context: NoteContext, note: Partial<Note>) =>
-      noteActions.finishSaveNote(context, note),
+      Actions.finishSaveNote(context, note),
   };
 
   yield* watchEdits(dataStore, SAVE_DELAY, params);
@@ -109,15 +109,15 @@ export function* beforeNotesScreenChange(context: NoteListContext) {
     }
 
     const noteContext: NoteContext = { ...context, noteFormId: note.formId };
-    yield put(noteActions.saveNote(noteContext));
+    yield put(Actions.saveNote(noteContext));
 
     notesBeingSaved.add(keyFromContext(noteContext));
   }
 
   while (notesBeingSaved.size) {
     const action:
-      | noteActions.FinishSaveNoteAction
-      | noteActions.FailSaveNoteAction = yield take([
+      | Actions.FinishSaveNoteAction
+      | Actions.FailSaveNoteAction = yield take([
       'FINISH_SAVE_NOTE',
       'FAIL_SAVE_NOTE',
     ]);

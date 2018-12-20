@@ -1,7 +1,7 @@
-import { Dispatch, Action } from 'redux';
+import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import * as reviewActions from '../review/actions';
+import * as Actions from '../actions';
 import { getReviewProgress } from '../review/selectors';
 import { AppState } from '../reducer';
 
@@ -16,9 +16,9 @@ const mapStateToProps = (state: AppState) => ({
   reviewProgress: getReviewProgress(state),
 });
 
-const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
+const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   onNewReview: (maxNewCards: number, maxCards: number) => {
-    dispatch(reviewActions.newReview(maxNewCards, maxCards));
+    dispatch(Actions.newReview(maxNewCards, maxCards));
   },
 });
 

@@ -1,7 +1,5 @@
 import { Route, routeFromPath, routeFromURL } from './router';
-import { Action } from '../actions';
-
-import * as routeActions from './actions';
+import * as Actions from '../actions';
 
 export interface RouteState {
   history: Array<Route>;
@@ -13,10 +11,13 @@ const initialState: RouteState = {
   index: -1,
 };
 
-export function route(state = initialState, action: Action): RouteState {
+export function route(
+  state = initialState,
+  action: Actions.Action
+): RouteState {
   switch (action.type) {
     case 'UPDATE_URL':
-      const navigateAction: routeActions.NavigateAction = {
+      const navigateAction: Actions.NavigateAction = {
         ...action,
         type: 'NAVIGATE',
         replace: true,

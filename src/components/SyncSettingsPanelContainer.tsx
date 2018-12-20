@@ -7,8 +7,7 @@ import {
   getSyncDisplayState,
   SyncDisplayState,
 } from '../sync/SyncDisplayState';
-import * as syncActions from '../sync/actions';
-import { Action } from '../actions';
+import * as Actions from '../actions';
 import { AppState } from '../reducer';
 
 interface StateProps {
@@ -38,14 +37,13 @@ interface DispatchProps {
   onResume: () => void;
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
-  onSubmit: (server?: SyncServer) =>
-    dispatch(syncActions.setSyncServer(server)),
-  onRetry: () => dispatch(syncActions.retrySync()),
-  onEdit: () => dispatch(syncActions.editSyncServer()),
-  onCancel: () => dispatch(syncActions.finishEditSyncServer()),
-  onPause: () => dispatch(syncActions.pauseSync()),
-  onResume: () => dispatch(syncActions.resumeSync()),
+const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
+  onSubmit: (server?: SyncServer) => dispatch(Actions.setSyncServer(server)),
+  onRetry: () => dispatch(Actions.retrySync()),
+  onEdit: () => dispatch(Actions.editSyncServer()),
+  onCancel: () => dispatch(Actions.finishEditSyncServer()),
+  onPause: () => dispatch(Actions.pauseSync()),
+  onResume: () => dispatch(Actions.resumeSync()),
 });
 
 export const SyncSettingsPanelContainer = connect<StateProps, DispatchProps>(

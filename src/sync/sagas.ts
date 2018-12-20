@@ -5,9 +5,7 @@ import { Dispatch } from 'redux';
 import { waitForDocLoad } from '../utils';
 import { SyncServer } from './SyncServer';
 import { DataStore } from '../store/DataStore';
-import * as syncActions from './actions';
-import { Action } from '../actions';
-import * as settingsActions from '../settings/actions';
+import * as Actions from '../actions';
 import { SyncServerSetting } from './settings';
 import {
   getLastSyncTime,
@@ -22,7 +20,7 @@ import {
 function* startReplication(
   dataStore: DataStore,
   server: SyncServer | undefined,
-  dispatch: Dispatch<Action>
+  dispatch: Dispatch<Actions.Action>
 ) {
   if (yield select(getOffline)) {
     return;
@@ -31,11 +29,11 @@ function* startReplication(
   const syncServer = server ? server.name : undefined;
   const options = {
     onProgress: (progress: number | null) =>
-      dispatch(syncActions.updateSyncProgress(progress)),
-    onIdle: () => dispatch(syncActions.finishSync(new Date())),
-    onActive: () => dispatch(syncActions.updateSyncProgress(null)),
+      dispatch(Actions.updateSyncProgress(progress)),
+    onIdle: () => dispatch(Actions.finishSync(new Date())),
+    onActive: () => dispatch(Actions.updateSyncProgress(null)),
     onError: (details: PouchDB.Core.Error) =>
-      dispatch(syncActions.notifySyncError(details)),
+      dispatch(Actions.notifySyncError(details)),
     username: server ? server.username : undefined,
     password: server && server.username ? server.password : undefined,
   };
@@ -46,7 +44,7 @@ function* startReplication(
   yield waitForDocLoad();
 
   if (server) {
-    yield put(syncActions.updateSyncProgress(null));
+    yield put(Actions.updateSyncProgress(null));
   }
 
   try {
@@ -83,8 +81,8 @@ function* stopReplication(dataStore: DataStore) {
 
 function* setSyncServer(
   dataStore: DataStore,
-  dispatch: Dispatch<Action>,
-  action: syncActions.SetSyncServerAction
+  dispatch: Dispatch<Actions.Action>,
+  action: Actions.SetSyncServerAction
 ) {
   // Normalize server so we can reliably compare the new server with the old
   // in updateSetting.
@@ -104,27 +102,24 @@ function* setSyncServer(
 
   // Update UI state
   yield put(
-    syncActions.updateSyncServer({
+    Actions.updateSyncServer({
       server,
       lastSyncTime: undefined,
       paused: false,
     })
   );
-  yield put(syncActions.finishEditSyncServer());
+  yield put(Actions.finishEditSyncServer());
 
   // Kick off and/or cancel replication
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* retrySync(dataStore: DataStore, dispatch: Dispatch<Action>) {
+function* retrySync(dataStore: DataStore, dispatch: Dispatch<Actions.Action>) {
   const server = yield select(getServer);
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* finishSync(
-  dataStore: DataStore,
-  action: syncActions.FinishSyncAction
-) {
+function* finishSync(dataStore: DataStore, action: Actions.FinishSyncAction) {
   const server = yield select(getServer);
   const updatedServer: SyncServerSetting = {
     server,
@@ -157,7 +152,7 @@ function* pauseSync(dataStore: DataStore) {
   yield stopReplication(dataStore);
 }
 
-function* resumeSync(dataStore: DataStore, dispatch: Dispatch<Action>) {
+function* resumeSync(dataStore: DataStore, dispatch: Dispatch<Actions.Action>) {
   // Update stored paused state
   const server = yield select(getServer);
   const lastSyncTime = yield select(getLastSyncTime);
@@ -174,8 +169,8 @@ function* resumeSync(dataStore: DataStore, dispatch: Dispatch<Action>) {
 
 function* updateSetting(
   dataStore: DataStore,
-  dispatch: Dispatch<Action>,
-  action: settingsActions.UpdateSettingAction
+  dispatch: Dispatch<Actions.Action>,
+  action: Actions.UpdateSettingAction
 ) {
   if (action.key !== 'syncServer') {
     return;
@@ -212,7 +207,7 @@ function* updateSetting(
 
   // Update UI with changes
   yield put(
-    syncActions.updateSyncServer({
+    Actions.updateSyncServer({
       server: updatedServer,
       lastSyncTime: updatedLastSyncTime,
       paused: updatedPaused,
@@ -245,7 +240,7 @@ function* updateSetting(
   }
 }
 
-function* goOnline(dataStore: DataStore, dispatch: Dispatch<Action>) {
+function* goOnline(dataStore: DataStore, dispatch: Dispatch<Actions.Action>) {
   if (yield select(getPaused)) {
     return;
   }
@@ -258,7 +253,10 @@ function* goOffline(dataStore: DataStore) {
   yield stopReplication(dataStore);
 }
 
-export function* syncSagas(dataStore: DataStore, dispatch: Dispatch<Action>) {
+export function* syncSagas(
+  dataStore: DataStore,
+  dispatch: Dispatch<Actions.Action>
+) {
   yield* [
     takeLatest('SET_SYNC_SERVER', setSyncServer, dataStore, dispatch),
     takeLatest('RETRY_SYNC', retrySync, dataStore, dispatch),

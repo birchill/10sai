@@ -1,9 +1,8 @@
-import { Dispatch, Action } from 'redux';
+import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import { ReviewPhase } from '../review/ReviewPhase';
-import * as reviewActions from '../review/actions';
-import * as routeActions from '../route/actions';
+import * as Actions from '../actions';
 import { AppState } from '../reducer';
 
 import { ReviewPanel } from './ReviewPanel';
@@ -21,18 +20,18 @@ const mapStateToProps = (state: AppState) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: Dispatch<Action<any>>) => ({
+const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   onShowAnswer: () => {
-    dispatch(reviewActions.showAnswer());
+    dispatch(Actions.showAnswer());
   },
   onPassCard: () => {
-    dispatch(reviewActions.passCard());
+    dispatch(Actions.passCard());
   },
   onFailCard: () => {
-    dispatch(reviewActions.failCard());
+    dispatch(Actions.failCard());
   },
   onEditCard: (id: string) => {
-    dispatch(routeActions.followLink(`/cards/${id}`, 'forwards', false));
+    dispatch(Actions.followLink(`/cards/${id}`, 'forwards', false));
   },
 });
 

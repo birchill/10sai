@@ -2,7 +2,7 @@ import { takeEvery, call, put, race, select, take } from 'redux-saga/effects';
 import { routeFromURL, routesEqual } from './router';
 import { beforeEditScreenChange } from '../edit/sagas';
 import { beforeReviewScreenChange } from '../review/sagas';
-import * as routeActions from './actions';
+import * as Actions from '../actions';
 import { Route } from './router';
 import { AppState } from '../reducer';
 import { RouteState } from './reducer';
@@ -20,7 +20,7 @@ const getCurrentRoute = (state: AppState): Route | null => {
 
 // Sagas
 
-export function* followLink(action: routeActions.FollowLinkAction) {
+export function* followLink(action: Actions.FollowLinkAction) {
   const routeState = yield select(getRoute);
   let navigateRoute;
 
@@ -87,12 +87,12 @@ export function* followLink(action: routeActions.FollowLinkAction) {
       '',
       action.url
     );
-    yield put(routeActions.navigate({ url: action.url, replace: true }));
+    yield put(Actions.navigate({ url: action.url, replace: true }));
   } else {
     const index =
       typeof routeState.index === 'number' ? routeState.index + 1 : 0;
     yield call([history, 'pushState'], { index }, '', action.url);
-    yield put(routeActions.navigate({ url: action.url }));
+    yield put(Actions.navigate({ url: action.url }));
   }
 }
 
@@ -121,7 +121,7 @@ export function* beforeScreenChange() {
   return true;
 }
 
-export function* updateUrl(action: routeActions.UpdateUrlAction) {
+export function* updateUrl(action: Actions.UpdateUrlAction) {
   const routeState = yield select(getRoute);
 
   if (typeof routeState.index === 'number' && routeState.index >= 0) {

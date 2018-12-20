@@ -3,13 +3,11 @@ import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import { Card, Note } from '../model';
-import { Action } from '../actions';
+import * as Actions from '../actions';
 import { AppState } from '../reducer';
 import { FormState } from '../edit/FormState';
 import { EditFormState, EditState } from '../edit/reducer';
-import * as editActions from '../edit/actions';
 import { hasDataToSave } from '../edit/selectors';
-import * as routeActions from '../route/actions';
 import { EditScreenContext } from '../notes/actions';
 import { Return } from '../utils/type-helpers';
 
@@ -130,13 +128,13 @@ const mapStateToProps = (state: AppState) => ({
   forms: (state.edit as EditState).forms,
 });
 
-const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
+const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   onEdit: (formId: number, change: Partial<Card>) => {
-    dispatch(editActions.editCard(formId, change));
+    dispatch(Actions.editCard(formId, change));
   },
   onDelete: (formId: number, cardId?: string) => {
-    dispatch(editActions.deleteCard(formId, cardId));
-    dispatch(routeActions.followLink('/'));
+    dispatch(Actions.deleteCard(formId, cardId));
+    dispatch(Actions.followLink('/'));
   },
 });
 

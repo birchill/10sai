@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import { Dispatch, Action } from 'redux';
+import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
@@ -14,7 +14,7 @@ import { DataStoreContext } from './DataStoreContext';
 import { NoteList } from './NoteList';
 import { NoteListContext } from '../notes/actions';
 import { NoteListWatcher } from '../notes/NoteListWatcher';
-import * as noteActions from '../notes/actions';
+import * as Actions from '../actions';
 import { NoteState } from '../notes/reducer';
 import { Note } from '../model';
 import { DataStore } from '../store/DataStore';
@@ -99,22 +99,20 @@ interface Props {
 }
 
 const mapDispatchToProps = (
-  dispatch: Dispatch<Action<any>>,
+  dispatch: Dispatch<Actions.Action>,
   ownProps: Props
 ) => ({
   onAddNote: (initialKeywords: string[]) => {
-    dispatch(noteActions.addNote(ownProps.context, initialKeywords));
+    dispatch(Actions.addNote(ownProps.context, initialKeywords));
   },
   onEditNote: (noteFormId: number, change: Partial<Note>) => {
-    dispatch(noteActions.editNote({ ...ownProps.context, noteFormId }, change));
+    dispatch(Actions.editNote({ ...ownProps.context, noteFormId }, change));
   },
   onDeleteNote: (noteFormId: number, noteId?: string) => {
-    dispatch(
-      noteActions.deleteNote({ ...ownProps.context, noteFormId }, noteId)
-    );
+    dispatch(Actions.deleteNote({ ...ownProps.context, noteFormId }, noteId));
   },
   onUpdateNoteList: (notes: Array<Note>, deletedIds: Array<string>) => {
-    dispatch(noteActions.updateNoteList(ownProps.context, notes, deletedIds));
+    dispatch(Actions.updateNoteList(ownProps.context, notes, deletedIds));
   },
 });
 

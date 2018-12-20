@@ -16,8 +16,7 @@ import {
   beforeScreenChange as beforeScreenChangeSaga,
 } from './sagas';
 import { FormState } from '../edit/FormState';
-import * as routeActions from './actions';
-import * as editActions from '../edit/actions';
+import * as Actions from '../actions';
 import { reducer } from '../reducer';
 
 declare global {
@@ -44,20 +43,20 @@ describe('sagas:route followLink', () => {
   });
 
   it('does forwards navigation when direction is forwards', () => {
-    return expectSaga(followLinkSaga, routeActions.followLink('/', 'forwards'))
+    return expectSaga(followLinkSaga, Actions.followLink('/', 'forwards'))
       .withState(initialState)
       .provide([[matchers.call.fn(beforeScreenChangeSaga), {}]])
       .call([history, 'pushState'], { index: 0 }, '', '/')
-      .put(routeActions.navigate({ url: '/' }))
+      .put(Actions.navigate({ url: '/' }))
       .run();
   });
 
   it('does forwards navigation when direction is not specified', () => {
-    return expectSaga(followLinkSaga, routeActions.followLink('/'))
+    return expectSaga(followLinkSaga, Actions.followLink('/'))
       .withState(initialState)
       .provide([[matchers.call.fn(beforeScreenChangeSaga), {}]])
       .call([history, 'pushState'], { index: 0 }, '', '/')
-      .put(routeActions.navigate({ url: '/' }))
+      .put(Actions.navigate({ url: '/' }))
       .run();
   });
 
@@ -65,11 +64,11 @@ describe('sagas:route followLink', () => {
     'does forwards navigation when direction is replace but there is no' +
       ' history',
     () => {
-      return expectSaga(followLinkSaga, routeActions.followLink('/', 'replace'))
+      return expectSaga(followLinkSaga, Actions.followLink('/', 'replace'))
         .withState(initialState)
         .provide([[matchers.call.fn(beforeScreenChangeSaga), {}]])
         .call([history, 'pushState'], { index: 0 }, '', '/')
-        .put(routeActions.navigate({ url: '/' }))
+        .put(Actions.navigate({ url: '/' }))
         .run();
     }
   );
@@ -77,19 +76,16 @@ describe('sagas:route followLink', () => {
   it('does replace navigation when direction is replace', () => {
     return expectSaga(
       followLinkSaga,
-      routeActions.followLink('/?abc=123', 'replace')
+      Actions.followLink('/?abc=123', 'replace')
     )
       .withState({ route: { index: 0, history: [{ screen: '/' }] } })
       .call([history, 'replaceState'], { index: 0 }, '', '/?abc=123')
-      .put(routeActions.navigate({ url: '/?abc=123', replace: true }))
+      .put(Actions.navigate({ url: '/?abc=123', replace: true }))
       .run();
   });
 
   it('calls history.back() when the direction is backwards and history matches', () => {
-    return expectSaga(
-      followLinkSaga,
-      routeActions.followLink('/#abc', 'backwards')
-    )
+    return expectSaga(followLinkSaga, Actions.followLink('/#abc', 'backwards'))
       .withState({
         route: {
           index: 1,
@@ -109,7 +105,7 @@ describe('sagas:route followLink', () => {
     () => {
       return expectSaga(
         followLinkSaga,
-        routeActions.followLink('/settings', 'backwards')
+        Actions.followLink('/settings', 'backwards')
       )
         .withState({
           route: {
@@ -118,7 +114,7 @@ describe('sagas:route followLink', () => {
           },
         })
         .call([history, 'pushState'], { index: 2 }, '', '/settings')
-        .put(routeActions.navigate({ url: '/settings' }))
+        .put(Actions.navigate({ url: '/settings' }))
         .run();
     }
   );
@@ -129,7 +125,7 @@ describe('sagas:route followLink', () => {
     () => {
       return expectSaga(
         followLinkSaga,
-        routeActions.followLink('/?abc=123', 'backwards')
+        Actions.followLink('/?abc=123', 'backwards')
       )
         .withState({
           route: {
@@ -144,7 +140,7 @@ describe('sagas:route followLink', () => {
           },
         })
         .call([history, 'pushState'], { index: 2 }, '', '/?abc=123')
-        .put(routeActions.navigate({ url: '/?abc=123' }))
+        .put(Actions.navigate({ url: '/?abc=123' }))
         .run();
     }
   );
@@ -155,7 +151,7 @@ describe('sagas:route followLink', () => {
     () => {
       return expectSaga(
         followLinkSaga,
-        routeActions.followLink('/#ghi', 'backwards')
+        Actions.followLink('/#ghi', 'backwards')
       )
         .withState({
           route: {
@@ -167,7 +163,7 @@ describe('sagas:route followLink', () => {
           },
         })
         .call([history, 'pushState'], { index: 2 }, '', '/#ghi')
-        .put(routeActions.navigate({ url: '/#ghi' }))
+        .put(Actions.navigate({ url: '/#ghi' }))
         .run();
     }
   );
@@ -178,21 +174,18 @@ describe('sagas:route followLink', () => {
     () => {
       return expectSaga(
         followLinkSaga,
-        routeActions.followLink('/#abc', 'backwards')
+        Actions.followLink('/#abc', 'backwards')
       )
         .withState(initialState)
         .provide([[matchers.call.fn(beforeScreenChangeSaga), {}]])
         .call([history, 'pushState'], { index: 0 }, '', '/#abc')
-        .put(routeActions.navigate({ url: '/#abc' }))
+        .put(Actions.navigate({ url: '/#abc' }))
         .run();
     }
   );
 
   it('does nothing if the URL matches the current route and link is not active', () => {
-    return expectSaga(
-      followLinkSaga,
-      routeActions.followLink('/#def', 'forwards')
-    )
+    return expectSaga(followLinkSaga, Actions.followLink('/#def', 'forwards'))
       .withState({
         route: {
           index: 1,
@@ -204,14 +197,14 @@ describe('sagas:route followLink', () => {
       })
       .not.call([history, 'back'])
       .not.call([history, 'pushState'], { index: 2 }, '', '/#def')
-      .not.put(routeActions.navigate({ url: '/#def' }))
+      .not.put(Actions.navigate({ url: '/#def' }))
       .run();
   });
 
   it('navigates if the URL matches the current route and link IS active', () => {
     return expectSaga(
       followLinkSaga,
-      routeActions.followLink('/#def', 'forwards', true)
+      Actions.followLink('/#def', 'forwards', true)
     )
       .withState({
         route: {
@@ -223,7 +216,7 @@ describe('sagas:route followLink', () => {
         },
       })
       .call([history, 'pushState'], { index: 2 }, '', '/#def')
-      .put(routeActions.navigate({ url: '/#def' }))
+      .put(Actions.navigate({ url: '/#def' }))
       .run();
   });
 });
@@ -251,8 +244,8 @@ describe('sagas:route beforeScreenChange', () => {
 
     return expectSaga(beforeScreenChangeSaga)
       .withState(state)
-      .put(editActions.saveCard(formId))
-      .dispatch(editActions.failSaveCard(formId, error))
+      .put(Actions.saveCard(formId))
+      .dispatch(Actions.failSaveCard(formId, error))
       .returns(false)
       .run();
   });
@@ -281,8 +274,8 @@ describe('sagas:route beforeScreenChange', () => {
 
       return expectSaga(beforeScreenChangeSaga)
         .withState(state)
-        .put(editActions.saveCard(formId))
-        .dispatch(routeActions.navigate({ url: '/' }))
+        .put(Actions.saveCard(formId))
+        .dispatch(Actions.navigate({ url: '/' }))
         .returns(false)
         .run();
     }
