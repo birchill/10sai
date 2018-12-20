@@ -86,7 +86,7 @@ const DynamicNoteListInner: React.SFC<PropsInner> = (props: PropsInner) => (
 );
 
 interface Props {
-  context: NoteListContext;
+  noteListContext: NoteListContext;
   notes: Array<NoteState>;
   keywords: Array<string>;
   priority: 'reading' | 'writing';
@@ -98,16 +98,22 @@ const mapDispatchToProps = (
   ownProps: Props
 ) => ({
   onAddNote: (initialKeywords: string[]) => {
-    dispatch(Actions.addNote(ownProps.context, initialKeywords));
+    dispatch(Actions.addNote(ownProps.noteListContext, initialKeywords));
   },
   onEditNote: (noteFormId: number, change: Partial<Note>) => {
-    dispatch(Actions.editNote({ ...ownProps.context, noteFormId }, change));
+    dispatch(
+      Actions.editNote({ ...ownProps.noteListContext, noteFormId }, change)
+    );
   },
   onDeleteNote: (noteFormId: number, noteId?: string) => {
-    dispatch(Actions.deleteNote({ ...ownProps.context, noteFormId }, noteId));
+    dispatch(
+      Actions.deleteNote({ ...ownProps.noteListContext, noteFormId }, noteId)
+    );
   },
   onUpdateNoteList: (notes: Array<Note>, deletedIds: Array<string>) => {
-    dispatch(Actions.updateNoteList(ownProps.context, notes, deletedIds));
+    dispatch(
+      Actions.updateNoteList(ownProps.noteListContext, notes, deletedIds)
+    );
   },
 });
 

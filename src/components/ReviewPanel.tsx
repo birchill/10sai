@@ -219,7 +219,7 @@ export class ReviewPanel extends React.Component<Props> {
             <>
               <hr className="note-divider divider" />
               <DynamicNoteList
-                context={{
+                noteListContext={{
                   screen: 'review',
                 }}
                 notes={this.props.notes}

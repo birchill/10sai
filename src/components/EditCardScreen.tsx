@@ -101,7 +101,7 @@ class EditCardScreenInner extends React.PureComponent<PropsInner> {
             />
             <hr className="note-divider divider" />
             <DynamicNoteList
-              context={
+              noteListContext={
                 {
                   screen: 'edit-card',
                   cardFormId: this.props.forms.active.formId,
