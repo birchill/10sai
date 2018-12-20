@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
+
 import { TagSuggesterContext } from './TagSuggesterContext';
 import {
   SuggestionProvider,
@@ -13,13 +13,6 @@ interface PropsInner extends SuggestionProviderProps {
 }
 
 class TagSuggestionProviderInner extends SuggestionProvider<PropsInner> {
-  static get propTypes() {
-    return {
-      ...super.propTypes,
-      tagSuggester: PropTypes.object.isRequired,
-    };
-  }
-
   addRecentEntry: (entry: string) => void;
 
   constructor(props: PropsInner) {

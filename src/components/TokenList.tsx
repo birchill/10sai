@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { getAncestorWithClass } from '../utils/dom';
 import { LoadingIndicator } from './LoadingIndicator';
@@ -39,20 +38,6 @@ export class TokenList extends React.PureComponent<Props> {
   rootElem?: HTMLDivElement;
   textInput?: HTMLInputElement;
   composing: boolean = false;
-
-  static get propTypes() {
-    return {
-      className: PropTypes.string,
-      tokens: PropTypes.arrayOf(PropTypes.string),
-      placeholder: PropTypes.string,
-      linkedTokens: PropTypes.arrayOf(PropTypes.string),
-      linkedTooltip: PropTypes.string,
-      onTokensChange: PropTypes.func,
-      onTextChange: PropTypes.func,
-      suggestions: PropTypes.arrayOf(PropTypes.string),
-      loadingSuggestions: PropTypes.bool,
-    };
-  }
 
   constructor(props: Props) {
     super(props);

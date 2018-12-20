@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
+
 import { Omit, stripFields } from '../utils/type-helpers';
 
 import { SpeechBubble, Props as SpeechBubbleProps } from './SpeechBubble';
@@ -25,20 +25,6 @@ interface State {
 }
 
 export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
-  static get propTypes() {
-    return {
-      ...stripFields(SpeechBubble.propTypes, [
-        'left',
-        'top',
-        'arrowPosition',
-        'arrowSide',
-      ]),
-      position: PropTypes.oneOf(['above', 'below']),
-      align: PropTypes.oneOf(['center', 'largest-side', 'inline-direction']),
-      anchorElement: PropTypes.instanceOf(Element),
-    };
-  }
-
   state: State;
   speechBubbleRef: React.RefObject<SpeechBubble>;
 

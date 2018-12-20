@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { Link } from './Link';
 
@@ -19,8 +18,4 @@ export const EditCardNotFound: React.SFC<Props> = props => {
       </Link>
     </div>
   );
-};
-
-EditCardNotFound.propTypes = {
-  deleted: PropTypes.bool.isRequired,
 };

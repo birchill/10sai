@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';

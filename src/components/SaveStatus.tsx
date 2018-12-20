@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { SaveState } from '../notes/reducer';
 
@@ -15,14 +14,6 @@ interface State {
 }
 
 export class SaveStatus extends React.PureComponent<Props, State> {
-  static get propTypes() {
-    return {
-      saveState: PropTypes.string.isRequired,
-      saveError: PropTypes.string,
-      className: PropTypes.string,
-    };
-  }
-
   // All this complexity is because we only want to show the "Ok" state if we
   // changed from some other state to "Ok" but NOT if we were initially "Ok".
   static getDerivedStateFromProps(props: Props, state: State): State | null {

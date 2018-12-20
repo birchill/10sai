@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
+
 import { SuggestionResult } from '../suggestions/SuggestionResult';
 import { debounce } from '../utils';
 
@@ -20,13 +20,6 @@ export interface State {
 export abstract class SuggestionProvider<
   Props extends SuggestionProviderProps = SuggestionProviderProps
 > extends React.Component<Props, State> {
-  static get propTypes(): React.ValidationMap<SuggestionProviderProps> {
-    return {
-      text: PropTypes.string.isRequired,
-      children: PropTypes.func.isRequired,
-    };
-  }
-
   state: State;
   updateSeq: number = 0;
   debouncedUpdate: () => void;

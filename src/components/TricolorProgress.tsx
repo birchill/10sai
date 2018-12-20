@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 // A bar with three colored regions.
 
@@ -31,12 +30,4 @@ export const TricolorProgress: React.SFC<Props> = (props: Props) => {
       <div className="a" style={{ transform: asScaleX(props.aItems) }} />
     </div>
   );
-};
-
-TricolorProgress.propTypes = {
-  aItems: PropTypes.number.isRequired,
-  bItems: PropTypes.number.isRequired,
-  cItems: PropTypes.number.isRequired,
-  title: PropTypes.string,
-  className: PropTypes.string,
 };

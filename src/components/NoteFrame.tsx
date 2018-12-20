@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { NoteCorner } from './NoteCorner';
 
@@ -24,8 +23,4 @@ export const NoteFrame: React.SFC<Props> = props => {
       <div className="body">{children}</div>
     </div>
   );
-};
-
-NoteFrame.propTypes = {
-  className: PropTypes.string,
 };

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { Omit } from '../utils/type-helpers';
 
@@ -15,14 +14,6 @@ interface State {
 }
 
 export class CancelableTextbox extends React.PureComponent<Props, State> {
-  static get propTypes() {
-    return {
-      value: PropTypes.string,
-      onChange: PropTypes.func,
-      onFocus: PropTypes.func,
-    };
-  }
-
   constructor(props: Props) {
     super(props);
 

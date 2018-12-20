@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { Link } from './Link';
 
@@ -9,13 +8,6 @@ interface Props {
 }
 
 export class EditCardToolbar extends React.PureComponent<Props> {
-  static get propTypes() {
-    return {
-      canDelete: PropTypes.bool.isRequired,
-      onDelete: PropTypes.func.isRequired,
-    };
-  }
-
   render() {
     return (
       <nav className="buttons tool-bar editcard-toolbar">

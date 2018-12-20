@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { ColorKeywordOrBlack } from '../text/rich-text-styles';
 import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
@@ -49,22 +48,6 @@ interface State {
 }
 
 export class FormatToolbar extends React.Component<Props, State> {
-  static get propTypes() {
-    return {
-      className: PropTypes.string,
-      buttons: PropTypes.arrayOf(
-        PropTypes.shape({
-          type: PropTypes.string.isRequired,
-          label: PropTypes.string.isRequired,
-          accelerator: PropTypes.string,
-          state: PropTypes.number,
-          initialColor: PropTypes.any,
-        })
-      ),
-      onClick: PropTypes.func.isRequired,
-    };
-  }
-
   containerRef: React.RefObject<HTMLDivElement>;
   colorDropDownRef: React.RefObject<HTMLButtonElement>;
   colorPickerRef: React.RefObject<ColorPicker>;

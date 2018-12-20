@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { CardFaceEditControls } from './CardFaceEditControls';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
@@ -21,13 +20,6 @@ interface State {
 }
 
 export class EditCardForm extends React.Component<Props, State> {
-  static get propTypes() {
-    return {
-      card: PropTypes.object.isRequired,
-      onChange: PropTypes.func,
-    };
-  }
-
   state: State = {
     keywordsText: '',
     tagsText: '',

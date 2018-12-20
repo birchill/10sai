@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 
 import { Note } from '../model';
@@ -59,19 +58,6 @@ export class EditNoteForm extends React.Component<Props, State> {
     keywordsA: Array<string>,
     keywordsB: Array<string>
   ) => boolean;
-
-  static get propTypes() {
-    return {
-      className: PropTypes.string,
-      formId: PropTypes.number.isRequired,
-      note: PropTypes.object.isRequired,
-      saveState: PropTypes.string.isRequired,
-      saveError: PropTypes.string,
-      relatedKeywords: PropTypes.arrayOf(PropTypes.string).isRequired,
-      onChange: PropTypes.func,
-      onDelete: PropTypes.func,
-    };
-  }
 
   constructor(props: Props) {
     super(props);

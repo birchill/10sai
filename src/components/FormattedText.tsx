@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { deserialize, Inline } from '../text/rich-text';
 import { styleClassMapping } from '../text/rich-text-styles';
@@ -90,7 +89,3 @@ function renderRuby(text: string, key: string): React.ReactNode {
     </React.Fragment>
   );
 }
-
-FormattedText.propTypes = {
-  text: PropTypes.string.isRequired,
-};

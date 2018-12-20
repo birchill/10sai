@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 // A half-hearted attempt at a date thing.
 //
@@ -18,12 +17,6 @@ interface Props {
 }
 
 export class SortOfRelativeDate extends React.PureComponent<Props> {
-  static get propTypes() {
-    return {
-      value: PropTypes.instanceOf(Date).isRequired,
-    };
-  }
-
   timeoutHandle?: number;
 
   componentDidMount() {

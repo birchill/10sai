@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import memoize from 'memoize-one';
 
 import { Note } from '../model';
@@ -54,25 +53,6 @@ const FADE_DURATION = 150;
 const ANIMATION_STAGGER = 50;
 
 export class NoteList extends React.PureComponent<Props, State> {
-  static get propTypes() {
-    return {
-      notes: PropTypes.arrayOf(
-        PropTypes.shape({
-          formId: PropTypes.number,
-          note: PropTypes.object.isRequired,
-          dirtyFields: PropTypes.instanceOf(Set),
-          saveState: PropTypes.string.isRequired,
-          saveError: PropTypes.object,
-        })
-      ),
-      keywords: PropTypes.arrayOf(PropTypes.string),
-      className: PropTypes.string,
-      onAddNote: PropTypes.func.isRequired,
-      onEditNote: PropTypes.func.isRequired,
-      onDeleteNote: PropTypes.func.isRequired,
-    };
-  }
-
   static getDerivedStateFromProps(props: Props, state: State) {
     if (!state.doAnimation) {
       return null;

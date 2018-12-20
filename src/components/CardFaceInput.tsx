@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import * as Immutable from 'immutable';
 
 import {
@@ -126,17 +125,6 @@ const enum SelectionHighlight {
 }
 
 export class CardFaceInput extends React.PureComponent<Props, State> {
-  static get propTypes() {
-    return {
-      initialValue: PropTypes.string,
-      className: PropTypes.string,
-      placeholder: PropTypes.string,
-      onChange: PropTypes.func,
-      onSelectionChange: PropTypes.func,
-      onMarksUpdated: PropTypes.func,
-    };
-  }
-
   static clearSelectionFormatting(editorState: EditorState): EditorState {
     const currentContent = editorState.getCurrentContent();
     const firstBlock = currentContent.getBlockMap().first();

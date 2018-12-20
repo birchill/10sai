@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
 type SizeKeyword = 'x-small' | 'small' | 'medium' | 'large' | 'x-large';
@@ -20,13 +19,6 @@ interface State {
 // 'data-size' attribute with keywords 'x-small', 'small', 'medium', 'large',
 // 'x-large'. Typically these will define increasing font sizes.
 export class TextRegion extends React.Component<Props, State> {
-  static get propTypes() {
-    return {
-      className: PropTypes.string,
-      children: PropTypes.node,
-    };
-  }
-
   static getBestSize(
     textElem: HTMLElement,
     containerElem: HTMLElement,

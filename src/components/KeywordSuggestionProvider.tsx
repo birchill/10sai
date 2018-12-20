@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
+
 import { KeywordSuggesterContext } from './KeywordSuggesterContext';
 import {
   SuggestionProvider,
@@ -22,15 +22,6 @@ interface PropsInner extends Props {
 }
 
 class KeywordSuggestionProviderInner extends SuggestionProvider<PropsInner> {
-  static get propTypes(): React.ValidationMap<PropsInner> {
-    return {
-      ...super.propTypes,
-      defaultSuggestions: PropTypes.arrayOf(PropTypes.string),
-      includeRecentKeywords: PropTypes.bool,
-      keywordSuggester: PropTypes.object.isRequired,
-    } as React.ValidationMap<PropsInner>;
-  }
-
   addRecentEntry: (entry: string) => void;
 
   constructor(props: PropsInner) {

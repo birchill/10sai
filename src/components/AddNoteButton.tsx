@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { NoteCorner } from './NoteCorner';
 
@@ -17,13 +16,6 @@ interface StretchParams {
 }
 
 export class AddNoteButton extends React.PureComponent<Props> {
-  static get propTypes() {
-    return {
-      className: PropTypes.string,
-      onClick: PropTypes.func,
-    };
-  }
-
   buttonRef: React.RefObject<HTMLButtonElement>;
 
   constructor(props: Props) {

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { LookupToolbar } from './LookupToolbar';
 
@@ -8,12 +7,6 @@ interface Props {
 }
 
 export class LookupScreen extends React.PureComponent<Props> {
-  static get propTypes() {
-    return {
-      active: PropTypes.bool.isRequired,
-    };
-  }
-
   toolbarRef: React.RefObject<LookupToolbar>;
 
   constructor(props: Props) {

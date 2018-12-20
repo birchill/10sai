@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { SortOfRelativeDate } from './SortOfRelativeDate';
 
@@ -32,11 +31,4 @@ export const ServerStatus: React.SFC<Props> = (props: Props) => {
       </button>
     </fieldset>
   );
-};
-
-ServerStatus.propTypes = {
-  className: PropTypes.string,
-  server: PropTypes.string.isRequired,
-  lastSyncTime: PropTypes.instanceOf(Date),
-  onEdit: PropTypes.func.isRequired,
 };

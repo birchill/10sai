@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 interface Props {
   className?: string;
@@ -8,14 +7,6 @@ interface Props {
 }
 
 export class TabBlock extends React.Component<Props> {
-  static get propTypes() {
-    return {
-      className: PropTypes.string,
-      active: PropTypes.number,
-      children: PropTypes.arrayOf(PropTypes.element),
-    };
-  }
-
   static renderChild(child: React.ReactElement<any>, isActive: boolean) {
     let className = 'tab-item';
     if (isActive) {

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import * as PropTypes from 'prop-types';
 
 export interface Props {
   className?: string;
@@ -38,19 +37,6 @@ export interface Props {
 }
 
 export class SpeechBubble extends React.Component<Props> {
-  static get propTypes() {
-    return {
-      className: PropTypes.string,
-      left: PropTypes.number.isRequired,
-      top: PropTypes.number.isRequired,
-      arrowPosition: PropTypes.oneOf(['left', 'center', 'right']).isRequired,
-      arrowSide: PropTypes.oneOf(['top', 'bottom']).isRequired,
-      visible: PropTypes.bool.isRequired,
-      onClickOutside: PropTypes.func,
-      onUnhandledKeyPress: PropTypes.func,
-    };
-  }
-
   static defaultProps = {
     visible: true,
   };

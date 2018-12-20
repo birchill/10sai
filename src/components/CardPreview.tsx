@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { deserialize, Inline } from '../text/rich-text';
 import { styleClassMapping } from '../text/rich-text-styles';
@@ -12,12 +11,6 @@ interface Props {
 // We make this a pure component simply to avoid calling deserialize unless the
 // question changes.
 export class CardPreview extends React.PureComponent<Props> {
-  static get propTypes() {
-    return {
-      question: PropTypes.string.isRequired,
-    };
-  }
-
   render() {
     // If this proves slow we can try to either:
     //

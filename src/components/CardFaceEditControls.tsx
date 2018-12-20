@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { CardFaceInput, MarkType } from './CardFaceInput';
 import {
@@ -50,13 +49,6 @@ interface State {
 }
 
 export class CardFaceEditControls extends React.Component<Props, State> {
-  static get propTypes() {
-    return {
-      card: PropTypes.object.isRequired,
-      onChange: PropTypes.func,
-    };
-  }
-
   keyboardFocusHelper: KeyboardFocusHelper;
 
   questionTextBoxRef: React.RefObject<CardFaceInput>;

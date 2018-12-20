@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 
 import { SyncServer } from '../sync/SyncServer';
 import { CancelableTextbox } from './CancelableTextbox';
@@ -20,17 +19,6 @@ interface State {
 }
 
 export class SyncServerForm extends React.PureComponent<Props, State> {
-  static get propTypes() {
-    return {
-      className: PropTypes.string,
-      server: PropTypes.string,
-      username: PropTypes.string,
-      password: PropTypes.string,
-      onSubmit: PropTypes.func.isRequired,
-      onCancel: PropTypes.func.isRequired,
-    };
-  }
-
   static handleTextBoxFocus(e: React.FocusEvent<HTMLInputElement>) {
     // Until scrollIntoViewIfNeeded() gets standardized this is a very hacky
     // version that should barely work for this situation.
