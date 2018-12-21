@@ -1,5 +1,3 @@
-/* global afterEach, beforeEach, describe, expect, it */
-
 import PouchDB from 'pouchdb';
 
 import { DataStore } from './DataStore';

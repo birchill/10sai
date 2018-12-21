@@ -1,5 +1,3 @@
-/* global describe, expect, it */
-
 import { reducer as subject } from '../reducer';
 import * as Actions from '../actions';
 import { generateCards } from '../utils/testing';

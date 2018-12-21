@@ -1,5 +1,3 @@
-/* global describe, expect, it */
-
 import * as actions from './actions';
 
 describe('reducer:action', () => {

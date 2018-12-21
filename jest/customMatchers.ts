@@ -1,5 +1,3 @@
-/* global expect */
-
 declare namespace jest {
   interface CustomMatcherResult {
     pass: boolean;
