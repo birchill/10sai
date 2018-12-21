@@ -17,11 +17,8 @@ Setup
 
 Other targets:
 
-* `npm test` -- Run automated tests
-* `npm start:prod` -- Test the production version
-* `npm build:prod` -- Just build the production version
-
-    e.g. to get package size information `npm build:prod -- --profile --json stats.json`
-
-* `npm storybook` -- Play with components
-* `npm build:storybook` -- Check that storybook still builds
+* `npm test` — Run automated tests
+* `npm start:prod` — Test the production version
+* `npm build:prod` — Just build the production version. For example, to get package size information run: `npm build:prod -- --profile --json stats.json`.
+* `npm storybook` — Play with components
+* `npm build:storybook` — Check that storybook still builds
