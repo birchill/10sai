@@ -13,7 +13,7 @@
     "//": "For EACCES errors, try 'npm start -- --port 8085'",
     "start": "cross-env NODE_ENV=development webpack-dev-server --config webpack.dev.js --progress --colors --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server --config webpack.prod.js --progress --colors --history-api-fallback --content-base public/",
-    "test": "tslint -p tsconfig.json && jest",
+    "test": "jest",
     "lint": "tslint -p tsconfig.json",
     "storybook": "start-storybook -p 9001 -c .storybook -s public",
     "build:storybook": "build-storybook -c .storybook -s public",

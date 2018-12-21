@@ -34,6 +34,10 @@ jobs:
           command: npm test -- --maxWorkers 2
 
       - run:
+          name: Run lint
+          command: npm run lint
+
+      - run:
           name: Verify build
           command: npm run build:prod
 
