@@ -5,7 +5,6 @@ import {
   join,
   take,
   put,
-  race,
   select,
   CallEffect,
 } from 'redux-saga/effects';

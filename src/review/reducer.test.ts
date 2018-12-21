@@ -74,7 +74,7 @@ describe('reducer:review', () => {
   });
 
   it('should go to the loading state on SET_REVIEW_LIMIT', () => {
-    const [initialState, cardsIgnored, reviewTime] = newReview(1, 3);
+    const [initialState, , reviewTime] = newReview(1, 3);
 
     const updatedState = subject(initialState, Actions.setReviewLimit(2, 10));
 
@@ -85,7 +85,7 @@ describe('reducer:review', () => {
   });
 
   it('should update the review time on SET_REVIEW_TIME', () => {
-    const [initialState, cardsIgnored, initialReviewTime] = newReview(1, 3);
+    const [initialState, , initialReviewTime] = newReview(1, 3);
     const newReviewTime = new Date(
       initialReviewTime.getTime() + 1 * MS_PER_DAY
     );
@@ -656,7 +656,7 @@ describe('reducer:review', () => {
   });
 
   it('should integrate changes to the review state on LOAD_REVIEW', () => {
-    const [initialState, cards, reviewTime, fullInitialState] = newReview(1, 3);
+    const [initialState, cards, , fullInitialState] = newReview(1, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
     const reviewSummary = getReviewSummary({

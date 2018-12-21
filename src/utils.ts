@@ -10,10 +10,6 @@ export function waitForDocLoad() {
 
 type IdleRequestCallback = (deadline: IdleDeadline) => void;
 
-interface IdleRequestOptions {
-  timeout: number;
-}
-
 declare global {
   interface IdleDeadline {
     timeRemaining: () => number;

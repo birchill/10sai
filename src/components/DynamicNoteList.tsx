@@ -3,7 +3,6 @@ import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import shallowEqual from 'react-redux/lib/utils/shallowEqual';
 
-import { AppState } from '../reducer';
 import { DataStoreContext } from './DataStoreContext';
 import { NoteList } from './NoteList';
 import { NoteListContext } from '../notes/actions';

@@ -553,7 +553,6 @@ export class TokenList extends React.PureComponent<Props> {
       return;
     }
 
-    const removedToken = this.state.tokens[index];
     const tokens = this.state.tokens.slice();
     tokens.splice(index, 1);
 

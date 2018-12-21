@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 
-import { expectSaga, ExpectApiEffects } from 'redux-saga-test-plan';
+import { expectSaga } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
 
 import {
@@ -14,7 +14,6 @@ import { Card } from '../model';
 import { AppState } from '../reducer';
 import { EffectProviders } from 'redux-saga-test-plan/providers';
 import { CallEffectDescriptor } from 'redux-saga/effects';
-import { Action } from '../actions';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 

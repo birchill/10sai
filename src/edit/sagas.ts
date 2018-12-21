@@ -17,7 +17,6 @@ import {
   routesEqual,
 } from '../route/router';
 import { AppState } from '../reducer';
-import { EditFormState } from './reducer';
 import { getActiveRecord, isDirty, hasDataToSave } from './selectors';
 import * as Actions from '../actions';
 import { DataStore, StoreError } from '../store/DataStore';
@@ -133,6 +132,7 @@ export function* watchCardEdits(dataStore: DataStore) {
       if (typeof card.id === 'string' || typeof action.cardId === 'string') {
         return call([dataStore, 'deleteCard'], card.id || action.cardId);
       }
+      return undefined;
     },
     save,
     saveActionCreator: (saveContext: EditSaveContext) =>

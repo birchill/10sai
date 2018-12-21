@@ -13,11 +13,11 @@ const urlB = '/?abc=123';
 const pathB = { path: '/', search: '?abc=123', fragment: '' };
 const routeB: Route = { screen: '', search: { abc: '123' } };
 
-const urlC = '/#hash';
+// const urlC = '/#hash';
 const pathC = { path: '/', search: '', fragment: '#hash' };
 const routeC: Route = { screen: '', fragment: 'hash' };
 
-const urlD = '/?abc=123#hash';
+// const urlD = '/?abc=123#hash';
 const pathD = { path: '/', search: '?abc=123', fragment: '#hash' };
 const routeD: Route = { screen: '', search: { abc: '123' }, fragment: 'hash' };
 

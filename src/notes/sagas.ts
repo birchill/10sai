@@ -83,6 +83,7 @@ export function* watchNoteEdits(dataStore: DataStore) {
       if (typeof note.id === 'string' || typeof action.noteId === 'string') {
         return call([dataStore, 'deleteNote'], note.id || action.noteId);
       }
+      return undefined;
     },
     save,
     saveActionCreator: (context: NoteContext) => Actions.saveNote(context),

@@ -261,8 +261,6 @@ export class CardFaceInput extends React.PureComponent<Props, State> {
   }
 
   handleBlur() {
-    const stateChange: Partial<State> = { hasFocus: false };
-
     // draft-js unconditionally clears the selection on blur. It does this
     // because it figures that's how <textarea>s work. Except they don't.
     // Not when you use the keyboard. So we store the selection here

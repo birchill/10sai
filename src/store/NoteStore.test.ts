@@ -275,7 +275,7 @@ describe('NoteStore', () => {
       ...typicalNewNote,
       keywords: ['ABC'],
     });
-    const note2 = await dataStore.putNote({
+    await dataStore.putNote({
       ...typicalNewNote,
       keywords: ['ABCDEF'],
     });
@@ -298,7 +298,7 @@ describe('NoteStore', () => {
       ...typicalNewNote,
       keywords: ['ABC'],
     });
-    const note2 = await dataStore.putNote({
+    await dataStore.putNote({
       ...typicalNewNote,
       keywords: ['DEF'],
     });

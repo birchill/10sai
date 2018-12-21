@@ -5,7 +5,6 @@ import PouchDB from 'pouchdb';
 import { DataStore } from './DataStore';
 import { CardStore, CardChange } from './CardStore';
 import { waitForChangeEvents } from './test-utils';
-import { Card } from '../model';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 

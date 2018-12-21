@@ -4,7 +4,6 @@ import PouchDB from 'pouchdb';
 
 import { DataStore } from './DataStore';
 import { CardStore, CardContent, CardChange } from './CardStore';
-import { Card } from '../model';
 import { generateUniqueTimestampId } from './utils';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 import '../../jest/customMatchers';

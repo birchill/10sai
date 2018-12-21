@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import { Card, Note } from '../model';
+import { Card } from '../model';
 import * as Actions from '../actions';
 import { AppState } from '../reducer';
 import { FormState } from '../edit/FormState';

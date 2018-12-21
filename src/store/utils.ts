@@ -75,7 +75,7 @@ interface UpdateViewOptions {
 export const updateView = async (options: UpdateViewOptions): Promise<void> => {
   const { db, view, mapFunction, reduce, prefetch } = options;
 
-  const result: PouchDB.UpsertResponse = await db.upsert(
+  await db.upsert(
     `_design/${view}`,
     (currentDoc: PouchDB.Core.PostDocument<any>) => {
       const doc = {

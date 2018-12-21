@@ -231,7 +231,7 @@ async function migrate() {
   try {
     await dataStore.db!.bulkDocs(migration);
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 }
 

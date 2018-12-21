@@ -1,5 +1,4 @@
 import { AppState } from '../reducer';
-import { RouteState } from './reducer';
 
 // XXX Derive the values here from Route's screen type
 export const getScreen = (

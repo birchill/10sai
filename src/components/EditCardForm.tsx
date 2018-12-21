@@ -7,7 +7,6 @@ import { TokenList } from './TokenList';
 
 import { Card } from '../model';
 import { KeywordSuggester } from '../suggestions/KeywordSuggester';
-import { TagSuggester } from '../suggestions/TagSuggester';
 
 interface Props {
   card: Partial<Card>;

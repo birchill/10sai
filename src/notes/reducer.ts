@@ -205,7 +205,6 @@ export function notes(
         madeChange = true;
       }
 
-      let newListIndex = 0;
       let oldListIndex = 0;
 
       // Return the next NoteState that is _either_:

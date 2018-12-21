@@ -2,7 +2,6 @@ import {
   RawDraftContentState,
   RawDraftInlineStyleRange,
   RawDraftContentBlock,
-  RawDraftEntityRange,
   DraftInlineStyleType,
 } from 'draft-js';
 import unicodeSubstring from 'unicode-substring';

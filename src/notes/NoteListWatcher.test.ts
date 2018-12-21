@@ -71,10 +71,6 @@ describe('NoteListWatcher', () => {
       content: 'Note 2',
       keywords: ['Def', 'GHI'],
     });
-    const note3 = await dataStore.putNote({
-      content: 'Note 3',
-      keywords: ['Abc'],
-    });
 
     const [callback, finished] = waitForCalls(1);
     const subject = new NoteListWatcher(dataStore, callback, ['def']);
@@ -207,7 +203,7 @@ describe('NoteListWatcher', () => {
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
     await subject.getNotes();
 
-    const updatedNote2 = await dataStore.putNote({
+    await dataStore.putNote({
       ...note2,
       content: 'Updated content',
     });
@@ -306,7 +302,7 @@ describe('NoteListWatcher', () => {
     const subject = new NoteListWatcher(dataStore, callback, ['ABC']);
     await subject.getNotes();
 
-    const updatedNote2 = await dataStore.putNote({
+    await dataStore.putNote({
       ...note2,
       keywords: ['def', 'AB'],
     });
@@ -430,7 +426,7 @@ describe('NoteListWatcher', () => {
 
     subject.disconnect();
 
-    const note = await dataStore.putNote({
+    await dataStore.putNote({
       content: 'Note',
       keywords: ['ABC', 'DEF'],
     });

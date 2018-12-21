@@ -10,7 +10,6 @@ import {
 import { ColorKeywordOrBlack } from '../text/rich-text-styles';
 import {
   hasAllTheKeys,
-  hasCommandModifier,
   hasCommandModifierOnly,
   hasNoModifiers,
 } from '../utils/keyboard';

@@ -45,7 +45,7 @@ const DELETE_DURATION = 200;
 const STRETCH_EASING = 'cubic-bezier(.43,1.17,.88,1.1)';
 const STRETCH_DURATION = 250;
 
-const MOVE_EASING = 'ease';
+// const MOVE_EASING = 'ease';
 const MOVE_DURATION = 250;
 
 const FADE_DURATION = 150;

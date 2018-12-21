@@ -4,7 +4,7 @@ import { ReviewPhase } from './ReviewPhase';
 import { AvailableCards, Card } from '../model';
 import * as actions from './actions';
 import { notes as notesReducer, NoteState } from '../notes/reducer';
-import { isNoteAction, NoteAction } from '../notes/actions';
+import { isNoteAction } from '../notes/actions';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
