@@ -40,3 +40,7 @@ jobs:
       - run:
           name: Verify storybook setup
           command: npm run build:storybook
+
+      - run:
+          name: Check bundle size
+          command: npm run bundlesize

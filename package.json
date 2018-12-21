@@ -15,7 +15,8 @@
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server --config webpack.prod.js --progress --colors --history-api-fallback --content-base public/",
     "test": "jest",
     "storybook": "start-storybook -p 9001 -c .storybook -s public",
-    "build:storybook": "build-storybook -c .storybook -s public"
+    "build:storybook": "build-storybook -c .storybook -s public",
+    "bundlesize": "bundlesize"
   },
   "dependencies": {
     "@types/deep-equal": "^1.0.1",
@@ -75,6 +76,7 @@
     "babel-jest": "^23.2.0",
     "babel-loader": "^8.0.4",
     "babel-plugin-transform-object-rest-spread": "^7.0.0-beta.3",
+    "bundlesize": "^0.17.0",
     "enzyme": "^3.7.0",
     "enzyme-adapter-react-16": "^1.6.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
@@ -135,5 +137,16 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
-  }
+  },
+  "bundlesize": [
+    {
+      "path": "./public/10sai.js",
+      "maxSize": "250 kB"
+    },
+    {
+      "path": "./public/10sai.js",
+      "compression": "none",
+      "maxSize": "850 kB"
+    }
+  ]
 }
