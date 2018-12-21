@@ -7,7 +7,7 @@ import { CardPreview } from './components/CardPreview';
 import { VirtualGrid } from './components/VirtualGrid';
 
 interface MyItem {
-  _id: string;
+  id: string;
   question: string;
 }
 
@@ -22,7 +22,7 @@ function renderItem(item: MyItem) {
 const items: Array<MyItem> = [];
 
 for (let i = 0; i < 500; i++) {
-  items.push({ _id: `item-${i}`, question: `Card ${i}` });
+  items.push({ id: `item-${i}`, question: `Card ${i}` });
 }
 
 ReactDOM.render(

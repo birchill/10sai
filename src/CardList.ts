@@ -7,7 +7,7 @@ import { CardChange } from './store/CardStore';
 // cards performing incremental updates to the view in response to change
 // events (without having to re-query the database).
 
-// Perform a binary search in |cards| for card with _id |id|.
+// Perform a binary search in |cards| for card with id |id|.
 //
 // Returns a pair [found, index]. If |found| is true, |index| is the index of
 // matching card in |cards|. If |found| is false, |index| is the index to use
@@ -21,7 +21,7 @@ const findCard = (id: string, cards: Card[]): [boolean, number] => {
   while (min <= max) {
     guess = Math.floor((min + max) / 2);
 
-    const result = collate(cards[guess]._id, id);
+    const result = collate(cards[guess].id, id);
 
     if (result === 0) {
       return [true, guess];
@@ -57,7 +57,7 @@ export class CardList {
 
     this.dataStore.changes.on('card', (change: CardChange) => {
       const cards = this.cards.slice();
-      const [found, index] = findCard(change.card._id, cards);
+      const [found, index] = findCard(change.card.id, cards);
       if (found) {
         if (change.deleted) {
           cards.splice(index, 1);

@@ -57,7 +57,7 @@ describe('CardStore progress reporting', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    const card = await subject.getCard(newCard._id);
+    const card = await subject.getCard(newCard.id);
     expect(card.progress).toMatchObject({
       level: 0,
       reviewed: null,
@@ -73,7 +73,7 @@ describe('CardStore progress reporting', () => {
       question: 'Question 2',
       answer: 'Answer 2',
     });
-    const cards = await subject.getCardsById([card1._id, card2._id]);
+    const cards = await subject.getCardsById([card1.id, card2.id]);
     expect(cards[0].progress).toMatchObject({
       level: 0,
       reviewed: null,
@@ -123,7 +123,7 @@ describe('CardStore progress reporting', () => {
       answer: 'Answer',
     });
     const updatedCard = await subject.putCard({
-      _id: newCard._id,
+      id: newCard.id,
       question: 'Updated question',
     });
     expect(updatedCard.progress).toMatchObject({
@@ -138,12 +138,12 @@ describe('CardStore progress reporting', () => {
       answer: 'Answer',
     });
     const updatedCard = await subject.putCard({
-      _id: newCard._id,
+      id: newCard.id,
       progress: { level: 1 },
     });
     expect(updatedCard.modified).toBe(newCard.modified);
 
-    const fetchedCard = await subject.getCard(newCard._id);
+    const fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.modified).toBe(newCard.modified);
   });
 
@@ -153,12 +153,12 @@ describe('CardStore progress reporting', () => {
       answer: 'Answer',
       progress: { reviewed: relativeTime(-1), level: 1 },
     });
-    let fetchedCard = await subject.getCard(newCard._id);
+    let fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.progress.level).toBe(1);
 
-    await subject.putCard({ _id: newCard._id, progress: { level: 0 } });
+    await subject.putCard({ id: newCard.id, progress: { level: 0 } });
 
-    fetchedCard = await subject.getCard(newCard._id);
+    fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.progress.level).toBe(0);
   });
 
@@ -169,7 +169,7 @@ describe('CardStore progress reporting', () => {
     });
 
     const updatedCard = await subject.putCard({
-      _id: newCard._id,
+      id: newCard.id,
       question: 'Updated question',
       progress: { level: 1, reviewed: relativeTime(-1) },
     });
@@ -178,7 +178,7 @@ describe('CardStore progress reporting', () => {
     expect(updatedCard.progress.reviewed).toEqual(relativeTime(-1));
     expect(updatedCard.modified).not.toEqual(newCard.modified);
 
-    const fetchedCard = await subject.getCard(newCard._id);
+    const fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.question).toBe('Updated question');
     expect(fetchedCard.progress.level).toBe(1);
     expect(fetchedCard.progress.reviewed).toEqual(relativeTime(-1));
@@ -193,7 +193,7 @@ describe('CardStore progress reporting', () => {
     });
     expect(newCard.progress.level).toBe(1);
 
-    const fetchedCard = await subject.getCard(newCard._id);
+    const fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.progress.level).toBe(1);
     expect(fetchedCard.progress.reviewed).toEqual(relativeTime(-2));
   });
@@ -207,7 +207,7 @@ describe('CardStore progress reporting', () => {
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
     await subject.putCard({
-      _id: card._id,
+      id: card.id,
       progress: { level: 1, reviewed: relativeTime(-3) },
     });
 
@@ -226,7 +226,7 @@ describe('CardStore progress reporting', () => {
     );
 
     const card = await subject.putCard({ question: 'Q1', answer: 'A1' });
-    await subject.deleteCard(card._id);
+    await subject.deleteCard(card.id);
 
     const changes = await changesPromise;
 
@@ -285,9 +285,9 @@ describe('CardStore progress reporting', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard(card._id);
+    await subject.deleteCard(card.id);
 
-    expect(await subject.hasProgressDocument(card._id)).toBe(false);
+    expect(await subject.hasProgressDocument(card.id)).toBe(false);
   });
 
   it('deletes the corresponding progress document when deleting a card by ID', async () => {
@@ -295,9 +295,9 @@ describe('CardStore progress reporting', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard(card._id);
+    await subject.deleteCard(card.id);
 
-    expect(await subject.hasProgressDocument(card._id)).toBe(false);
+    expect(await subject.hasProgressDocument(card.id)).toBe(false);
   });
 
   async function addCards(num: number) {
@@ -320,27 +320,27 @@ describe('CardStore progress reporting', () => {
     //
     // Card 1: Not *quite* overdue yet
     await subject.putCard({
-      _id: cards[0]._id,
+      id: cards[0].id,
       progress: { reviewed: relativeTime(-1.9), level: 2 },
     });
     // Card 2: Very overdue
     await subject.putCard({
-      _id: cards[1]._id,
+      id: cards[1].id,
       progress: { reviewed: relativeTime(-200), level: 20 },
     });
     // Card 3: Just overdue
     await subject.putCard({
-      _id: cards[2]._id,
+      id: cards[2].id,
       progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
     // Card 4: Precisely overdue to the second
     await subject.putCard({
-      _id: cards[3]._id,
+      id: cards[3].id,
       progress: { reviewed: relativeTime(-1), level: 1 },
     });
     // Card 5: Somewhat overdue
     await subject.putCard({
-      _id: cards[4]._id,
+      id: cards[4].id,
       progress: { reviewed: relativeTime(-12), level: 8 },
     });
 
@@ -370,7 +370,7 @@ describe('CardStore progress reporting', () => {
     for (const card of cards) {
       reviewed.setTime(reviewed.getTime() - MS_PER_DAY);
       await subject.putCard({
-        _id: card._id,
+        id: card.id,
         progress: { reviewed, level: 3 },
       });
     }
@@ -386,17 +386,17 @@ describe('CardStore progress reporting', () => {
 
     // Card 1: Just overdue
     await subject.putCard({
-      _id: cards[0]._id,
+      id: cards[0].id,
       progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
     // Card 2: Failed (and overdue)
     await subject.putCard({
-      _id: cards[1]._id,
+      id: cards[1].id,
       progress: { reviewed: relativeTime(-2.1), level: 0 },
     });
     // Card 3: Just overdue
     await subject.putCard({
-      _id: cards[2]._id,
+      id: cards[2].id,
       progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
 
@@ -412,17 +412,17 @@ describe('CardStore progress reporting', () => {
 
     // Card 1: Just overdue
     await subject.putCard({
-      _id: cards[0]._id,
+      id: cards[0].id,
       progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
     // Card 2: Failed (and overdue)
     await subject.putCard({
-      _id: cards[1]._id,
+      id: cards[1].id,
       progress: { reviewed: relativeTime(-2.1), level: 0 },
     });
     // Card 3: Just overdue
     await subject.putCard({
-      _id: cards[2]._id,
+      id: cards[2].id,
       progress: { reviewed: relativeTime(-2.1), level: 2 },
     });
 
@@ -440,17 +440,17 @@ describe('CardStore progress reporting', () => {
 
     // Card 1: Level now: -1, in 10 days' time: 9
     await subject.putCard({
-      _id: cards[0]._id,
+      id: cards[0].id,
       progress: { reviewed: dataStore.reviewTime, level: 1 },
     });
     // Card 2: Level now: 0.2, in 10 days' time: 10.2
     await subject.putCard({
-      _id: cards[1]._id,
+      id: cards[1].id,
       progress: { reviewed: relativeTime(-1.2), level: 1 },
     });
     // Card 3: Level now: 0.333, in 10 days' time: 0.666
     await subject.putCard({
-      _id: cards[2]._id,
+      id: cards[2].id,
       progress: { reviewed: relativeTime(-40), level: 30 },
     });
 
@@ -515,7 +515,7 @@ describe('CardStore progress reporting', () => {
       overdueCards: 0,
     });
 
-    await subject.deleteCard(card._id);
+    await subject.deleteCard(card.id);
     expect(await subject.getAvailableCards()).toMatchObject({
       newCards: 0,
       overdueCards: 0,
@@ -526,11 +526,11 @@ describe('CardStore progress reporting', () => {
     const cards = await addCards(2);
 
     await subject.putCard({
-      _id: cards[0]._id,
+      id: cards[0].id,
       progress: { reviewed: relativeTime(-1), level: 1 },
     });
     await subject.putCard({
-      _id: cards[1]._id,
+      id: cards[1].id,
       progress: { reviewed: relativeTime(-4), level: 2 },
     });
 

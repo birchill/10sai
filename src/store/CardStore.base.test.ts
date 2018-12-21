@@ -43,7 +43,7 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    card = await subject.getCard(card._id);
+    card = await subject.getCard(card.id);
     expect(card.question).toBe('Question');
     expect(card.answer).toBe('Answer');
   });
@@ -61,12 +61,8 @@ describe('CardStore', () => {
       question: 'Question 3',
       answer: 'Answer 3',
     });
-    const cards = await subject.getCardsById([card1._id, card3._id, card2._id]);
-    expect(cards.map(card => card._id)).toEqual([
-      card1._id,
-      card3._id,
-      card2._id,
-    ]);
+    const cards = await subject.getCardsById([card1.id, card3.id, card2.id]);
+    expect(cards.map(card => card.id)).toEqual([card1.id, card3.id, card2.id]);
     // Spot check card contents
     expect(cards[1].answer).toBe('Answer 3');
   });
@@ -87,11 +83,11 @@ describe('CardStore', () => {
     });
     const cards = await subject.getCardsById([
       'batman',
-      existingCard._id,
+      existingCard.id,
       'doily',
     ]);
     expect(cards).toHaveLength(1);
-    expect(cards.map(card => card._id)).toEqual([existingCard._id]);
+    expect(cards.map(card => card.id)).toEqual([existingCard.id]);
   });
 
   it('generates unique ascending IDs', () => {
@@ -108,7 +104,7 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    expect(card._id.substr(0, 5)).not.toBe('card-');
+    expect(card.id.substr(0, 5)).not.toBe('card-');
   });
 
   it('does not return the prefix when getting a single card', async () => {
@@ -116,8 +112,8 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    card = await subject.getCard(card._id);
-    expect(card._id.substr(0, 5)).not.toBe('card-');
+    card = await subject.getCard(card.id);
+    expect(card.id.substr(0, 5)).not.toBe('card-');
   });
 
   it('does not return the prefix when getting multiple cards', async () => {
@@ -126,7 +122,7 @@ describe('CardStore', () => {
 
     const cards = await subject.getCards();
     for (const card of cards) {
-      expect(card._id.substr(0, 5)).not.toBe('card-');
+      expect(card.id.substr(0, 5)).not.toBe('card-');
     }
   });
 
@@ -134,9 +130,9 @@ describe('CardStore', () => {
     const card1 = await subject.putCard({ question: 'Q1', answer: 'A1' });
     const card2 = await subject.putCard({ question: 'Q2', answer: 'A2' });
 
-    const cards = await subject.getCardsById([card1._id, card2._id]);
+    const cards = await subject.getCardsById([card1.id, card2.id]);
     for (const card of cards) {
-      expect(card._id.substr(0, 5)).not.toBe('card-');
+      expect(card.id.substr(0, 5)).not.toBe('card-');
     }
   });
 
@@ -146,11 +142,11 @@ describe('CardStore', () => {
 
     const cards = await subject.getCards();
     // Sanity check: card IDs are unique
-    expect(card1._id).not.toBe(card2._id);
+    expect(card1.id).not.toBe(card2.id);
 
     expect(cards).toHaveLength(2);
-    expect(cards[0]._id).toBe(card2._id);
-    expect(cards[1]._id).toBe(card1._id);
+    expect(cards[0].id).toBe(card2.id);
+    expect(cards[1].id).toBe(card1.id);
   });
 
   it('reports added cards', async () => {
@@ -171,7 +167,7 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard(card._id);
+    await subject.deleteCard(card.id);
 
     const cards = await subject.getCards();
 
@@ -183,8 +179,8 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    const id = card._id;
-    await subject.deleteCard(card._id);
+    const id = card.id;
+    await subject.deleteCard(card.id);
 
     await expect(subject.getCard(id)).rejects.toMatchObject({
       status: 404,
@@ -199,20 +195,17 @@ describe('CardStore', () => {
       question: 'Question (deleted)',
       answer: 'Answer (deleted)',
     });
-    await subject.deleteCard(deletedCard._id);
+    await subject.deleteCard(deletedCard.id);
 
     const existingCard = await subject.putCard({
       question: 'Question (existing)',
       answer: 'Answer (existing)',
     });
 
-    const cards = await subject.getCardsById([
-      deletedCard._id,
-      existingCard._id,
-    ]);
+    const cards = await subject.getCardsById([deletedCard.id, existingCard.id]);
 
     expect(cards).toHaveLength(1);
-    expect(cards[0]._id).toBe(existingCard._id);
+    expect(cards[0].id).toBe(existingCard.id);
   });
 
   it('deletes the specified card', async () => {
@@ -222,7 +215,7 @@ describe('CardStore', () => {
     });
     await subject.putCard({ question: 'Question 2', answer: 'Answer 2' });
 
-    await subject.deleteCard(firstCard._id);
+    await subject.deleteCard(firstCard.id);
 
     const cards = await subject.getCards();
     expect(cards).toHaveLength(1);
@@ -241,7 +234,7 @@ describe('CardStore', () => {
     });
     await subject.putCard({ ...card, question: 'Updated question' });
 
-    await subject.deleteCard(card._id);
+    await subject.deleteCard(card.id);
 
     const cards = await subject.getCards();
     expect(cards).toHaveLength(0);
@@ -258,10 +251,10 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard(addedCard._id);
+    await subject.deleteCard(addedCard.id);
 
     const changes = await changesPromise;
-    expect(changes[1].card._id).toBe(addedCard._id);
+    expect(changes[1].card.id).toBe(addedCard.id);
     expect(changes[1].deleted).toBeTruthy();
   });
 
@@ -272,7 +265,7 @@ describe('CardStore', () => {
     });
 
     card = await subject.putCard({
-      _id: card._id,
+      id: card.id,
       question: 'Updated question',
     });
 
@@ -292,7 +285,7 @@ describe('CardStore', () => {
     });
 
     card = await subject.putCard({
-      _id: card._id,
+      id: card.id,
       question: 'Updated question',
     });
 
@@ -307,7 +300,7 @@ describe('CardStore', () => {
 
   it('returns an error when trying to update a missing card', async () => {
     await expect(
-      subject.putCard({ _id: 'abc', question: 'Question' })
+      subject.putCard({ id: 'abc', question: 'Question' })
     ).rejects.toMatchObject({
       status: 404,
       name: 'not_found',
@@ -320,10 +313,10 @@ describe('CardStore', () => {
       question: 'Question',
       answer: 'Answer',
     });
-    await subject.deleteCard(card._id);
+    await subject.deleteCard(card.id);
 
     await expect(
-      subject.putCard({ _id: card._id, question: 'Question' })
+      subject.putCard({ id: card.id, question: 'Question' })
     ).rejects.toMatchObject({
       status: 404,
       name: 'not_found',
@@ -356,7 +349,7 @@ describe('CardStore', () => {
     });
     const beginDate = new Date();
     card = await subject.putCard({
-      _id: card._id,
+      id: card.id,
       question: 'Updated question',
     });
     expect(new Date(card.modified)).toBeInDateRange(beginDate, new Date());
@@ -376,7 +369,7 @@ describe('CardStore', () => {
       const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
       await waitForIdle();
 
-      const doc = await testRemote.get<CardContent>(`card-${card._id}`);
+      const doc = await testRemote.get<CardContent>(`card-${card.id}`);
       expect(doc.keywords).not.toBeDefined();
       expect(doc.tags).not.toBeDefined();
       expect(doc.starred).not.toBeDefined();
@@ -397,7 +390,7 @@ describe('CardStore', () => {
       starred: true,
     });
     await subject.putCard({
-      _id: card._id,
+      id: card.id,
       keywords: [],
       tags: [],
       starred: false,
@@ -406,7 +399,7 @@ describe('CardStore', () => {
     try {
       await waitForIdle();
 
-      const doc = await testRemote.get<CardContent>(`card-${card._id}`);
+      const doc = await testRemote.get<CardContent>(`card-${card.id}`);
       expect(doc.keywords).not.toBeDefined();
       expect(doc.tags).not.toBeDefined();
       expect(doc.starred).not.toBeDefined();

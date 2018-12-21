@@ -28,7 +28,7 @@ export const hasDataToSave = (card: Partial<Card>): boolean => {
   const cardHasNonEmptyField = (field: keyof Card): boolean =>
     typeof card[field] === 'string' && (card[field] as string).length !== 0;
   return (
-    typeof card._id !== 'undefined' ||
+    typeof card.id !== 'undefined' ||
     cardHasNonEmptyField('question') ||
     cardHasNonEmptyField('answer')
   );

@@ -77,7 +77,7 @@ class EditCardScreenInner extends React.PureComponent<PropsInner> {
   handleDelete() {
     this.props.onDelete(
       this.props.forms.active.formId,
-      this.props.forms.active.card._id
+      this.props.forms.active.card.id
     );
   }
 

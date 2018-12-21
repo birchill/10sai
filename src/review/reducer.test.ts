@@ -569,7 +569,7 @@ describe('reducer:review', () => {
     const stateBeforeUpdate = subject(initialState, reviewLoaded(cards, 0, 0));
     const updatedCard = {
       ...stateBeforeUpdate.heap[0],
-      _id: 'something-random',
+      id: 'something-random',
     };
     const stateAfterUpdate = subject(
       stateBeforeUpdate,
@@ -587,7 +587,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(
       updatedState,
-      deleteReviewCard(updatedState.currentCard!._id, 0)
+      deleteReviewCard(updatedState.currentCard!.id, 0)
     );
     expect(updatedState.currentCard).toBe(originalNextCard);
     expect(updatedState.nextCard).not.toBe(originalNextCard);
@@ -604,7 +604,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(
       updatedState,
-      deleteReviewCard(updatedState.currentCard!._id, 0)
+      deleteReviewCard(updatedState.currentCard!.id, 0)
     );
     expect(updatedState.currentCard).toBe(null);
     expect(updatedState.nextCard).toBe(null);
@@ -618,7 +618,7 @@ describe('reducer:review', () => {
     expect(updatedState.nextCard).not.toBeNull();
     updatedState = subject(
       updatedState,
-      deleteReviewCard(updatedState.nextCard!._id, 0)
+      deleteReviewCard(updatedState.nextCard!.id, 0)
     );
     expect(updatedState.nextCard).toBe(updatedState.heap[0]);
   });
@@ -629,7 +629,7 @@ describe('reducer:review', () => {
     const originalHeap = updatedState.heap;
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard(updatedState.heap[1]._id)
+      Actions.deleteReviewCard(updatedState.heap[1].id)
     );
     expect(updatedState.heap.length).toEqual(originalHeap.length - 1);
     expect(updatedState.heap).not.toBe(originalHeap);

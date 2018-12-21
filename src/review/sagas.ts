@@ -127,7 +127,7 @@ export function* updateProgress(
   console.assert(card, 'Should have a card if we passed or failed one');
 
   const update: Partial<Card> = {
-    _id: card!._id,
+    id: card!.id,
     progress: card!.progress,
   };
 

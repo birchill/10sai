@@ -146,7 +146,7 @@ export function edit(state = initialState, action: Action): EditState {
         [keyof Card, any]
       >) {
         if (
-          field !== '_id' &&
+          field !== 'id' &&
           field !== 'modified' &&
           !deepEqual(value, editState.card[field])
         ) {
@@ -196,7 +196,7 @@ export function edit(state = initialState, action: Action): EditState {
       const dirtyFields: Set<keyof Card> = new Set(
         (Object.keys(editAction.card) as Array<keyof Card>).filter(
           field =>
-            field !== '_id' &&
+            field !== 'id' &&
             field !== 'modified' &&
             !deepEqual(editAction.card[field], state.forms.active.card[field])
         )
@@ -240,7 +240,7 @@ export function edit(state = initialState, action: Action): EditState {
 
     case 'SYNC_EDIT_CARD': {
       if (
-        editAction.change.card._id !== state.forms.active.card._id ||
+        editAction.change.card.id !== state.forms.active.card.id ||
         state.forms.active.formState === FormState.Deleted
       ) {
         return state;
@@ -287,7 +287,7 @@ export function edit(state = initialState, action: Action): EditState {
       }
 
       // If the card was not already saved, just clear the fields
-      if (!state.forms.active.card._id) {
+      if (!state.forms.active.card.id) {
         return {
           forms: {
             active: {

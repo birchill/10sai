@@ -411,7 +411,7 @@ export function review(
         value: ReviewState[keyof ReviewState]
       ): value is Card[] => !!value && Array.isArray(value);
       const isCard = (value: ReviewState[keyof ReviewState]): value is Card =>
-        !!value && typeof value === 'object' && value.hasOwnProperty('_id');
+        !!value && typeof value === 'object' && value.hasOwnProperty('id');
 
       for (const field of fieldsWithCards) {
         const value = state[field];
@@ -419,7 +419,7 @@ export function review(
         if (isArrayOfCards(value)) {
           let found = false;
           const updatedArray = value.map(card => {
-            if (card._id === reviewAction.card._id) {
+            if (card.id === reviewAction.card.id) {
               found = true;
               return reviewAction.card;
             }
@@ -429,7 +429,7 @@ export function review(
           if (found) {
             update[field] = updatedArray;
           }
-        } else if (isCard(value) && value._id === reviewAction.card._id) {
+        } else if (isCard(value) && value.id === reviewAction.card.id) {
           update[field] = reviewAction.card;
         }
       }
@@ -462,7 +462,7 @@ export function review(
         }
 
         const index = state[field].findIndex(
-          card => card._id === reviewAction.id
+          card => card.id === reviewAction.id
         );
         if (index === -1) {
           continue;
@@ -474,7 +474,7 @@ export function review(
         update[field]!.splice(index, 1);
       }
 
-      if (state.nextCard && state.nextCard._id === reviewAction.id) {
+      if (state.nextCard && state.nextCard.id === reviewAction.id) {
         return updateNextCard(
           { ...state, ...update },
           reviewAction.nextCardSeed,
@@ -482,7 +482,7 @@ export function review(
         );
       }
 
-      if (state.currentCard && state.currentCard._id === reviewAction.id) {
+      if (state.currentCard && state.currentCard.id === reviewAction.id) {
         return updateNextCard(
           { ...state, ...update, currentCard: null },
           reviewAction.nextCardSeed,

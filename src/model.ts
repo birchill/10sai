@@ -2,7 +2,7 @@
  * A card.
  */
 export interface Card {
-  _id: string;
+  id: string;
   question: string;
   answer: string;
   keywords: string[];

@@ -12,7 +12,7 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 const cardForDirectPut = (card: Omit<Card, 'progress'>): CardDoc => ({
   ...card,
-  _id: 'card-' + card._id,
+  _id: 'card-' + card.id,
 });
 
 // Sometimes we want to wait for the sync to settle down which we do by waiting
@@ -142,9 +142,9 @@ describe('DataStore remote sync', () => {
   it('downloads existing cards on the remote server', async () => {
     const now = JSON.parse(JSON.stringify(new Date()));
     const firstCard: MakeOptional<Card, 'progress'> = {
+      id: generateUniqueTimestampId(),
       question: 'Question 1',
       answer: 'Answer 1',
-      _id: generateUniqueTimestampId(),
       created: now,
       modified: now,
       keywords: [],
@@ -152,9 +152,9 @@ describe('DataStore remote sync', () => {
       starred: false,
     };
     const secondCard: MakeOptional<Card, 'progress'> = {
+      id: generateUniqueTimestampId(),
       question: 'Question 2',
       answer: 'Answer 2',
-      _id: generateUniqueTimestampId(),
       created: now,
       modified: now,
       keywords: [],
@@ -172,14 +172,14 @@ describe('DataStore remote sync', () => {
 
     await testRemote.put(cardForDirectPut(firstCard));
     await testRemote.put({
-      _id: 'progress-' + firstCard._id,
+      _id: 'progress-' + firstCard.id,
       ...initialProgress,
     });
     expectedCards[0].progress = initialProgress;
 
     await testRemote.put(cardForDirectPut(secondCard));
     await testRemote.put({
-      _id: 'progress-' + secondCard._id,
+      _id: 'progress-' + secondCard.id,
       ...initialProgress,
     });
     expectedCards[1].progress = initialProgress;
@@ -192,8 +192,8 @@ describe('DataStore remote sync', () => {
   });
 
   it('disassociates from previous remote sync server when a new one is set', async () => {
-    const card = {
-      _id: generateUniqueTimestampId(),
+    const card: MakeOptional<Card, 'progress'> = {
+      id: generateUniqueTimestampId(),
       question: 'Question',
       answer: 'Answer',
       keywords: [],
@@ -267,9 +267,9 @@ describe('DataStore remote sync', () => {
     });
 
     testRemote.put({
+      _id: 'card-' + generateUniqueTimestampId(),
       question: 'Question',
       answer: 'Answer',
-      _id: 'card-' + generateUniqueTimestampId(),
     });
   });
 
@@ -291,9 +291,9 @@ describe('DataStore remote sync', () => {
     const docs = [];
     for (let i = 0; i < numCards; i++) {
       docs.push({
+        _id: generateUniqueTimestampId(),
         question: `Question ${i + 1}`,
         answer: `Answer ${i + 1}`,
-        _id: generateUniqueTimestampId(),
       });
     }
 
@@ -378,9 +378,9 @@ describe('DataStore remote sync', () => {
     const remoteDocs = [];
     for (let i = 0; i < remoteCards; i++) {
       remoteDocs.push({
+        _id: generateUniqueTimestampId(),
         question: `Remote question ${i + 1}`,
         answer: `Remote answer ${i + 1}`,
-        _id: generateUniqueTimestampId(),
       });
     }
 
@@ -413,9 +413,9 @@ describe('DataStore remote sync', () => {
     const docs = [];
     for (let i = 0; i < numCards; i++) {
       docs.push({
+        _id: generateUniqueTimestampId(),
         question: `Question ${i + 1}`,
         answer: `Answer ${i + 1}`,
-        _id: generateUniqueTimestampId(),
       });
     }
 

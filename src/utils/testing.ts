@@ -31,7 +31,7 @@ export function generateCards(
   for (let i = 0; i < cards.length; i++) {
     const newCard = i < maxNewCards;
     cards[i] = {
-      _id: `card${i + 1}`,
+      id: `card${i + 1}`,
       question: `Question ${i + 1}`,
       answer: `Answer ${i + 1}`,
       progress: {
@@ -43,11 +43,11 @@ export function generateCards(
   return cards;
 }
 
-// Generates a complete Card with _id |id| and all other members filled in with
+// Generates a complete Card with id |id| and all other members filled in with
 // dummy values.
 export function generateCard(id: string): Card {
   return {
-    _id: id,
+    id,
     question: 'Question',
     answer: 'Answer',
     keywords: [],

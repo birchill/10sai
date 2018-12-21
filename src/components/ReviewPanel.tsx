@@ -85,7 +85,7 @@ export class ReviewPanel extends React.Component<Props> {
     } else if (hasNoModifiers(e)) {
       switch (e.key) {
         case 'e':
-          this.props.onEditCard(this.props.currentCard._id);
+          this.props.onEditCard(this.props.currentCard.id);
           break;
 
         case 'x':
@@ -129,7 +129,7 @@ export class ReviewPanel extends React.Component<Props> {
 
     const currentCard = (
       <ReviewCard
-        key={getUniqueKey(this.props.currentCard._id)}
+        key={getUniqueKey(this.props.currentCard.id)}
         className="current"
         onShowAnswer={this.props.onShowAnswer}
         showAnswer={this.props.showAnswer}
@@ -141,7 +141,7 @@ export class ReviewPanel extends React.Component<Props> {
     if (this.props.nextCard) {
       nextCard = (
         <ReviewCard
-          key={getUniqueKey(this.props.nextCard._id)}
+          key={getUniqueKey(this.props.nextCard.id)}
           className="next"
           {...this.props.nextCard}
         />
@@ -152,7 +152,7 @@ export class ReviewPanel extends React.Component<Props> {
     if (this.props.previousCard) {
       previousCard = (
         <ReviewCard
-          key={getUniqueKey(this.props.previousCard._id)}
+          key={getUniqueKey(this.props.previousCard.id)}
           className="previous"
           showAnswer
           {...this.props.previousCard}

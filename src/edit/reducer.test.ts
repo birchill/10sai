@@ -232,12 +232,12 @@ describe('reducer:edit', () => {
 
   it('should update card and dirty fields and state on EDIT_CARD', () => {
     const initialState = okState(4, {
-      _id: 'abc',
+      id: 'abc',
       question: 'Question',
       answer: 'Answer',
     });
     const change = {
-      _id: 'abc',
+      id: 'abc',
       question: 'Updated question',
       answer: 'Answer',
     };
@@ -247,7 +247,7 @@ describe('reducer:edit', () => {
     expect(updatedState).toEqual(
       dirtyState(
         4,
-        { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+        { id: 'abc', question: 'Updated question', answer: 'Answer' },
         toDirtyFields('question')
       )
     );
@@ -281,13 +281,13 @@ describe('reducer:edit', () => {
       ' formIds differ',
     () => {
       const initialState = okState(4, {
-        _id: 'abc',
+        id: 'abc',
         question: 'Question',
         answer: 'Answer',
       });
 
       const change = {
-        _id: 'def',
+        id: 'def',
         question: 'Updated question',
         answer: 'Answer',
       };
@@ -300,7 +300,7 @@ describe('reducer:edit', () => {
   it('should append set of dirty fields on subsequent on EDIT_CARD', () => {
     const initialState = dirtyState(
       6,
-      { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+      { id: 'abc', question: 'Updated question', answer: 'Answer' },
       toDirtyFields('question')
     );
     const change = { answer: 'Updated answer' };
@@ -310,7 +310,7 @@ describe('reducer:edit', () => {
     expect(updatedState).toEqual(
       dirtyState(
         6,
-        { _id: 'abc', question: 'Updated question', answer: 'Updated answer' },
+        { id: 'abc', question: 'Updated question', answer: 'Updated answer' },
         toDirtyFields('question', 'answer')
       )
     );
@@ -319,7 +319,7 @@ describe('reducer:edit', () => {
   it('should clear the saveError on SAVE_CARD', () => {
     const withoutErrorState = dirtyState(
       11,
-      { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+      { id: 'abc', question: 'Updated question', answer: 'Answer' },
       toDirtyFields('question')
     );
     const initialState = withSaveError(withoutErrorState, {
@@ -335,11 +335,11 @@ describe('reducer:edit', () => {
   it('should update state on FINISH_SAVE_CARD', () => {
     const initialState = dirtyState(
       11,
-      { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+      { id: 'abc', question: 'Updated question', answer: 'Answer' },
       toDirtyFields('question')
     );
     const card = {
-      _id: 'abc',
+      id: 'abc',
       question: 'Updated question',
       answer: 'Answer',
     };
@@ -351,7 +351,7 @@ describe('reducer:edit', () => {
 
     expect(updatedState).toEqual(
       okState(11, {
-        _id: 'abc',
+        id: 'abc',
         question: 'Updated question',
         answer: 'Answer',
       })
@@ -364,11 +364,11 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         12,
-        { _id: 'abc', question: 'Updated #2', answer: 'Updated answer' },
+        { id: 'abc', question: 'Updated #2', answer: 'Updated answer' },
         toDirtyFields('question', 'answer')
       );
       const card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Updated #1',
         answer: 'Updated answer',
       };
@@ -381,7 +381,7 @@ describe('reducer:edit', () => {
       expect(updatedState).toEqual(
         dirtyState(
           12,
-          { _id: 'abc', question: 'Updated #2', answer: 'Updated answer' },
+          { id: 'abc', question: 'Updated #2', answer: 'Updated answer' },
           toDirtyFields('question')
         )
       );
@@ -391,11 +391,11 @@ describe('reducer:edit', () => {
   it('should NOT update state on FINISH_SAVE_CARD if formIds differ', () => {
     const initialState = dirtyState(
       12,
-      { _id: 'abc', question: 'Updated question', answer: 'Answer' },
+      { id: 'abc', question: 'Updated question', answer: 'Answer' },
       toDirtyFields('question')
     );
     const card = {
-      _id: 'def',
+      id: 'def',
       question: 'Updated question',
       answer: 'Answer',
     };
@@ -415,7 +415,7 @@ describe('reducer:edit', () => {
       toDirtyFields('question', 'answer')
     );
     const card = {
-      _id: 'abc',
+      id: 'abc',
       question: 'Question',
       answer: 'Answer',
     };
@@ -426,7 +426,7 @@ describe('reducer:edit', () => {
     );
 
     expect(updatedState).toEqual(
-      okState(12, { _id: 'abc', question: 'Question', answer: 'Answer' })
+      okState(12, { id: 'abc', question: 'Question', answer: 'Answer' })
     );
   });
 
@@ -440,7 +440,7 @@ describe('reducer:edit', () => {
         toDirtyFields('question', 'answer')
       );
       const card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Updated #1',
         answer: 'Updated #1',
       };
@@ -453,7 +453,7 @@ describe('reducer:edit', () => {
       expect(updatedState).toEqual(
         dirtyState(
           17,
-          { _id: 'abc', question: 'Updated #1', answer: 'Updated #2' },
+          { id: 'abc', question: 'Updated #1', answer: 'Updated #2' },
           toDirtyFields('answer')
         )
       );
@@ -466,11 +466,11 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         12,
-        { _id: 'abc', question: 'Question', answer: 'Answer' },
+        { id: 'abc', question: 'Question', answer: 'Answer' },
         toDirtyFields('question')
       );
       const card = {
-        _id: 'def',
+        id: 'def',
         question: 'Question',
         answer: 'Answer',
       };
@@ -490,7 +490,7 @@ describe('reducer:edit', () => {
     // ahead and deletes the newly-saved card.)
     const initialState = deletedState(15);
     const card = {
-      _id: 'abc',
+      id: 'abc',
       question: 'Question',
       answer: 'Answer',
     };
@@ -506,7 +506,7 @@ describe('reducer:edit', () => {
   it('should update save error message on FAIL_SAVE_CARD', () => {
     const initialState = dirtyState(
       15,
-      { _id: 'abc', question: 'Question', answer: 'Answer' },
+      { id: 'abc', question: 'Question', answer: 'Answer' },
       toDirtyFields('question')
     );
 
@@ -526,7 +526,7 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         16,
-        { _id: 'abc', question: 'Question', answer: 'Answer' },
+        { id: 'abc', question: 'Question', answer: 'Answer' },
         toDirtyFields('question')
       );
 
@@ -553,7 +553,7 @@ describe('reducer:edit', () => {
   it('should update non-dirty fields on SYNC_CARD', () => {
     const initialState = dirtyState(
       15,
-      { _id: 'abc', question: 'Question A', answer: 'Answer' },
+      { id: 'abc', question: 'Question A', answer: 'Answer' },
       toDirtyFields('question')
     );
     const change: CardChange = {
@@ -578,7 +578,7 @@ describe('reducer:edit', () => {
   it('should NOT update fields on SYNC_CARD when card IDs differ', () => {
     const initialState = dirtyState(
       15,
-      { _id: 'abc', question: 'Question A', answer: 'Answer' },
+      { id: 'abc', question: 'Question A', answer: 'Answer' },
       toDirtyFields('question')
     );
     const change: CardChange = {
@@ -600,7 +600,7 @@ describe('reducer:edit', () => {
     () => {
       const initialState = dirtyState(
         15,
-        { _id: 'abc', question: 'Question A', answer: 'Answer' },
+        { id: 'abc', question: 'Question A', answer: 'Answer' },
         toDirtyFields('question')
       );
       const change: CardChange = {
@@ -617,7 +617,7 @@ describe('reducer:edit', () => {
   it('should update to NOT_FOUND (deleted) state on DELETE_CARD', () => {
     const initialState = dirtyState(
       15,
-      { _id: 'abc', question: 'Question', answer: 'Answer' },
+      { id: 'abc', question: 'Question', answer: 'Answer' },
       toDirtyFields('question')
     );
 
@@ -641,7 +641,7 @@ describe('reducer:edit', () => {
   it('should do nothing on DELETE_CARD if formId does not match', () => {
     const initialState = dirtyState(
       16,
-      { _id: 'abc', question: 'Question', answer: 'Answer' },
+      { id: 'abc', question: 'Question', answer: 'Answer' },
       toDirtyFields('question')
     );
 

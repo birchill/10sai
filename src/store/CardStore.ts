@@ -9,12 +9,6 @@ import {
 import { generateUniqueTimestampId, updateView, stubbornDelete } from './utils';
 import { NOTE_PREFIX } from './NoteStore';
 
-export interface GetCardsOptions {
-  limit?: number;
-  type?: 'new' | 'overdue';
-  skipFailedCards?: boolean;
-}
-
 export interface CardContent {
   question: string;
   answer: string;
@@ -36,8 +30,8 @@ type ExistingCardDocWithChanges = PouchDB.Core.ExistingDocument<
   CardContent & PouchDB.Core.ChangesMeta
 >;
 
-type ExistingProgressDoc = PouchDB.Core.ExistingDocument<ProgressContent>;
 type ProgressDoc = PouchDB.Core.Document<ProgressContent>;
+type ExistingProgressDoc = PouchDB.Core.ExistingDocument<ProgressContent>;
 type ExistingProgressDocWithChanges = PouchDB.Core.ExistingDocument<
   ProgressContent & PouchDB.Core.ChangesMeta
 >;
@@ -55,33 +49,25 @@ const stripProgressPrefix = (id: string) => id.substr(PROGRESS_PREFIX.length);
 
 // Take a card from the DB and turn it into a more appropriate form for
 // client consumption
-const parseCard = (card: ExistingCardDoc | CardDoc): Omit<Card, 'progress'> => {
-  const result = {
-    ...card,
-    _id: stripCardPrefix(card._id),
-    keywords: card.keywords || [],
-    tags: card.tags || [],
-    starred: !!card.starred,
-    // We deliberately *don't* parse the 'created' or 'modified' fields into
-    // Date objects since they're currently not used in the app and so
-    // speculatively parsing them would be a waste.
-  };
-  delete (result as ExistingCardDoc)._rev;
-  return result;
-};
+const parseCard = (
+  card: ExistingCardDoc | CardDoc
+): Omit<Card, 'progress'> => ({
+  ...stripFields(card as ExistingCardDoc, ['_id', '_rev']),
+  id: stripCardPrefix(card._id),
+  keywords: card.keywords || [],
+  tags: card.tags || [],
+  starred: !!card.starred,
+  // We deliberately *don't* parse the 'created' or 'modified' fields into
+  // Date objects since they're currently not used in the app and so
+  // speculatively parsing them would be a waste.
+});
 
 const parseProgress = (
   progress: ProgressDoc | ExistingProgressDoc
-): Progress => {
-  const result = {
-    ...progress,
-    reviewed: progress.reviewed ? new Date(progress.reviewed) : null,
-  };
-  delete result._id;
-  delete (result as ExistingProgressDoc)._rev;
-
-  return result;
-};
+): Progress => ({
+  ...stripFields(progress as ExistingProgressDoc, ['_id', '_rev']),
+  reviewed: progress.reviewed ? new Date(progress.reviewed) : null,
+});
 
 const mergeDocs = (
   card: CardDoc | ExistingCardDoc,
@@ -95,11 +81,17 @@ const mergeDocs = (
   return result;
 };
 
-type EmitFunction = (type: string, ...args: any[]) => void;
+export interface GetCardsOptions {
+  limit?: number;
+  type?: 'new' | 'overdue';
+  skipFailedCards?: boolean;
+}
 
 interface CardStoreOptions {
   prefetchViews?: boolean;
 }
+
+type EmitFunction = (type: string, ...args: any[]) => void;
 
 interface LazyPromise {
   promise: Promise<void>;
@@ -221,18 +213,15 @@ export class CardStore {
   }
 
   async putCard(card: DeepPartial<Card>): Promise<Card> {
-    // New card
-    if (!card._id) {
+    if (!card.id) {
       return this._putNewCard(card);
     }
 
-    const cardUpdate = { ...card };
-    delete cardUpdate.progress;
-    delete cardUpdate._id;
-    const cardDoc = await this._updateCard(card._id, <Partial<Card>>cardUpdate);
+    const cardUpdate = stripFields(card, ['id', 'progress']);
+    const cardDoc = await this._updateCard(card.id, cardUpdate);
 
     const progressUpdate = { ...card.progress };
-    const progressDoc = await this._updateProgress(card._id, progressUpdate);
+    const progressDoc = await this._updateProgress(card.id, progressUpdate);
 
     return mergeDocs(cardDoc, progressDoc);
   }
@@ -240,7 +229,7 @@ export class CardStore {
   async _putNewCard(card: DeepPartial<Card>): Promise<Card> {
     const now = new Date().getTime();
     const cardContent: CardContent = {
-      ...stripFields(card, ['_id', 'progress']),
+      ...stripFields(card, ['id', 'progress']),
       // Fill-in mandatory fields
       question: card.question || '',
       answer: card.answer || '',

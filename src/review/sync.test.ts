@@ -278,7 +278,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card: Card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Question',
         answer: 'Answer',
       } as Card;
@@ -306,7 +306,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Question',
         answer: 'Answer',
       } as Card;
@@ -334,7 +334,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Question',
         answer: 'Answer',
       } as Card;
@@ -362,7 +362,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Question',
         answer: 'Answer',
       } as Card;
@@ -396,7 +396,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Question',
         answer: 'Answer',
       } as Card;
@@ -420,7 +420,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Question',
         answer: 'Answer',
       } as Card;
@@ -447,7 +447,7 @@ describe('review:sync', () => {
       subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
 
       const card = {
-        _id: 'abc',
+        id: 'abc',
         question: 'Question',
         answer: 'Answer',
       } as Card;

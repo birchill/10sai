@@ -231,7 +231,7 @@ describe('sagas:review updateProgress', () => {
     for (let i = 0; i < cards.length; i++) {
       const newCard = i < maxNewCards;
       cards[i] = {
-        _id: i,
+        id: i,
         question: `Question ${i + 1}`,
         answer: `Answer ${i + 1}`,
         progress: {
@@ -288,7 +288,7 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        _id: cardToUpdate!._id,
+        id: cardToUpdate!.id,
         progress: {
           level: cardToUpdate!.progress.level,
           reviewed: state.review.reviewTime,
@@ -310,7 +310,7 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        _id: cardToUpdate!._id,
+        id: cardToUpdate!.id,
         progress: { level: 0, reviewed: state.review.reviewTime },
       })
       .run();
@@ -332,7 +332,7 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        _id: cardToUpdate!._id,
+        id: cardToUpdate!.id,
         progress: {
           level: cardToUpdate!.progress.level,
           reviewed: state.review.reviewTime,
@@ -363,7 +363,7 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        _id: cardToUpdate!._id,
+        id: cardToUpdate!.id,
         progress: { level: 0, reviewed: state.review.reviewTime },
       })
       .run();
@@ -428,7 +428,7 @@ describe('sagas:review loadReview', () => {
           const ids = effect.args[0];
           const result = [];
           for (const id of ids) {
-            const card = cards.find(card => card._id === id);
+            const card = cards.find(card => card.id === id);
             if (card) {
               result.push(card);
             }
@@ -447,13 +447,13 @@ describe('sagas:review loadReview', () => {
           for (let i = 0; i < limit; i++) {
             if (type === 'new') {
               result.push({
-                _id: `new-${i}`,
+                id: `new-${i}`,
                 question: `New question ${i + 1}`,
                 answer: `New answer ${i + 1}`,
               });
             } else {
               result.push({
-                _id: i,
+                id: i,
                 question: `Question ${i + 1}`,
                 answer: `Answer ${i + 1}`,
               });
@@ -471,10 +471,10 @@ describe('sagas:review loadReview', () => {
     let state = reducer(undefined, { type: 'none' } as any);
 
     const cards: Array<Partial<Card>> = [
-      { _id: 'a', question: 'Question A', answer: 'Answer A' },
-      { _id: 'b', question: 'Question B', answer: 'Answer B' },
-      { _id: 'c', question: 'Question C', answer: 'Answer C' },
-      { _id: 'd', question: 'Question D', answer: 'Answer D' },
+      { id: 'a', question: 'Question A', answer: 'Answer A' },
+      { id: 'b', question: 'Question B', answer: 'Answer B' },
+      { id: 'c', question: 'Question C', answer: 'Answer C' },
+      { id: 'd', question: 'Question D', answer: 'Answer D' },
     ];
 
     const action = Actions.loadReview({
@@ -497,25 +497,25 @@ describe('sagas:review loadReview', () => {
           type: 'REVIEW_LOADED',
           cards: [
             {
-              _id: 'new-0',
+              id: 'new-0',
               question: 'New question 1',
               answer: 'New answer 1',
             },
             {
-              _id: 0,
+              id: 0,
               question: 'Question 1',
               answer: 'Answer 1',
             },
           ],
           history: [
-            { _id: 'a', question: 'Question A', answer: 'Answer A' },
-            { _id: 'c', question: 'Question C', answer: 'Answer C' },
+            { id: 'a', question: 'Question A', answer: 'Answer A' },
+            { id: 'c', question: 'Question C', answer: 'Answer C' },
           ],
           failedCardsLevel1: [
-            { _id: 'b', question: 'Question B', answer: 'Answer B' },
+            { id: 'b', question: 'Question B', answer: 'Answer B' },
           ],
           failedCardsLevel2: [
-            { _id: 'd', question: 'Question D', answer: 'Answer D' },
+            { id: 'd', question: 'Question D', answer: 'Answer D' },
           ],
         },
       })

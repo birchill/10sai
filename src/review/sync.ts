@@ -75,7 +75,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     }
 
     const reviewCard = getReviewCards(store.getState()).find(
-      card => card._id === change.id
+      card => card.id === change.id
     );
 
     // Ignore changes for cards that are not being reviewed

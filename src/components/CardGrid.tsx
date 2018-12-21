@@ -16,7 +16,7 @@ interface StateInner {
 }
 
 interface ItemType {
-  _id: string;
+  id: string;
   question: string;
 }
 
@@ -27,7 +27,7 @@ class CardGridInner extends React.PureComponent<PropsInner, StateInner> {
 
   static renderCard(item: ItemType) {
     return (
-      <Link href={`/cards/${item._id}`}>
+      <Link href={`/cards/${item.id}`}>
         <CardPreview {...item} />
       </Link>
     );

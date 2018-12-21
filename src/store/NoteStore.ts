@@ -14,16 +14,16 @@ export interface NoteContent {
   modified: number;
 }
 
+type NoteDoc = PouchDB.Core.Document<NoteContent>;
+type ExistingNoteDoc = PouchDB.Core.ExistingDocument<NoteContent>;
+type ExistingNoteDocWithChanges = PouchDB.Core.ExistingDocument<
+  NoteContent & PouchDB.Core.ChangesMeta
+>;
+
 export interface NoteChange {
   note: Note;
   deleted?: boolean;
 }
-
-type ExistingNoteDoc = PouchDB.Core.ExistingDocument<NoteContent>;
-type NoteDoc = PouchDB.Core.Document<NoteContent>;
-type ExistingNoteDocWithChanges = PouchDB.Core.ExistingDocument<
-  NoteContent & PouchDB.Core.ChangesMeta
->;
 
 export const NOTE_PREFIX = 'note-';
 

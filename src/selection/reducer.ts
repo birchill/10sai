@@ -21,9 +21,9 @@ export interface SelectionState {
 
 export function selection(state: AppState, action: Action): AppState {
   const reviewCardId = state.review.currentCard
-    ? state.review.currentCard._id
+    ? state.review.currentCard.id
     : undefined;
-  const editCardId = state.edit.forms.active.card._id;
+  const editCardId = state.edit.forms.active.card.id;
   const currentScreen =
     state.route && state.route.history && state.route.history.length
       ? state.route.history[state.route.index].screen
@@ -81,7 +81,7 @@ export function selection(state: AppState, action: Action): AppState {
     // If the active card was deleted remotely, clear it
     case 'SYNC_EDIT_CARD':
       if (
-        action.change.card._id === state.selection.activeCardId &&
+        action.change.card.id === state.selection.activeCardId &&
         action.change.deleted
       ) {
         return {

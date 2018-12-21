@@ -11,7 +11,7 @@ import * as React from 'react';
 // a significant tidy up but for now it seems to work.
 
 interface Item {
-  _id: string;
+  id: string;
 }
 
 // Record the number of potentially recursive calls to updateLayout. This is
@@ -85,7 +85,7 @@ interface State extends Layout {
 
   // Items that have been deleted from props.items but
   // which are still animating. The data needed to render them
-  // while animating is stored here, indexed by _id.
+  // while animating is stored here, indexed by id.
   deletingItems: DeletingItems;
 }
 
@@ -165,7 +165,7 @@ export class VirtualGrid extends React.Component<Props, State> {
     // assume that the two items arrays have the same length.
     const visibleItemIndicesHaveChanged = () => {
       for (let i = this.state.startIndex; i < this.state.endIndex; i++) {
-        if (this.props.items[i]._id !== nextProps.items[i]._id) {
+        if (this.props.items[i].id !== nextProps.items[i].id) {
           return true;
         }
       }
@@ -175,11 +175,11 @@ export class VirtualGrid extends React.Component<Props, State> {
     if (needsRangeUpdate || visibleItemIndicesHaveChanged()) {
       // Generate a slot assignment mapping for existing items so we can keep
       // them in the same slots if they are still visible.
-      // This is a mapping from _id to position in the state.slots array.
+      // This is a mapping from id to position in the state.slots array.
       const slotAssignment: SlotAssignment = {};
       this.state.slots.forEach((data: Slot, i: number) => {
         if (data && typeof data.index === 'number') {
-          slotAssignment[this.props.items[data.index]._id] = i;
+          slotAssignment[this.props.items[data.index].id] = i;
         } else if (data && typeof data.index === 'string') {
           slotAssignment[data.index] = i;
         }
@@ -522,7 +522,7 @@ export class VirtualGrid extends React.Component<Props, State> {
     const existingItems: Array<number> = [];
     let hasMovedItems = false;
     for (let i = startIndex; i < endIndex; i++) {
-      const existingSlot = slotAssignment[items[i]._id];
+      const existingSlot = slotAssignment[items[i].id];
       if (typeof existingSlot === 'number') {
         const existingRow = Math.floor(
           (slots[existingSlot]!.index as number) / layout.itemsPerRow
@@ -534,7 +534,7 @@ export class VirtualGrid extends React.Component<Props, State> {
         }
         existingItems[i] = existingSlot;
         hasMovedItems = true;
-        delete slotAssignment[items[i]._id];
+        delete slotAssignment[items[i].id];
       }
     }
 
@@ -706,7 +706,7 @@ export class VirtualGrid extends React.Component<Props, State> {
               style={styles}
               className={classes.join(' ')}
               key={i}
-              data-item-id={item._id}
+              data-item-id={item.id}
             >
               <div className="scalewrapper">{this.props.renderItem(item)}</div>
             </div>

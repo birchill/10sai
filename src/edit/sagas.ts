@@ -76,7 +76,7 @@ export function* save(
     // If it is a new card, we haven't navigated to another card already,
     // and we're still on the new card screen, update the URL.
     if (
-      !card._id &&
+      !card.id &&
       formId === activeRecord.formId &&
       routesEqual(
         routeFromPath(location.pathname, location.search, location.hash),
@@ -85,7 +85,7 @@ export function* save(
     ) {
       const newUrl = URLFromRoute({
         screen: 'edit-card',
-        card: savedCard._id,
+        card: savedCard.id,
       });
       yield put(Actions.updateUrl(newUrl));
     }
@@ -130,8 +130,8 @@ export function* watchCardEdits(dataStore: DataStore) {
       action: Actions.DeleteCardAction,
       card: Partial<Card>
     ): CallEffect | undefined => {
-      if (typeof card._id === 'string' || typeof action.cardId === 'string') {
-        return call([dataStore, 'deleteCard'], card._id || action.cardId);
+      if (typeof card.id === 'string' || typeof action.cardId === 'string') {
+        return call([dataStore, 'deleteCard'], card.id || action.cardId);
       }
     },
     save,
@@ -182,7 +182,7 @@ function* saveBeforeScreenChange(formId: number) {
 export function syncEditChanges(dataStore: DataStore, store: Store<AppState>) {
   dataStore.changes.on('card', change => {
     const cardBeingEdited = getActiveRecord(store.getState()).card;
-    if (cardBeingEdited && cardBeingEdited._id === change._id) {
+    if (cardBeingEdited && cardBeingEdited.id === change.id) {
       store.dispatch({ type: 'SYNC_EDIT_CARD', change });
     }
   });

@@ -73,7 +73,7 @@ export const getReviewCards = (state: AppState): Card[] => [
 
 export const getReviewInfo = (state: AppState) => (state ? state.review : {});
 
-const extractId = (card: Card) => card._id;
+const extractId = (card: Card) => card.id;
 const newCardsCompleted = (state: AppState) =>
   state.review.newCardsInPlay -
   (state.review.currentCard && !state.review.currentCard.progress.reviewed
