@@ -53,6 +53,8 @@ const parseCard = (
   card: ExistingCardDoc | CardDoc
 ): Omit<Card, 'progress'> => ({
   ...stripFields(card as ExistingCardDoc, ['_id', '_rev']),
+  front: card.front || '',
+  back: card.back || '',
   id: stripCardPrefix(card._id),
   keywords: card.keywords || [],
   tags: card.tags || [],
