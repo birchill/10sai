@@ -4,9 +4,9 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    '10sai': ['@babel/polyfill', './src/index.tsx'],
-    _database: ['@babel/polyfill', './src/_database.ts'],
-    _grid: ['@babel/polyfill', './src/_grid.tsx'],
+    '10sai': './src/index.tsx',
+    _database: './src/_database.ts',
+    _grid: './src/_grid.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'public'),
@@ -18,15 +18,6 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
-      },
-      {
-        test: /\.jsx?$/,
-        loader: 'babel-loader',
-        exclude: /node_modules/,
-        query: {
-          presets: ['@babel/preset-env', '@babel/react'],
-          plugins: ['transform-object-rest-spread'],
-        },
       },
       {
         test: /\.scss$/,
