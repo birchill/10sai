@@ -118,44 +118,43 @@ export class KeywordSuggester {
   }
 
   static getSuggestionsFromCard(card: Partial<Card>): string[] {
-    if (!card.question || !card.answer) {
+    if (!card.front || !card.back) {
       return [];
     }
 
-    const question = stripRuby(toPlainText(card.question));
-    const answer = stripRuby(toPlainText(card.answer));
+    const front = stripRuby(toPlainText(card.front));
+    const back = stripRuby(toPlainText(card.back));
 
     // Look for a cloze -- if we find some stop there.
-    const clozeKeywords = extractKeywordsFromCloze(question, answer);
+    const clozeKeywords = extractKeywordsFromCloze(front, back);
     if (clozeKeywords.length) {
       return clozeKeywords;
     }
 
     const result = [];
-    const answerFirstLine = answer.split('\n')[0];
+    const backFirstLine = back.split('\n')[0];
 
     // Japanese-specific check #1:
     //
-    // If the question is kanji + kana and the first line of the
-    // answer is kana it's probably a card testing the kanji reading so
-    // use the question.
+    // If the front is kanji + kana and the first line of the back is kana it's
+    // probably a card testing the kanji reading so use the front.
     if (
       matchesCharacterClasses(
-        question,
+        front,
         CharacterClass.Kanji | CharacterClass.Kana
       ) &&
-      isKana(answerFirstLine)
+      isKana(backFirstLine)
     ) {
-      // We could try to extract the kanji parts of the answer (e.g. so that if
+      // We could try to extract the kanji parts of the back (e.g. so that if
       // we have 駐屯する we suggest only 駐屯) but sometimes we actually want
       // the kana parts (e.g. we want the trailing し in 眼差し).
       //
       // In future we should probably use a dictionary lookup to improve this.
-      result.push(question);
-      // If the first line of the answer is a single, shortish word then treat
-      // that as the answer.
-    } else if (answerFirstLine.length < 20 && !/\s/.test(answerFirstLine)) {
-      result.push(answerFirstLine);
+      result.push(front);
+      // If the first line of the back is a single, shortish word then treat
+      // that as the back.
+    } else if (backFirstLine.length < 20 && !/\s/.test(backFirstLine)) {
+      result.push(backFirstLine);
     }
 
     // Japanese-specific check #2:

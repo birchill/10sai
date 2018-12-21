@@ -12,7 +12,7 @@ const mapStateToProps = (state: AppState) => {
   const previousCard = history.length ? history[history.length - 1] : undefined;
 
   return {
-    showAnswer: state.review.phase === ReviewPhase.Answer,
+    showBack: state.review.phase === ReviewPhase.Back,
     previousCard,
     currentCard: state.review.currentCard,
     nextCard: state.review.nextCard,
@@ -21,7 +21,7 @@ const mapStateToProps = (state: AppState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
-  onShowAnswer: () => {
+  onShowBack: () => {
     dispatch(Actions.showAnswer());
   },
   onPassCard: () => {

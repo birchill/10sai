@@ -10,8 +10,8 @@ import { generateUniqueTimestampId, updateView, stubbornDelete } from './utils';
 import { NOTE_PREFIX } from './NoteStore';
 
 export interface CardContent {
-  question: string;
-  answer: string;
+  front: string;
+  back: string;
   keywords?: string[];
   tags?: string[];
   starred?: boolean;
@@ -231,8 +231,8 @@ export class CardStore {
     const cardContent: CardContent = {
       ...stripFields(card, ['id', 'progress']),
       // Fill-in mandatory fields
-      question: card.question || '',
-      answer: card.answer || '',
+      front: card.front || '',
+      back: card.back || '',
       // Update dates
       created: now,
       modified: now,

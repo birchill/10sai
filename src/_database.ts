@@ -1,4 +1,6 @@
 import { DataStore } from './store/DataStore';
+import { CARD_PREFIX } from './store/CardStore';
+import { stripFields } from './utils/type-helpers';
 
 const dataStore = new DataStore();
 
@@ -196,7 +198,44 @@ async function listUnrecognizedDocs() {
   );
 }
 
-function watchForDeletion() {
+function watchForMigrate() {
+  document.getElementById('migrate-db')!.addEventListener('click', () => {
+    migrate();
+  });
+}
+
+interface OldCardContent {
+  question: string;
+  answer: string;
+}
+
+async function migrate() {
+  const cards = await dataStore.db!.allDocs<OldCardContent>({
+    include_docs: true,
+    startkey: CARD_PREFIX,
+    endkey: CARD_PREFIX + '\ufff0',
+  });
+
+  const migration = [];
+
+  for (const card of cards.rows) {
+    if (card.doc && (card.doc.question || card.doc.answer)) {
+      migration.push({
+        ...stripFields(card.doc, ['question', 'answer']),
+        front: card.doc.question,
+        back: card.doc.answer,
+      });
+    }
+  }
+
+  try {
+    await dataStore.db!.bulkDocs(migration);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+function watchForDelete() {
   document.getElementById('delete-db')!.addEventListener('click', () => {
     dataStore.destroy();
   });
@@ -205,4 +244,5 @@ function watchForDeletion() {
 listOrphans();
 listOrphanedProgress();
 listUnrecognizedDocs();
-watchForDeletion();
+watchForMigrate();
+watchForDelete();

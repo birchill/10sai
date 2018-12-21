@@ -241,8 +241,8 @@ describe('NoteStore', () => {
 
   it('keyword search: prioritizes notes over cards', async () => {
     await dataStore.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
       keywords: ['A1'],
       tags: [],
       starred: false,
@@ -252,8 +252,8 @@ describe('NoteStore', () => {
       keywords: ['A2'],
     });
     await dataStore.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
       keywords: ['A3'],
       tags: [],
       starred: false,

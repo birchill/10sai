@@ -22,7 +22,7 @@
     padding: .4rem;
     overflow: hidden;
 
-    > .question {
+    > .front {
       @include rich-text;
       p {
         margin-top: 0.1em;

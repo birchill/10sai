@@ -9,8 +9,8 @@ import { NoteState } from '../notes/reducer';
 
 interface Props {
   className?: string;
-  showAnswer?: boolean;
-  onShowAnswer: () => void;
+  showBack?: boolean;
+  onShowBack: () => void;
   onPassCard: () => void;
   onFailCard: () => void;
   onEditCard: (id: string) => void;
@@ -47,8 +47,8 @@ export class ReviewPanel extends React.Component<Props> {
     // If we've hidden the answer buttons, we need to remove focus from them so
     // that you can't, for example, press 'Enter' and have them respond.
     if (
-      prevProps.showAnswer &&
-      !this.props.showAnswer &&
+      prevProps.showBack &&
+      !this.props.showBack &&
       document.activeElement &&
       (document.activeElement === this.failButtonRef.current ||
         document.activeElement === this.passButtonRef.current)
@@ -79,8 +79,8 @@ export class ReviewPanel extends React.Component<Props> {
     }
 
     // TODO: Eventually we should make space the key for flipping cards
-    if (!this.props.showAnswer && (e.key === 'Enter' || e.key === ' ')) {
-      this.props.onShowAnswer();
+    if (!this.props.showBack && (e.key === 'Enter' || e.key === ' ')) {
+      this.props.onShowBack();
       e.preventDefault();
     } else if (hasNoModifiers(e)) {
       switch (e.key) {
@@ -131,8 +131,8 @@ export class ReviewPanel extends React.Component<Props> {
       <ReviewCard
         key={getUniqueKey(this.props.currentCard.id)}
         className="current"
-        onShowAnswer={this.props.onShowAnswer}
-        showAnswer={this.props.showAnswer}
+        onShowBack={this.props.onShowBack}
+        showBack={this.props.showBack}
         {...this.props.currentCard}
       />
     );
@@ -154,19 +154,19 @@ export class ReviewPanel extends React.Component<Props> {
         <ReviewCard
           key={getUniqueKey(this.props.previousCard.id)}
           className="previous"
-          showAnswer
+          showBack
           {...this.props.previousCard}
         />
       );
     }
 
     const answerButtons = (
-      <div className="answer-buttons" hidden={!this.props.showAnswer}>
+      <div className="answer-buttons" hidden={!this.props.showBack}>
         <button
           ref={this.failButtonRef}
           className="fail"
           aria-label="Incorrect"
-          tabIndex={this.props.showAnswer ? 0 : -1}
+          tabIndex={this.props.showBack ? 0 : -1}
           onClick={this.props.onFailCard}
         >
           <span className="buttonface">
@@ -187,7 +187,7 @@ export class ReviewPanel extends React.Component<Props> {
           ref={this.passButtonRef}
           className="pass"
           aria-label="Correct"
-          tabIndex={this.props.showAnswer ? 0 : -1}
+          tabIndex={this.props.showBack ? 0 : -1}
           onClick={this.props.onPassCard}
         >
           <span className="buttonface">
@@ -215,7 +215,7 @@ export class ReviewPanel extends React.Component<Props> {
             {currentCard}
             {nextCard}
           </div>
-          {this.props.showAnswer ? (
+          {this.props.showBack ? (
             <>
               <hr className="note-divider divider" />
               <DynamicNoteList

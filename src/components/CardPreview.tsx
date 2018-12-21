@@ -5,11 +5,11 @@ import { styleClassMapping } from '../text/rich-text-styles';
 import { stripRuby } from '../text/ruby';
 
 interface Props {
-  question: string;
+  front: string;
 }
 
 // We make this a pure component simply to avoid calling deserialize unless the
-// question changes.
+// front changes.
 export class CardPreview extends React.PureComponent<Props> {
   render() {
     // If this proves slow we can try to either:
@@ -19,7 +19,7 @@ export class CardPreview extends React.PureComponent<Props> {
     //   spit out HTML strings and use dangerouslySetInnerHTML on them.
     //
     // For now, though, it seems acceptable.
-    const blocks = deserialize(this.props.question);
+    const blocks = deserialize(this.props.front);
     let i = 0;
 
     // I thought flexbox was supposed to fix all the problems with CSS but
@@ -27,7 +27,7 @@ export class CardPreview extends React.PureComponent<Props> {
     return (
       <div className="card-preview">
         <div className="flex-container">
-          <span className="question">
+          <span className="front">
             {blocks.map(block => {
               const key = `block-${i++}`;
               return (

@@ -19,8 +19,8 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       id: 'abc',
-      question: 'Prompt',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     } as Card;
 
     state = subject(state, Actions.finishLoadCard(formId, card));
@@ -34,15 +34,15 @@ describe('reducer:selection', () => {
 
     state = subject(
       state,
-      Actions.editCard(formId, { question: 'Prompt', answer: 'Answer' })
+      Actions.editCard(formId, { front: 'Question', back: 'Answer' })
     );
     state = subject(state, Actions.saveCard(formId));
     state = subject(
       state,
       Actions.finishSaveCard(formId, {
         id: 'def',
-        question: 'Prompt',
-        answer: 'Answer',
+        front: 'Question',
+        back: 'Answer',
       })
     );
 
@@ -54,8 +54,8 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       id: 'tuv',
-      question: 'Prompt',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     } as Card;
 
     state = subject(state, Actions.finishLoadCard(formId, card));
@@ -69,8 +69,8 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       id: 'ghi',
-      question: 'Prompt',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     } as Card;
 
     state = subject(state, Actions.finishLoadCard(formId, card));
@@ -83,8 +83,8 @@ describe('reducer:selection', () => {
     let state = subject(undefined, Actions.newCard(7));
 
     const card = {
-      prompt: 'Prompt',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     };
     state = subject(state, Actions.editCard(7, card));
     state = subject(state, Actions.saveCard(7));
@@ -100,8 +100,8 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       id: 'ghi',
-      question: 'Prompt',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     } as Card;
 
     state = subject(state, Actions.finishLoadCard(formId, card));
@@ -115,8 +115,8 @@ describe('reducer:selection', () => {
     const formId = state.edit.forms.active.formId;
     const card = {
       id: 'xyz',
-      question: 'Prompt',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     } as Card;
 
     state = subject(state, Actions.finishLoadCard(formId, card));

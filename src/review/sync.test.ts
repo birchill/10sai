@@ -279,8 +279,8 @@ describe('review:sync', () => {
 
       const card: Card = {
         id: 'abc',
-        question: 'Question',
-        answer: 'Answer',
+        front: 'Question',
+        back: 'Answer',
       } as Card;
       store.__update({
         screen: 'review',
@@ -292,7 +292,7 @@ describe('review:sync', () => {
 
       const updatedCard: Card = {
         ...card,
-        question: 'Updated question',
+        front: 'Updated question',
       };
       dataStore.__triggerChange('card', {
         id: 'abc',
@@ -307,8 +307,8 @@ describe('review:sync', () => {
 
       const card = {
         id: 'abc',
-        question: 'Question',
-        answer: 'Answer',
+        front: 'Question',
+        back: 'Answer',
       } as Card;
       store.__update({
         screen: 'review',
@@ -320,7 +320,7 @@ describe('review:sync', () => {
 
       const updatedCard = {
         ...card,
-        question: 'Updated question',
+        front: 'Updated question',
       };
       dataStore.__triggerChange('card', {
         id: 'abc',
@@ -335,8 +335,8 @@ describe('review:sync', () => {
 
       const card = {
         id: 'abc',
-        question: 'Question',
-        answer: 'Answer',
+        front: 'Question',
+        back: 'Answer',
       } as Card;
       store.__update({
         screen: 'review',
@@ -348,7 +348,7 @@ describe('review:sync', () => {
 
       const updatedCard = {
         ...card,
-        question: 'Updated question',
+        front: 'Updated question',
       };
       dataStore.__triggerChange('card', {
         id: 'abc',
@@ -363,8 +363,8 @@ describe('review:sync', () => {
 
       const card = {
         id: 'abc',
-        question: 'Question',
-        answer: 'Answer',
+        front: 'Question',
+        back: 'Answer',
       } as Card;
       store.__update({
         screen: 'review',
@@ -376,7 +376,7 @@ describe('review:sync', () => {
 
       const updatedCard = {
         ...card,
-        question: 'Updated question',
+        front: 'Updated question',
       };
       dataStore.__triggerChange('card', {
         id: 'abc',
@@ -397,8 +397,8 @@ describe('review:sync', () => {
 
       const card = {
         id: 'abc',
-        question: 'Question',
-        answer: 'Answer',
+        front: 'Question',
+        back: 'Answer',
       } as Card;
       store.__update({
         screen: 'review',
@@ -421,8 +421,8 @@ describe('review:sync', () => {
 
       const card = {
         id: 'abc',
-        question: 'Question',
-        answer: 'Answer',
+        front: 'Question',
+        back: 'Answer',
       } as Card;
       store.__update({
         screen: 'review',
@@ -448,8 +448,8 @@ describe('review:sync', () => {
 
       const card = {
         id: 'abc',
-        question: 'Question',
-        answer: 'Answer',
+        front: 'Question',
+        back: 'Answer',
       } as Card;
       store.__update({
         screen: 'review',
@@ -521,7 +521,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          phase: ReviewPhase.Question,
+          phase: ReviewPhase.Front,
         },
       });
 

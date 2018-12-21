@@ -3,8 +3,8 @@
  */
 export interface Card {
   id: string;
-  question: string;
-  answer: string;
+  front: string;
+  back: string;
   keywords: string[];
   tags: string[];
   starred: boolean;

@@ -17,12 +17,12 @@ interface StateInner {
 
 interface ItemType {
   id: string;
-  question: string;
+  front: string;
 }
 
 class CardGridInner extends React.PureComponent<PropsInner, StateInner> {
   static renderTemplateCard() {
-    return <CardPreview question="Template" />;
+    return <CardPreview front="Template" />;
   }
 
   static renderCard(item: ItemType) {

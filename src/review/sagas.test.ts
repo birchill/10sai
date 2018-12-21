@@ -232,8 +232,8 @@ describe('sagas:review updateProgress', () => {
       const newCard = i < maxNewCards;
       cards[i] = {
         id: i,
-        question: `Question ${i + 1}`,
-        answer: `Answer ${i + 1}`,
+        front: `Question ${i + 1}`,
+        back: `Answer ${i + 1}`,
         progress: {
           level: newCard ? 0 : 1,
           reviewed: newCard
@@ -271,7 +271,7 @@ describe('sagas:review updateProgress', () => {
   const cardInHistory = (card: Card, state: AppState) => {
     const { history } = state.review;
     return history.some(
-      elem => elem.question === card.question && elem.answer === card.answer
+      elem => elem.front === card.front && elem.back === card.back
     );
   };
 
@@ -448,14 +448,14 @@ describe('sagas:review loadReview', () => {
             if (type === 'new') {
               result.push({
                 id: `new-${i}`,
-                question: `New question ${i + 1}`,
-                answer: `New answer ${i + 1}`,
+                front: `New question ${i + 1}`,
+                back: `New answer ${i + 1}`,
               });
             } else {
               result.push({
                 id: i,
-                question: `Question ${i + 1}`,
-                answer: `Answer ${i + 1}`,
+                front: `Question ${i + 1}`,
+                back: `Answer ${i + 1}`,
               });
             }
           }
@@ -471,10 +471,10 @@ describe('sagas:review loadReview', () => {
     let state = reducer(undefined, { type: 'none' } as any);
 
     const cards: Array<Partial<Card>> = [
-      { id: 'a', question: 'Question A', answer: 'Answer A' },
-      { id: 'b', question: 'Question B', answer: 'Answer B' },
-      { id: 'c', question: 'Question C', answer: 'Answer C' },
-      { id: 'd', question: 'Question D', answer: 'Answer D' },
+      { id: 'a', front: 'Question A', back: 'Answer A' },
+      { id: 'b', front: 'Question B', back: 'Answer B' },
+      { id: 'c', front: 'Question C', back: 'Answer C' },
+      { id: 'd', front: 'Question D', back: 'Answer D' },
     ];
 
     const action = Actions.loadReview({
@@ -498,24 +498,24 @@ describe('sagas:review loadReview', () => {
           cards: [
             {
               id: 'new-0',
-              question: 'New question 1',
-              answer: 'New answer 1',
+              front: 'New question 1',
+              back: 'New answer 1',
             },
             {
               id: 0,
-              question: 'Question 1',
-              answer: 'Answer 1',
+              front: 'Question 1',
+              back: 'Answer 1',
             },
           ],
           history: [
-            { id: 'a', question: 'Question A', answer: 'Answer A' },
-            { id: 'c', question: 'Question C', answer: 'Answer C' },
+            { id: 'a', front: 'Question A', back: 'Answer A' },
+            { id: 'c', front: 'Question C', back: 'Answer C' },
           ],
           failedCardsLevel1: [
-            { id: 'b', question: 'Question B', answer: 'Answer B' },
+            { id: 'b', front: 'Question B', back: 'Answer B' },
           ],
           failedCardsLevel2: [
-            { id: 'd', question: 'Question D', answer: 'Answer D' },
+            { id: 'd', front: 'Question D', back: 'Answer D' },
           ],
         },
       })

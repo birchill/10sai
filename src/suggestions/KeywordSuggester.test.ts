@@ -38,8 +38,8 @@ describe('KeywordSuggester', () => {
     const result = subject.getSuggestions(
       '',
       KeywordSuggester.getSuggestionsFromCard({
-        question: '[..superficial..]な関係',
-        answer: '{生半可|なま|はん|か}な関係',
+        front: '[..superficial..]な関係',
+        back: '{生半可|なま|はん|か}な関係',
       }),
       RecentKeywordHandling.Omit
     );
@@ -48,24 +48,24 @@ describe('KeywordSuggester', () => {
 
   it('returns kanji guesses from cards that test readings', () => {
     const result = KeywordSuggester.getSuggestionsFromCard({
-      question: '眼差し',
-      answer: 'まなざし\nLook',
+      front: '眼差し',
+      back: 'まなざし\nLook',
     });
     expect(result[0]).toEqual('眼差し');
   });
 
   it('returns guesses from cards that have simple answers', () => {
     const result = KeywordSuggester.getSuggestionsFromCard({
-      question: 'the former',
-      answer: '{前者|ぜん|しゃ}',
+      front: 'the former',
+      back: '{前者|ぜん|しゃ}',
     });
     expect(result[0]).toEqual('前者');
   });
 
   it('returns the individual kanji characters as suggestions', () => {
     const result = KeywordSuggester.getSuggestionsFromCard({
-      question: '眼差し',
-      answer: 'まなざし',
+      front: '眼差し',
+      back: 'まなざし',
     });
     expect(result[1]).toEqual('眼');
     expect(result[2]).toEqual('差');

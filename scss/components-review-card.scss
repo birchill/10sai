@@ -20,18 +20,18 @@
     }
   }
 
-  &:not(.-showanswer) > .back,
-  &.-showanswer > .front {
+  &:not(.-showback) > .back,
+  &.-showback > .front {
     opacity: 0;
     pointer-events: none;
   }
 
-  > .front > .question {
+  > .front > .frontregion {
     height: 100%;
   }
 
-  > .front > .question,
-  > .back > .answer {
+  > .front > .frontregion,
+  > .back > .backregion {
     &[data-size=x-small] {
       font-size: 12px;
     }
@@ -79,7 +79,7 @@
   }
 
   > .back {
-    > .question {
+    > .frontregion {
       height: 33%;
 
       &[data-size=x-small] {
@@ -128,7 +128,7 @@
       box-sizing: border-box;
       width: 80%;
     }
-    > .answer {
+    > .backregion {
       height: 66%;
     }
   }

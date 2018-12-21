@@ -178,13 +178,13 @@ export function review(
       }
 
       // If we were complete but now have cards we need to go back to the
-      // question state.
+      // showing cards.
       if (
         (updatedState.phase === ReviewPhase.Complete ||
           updatedState.phase === ReviewPhase.Loading) &&
         updatedState.currentCard
       ) {
-        updatedState.phase = ReviewPhase.Question;
+        updatedState.phase = ReviewPhase.Front;
       }
 
       // If we are complete but this is the initial load, then it makes more
@@ -201,8 +201,8 @@ export function review(
 
     case 'PASS_CARD': {
       if (
-        state.phase !== ReviewPhase.Answer &&
-        state.phase !== ReviewPhase.Question
+        state.phase !== ReviewPhase.Back &&
+        state.phase !== ReviewPhase.Front
       ) {
         return state;
       }
@@ -269,7 +269,7 @@ export function review(
 
       const intermediateState = {
         ...state,
-        phase: ReviewPhase.Question,
+        phase: ReviewPhase.Front,
         completed,
         failedCardsLevel2,
         failedCardsLevel1,
@@ -286,20 +286,20 @@ export function review(
     }
 
     case 'SHOW_ANSWER': {
-      if (state.phase !== ReviewPhase.Question) {
+      if (state.phase !== ReviewPhase.Front) {
         return state;
       }
 
       return {
         ...state,
-        phase: ReviewPhase.Answer,
+        phase: ReviewPhase.Back,
       };
     }
 
     case 'FAIL_CARD': {
       if (
-        state.phase !== ReviewPhase.Answer &&
-        state.phase !== ReviewPhase.Question
+        state.phase !== ReviewPhase.Back &&
+        state.phase !== ReviewPhase.Front
       ) {
         return state;
       }
@@ -345,7 +345,7 @@ export function review(
 
       const intermediateState = {
         ...state,
-        phase: ReviewPhase.Question,
+        phase: ReviewPhase.Front,
         failedCardsLevel1,
         failedCardsLevel2,
         history,

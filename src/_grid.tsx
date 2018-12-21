@@ -8,11 +8,11 @@ import { VirtualGrid } from './components/VirtualGrid';
 
 interface MyItem {
   id: string;
-  question: string;
+  front: string;
 }
 
 function renderTemplateItem() {
-  return <CardPreview question="Template" />;
+  return <CardPreview front="Template" />;
 }
 
 function renderItem(item: MyItem) {
@@ -22,7 +22,7 @@ function renderItem(item: MyItem) {
 const items: Array<MyItem> = [];
 
 for (let i = 0; i < 500; i++) {
-  items.push({ id: `item-${i}`, question: `Card ${i}` });
+  items.push({ id: `item-${i}`, front: `Card ${i}` });
 }
 
 ReactDOM.render(

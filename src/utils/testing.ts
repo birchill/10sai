@@ -32,8 +32,8 @@ export function generateCards(
     const newCard = i < maxNewCards;
     cards[i] = {
       id: `card${i + 1}`,
-      question: `Question ${i + 1}`,
-      answer: `Answer ${i + 1}`,
+      front: `Question ${i + 1}`,
+      back: `Answer ${i + 1}`,
       progress: {
         level: newCard ? 0 : 1,
         reviewed: newCard ? null : new Date(reviewTime - 3 * MS_PER_DAY),
@@ -48,8 +48,8 @@ export function generateCards(
 export function generateCard(id: string): Card {
   return {
     id,
-    question: 'Question',
-    answer: 'Answer',
+    front: 'Question',
+    back: 'Answer',
     keywords: [],
     tags: [],
     starred: false,

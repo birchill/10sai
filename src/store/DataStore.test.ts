@@ -143,8 +143,8 @@ describe('DataStore remote sync', () => {
     const now = JSON.parse(JSON.stringify(new Date()));
     const firstCard: MakeOptional<Card, 'progress'> = {
       id: generateUniqueTimestampId(),
-      question: 'Question 1',
-      answer: 'Answer 1',
+      front: 'Question 1',
+      back: 'Answer 1',
       created: now,
       modified: now,
       keywords: [],
@@ -153,8 +153,8 @@ describe('DataStore remote sync', () => {
     };
     const secondCard: MakeOptional<Card, 'progress'> = {
       id: generateUniqueTimestampId(),
-      question: 'Question 2',
-      answer: 'Answer 2',
+      front: 'Question 2',
+      back: 'Answer 2',
       created: now,
       modified: now,
       keywords: [],
@@ -194,8 +194,8 @@ describe('DataStore remote sync', () => {
   it('disassociates from previous remote sync server when a new one is set', async () => {
     const card: MakeOptional<Card, 'progress'> = {
       id: generateUniqueTimestampId(),
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
       keywords: [],
       tags: [],
       starred: false,
@@ -242,8 +242,8 @@ describe('DataStore remote sync', () => {
   it('uploads existing local cards', async () => {
     const [idleCallback, idlePromise] = idleSync();
 
-    await subject.putCard({ question: 'Question 1', answer: 'Answer 1' });
-    await subject.putCard({ question: 'Question 2', answer: 'Answer 2' });
+    await subject.putCard({ front: 'Question 1', back: 'Answer 1' });
+    await subject.putCard({ front: 'Question 2', back: 'Answer 2' });
     await subject.setSyncServer(testRemote, { onIdle: idleCallback });
     await idlePromise;
 
@@ -268,8 +268,8 @@ describe('DataStore remote sync', () => {
 
     testRemote.put({
       _id: 'card-' + generateUniqueTimestampId(),
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
   });
 
@@ -283,7 +283,7 @@ describe('DataStore remote sync', () => {
       ),
     });
 
-    subject.putCard({ question: 'Question', answer: 'Answer' });
+    subject.putCard({ front: 'Question', back: 'Answer' });
   });
 
   it('reports sync progress on initial download', async () => {
@@ -292,8 +292,8 @@ describe('DataStore remote sync', () => {
     for (let i = 0; i < numCards; i++) {
       docs.push({
         _id: generateUniqueTimestampId(),
-        question: `Question ${i + 1}`,
-        answer: `Answer ${i + 1}`,
+        front: `Question ${i + 1}`,
+        back: `Answer ${i + 1}`,
       });
     }
 
@@ -330,8 +330,8 @@ describe('DataStore remote sync', () => {
     for (let i = 0; i < numCards; i++) {
       putPromises.push(
         subject.putCard({
-          question: `Question ${i + 1}`,
-          answer: `Answer ${i + 1}`,
+          front: `Question ${i + 1}`,
+          back: `Answer ${i + 1}`,
         })
       );
     }
@@ -368,8 +368,8 @@ describe('DataStore remote sync', () => {
     for (let i = 0; i < localCards; i++) {
       putPromises.push(
         subject.putCard({
-          question: `Local question ${i + 1}`,
-          answer: `Local answer ${i + 1}`,
+          front: `Local question ${i + 1}`,
+          back: `Local answer ${i + 1}`,
         })
       );
     }
@@ -379,8 +379,8 @@ describe('DataStore remote sync', () => {
     for (let i = 0; i < remoteCards; i++) {
       remoteDocs.push({
         _id: generateUniqueTimestampId(),
-        question: `Remote question ${i + 1}`,
-        answer: `Remote answer ${i + 1}`,
+        front: `Remote question ${i + 1}`,
+        back: `Remote answer ${i + 1}`,
       });
     }
 
@@ -414,8 +414,8 @@ describe('DataStore remote sync', () => {
     for (let i = 0; i < numCards; i++) {
       docs.push({
         _id: generateUniqueTimestampId(),
-        question: `Question ${i + 1}`,
-        answer: `Answer ${i + 1}`,
+        front: `Question ${i + 1}`,
+        back: `Answer ${i + 1}`,
       });
     }
 

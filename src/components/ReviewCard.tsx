@@ -4,36 +4,36 @@ import { FormattedText } from './FormattedText';
 import { TextRegion } from './TextRegion';
 
 interface Props {
-  question: string;
-  answer: string;
-  showAnswer?: boolean | null;
+  front: string;
+  back: string;
+  showBack?: boolean | null;
   className?: string | null;
-  onShowAnswer?: () => void;
+  onShowBack?: () => void;
 }
 
 export const ReviewCard: React.SFC<Props> = (props: Props) => {
   let className = 'review-card';
-  if (props.showAnswer) {
-    className += ' -showanswer';
+  if (props.showBack) {
+    className += ' -showback';
   }
   if (props.className) {
     className += ` ${props.className}`;
   }
 
   return (
-    <div className={className} onClick={props.onShowAnswer}>
+    <div className={className} onClick={props.onShowBack}>
       <div className="front">
-        <TextRegion className="question">
-          <FormattedText text={props.question} key={props.question} />
+        <TextRegion className="frontregion">
+          <FormattedText text={props.front} key={props.front} />
         </TextRegion>
       </div>
       <div className="back">
-        <TextRegion className="question">
-          <FormattedText text={props.question} key={props.question} />
+        <TextRegion className="frontregion">
+          <FormattedText text={props.front} key={props.front} />
         </TextRegion>
         <hr className="card-divider divider" />
-        <TextRegion className="answer">
-          <FormattedText text={props.answer} key={props.answer} />
+        <TextRegion className="backregion">
+          <FormattedText text={props.back} key={props.back} />
         </TextRegion>
       </div>
     </div>

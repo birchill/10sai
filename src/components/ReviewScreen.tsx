@@ -177,10 +177,7 @@ export const ReviewScreen: React.SFC<Props> = (props: Props) => {
   }
 
   let progressBar;
-  if (
-    props.phase === ReviewPhase.Question ||
-    props.phase === ReviewPhase.Answer
-  ) {
+  if (props.phase === ReviewPhase.Front || props.phase === ReviewPhase.Back) {
     // We want to roughly represent the number of reviews. Bear in mind that
     // a failed card will need to be reviewed twice before it is considered to
     // have passed.

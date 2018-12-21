@@ -48,7 +48,7 @@ export class EditCardForm extends React.Component<Props, State> {
     this.handleTagsTextChange = this.handleTagsTextChange.bind(this);
   }
 
-  handleCardChange(field: 'question' | 'answer', value: string | string[]) {
+  handleCardChange(field: 'front' | 'back', value: string | string[]) {
     this.props.onChange && this.props.onChange(field, value);
   }
 

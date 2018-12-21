@@ -20,8 +20,8 @@ const putNewCardWithTags = (
   cardStore: CardStore
 ): Promise<Card> => {
   return cardStore.putCard({
-    question: getRandomString(5),
-    answer: getRandomString(5),
+    front: getRandomString(5),
+    back: getRandomString(5),
     keywords: [],
     tags,
     starred: false,
@@ -122,8 +122,8 @@ const putNewCardWithKeywords = (
   cardStore: CardStore
 ): Promise<Card> => {
   return cardStore.putCard({
-    question: getRandomString(5),
-    answer: getRandomString(5),
+    front: getRandomString(5),
+    back: getRandomString(5),
     keywords,
     tags: [],
     starred: false,

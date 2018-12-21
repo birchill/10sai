@@ -21,15 +21,15 @@ export const isDirty = (state: AppState): boolean => {
 //   auto-saving, etc.
 // - Decide if it makes sense to enable the "Delete" button (it doesn't if the
 //   card doesn't have any useful data and isn't already saved)
-// - Decide if we should automatically focus the question field (we should if
-//   it's a new card, but not if it's an existing one since we don't know where
-//   the user will want to edit).
+// - Decide if we should automatically focus the front (we should if it's a new
+//   card, but not if it's an existing one since we don't know where the user
+//   will want to edit).
 export const hasDataToSave = (card: Partial<Card>): boolean => {
   const cardHasNonEmptyField = (field: keyof Card): boolean =>
     typeof card[field] === 'string' && (card[field] as string).length !== 0;
   return (
     typeof card.id !== 'undefined' ||
-    cardHasNonEmptyField('question') ||
-    cardHasNonEmptyField('answer')
+    cardHasNonEmptyField('front') ||
+    cardHasNonEmptyField('back')
   );
 };

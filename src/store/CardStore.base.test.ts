@@ -31,40 +31,40 @@ describe('CardStore', () => {
   });
 
   it('returns added cards', async () => {
-    await subject.putCard({ question: 'Question', answer: 'Answer' });
+    await subject.putCard({ front: 'Question', back: 'Answer' });
     const cards = await subject.getCards();
     expect(cards).toHaveLength(1);
-    expect(cards[0].question).toBe('Question');
-    expect(cards[0].answer).toBe('Answer');
+    expect(cards[0].front).toBe('Question');
+    expect(cards[0].back).toBe('Answer');
   });
 
   it('returns individual cards', async () => {
     let card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     card = await subject.getCard(card.id);
-    expect(card.question).toBe('Question');
-    expect(card.answer).toBe('Answer');
+    expect(card.front).toBe('Question');
+    expect(card.back).toBe('Answer');
   });
 
   it('returns cards by id', async () => {
     const card1 = await subject.putCard({
-      question: 'Question 1',
-      answer: 'Answer 1',
+      front: 'Question 1',
+      back: 'Answer 1',
     });
     const card2 = await subject.putCard({
-      question: 'Question 2',
-      answer: 'Answer 2',
+      front: 'Question 2',
+      back: 'Answer 2',
     });
     const card3 = await subject.putCard({
-      question: 'Question 3',
-      answer: 'Answer 3',
+      front: 'Question 3',
+      back: 'Answer 3',
     });
     const cards = await subject.getCardsById([card1.id, card3.id, card2.id]);
     expect(cards.map(card => card.id)).toEqual([card1.id, card3.id, card2.id]);
     // Spot check card contents
-    expect(cards[1].answer).toBe('Answer 3');
+    expect(cards[1].back).toBe('Answer 3');
   });
 
   it('does not return non-existent cards', async () => {
@@ -78,8 +78,8 @@ describe('CardStore', () => {
 
   it('does not return non-existent cards when fetching by id', async () => {
     const existingCard = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     const cards = await subject.getCardsById([
       'batman',
@@ -101,24 +101,24 @@ describe('CardStore', () => {
 
   it('does not return the prefix when putting a card', async () => {
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     expect(card.id.substr(0, 5)).not.toBe('card-');
   });
 
   it('does not return the prefix when getting a single card', async () => {
     let card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     card = await subject.getCard(card.id);
     expect(card.id.substr(0, 5)).not.toBe('card-');
   });
 
   it('does not return the prefix when getting multiple cards', async () => {
-    await subject.putCard({ question: 'Q1', answer: 'A1' });
-    await subject.putCard({ question: 'Q2', answer: 'A2' });
+    await subject.putCard({ front: 'Q1', back: 'A1' });
+    await subject.putCard({ front: 'Q2', back: 'A2' });
 
     const cards = await subject.getCards();
     for (const card of cards) {
@@ -127,8 +127,8 @@ describe('CardStore', () => {
   });
 
   it('does not return the prefix when cards by id', async () => {
-    const card1 = await subject.putCard({ question: 'Q1', answer: 'A1' });
-    const card2 = await subject.putCard({ question: 'Q2', answer: 'A2' });
+    const card1 = await subject.putCard({ front: 'Q1', back: 'A1' });
+    const card2 = await subject.putCard({ front: 'Q2', back: 'A2' });
 
     const cards = await subject.getCardsById([card1.id, card2.id]);
     for (const card of cards) {
@@ -137,8 +137,8 @@ describe('CardStore', () => {
   });
 
   it('returns added cards in order', async () => {
-    const card1 = await subject.putCard({ question: 'Q1', answer: 'A1' });
-    const card2 = await subject.putCard({ question: 'Q2', answer: 'A2' });
+    const card1 = await subject.putCard({ front: 'Q1', back: 'A1' });
+    const card2 = await subject.putCard({ front: 'Q2', back: 'A2' });
 
     const cards = await subject.getCards();
     // Sanity check: card IDs are unique
@@ -156,7 +156,7 @@ describe('CardStore', () => {
       1
     );
 
-    const addedCard = await subject.putCard({ question: 'Q1', answer: 'A1' });
+    const addedCard = await subject.putCard({ front: 'Q1', back: 'A1' });
 
     const changes = await changesPromise;
     expect(changes[0].card).toMatchObject(addedCard);
@@ -164,8 +164,8 @@ describe('CardStore', () => {
 
   it('does not return deleted cards', async () => {
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     await subject.deleteCard(card.id);
 
@@ -176,8 +176,8 @@ describe('CardStore', () => {
 
   it('does not return individual deleted cards', async () => {
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     const id = card.id;
     await subject.deleteCard(card.id);
@@ -192,14 +192,14 @@ describe('CardStore', () => {
 
   it('does not return deleted cards when fetching by id', async () => {
     const deletedCard = await subject.putCard({
-      question: 'Question (deleted)',
-      answer: 'Answer (deleted)',
+      front: 'Question (deleted)',
+      back: 'Answer (deleted)',
     });
     await subject.deleteCard(deletedCard.id);
 
     const existingCard = await subject.putCard({
-      question: 'Question (existing)',
-      answer: 'Answer (existing)',
+      front: 'Question (existing)',
+      back: 'Answer (existing)',
     });
 
     const cards = await subject.getCardsById([deletedCard.id, existingCard.id]);
@@ -210,17 +210,17 @@ describe('CardStore', () => {
 
   it('deletes the specified card', async () => {
     const firstCard = await subject.putCard({
-      question: 'Question 1',
-      answer: 'Answer 1',
+      front: 'Question 1',
+      back: 'Answer 1',
     });
-    await subject.putCard({ question: 'Question 2', answer: 'Answer 2' });
+    await subject.putCard({ front: 'Question 2', back: 'Answer 2' });
 
     await subject.deleteCard(firstCard.id);
 
     const cards = await subject.getCards();
     expect(cards).toHaveLength(1);
-    expect(cards[0].question).toBe('Question 2');
-    expect(cards[0].answer).toBe('Answer 2');
+    expect(cards[0].front).toBe('Question 2');
+    expect(cards[0].back).toBe('Answer 2');
   });
 
   it('fails silently when the card to be deleted cannot be found', async () => {
@@ -229,10 +229,10 @@ describe('CardStore', () => {
 
   it('deletes the specified card even when the revision is old', async () => {
     const card = await subject.putCard({
-      question: 'Question 1',
-      answer: 'Answer 1',
+      front: 'Question 1',
+      back: 'Answer 1',
     });
-    await subject.putCard({ ...card, question: 'Updated question' });
+    await subject.putCard({ ...card, front: 'Updated question' });
 
     await subject.deleteCard(card.id);
 
@@ -248,8 +248,8 @@ describe('CardStore', () => {
     );
 
     const addedCard = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     await subject.deleteCard(addedCard.id);
 
@@ -260,47 +260,47 @@ describe('CardStore', () => {
 
   it('updates the specified field of cards', async () => {
     let card = await subject.putCard({
-      question: 'Original question',
-      answer: 'Answer',
+      front: 'Original front',
+      back: 'Answer',
     });
 
     card = await subject.putCard({
       id: card.id,
-      question: 'Updated question',
+      front: 'Updated question',
     });
 
-    expect(card.question).toBe('Updated question');
-    expect(card.answer).toBe('Answer');
+    expect(card.front).toBe('Updated question');
+    expect(card.back).toBe('Answer');
 
     const cards = await subject.getCards();
     expect(cards).toHaveLength(1);
-    expect(cards[0].question).toBe('Updated question');
-    expect(cards[0].answer).toBe('Answer');
+    expect(cards[0].front).toBe('Updated question');
+    expect(cards[0].back).toBe('Answer');
   });
 
   it('updates cards even without a revision', async () => {
     let card = await subject.putCard({
-      question: 'Original question',
-      answer: 'Answer',
+      front: 'Original front',
+      back: 'Answer',
     });
 
     card = await subject.putCard({
       id: card.id,
-      question: 'Updated question',
+      front: 'Updated question',
     });
 
-    expect(card.question).toBe('Updated question');
-    expect(card.answer).toBe('Answer');
+    expect(card.front).toBe('Updated question');
+    expect(card.back).toBe('Answer');
 
     const cards = await subject.getCards();
     expect(cards).toHaveLength(1);
-    expect(cards[0].question).toBe('Updated question');
-    expect(cards[0].answer).toBe('Answer');
+    expect(cards[0].front).toBe('Updated question');
+    expect(cards[0].back).toBe('Answer');
   });
 
   it('returns an error when trying to update a missing card', async () => {
     await expect(
-      subject.putCard({ id: 'abc', question: 'Question' })
+      subject.putCard({ id: 'abc', front: 'Question' })
     ).rejects.toMatchObject({
       status: 404,
       name: 'not_found',
@@ -310,13 +310,13 @@ describe('CardStore', () => {
 
   it('returns an error when trying to update a deleted card', async () => {
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     await subject.deleteCard(card.id);
 
     await expect(
-      subject.putCard({ id: card.id, question: 'Question' })
+      subject.putCard({ id: card.id, front: 'Question' })
     ).rejects.toMatchObject({
       status: 404,
       name: 'not_found',
@@ -327,8 +327,8 @@ describe('CardStore', () => {
   it('stores the created date when adding a new card', async () => {
     const beginDate = new Date();
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     expect(new Date(card.created)).toBeInDateRange(beginDate, new Date());
   });
@@ -336,29 +336,29 @@ describe('CardStore', () => {
   it('stores the last modified date when adding a new card', async () => {
     const beginDate = new Date();
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
     expect(new Date(card.modified)).toBeInDateRange(beginDate, new Date());
   });
 
   it('updates the last modified date when updating a card', async () => {
     let card = await subject.putCard({
-      question: 'Original question',
-      answer: 'Answer',
+      front: 'Original front',
+      back: 'Answer',
     });
     const beginDate = new Date();
     card = await subject.putCard({
       id: card.id,
-      question: 'Updated question',
+      front: 'Updated question',
     });
     expect(new Date(card.modified)).toBeInDateRange(beginDate, new Date());
   });
 
   it('does not write empty optional fields for new cards', async () => {
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
       keywords: [],
       tags: [],
       starred: false,
@@ -383,8 +383,8 @@ describe('CardStore', () => {
     const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
 
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
       keywords: ['abc'],
       tags: ['abc', 'def'],
       starred: true,
@@ -416,12 +416,12 @@ describe('CardStore', () => {
     );
 
     const card = await subject.putCard({
-      question: 'Question',
-      answer: 'Answer',
+      front: 'Question',
+      back: 'Answer',
     });
-    await subject.putCard({ ...card, question: 'Updated question' });
+    await subject.putCard({ ...card, front: 'Updated question' });
 
     const changes = await changesPromise;
-    expect(changes[1].card.question).toBe('Updated question');
+    expect(changes[1].card.front).toBe('Updated question');
   });
 });

@@ -17,106 +17,102 @@ storiesOf('Components|ReviewCard', module)
   .add('large (front)', () => (
     <div style={large}>
       <ReviewCard
-        question="短い"
-        answer="みじかい"
-        onShowAnswer={action('onShowAnswer')}
+        front="短い"
+        back="みじかい"
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('large (back)', () => (
     <div style={large}>
       <ReviewCard
-        question="短い"
-        answer="みじかい"
-        showAnswer
-        onShowAnswer={action('onShowAnswer')}
+        front="短い"
+        back="みじかい"
+        showBack
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('small/landscape (front)', () => (
     <div style={small}>
       <ReviewCard
-        question="短い"
-        answer="みじかい"
-        onShowAnswer={action('onShowAnswer')}
+        front="短い"
+        back="みじかい"
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('small/landscape (back)', () => (
     <div style={small}>
       <ReviewCard
-        question="短い"
-        answer="みじかい"
-        showAnswer
-        onShowAnswer={action('onShowAnswer')}
+        front="短い"
+        back="みじかい"
+        showBack
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('ruby (front)', () => (
     <div style={large}>
       <ReviewCard
-        question="{短|みじか}い"
-        answer="みじかい"
-        onShowAnswer={action('onShowAnswer')}
+        front="{短|みじか}い"
+        back="みじかい"
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('ruby (back)', () => (
     <div style={large}>
       <ReviewCard
-        question="{短|みじか}い"
-        answer="{ミジカイ|み|じ|か|い}"
-        showAnswer
-        onShowAnswer={action('onShowAnswer')}
+        front="{短|みじか}い"
+        back="{ミジカイ|み|じ|か|い}"
+        showBack
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('long message (front)', () => (
     <div style={large}>
       <ReviewCard
-        question="This is the question that never ends. It just goes on and on my friend. Somebody started writing it not know what it was..."
-        answer="This answer is also long, but not quite as long"
-        onShowAnswer={action('onShowAnswer')}
+        front="This is the question that never ends. It just goes on and on my friend. Somebody started writing it not know what it was..."
+        back="This answer is also long, but not quite as long"
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('long message (back)', () => (
     <div style={large}>
       <ReviewCard
-        question="This is the question that never ends. It just goes on and on my friend. Somebody started writing it not know what it was..."
-        answer="This answer is also long, but not quite as long"
-        showAnswer
-        onShowAnswer={action('onShowAnswer')}
+        front="This is the question that never ends. It just goes on and on my friend. Somebody started writing it not know what it was..."
+        back="This answer is also long, but not quite as long"
+        showBack
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('rich text (front)', () => (
     <div style={large}>
       <ReviewCard
-        question="􅨐b􅨑Bold􅨜, 􅨐i􅨑italic􅨜, 􅨐u􅨑underline􅨜, 􅨐.􅨑emphasis􅨜"
-        answer="􅨐b􅨝i􅨝u􅨝e􅨑Everything at once!􅨜"
-        onShowAnswer={action('onShowAnswer')}
+        front="􅨐b􅨑Bold􅨜, 􅨐i􅨑italic􅨜, 􅨐u􅨑underline􅨜, 􅨐.􅨑emphasis􅨜"
+        back="􅨐b􅨝i􅨝u􅨝e􅨑Everything at once!􅨜"
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('rich text (back)', () => (
     <div style={large}>
       <ReviewCard
-        question="􅨐b􅨑Bold􅨜, 􅨐i􅨑italic􅨜, 􅨐u􅨑underline􅨜, 􅨐.􅨑emphasis􅨜"
-        answer="􅨐b􅨝i􅨝u􅨝.􅨑Everything at once!􅨜"
-        showAnswer
-        onShowAnswer={action('onShowAnswer')}
+        front="􅨐b􅨑Bold􅨜, 􅨐i􅨑italic􅨜, 􅨐u􅨑underline􅨜, 􅨐.􅨑emphasis􅨜"
+        back="􅨐b􅨝i􅨝u􅨝.􅨑Everything at once!􅨜"
+        showBack
+        onShowBack={action('onShowBack')}
       />
     </div>
   ))
   .add('updating (front)', () => <UpdatingReviewCard />)
   .add('malformed rich text (front)', () => (
     <div style={large}>
-      <ReviewCard
-        question="􅨐b􅨑Bold"
-        answer=""
-        onShowAnswer={action('onShowAnswer')}
-      />
+      <ReviewCard front="􅨐b􅨑Bold" back="" onShowBack={action('onShowBack')} />
     </div>
   ));
 
@@ -151,9 +147,9 @@ class UpdatingReviewCard extends React.PureComponent<{}, State> {
       <div className="series">
         <div style={large}>
           <ReviewCard
-            question={this.strings[this.state.index]}
-            answer=""
-            onShowAnswer={action('onShowAnswer')}
+            front={this.strings[this.state.index]}
+            back=""
+            onShowBack={action('onShowBack')}
           />
         </div>
         <button className="button" onClick={this.handleClick}>

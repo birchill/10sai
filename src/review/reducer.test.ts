@@ -125,7 +125,7 @@ describe('reducer:review', () => {
 
     const updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
-    expect(updatedState.phase).toBe(ReviewPhase.Question);
+    expect(updatedState.phase).toBe(ReviewPhase.Front);
     expect(updatedState.currentCard).toBe(cards[0]);
     expect(updatedState.nextCard).toBe(cards[1]);
   });
@@ -165,7 +165,7 @@ describe('reducer:review', () => {
     expect(updatedState.nextCard).toBe(newCards[0]);
   });
 
-  it('should go to the QUESTION state on REVIEW_LOADED if it was completed but there are more cards', () => {
+  it('should go to the Front state on REVIEW_LOADED if it was completed but there are more cards', () => {
     const [initialState, cards] = newReview(1, 3);
 
     let updatedState = subject(initialState, Actions.reviewLoaded([]));
@@ -173,7 +173,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, Actions.reviewLoaded(cards));
 
-    expect(updatedState.phase).toBe(ReviewPhase.Question);
+    expect(updatedState.phase).toBe(ReviewPhase.Front);
   });
 
   it('should update the review state on SHOW_ANSWER', () => {
@@ -182,7 +182,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, Actions.showAnswer());
 
-    expect(updatedState.phase).toBe(ReviewPhase.Answer);
+    expect(updatedState.phase).toBe(ReviewPhase.Back);
   });
 
   it('should update the failed cards queues on PASS_CARD for a recently failed card', () => {
@@ -513,7 +513,7 @@ describe('reducer:review', () => {
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
     updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.phase).toBe(ReviewPhase.Question);
+    expect(updatedState.phase).toBe(ReviewPhase.Front);
     expect(updatedState.currentCard).toEqual(cards[0]);
     expect(updatedState.nextCard).toEqual(null);
     expect(updatedState.failedCardsLevel2).toEqual(cards);
@@ -526,7 +526,7 @@ describe('reducer:review', () => {
     expect(updatedState.currentCard).not.toBeNull();
     const updatedCurrentCard: Card = {
       ...updatedState.currentCard!,
-      question: 'Updated question',
+      front: 'Updated question',
     };
     updatedState = subject(
       updatedState,
@@ -541,7 +541,7 @@ describe('reducer:review', () => {
     expect(updatedState.nextCard).not.toBeNull();
     const updatedNextCard: Card = {
       ...updatedState.nextCard!,
-      question: 'Updated question',
+      front: 'Updated question',
     };
     updatedState = subject(
       updatedState,
@@ -555,7 +555,7 @@ describe('reducer:review', () => {
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
     const updatedHeapCard = {
       ...updatedState.heap[0],
-      question: 'Updated question',
+      front: 'Updated question',
     };
     updatedState = subject(
       updatedState,

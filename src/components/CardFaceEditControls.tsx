@@ -20,7 +20,7 @@ import { KeyboardFocusHelper } from '../utils/KeyboardFocusHelper';
 
 interface Props {
   card: Partial<Card>;
-  onChange?: (topic: 'question' | 'answer', value: string | string[]) => void;
+  onChange?: (topic: 'front' | 'back', value: string | string[]) => void;
 }
 
 interface State {
@@ -37,12 +37,12 @@ interface State {
   // selection of.
   //
   // This distinction is needed (rather than just recording the last focussed
-  // face) because when the user selects a range in the 'answer' face then
+  // face) because when the user selects a range in the 'back' face then
   // navigates back to the toolbar using Shift+Tab passing _through_ the
-  // 'prompt' face on the way there, the toolbar should still affect the
-  // 'answer' face'.
-  selectedFace: 'prompt' | 'answer';
-  focussedFace: 'prompt' | 'answer' | null;
+  // 'front' face on the way there, the toolbar should still affect the
+  // 'back' face'.
+  selectedFace: 'front' | 'back';
+  focussedFace: 'front' | 'back' | null;
 
   currentMarks: Set<string>;
   hasSelection: boolean;
@@ -51,25 +51,25 @@ interface State {
 export class CardFaceEditControls extends React.Component<Props, State> {
   keyboardFocusHelper: KeyboardFocusHelper;
 
-  questionTextBoxRef: React.RefObject<CardFaceInput>;
-  answerTextBoxRef: React.RefObject<CardFaceInput>;
+  frontTextBoxRef: React.RefObject<CardFaceInput>;
+  backTextBoxRef: React.RefObject<CardFaceInput>;
   formatToolbarRef: React.RefObject<FormatToolbar>;
 
-  handlePromptChange: (value: 'string') => void;
-  handleAnswerChange: (value: 'string') => void;
+  handleFrontChange: (value: 'string') => void;
+  handleBackChange: (value: 'string') => void;
 
-  handlePromptMarksUpdated: (marks: Set<string>) => void;
-  handleAnswerMarksUpdated: (marks: Set<string>) => void;
+  handleFrontMarksUpdated: (marks: Set<string>) => void;
+  handleBackMarksUpdated: (marks: Set<string>) => void;
 
-  handlePromptSelectionChange: () => void;
-  handleAnswerSelectionChange: () => void;
+  handleFrontSelectionChange: () => void;
+  handleBackSelectionChange: () => void;
 
   constructor(props: Props) {
     super(props);
 
     this.state = {
       toolbarFocussed: false,
-      selectedFace: 'prompt',
+      selectedFace: 'front',
       focussedFace: null,
       currentMarks: new Set<string>(),
       hasSelection: false,
@@ -81,44 +81,38 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     });
 
     // Control refs
-    this.questionTextBoxRef = React.createRef<CardFaceInput>();
-    this.answerTextBoxRef = React.createRef<CardFaceInput>();
+    this.frontTextBoxRef = React.createRef<CardFaceInput>();
+    this.backTextBoxRef = React.createRef<CardFaceInput>();
     this.formatToolbarRef = React.createRef<FormatToolbar>();
 
-    // Prompt text box handling
-    this.handlePromptChange = this.handleTextBoxChange.bind(this, 'question');
-    this.handlePromptSelectionChange = this.handleSelectionChange.bind(
+    // Front text box handling
+    this.handleFrontChange = this.handleTextBoxChange.bind(this, 'front');
+    this.handleFrontSelectionChange = this.handleSelectionChange.bind(
       this,
-      'prompt'
+      'front'
     );
-    this.handlePromptMarksUpdated = this.handleMarksUpdated.bind(
-      this,
-      'prompt'
-    );
+    this.handleFrontMarksUpdated = this.handleMarksUpdated.bind(this, 'front');
 
-    // Answer text box handling
-    this.handleAnswerChange = this.handleTextBoxChange.bind(this, 'answer');
-    this.handleAnswerSelectionChange = this.handleSelectionChange.bind(
+    // Back text box handling
+    this.handleBackChange = this.handleTextBoxChange.bind(this, 'back');
+    this.handleBackSelectionChange = this.handleSelectionChange.bind(
       this,
-      'answer'
+      'back'
     );
-    this.handleAnswerMarksUpdated = this.handleMarksUpdated.bind(
-      this,
-      'answer'
-    );
+    this.handleBackMarksUpdated = this.handleMarksUpdated.bind(this, 'back');
 
     // Formatting toolbar handling
     this.handleFormat = this.handleFormat.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
   }
 
-  handleTextBoxChange(field: 'question' | 'answer', value: string) {
+  handleTextBoxChange(field: 'front' | 'back', value: string) {
     if (this.props.onChange) {
       this.props.onChange(field, value);
     }
   }
 
-  handleSelectionChange(face: 'prompt' | 'answer', collapsed: boolean) {
+  handleSelectionChange(face: 'front' | 'back', collapsed: boolean) {
     if (this.state.focussedFace === face) {
       this.setState({ hasSelection: !collapsed });
     }
@@ -136,19 +130,19 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     this.updateSelectedFace(face);
   }
 
-  updateSelectedFace(face: 'prompt' | 'answer') {
+  updateSelectedFace(face: 'front' | 'back') {
     this.setState({ selectedFace: face });
 
     const otherFace =
-      face === 'prompt'
-        ? this.answerTextBoxRef.current
-        : this.questionTextBoxRef.current;
+      face === 'front'
+        ? this.backTextBoxRef.current
+        : this.frontTextBoxRef.current;
     if (otherFace) {
       otherFace.collapseSelection();
     }
   }
 
-  handleMarksUpdated(face: 'prompt' | 'answer', marks: Set<string>) {
+  handleMarksUpdated(face: 'front' | 'back', marks: Set<string>) {
     if (this.editFaceType !== face) {
       return;
     }
@@ -156,12 +150,12 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     this.setState({ currentMarks: marks });
   }
 
-  get editFaceType(): 'prompt' | 'answer' {
+  get editFaceType(): 'front' | 'back' {
     // If we have a focussed face, use that. Otherwise use the selected face.
     //
     // This means that if, for example, the user selects a range in the
-    // 'prompt', tabs to the answer, then _clicks_ a button in the toolbar, the
-    // command applies to the _answer_ as one would expect.
+    // 'front', tabs to the back, then _clicks_ a button in the toolbar, the
+    // command applies to the _back_ as one would expect.
     //
     // The only time it should apply to the selected face is if we don't have
     // a focussed face (e.g. we tabbed through to the toolbar).
@@ -169,15 +163,15 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   }
 
   get editFace(): CardFaceInput | null {
-    return this.editFaceType === 'prompt'
-      ? this.questionTextBoxRef.current
-      : this.answerTextBoxRef.current;
+    return this.editFaceType === 'front'
+      ? this.frontTextBoxRef.current
+      : this.backTextBoxRef.current;
   }
 
   get selectedFace(): CardFaceInput | null {
-    return this.state.selectedFace === 'prompt'
-      ? this.questionTextBoxRef.current
-      : this.answerTextBoxRef.current;
+    return this.state.selectedFace === 'front'
+      ? this.frontTextBoxRef.current
+      : this.backTextBoxRef.current;
   }
 
   handleFormat(command: FormatButtonCommand, params?: ColorKeywordOrBlack) {
@@ -204,8 +198,8 @@ export class CardFaceEditControls extends React.Component<Props, State> {
     // Check for a change of face
     let faceInFocus = false;
     const textboxes: Array<React.RefObject<CardFaceInput>> = [
-      this.questionTextBoxRef,
-      this.answerTextBoxRef,
+      this.frontTextBoxRef,
+      this.backTextBoxRef,
     ];
     for (const textbox of textboxes) {
       if (
@@ -214,7 +208,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         textbox.current.element.contains(e.target as HTMLElement)
       ) {
         faceInFocus = true;
-        const face = textbox === this.questionTextBoxRef ? 'prompt' : 'answer';
+        const face = textbox === this.frontTextBoxRef ? 'front' : 'back';
         if (this.state.focussedFace !== face) {
           stateChange.focussedFace = face;
           // If we are just tabbing through the field, we don't want to consider
@@ -291,27 +285,27 @@ export class CardFaceEditControls extends React.Component<Props, State> {
   makeCloze(color: ColorKeywordOrBlack) {
     if (
       !this.selectedFace ||
-      !this.questionTextBoxRef.current ||
-      !this.answerTextBoxRef.current ||
+      !this.frontTextBoxRef.current ||
+      !this.backTextBoxRef.current ||
       this.selectedFace.isSelectionCollapsed()
     ) {
       return;
     }
 
-    const question = this.selectedFace.value;
+    const content = this.selectedFace.value;
     const selection = this.selectedFace.getSelection();
 
-    this.questionTextBoxRef.current.makeCloze({
+    this.frontTextBoxRef.current.makeCloze({
       color,
       selection,
-      content: question,
+      content,
       blank: true,
     });
 
-    this.answerTextBoxRef.current.makeCloze({
+    this.backTextBoxRef.current.makeCloze({
       color,
       selection,
-      content: question,
+      content,
       blank: false,
     });
   }
@@ -395,7 +389,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       classes.push('-toolbarfocus');
     }
 
-    const getFaceClassName = (face: 'prompt' | 'answer'): string => {
+    const getFaceClassName = (face: 'front' | 'back'): string => {
       const classes: Array<string> = [face];
       if (this.state.toolbarFocussed && this.state.selectedFace === face) {
         classes.push('-targeted');
@@ -417,30 +411,30 @@ export class CardFaceEditControls extends React.Component<Props, State> {
           ref={this.formatToolbarRef}
         />
         <CardFaceInput
-          className={getFaceClassName('prompt')}
-          initialValue={this.props.card.question || ''}
+          className={getFaceClassName('front')}
+          initialValue={this.props.card.front || ''}
           placeholder="Front"
-          onChange={this.handlePromptChange}
-          onSelectionChange={this.handlePromptSelectionChange}
-          onMarksUpdated={this.handlePromptMarksUpdated}
-          ref={this.questionTextBoxRef}
+          onChange={this.handleFrontChange}
+          onSelectionChange={this.handleFrontSelectionChange}
+          onMarksUpdated={this.handleFrontMarksUpdated}
+          ref={this.frontTextBoxRef}
         />
         <hr className="card-divider divider" />
         <CardFaceInput
-          className={getFaceClassName('answer')}
-          initialValue={this.props.card.answer || ''}
+          className={getFaceClassName('back')}
+          initialValue={this.props.card.back || ''}
           placeholder="Back"
-          onChange={this.handleAnswerChange}
-          onSelectionChange={this.handleAnswerSelectionChange}
-          onMarksUpdated={this.handleAnswerMarksUpdated}
-          ref={this.answerTextBoxRef}
+          onChange={this.handleBackChange}
+          onSelectionChange={this.handleBackSelectionChange}
+          onMarksUpdated={this.handleBackMarksUpdated}
+          ref={this.backTextBoxRef}
         />
       </div>
     );
   }
 
   focus() {
-    // For the time being, focus() just means focus on the question
-    this.questionTextBoxRef.current && this.questionTextBoxRef.current.focus();
+    // For the time being, focus() just means focus on the front
+    this.frontTextBoxRef.current && this.frontTextBoxRef.current.focus();
   }
 }
