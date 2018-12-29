@@ -250,23 +250,6 @@ export class DataStore {
     };
 
     // Validate syncServer argument
-    // FIXME: Once we use TypeScript everywhere we can probably drop a lot of
-    // this checking
-    if (
-      typeof syncServer !== 'string' &&
-      syncServer !== null &&
-      syncServer !== undefined &&
-      !(typeof syncServer === 'object' && syncServer.constructor === PouchDB)
-    ) {
-      const err = new StoreError(
-        400,
-        'bad_request',
-        'Unrecognized type of sync server'
-      );
-      reportErrorAsync(err);
-      throw err;
-    }
-
     if (typeof syncServer === 'string') {
       syncServer = syncServer.trim();
       if (
