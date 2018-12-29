@@ -9,6 +9,7 @@ import { FormState } from '../edit/FormState';
 import { EditFormState, EditState } from '../edit/reducer';
 import { hasDataToSave } from '../edit/selectors';
 import { EditScreenContext } from '../notes/actions';
+import { getKeywordVariants } from '../text/keywords';
 import { Return } from '../utils/type-helpers';
 
 import { EditCardToolbar } from './EditCardToolbar';
@@ -82,7 +83,10 @@ class EditCardScreenInner extends React.PureComponent<PropsInner> {
   }
 
   render() {
-    const keywords = this.props.forms.active.card.keywords || [];
+    const { card } = this.props.forms.active;
+    const keywords = card.keywords
+      ? [...card.keywords, ...getKeywordVariants(card.keywords)]
+      : [];
 
     const canDelete =
       this.props.forms.active.formState === FormState.Ok && !this.isFormEmpty();
