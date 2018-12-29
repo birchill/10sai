@@ -17,7 +17,6 @@
     background: rgb(220, 220, 220);
     transition: opacity 0.15s;
     opacity: 0.8;
-    will-change: opacity;
   }
   &[hidden] > .overlay {
     opacity: 0;
@@ -43,7 +42,6 @@
 
     transform: translate(0%);
     transition: transform 0.15s ease-out;
-    will-change: transform;
   }
 
   &[hidden] > .content {

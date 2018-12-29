@@ -8,7 +8,6 @@
   background: $really-light-grey;
 
   transition: opacity 0.1s ease;
-  will-change: opacity;
 
   &[hidden] {
     opacity: 0;
