@@ -36,10 +36,9 @@ interface State {
   // selection of.
   //
   // This distinction is needed (rather than just recording the last focussed
-  // face) because when the user selects a range in the 'back' face then
-  // navigates back to the toolbar using Shift+Tab passing _through_ the
-  // 'front' face on the way there, the toolbar should still affect the
-  // 'back' face'.
+  // face) because when the user selects a range in the 'front' face then
+  // navigates to the toolbar using Tab to pass _through_ the 'back' face on the
+  // way there, the toolbar should still affect the 'front' face'.
   selectedFace: 'front' | 'back';
   focussedFace: 'front' | 'back' | null;
 
@@ -403,12 +402,6 @@ export class CardFaceEditControls extends React.Component<Props, State> {
         onKeyDown={this.keyboardFocusHelper.onKeyDown}
         onBlur={this.handleBlur}
       >
-        <FormatToolbar
-          className={'toolbar -center' + (this.isFocussed ? ' -areafocus' : '')}
-          onClick={this.handleFormat}
-          buttons={this.formatButtonConfig}
-          ref={this.formatToolbarRef}
-        />
         <CardFaceInput
           className={getFaceClassName('front')}
           initialValue={this.props.card.front || ''}
@@ -427,6 +420,12 @@ export class CardFaceEditControls extends React.Component<Props, State> {
           onSelectionChange={this.handleBackSelectionChange}
           onMarksUpdated={this.handleBackMarksUpdated}
           ref={this.backTextBoxRef}
+        />
+        <FormatToolbar
+          className={'toolbar -center' + (this.isFocussed ? ' -areafocus' : '')}
+          onClick={this.handleFormat}
+          buttons={this.formatButtonConfig}
+          ref={this.formatToolbarRef}
         />
       </div>
     );
