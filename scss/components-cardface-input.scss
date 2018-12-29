@@ -19,7 +19,8 @@
       // through textbox-styles, and then do the lighter version by applying
       // a 70% opacity to the whole thing when it's not hovered or focussed.
       color: lighten($standard-grey, 10%);
-      transform: translateY(-1.5em);
+      transform: translateY(-2em);
+      text-transform: uppercase;
     }
 
     &:hover > .public-DraftEditorPlaceholder-root,
