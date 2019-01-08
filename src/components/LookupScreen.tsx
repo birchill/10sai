@@ -1,4 +1,5 @@
 import * as React from 'react';
+import DocumentTitle from 'react-document-title';
 
 import { LookupToolbar } from './LookupToolbar';
 
@@ -40,8 +41,17 @@ export class LookupScreen extends React.PureComponent<Props> {
   render() {
     return (
       <section className="lookup-screen" aria-hidden={!this.props.active}>
+        {this.renderTitle()}
         <LookupToolbar ref={this.toolbarRef} />
       </section>
     );
+  }
+
+  renderTitle(): React.ReactNode | null {
+    if (!this.props.active) {
+      return null;
+    }
+
+    return <DocumentTitle title="10sai - Lookup" />;
   }
 }
