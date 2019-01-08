@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
+import DocumentTitle from 'react-document-title';
 
 import { Card } from '../model';
 import * as Actions from '../actions';
@@ -10,6 +11,8 @@ import { EditFormState, EditState } from '../edit/reducer';
 import { hasDataToSave } from '../edit/selectors';
 import { EditScreenContext } from '../notes/actions';
 import { getKeywordVariants } from '../text/keywords';
+import { toPlainText } from '../text/rich-text';
+import { stripRuby } from '../text/ruby';
 import { Return } from '../utils/type-helpers';
 
 import { EditCardToolbar } from './EditCardToolbar';
@@ -90,41 +93,75 @@ class EditCardScreenInner extends React.PureComponent<PropsInner> {
 
     const canDelete =
       this.props.forms.active.formState === FormState.Ok && !this.isFormEmpty();
+    const { formId, formState, notes } = this.props.forms.active;
 
     return (
       <section className="edit-screen" aria-hidden={!this.props.active}>
+        {this.renderTitle()}
         <EditCardToolbar canDelete={canDelete} onDelete={this.handleDelete} />
-        {this.props.forms.active.formState !== FormState.NotFound &&
-        this.props.forms.active.formState !== FormState.Deleted ? (
+        {formState !== FormState.NotFound && formState !== FormState.Deleted ? (
           <>
             <EditCardForm
               onChange={this.handleFormChange}
               {...this.props.forms.active}
               ref={this.activeFormRef}
-              key={`card-${this.props.forms.active.formId}`}
+              key={`card-${formId}`}
             />
             <hr className="note-divider divider" />
             <DynamicNoteList
               noteListContext={
                 {
                   screen: 'edit-card',
-                  cardFormId: this.props.forms.active.formId,
+                  cardFormId: formId,
                 } as EditScreenContext
               }
-              notes={this.props.forms.active.notes}
+              notes={notes}
               keywords={keywords}
               priority="writing"
               className="notes"
-              key={`notes-${this.props.forms.active.formId}`}
+              key={`notes-${formId}`}
             />
           </>
         ) : (
-          <EditCardNotFound
-            deleted={this.props.forms.active.formState === FormState.Deleted}
-          />
+          <EditCardNotFound deleted={formState === FormState.Deleted} />
         )}
       </section>
     );
+  }
+
+  renderTitle(): React.ReactNode | null {
+    if (!this.props.active) {
+      return null;
+    }
+
+    let subtitle: string = 'Edit card';
+
+    switch (this.props.forms.active.formState) {
+      case FormState.NotFound:
+        subtitle = 'Card not found';
+        break;
+
+      case FormState.Deleted:
+        subtitle = 'Card deleted';
+        break;
+
+      case FormState.Loading:
+        subtitle = 'Card loading...';
+        break;
+
+      case FormState.Ok:
+        {
+          const { card } = this.props.forms.active;
+          if (!card.front) {
+            subtitle = 'New card';
+          } else {
+            subtitle = stripRuby(toPlainText(card.front));
+          }
+        }
+        break;
+    }
+
+    return <DocumentTitle title={`10sai - ${subtitle}`} />;
   }
 }
 
