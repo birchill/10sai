@@ -6,6 +6,7 @@ import { ReviewPhase } from '../review/ReviewPhase';
 import { Link } from './Link';
 import { LoadingIndicator } from './LoadingIndicator';
 import { ReviewPanelContainer } from './ReviewPanelContainer';
+import { ReviewPanel } from './ReviewPanel';
 import { TricolorProgress } from './TricolorProgress';
 
 interface ReviewProps {
@@ -37,23 +38,67 @@ const nextReviewNumCards = (props: ReviewProps): number => {
   );
 };
 
-const ReviewButton: React.SFC<ReviewProps> = (props: ReviewProps) => {
-  const numCards = nextReviewNumCards(props);
-  return (
-    <button
-      className="button start -primary -center"
-      onClick={() => {
-        props.onNewReview(props.maxNewCards, props.maxCards);
-      }}
-    >
-      {`New review (${numCards})`}
-    </button>
-  );
-};
+const ReviewButton = React.forwardRef<HTMLButtonElement, ReviewProps>(
+  (props: ReviewProps, ref: React.RefObject<HTMLButtonElement>) => {
+    const numCards = nextReviewNumCards(props);
+    return (
+      <button
+        className="button start -primary -center"
+        onClick={() => {
+          props.onNewReview(props.maxNewCards, props.maxCards);
+        }}
+        ref={ref}
+      >
+        {`New review (${numCards})`}
+      </button>
+    );
+  }
+);
 
 const pluralCards = (num: number) => (num === 1 ? 'card' : 'cards');
 
 export class ReviewScreen extends React.PureComponent<Props> {
+  reviewPanelRef: React.RefObject<ReviewPanel>;
+  reviewButtonRef: React.RefObject<HTMLButtonElement>;
+  containerRef: React.RefObject<HTMLDivElement>;
+
+  constructor(props: Props) {
+    super(props);
+
+    this.reviewPanelRef = React.createRef<ReviewPanel>();
+    this.reviewButtonRef = React.createRef<HTMLButtonElement>();
+    this.containerRef = React.createRef<HTMLDivElement>();
+  }
+
+  componentDidMount() {
+    if (this.props.active) {
+      this.activate();
+    }
+  }
+
+  componentDidUpdate(previousProps: Props) {
+    if (!this.props.active) {
+      return;
+    }
+    if (
+      !previousProps.active ||
+      this.props.phase !== previousProps.phase ||
+      this.isLoading() !== this.isLoading(previousProps)
+    ) {
+      this.activate();
+    }
+  }
+
+  activate() {
+    if (this.reviewPanelRef.current) {
+      this.reviewPanelRef.current.focus();
+    } else if (this.reviewButtonRef.current) {
+      this.reviewButtonRef.current.focus();
+    } else if (this.containerRef.current) {
+      this.containerRef.current.focus();
+    }
+  }
+
   render() {
     const settingsButton = (
       <Link href="/review/settings" className="settings-button">
@@ -76,13 +121,14 @@ export class ReviewScreen extends React.PureComponent<Props> {
     );
   }
 
-  isLoading(): boolean {
+  isLoading(props?: Props): boolean {
+    const propsToUse = props || this.props;
     // We are loading if we are in the loading phase OR we are idle / complete
     // but don't yet know how many cards are available
     return (
-      this.props.phase === ReviewPhase.Loading ||
-      ([ReviewPhase.Idle, ReviewPhase.Complete].includes(this.props.phase) &&
-        !this.props.availableCards)
+      propsToUse.phase === ReviewPhase.Loading ||
+      ([ReviewPhase.Idle, ReviewPhase.Complete].includes(propsToUse.phase) &&
+        !propsToUse.availableCards)
     );
   }
 
@@ -168,7 +214,7 @@ export class ReviewScreen extends React.PureComponent<Props> {
               You can adjust the number of cards to review from the{' '}
               <span className="icon -settings -grey" /> settings above.
             </p>
-            <ReviewButton {...this.props} />
+            <ReviewButton {...this.props} ref={this.reviewButtonRef} />
           </div>
         </div>
       );
@@ -219,13 +265,17 @@ export class ReviewScreen extends React.PureComponent<Props> {
         nextReviewPrompt = (
           <React.Fragment>
             {promptText}
-            <ReviewButton {...this.props} />
+            <ReviewButton {...this.props} ref={this.reviewButtonRef} />
           </React.Fragment>
         );
       }
 
       return (
-        <div className="content summary-panel">
+        <div
+          className="content summary-panel"
+          tabIndex={0}
+          ref={this.containerRef}
+        >
           <div className="icon -general -reviewfinished" />
           <h4 className="heading">All done!</h4>
           <div className="details">{nextReviewPrompt}</div>
@@ -233,7 +283,9 @@ export class ReviewScreen extends React.PureComponent<Props> {
       );
     }
 
-    return <ReviewPanelContainer className="content" />;
+    return (
+      <ReviewPanelContainer className="content" ref={this.reviewPanelRef} />
+    );
   }
 
   renderProgressBar(): React.ReactNode | null {

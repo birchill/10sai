@@ -37,5 +37,7 @@ const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
 
 export const ReviewPanelContainer = connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
+  null,
+  { forwardRef: true } as any
 )(ReviewPanel);

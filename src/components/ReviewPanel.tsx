@@ -46,6 +46,9 @@ export class ReviewPanel extends React.Component<Props> {
   componentDidUpdate(prevProps: Props) {
     // If we've hidden the answer buttons, we need to remove focus from them so
     // that you can't, for example, press 'Enter' and have them respond.
+    //
+    // NOTE: This might no longer be necessary now that ReviewScreen is calling
+    // focus on us each time the review phase changes.
     if (
       prevProps.showBack &&
       !this.props.showBack &&
@@ -101,6 +104,12 @@ export class ReviewPanel extends React.Component<Props> {
           return;
       }
       e.preventDefault();
+    }
+  }
+
+  focus() {
+    if (this.cardsRef.current) {
+      this.cardsRef.current.focus();
     }
   }
 
