@@ -84,7 +84,7 @@ const renderTitle: React.SFC<Props> = (props: Props) => {
           failedCardsLevel2;
         const complete = completedCards + failedCardsLevel1 * 0.5;
         const percentComplete = Math.round((complete / total) * 100);
-        subtitle = `Review - ${percentComplete}% done`;
+        subtitle = `Review (${percentComplete}%)`;
       }
       break;
   }
