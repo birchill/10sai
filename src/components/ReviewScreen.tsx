@@ -51,87 +51,111 @@ const ReviewButton: React.SFC<ReviewProps> = (props: ReviewProps) => {
   );
 };
 
-const renderTitle: React.SFC<Props> = (props: Props) => {
-  if (!props.active) {
-    return null;
-  }
+const pluralCards = (num: number) => (num === 1 ? 'card' : 'cards');
 
-  let subtitle = 'Review';
-
-  switch (props.phase) {
-    case ReviewPhase.Loading:
-      subtitle = 'Loading review...';
-      break;
-
-    case ReviewPhase.Loading:
-      subtitle = 'Review complete';
-      break;
-
-    case ReviewPhase.Front:
-    case ReviewPhase.Back:
-      {
-        const {
-          failedCardsLevel1,
-          failedCardsLevel2,
-          completedCards,
-          unreviewedCards,
-        } = props.reviewProgress;
-
-        const total =
-          completedCards +
-          unreviewedCards +
-          failedCardsLevel1 +
-          failedCardsLevel2;
-        const complete = completedCards + failedCardsLevel1 * 0.5;
-        const percentComplete = Math.round((complete / total) * 100);
-        subtitle = `Review (${percentComplete}%)`;
-      }
-      break;
-  }
-
-  return <DocumentTitle title={`10sai - ${subtitle}`} />;
-};
-
-export const ReviewScreen: React.SFC<Props> = (props: Props) => {
-  const settingsButton = (
-    <Link href="/review/settings" className="settings-button">
-      Settings
-    </Link>
-  );
-
-  const pluralCards = (num: number) => (num === 1 ? 'card' : 'cards');
-
-  const loading =
-    props.phase === ReviewPhase.Loading ||
-    ([ReviewPhase.Idle, ReviewPhase.Complete].includes(props.phase) &&
-      !props.availableCards);
-
-  let content: React.ReactNode;
-  if (loading) {
-    content = (
-      <div className="content summary-panel">
-        <div className="icon">
-          <LoadingIndicator />
-        </div>
-      </div>
+export class ReviewScreen extends React.PureComponent<Props> {
+  render() {
+    const settingsButton = (
+      <Link href="/review/settings" className="settings-button">
+        Settings
+      </Link>
     );
-  } else if (props.phase === ReviewPhase.Idle) {
-    const numCards = nextReviewNumCards(props);
-    if (numCards === 0) {
-      content = (
+
+    return (
+      <section className="review-screen" aria-hidden={!this.props.active}>
+        {this.renderTitle()}
+        <div className="buttons">
+          {!this.isLoading() ? settingsButton : ''}
+          <Link href="/" className="close-button" direction="backwards">
+            Close
+          </Link>
+        </div>
+        {this.renderContent()}
+        {this.renderProgressBar()}
+      </section>
+    );
+  }
+
+  isLoading(): boolean {
+    // We are loading if we are in the loading phase OR we are idle / complete
+    // but don't yet know how many cards are available
+    return (
+      this.props.phase === ReviewPhase.Loading ||
+      ([ReviewPhase.Idle, ReviewPhase.Complete].includes(this.props.phase) &&
+        !this.props.availableCards)
+    );
+  }
+
+  renderTitle(): React.ReactNode | null {
+    if (!this.props.active) {
+      return null;
+    }
+
+    let subtitle = 'Review';
+
+    if (this.isLoading()) {
+      subtitle = 'Loading...';
+    }
+
+    switch (this.props.phase) {
+      case ReviewPhase.Complete:
+        subtitle = 'Review complete';
+        break;
+
+      case ReviewPhase.Front:
+      case ReviewPhase.Back:
+        {
+          const {
+            failedCardsLevel1,
+            failedCardsLevel2,
+            completedCards,
+            unreviewedCards,
+          } = this.props.reviewProgress;
+
+          const total =
+            completedCards +
+            unreviewedCards +
+            failedCardsLevel1 +
+            failedCardsLevel2;
+          const complete = completedCards + failedCardsLevel1 * 0.5;
+          const percentComplete = Math.round((complete / total) * 100);
+          subtitle = `Review (${percentComplete}%)`;
+        }
+        break;
+    }
+
+    return <DocumentTitle title={`10sai - ${subtitle}`} />;
+  }
+
+  renderContent(): React.ReactNode {
+    if (this.isLoading()) {
+      return (
         <div className="content summary-panel">
-          <div className="icon -general -reviewfinished" />
-          <h4 className="heading">No cards to review!</h4>
-          <div className="details">
-            <p>
-              There are no cards that need to be reviewed at this time.
-              You&rsquo;re all over this.
-            </p>
+          <div className="icon">
+            <LoadingIndicator />
           </div>
         </div>
       );
-    } else {
-      content = (
+    }
+
+    if (this.props.phase === ReviewPhase.Idle) {
+      const numCards = nextReviewNumCards(this.props);
+      if (numCards === 0) {
+        return (
+          <div className="content summary-panel">
+            <div className="icon -general -reviewfinished" />
+            <h4 className="heading">No cards to review!</h4>
+            <div className="details">
+              <p>
+                There are no cards that need to be reviewed at this time.
+                You&rsquo;re all over this.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
         <div className="content summary-panel">
           <div className="icon -general -review" />
           <h4 className="heading">Start a new review</h4>
@@ -144,73 +168,82 @@ export const ReviewScreen: React.SFC<Props> = (props: Props) => {
               You can adjust the number of cards to review from the{' '}
               <span className="icon -settings -grey" /> settings above.
             </p>
-            <ReviewButton {...props} />
+            <ReviewButton {...this.props} />
           </div>
         </div>
       );
     }
-  } else if (props.phase === ReviewPhase.Complete) {
-    // TODO: Stats here about review -- num cards reviewed, % correct on first
-    // attempt.
 
-    let nextReviewPrompt;
-    const numCards = nextReviewNumCards(props);
-    if (numCards !== 0) {
-      const { newCards, overdueCards } = props.availableCards;
-      let promptText;
-      if (newCards > 0 && overdueCards > 0) {
-        promptText = (
-          <p>
-            {newCards === 1 ? 'There is still ' : 'There are still '}
-            <strong>
-              {`${newCards} new ${pluralCards(newCards)}`}
-            </strong> and{' '}
-            <strong>
-              {`${overdueCards} overdue ${pluralCards(overdueCards)}`}
-            </strong>{' '}
-            cards available to review.
-          </p>
-        );
-      } else if (newCards > 0) {
-        promptText = (
-          <p>
-            {newCards === 1 ? 'There is still ' : 'There are still '}
-            <strong>{`${newCards} new ${pluralCards(newCards)}`}</strong>{' '}
-            available to review.
-          </p>
-        );
-      } else {
-        promptText = (
-          <p>
-            {overdueCards === 1 ? 'There is still ' : 'There are still '}
-            <strong>
-              {`${overdueCards} overdue ${pluralCards(overdueCards)}`}
-            </strong>{' '}
-            available to review.
-          </p>
+    if (this.props.phase === ReviewPhase.Complete) {
+      // TODO: Stats here about review -- num cards reviewed, % correct on first
+      // attempt.
+
+      let nextReviewPrompt: React.ReactNode | null = null;
+
+      const numCards = nextReviewNumCards(this.props);
+      if (numCards !== 0) {
+        const { newCards, overdueCards } = this.props.availableCards;
+        let promptText;
+        if (newCards > 0 && overdueCards > 0) {
+          promptText = (
+            <p>
+              {newCards === 1 ? 'There is still ' : 'There are still '}
+              <strong>
+                {`${newCards} new ${pluralCards(newCards)}`}
+              </strong> and{' '}
+              <strong>
+                {`${overdueCards} overdue ${pluralCards(overdueCards)}`}
+              </strong>{' '}
+              cards available to review.
+            </p>
+          );
+        } else if (newCards > 0) {
+          promptText = (
+            <p>
+              {newCards === 1 ? 'There is still ' : 'There are still '}
+              <strong>{`${newCards} new ${pluralCards(newCards)}`}</strong>{' '}
+              available to review.
+            </p>
+          );
+        } else {
+          promptText = (
+            <p>
+              {overdueCards === 1 ? 'There is still ' : 'There are still '}
+              <strong>
+                {`${overdueCards} overdue ${pluralCards(overdueCards)}`}
+              </strong>{' '}
+              available to review.
+            </p>
+          );
+        }
+        nextReviewPrompt = (
+          <React.Fragment>
+            {promptText}
+            <ReviewButton {...this.props} />
+          </React.Fragment>
         );
       }
-      nextReviewPrompt = (
-        <React.Fragment>
-          {promptText}
-          <ReviewButton {...props} />
-        </React.Fragment>
+
+      return (
+        <div className="content summary-panel">
+          <div className="icon -general -reviewfinished" />
+          <h4 className="heading">All done!</h4>
+          <div className="details">{nextReviewPrompt}</div>
+        </div>
       );
     }
 
-    content = (
-      <div className="content summary-panel">
-        <div className="icon -general -reviewfinished" />
-        <h4 className="heading">All done!</h4>
-        <div className="details">{nextReviewPrompt}</div>
-      </div>
-    );
-  } else {
-    content = <ReviewPanelContainer className="content" />;
+    return <ReviewPanelContainer className="content" />;
   }
 
-  let progressBar;
-  if (props.phase === ReviewPhase.Front || props.phase === ReviewPhase.Back) {
+  renderProgressBar(): React.ReactNode | null {
+    if (
+      this.props.phase !== ReviewPhase.Front &&
+      this.props.phase !== ReviewPhase.Back
+    ) {
+      return null;
+    }
+
     // We want to roughly represent the number of reviews. Bear in mind that
     // a failed card will need to be reviewed twice before it is considered to
     // have passed.
@@ -223,12 +256,12 @@ export const ReviewScreen: React.SFC<Props> = (props: Props) => {
       failedCardsLevel2,
       completedCards,
       unreviewedCards,
-    } = props.reviewProgress;
+    } = this.props.reviewProgress;
     const failCount = failedCardsLevel1 + failedCardsLevel2 * 2;
     const remaining = failCount + unreviewedCards;
     const title =
       remaining === 1 ? '1 review remaining' : `${remaining} reviews remaining`;
-    progressBar = (
+    return (
       <TricolorProgress
         className="progress"
         aItems={completedCards * 2}
@@ -238,18 +271,4 @@ export const ReviewScreen: React.SFC<Props> = (props: Props) => {
       />
     );
   }
-
-  return (
-    <section className="review-screen" aria-hidden={!props.active}>
-      {renderTitle(props)}
-      <div className="buttons">
-        {props.phase !== ReviewPhase.Loading ? settingsButton : ''}
-        <Link href="/" className="close-button" direction="backwards">
-          Close
-        </Link>
-      </div>
-      {content}
-      {progressBar}
-    </section>
-  );
-};
+}
