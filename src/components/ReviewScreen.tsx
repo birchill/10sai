@@ -1,4 +1,5 @@
 import * as React from 'react';
+import DocumentTitle from 'react-document-title';
 
 import { ReviewPhase } from '../review/ReviewPhase';
 
@@ -7,9 +8,7 @@ import { LoadingIndicator } from './LoadingIndicator';
 import { ReviewPanelContainer } from './ReviewPanelContainer';
 import { TricolorProgress } from './TricolorProgress';
 
-interface Props {
-  active: boolean;
-  phase: ReviewPhase;
+interface ReviewProps {
   onNewReview: (maxNewCards: number, maxCards: number) => void;
   availableCards: {
     newCards: number;
@@ -17,6 +16,11 @@ interface Props {
   };
   maxNewCards: number;
   maxCards: number;
+}
+
+interface Props extends ReviewProps {
+  active: boolean;
+  phase: ReviewPhase;
   reviewProgress: {
     failedCardsLevel1: number;
     failedCardsLevel2: number;
@@ -25,17 +29,7 @@ interface Props {
   };
 }
 
-interface ReviewButtonProps {
-  onNewReview: (maxNewCards: number, maxCards: number) => void;
-  availableCards: {
-    newCards: number;
-    overdueCards: number;
-  };
-  maxNewCards: number;
-  maxCards: number;
-}
-
-const nextReviewNumCards = (props: ReviewButtonProps): number => {
+const nextReviewNumCards = (props: ReviewProps): number => {
   return Math.min(
     Math.min(props.availableCards.newCards, props.maxNewCards) +
       props.availableCards.overdueCards,
@@ -43,9 +37,7 @@ const nextReviewNumCards = (props: ReviewButtonProps): number => {
   );
 };
 
-const ReviewButton: React.SFC<ReviewButtonProps> = (
-  props: ReviewButtonProps
-) => {
+const ReviewButton: React.SFC<ReviewProps> = (props: ReviewProps) => {
   const numCards = nextReviewNumCards(props);
   return (
     <button
@@ -57,6 +49,47 @@ const ReviewButton: React.SFC<ReviewButtonProps> = (
       {`New review (${numCards})`}
     </button>
   );
+};
+
+const renderTitle: React.SFC<Props> = (props: Props) => {
+  if (!props.active) {
+    return null;
+  }
+
+  let subtitle = 'Review';
+
+  switch (props.phase) {
+    case ReviewPhase.Loading:
+      subtitle = 'Loading review...';
+      break;
+
+    case ReviewPhase.Loading:
+      subtitle = 'Review complete';
+      break;
+
+    case ReviewPhase.Front:
+    case ReviewPhase.Back:
+      {
+        const {
+          failedCardsLevel1,
+          failedCardsLevel2,
+          completedCards,
+          unreviewedCards,
+        } = props.reviewProgress;
+
+        const total =
+          completedCards +
+          unreviewedCards +
+          failedCardsLevel1 +
+          failedCardsLevel2;
+        const complete = completedCards + failedCardsLevel1 * 0.5;
+        const percentComplete = Math.round((complete / total) * 100);
+        subtitle = `Review - ${percentComplete}% done`;
+      }
+      break;
+  }
+
+  return <DocumentTitle title={`10sai - ${subtitle}`} />;
 };
 
 export const ReviewScreen: React.SFC<Props> = (props: Props) => {
@@ -73,7 +106,7 @@ export const ReviewScreen: React.SFC<Props> = (props: Props) => {
     ([ReviewPhase.Idle, ReviewPhase.Complete].includes(props.phase) &&
       !props.availableCards);
 
-  let content;
+  let content: React.ReactNode;
   if (loading) {
     content = (
       <div className="content summary-panel">
@@ -208,6 +241,7 @@ export const ReviewScreen: React.SFC<Props> = (props: Props) => {
 
   return (
     <section className="review-screen" aria-hidden={!props.active}>
+      {renderTitle(props)}
       <div className="buttons">
         {props.phase !== ReviewPhase.Loading ? settingsButton : ''}
         <Link href="/" className="close-button" direction="backwards">

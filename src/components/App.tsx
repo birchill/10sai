@@ -137,6 +137,7 @@ class AppInner extends React.PureComponent<Props> {
   }
 
   render() {
+    // Title
     let title = '10sai';
     if (this.props.route.popup) {
       const toTitle = (str: string): string =>
@@ -144,6 +145,7 @@ class AppInner extends React.PureComponent<Props> {
       title += ` - ${toTitle(this.props.route.popup)}`;
     }
 
+    // Active tab
     const activeTab: TabName | undefined = [
       'lookup',
       'edit-card',
@@ -153,7 +155,7 @@ class AppInner extends React.PureComponent<Props> {
       : undefined;
     const tabPanelClass = activeTab ? '' : '-allhidden';
 
-    // Review handling
+    // Review status
     let remainingReviews: number | undefined;
     if (this.props.reviewProgress) {
       const {
@@ -180,33 +182,27 @@ class AppInner extends React.PureComponent<Props> {
                     role="tabpanel"
                     aria-labelledby="lookup-tab"
                     className={tabPanelClass}
-                    hidden={this.props.route.screen !== 'lookup'}
+                    hidden={activeTab !== 'lookup'}
                   >
-                    <LookupScreen
-                      active={this.props.route.screen === 'lookup'}
-                    />
+                    <LookupScreen active={activeTab === 'lookup'} />
                   </TabPanel>
                   <TabPanel
                     id="edit-page"
                     role="tabpanel"
                     aria-labelledby="edit-tab"
                     className={tabPanelClass}
-                    hidden={this.props.route.screen !== 'edit-card'}
+                    hidden={activeTab !== 'edit-card'}
                   >
-                    <EditCardScreen
-                      active={this.props.route.screen === 'edit-card'}
-                    />
+                    <EditCardScreen active={activeTab === 'edit-card'} />
                   </TabPanel>
                   <TabPanel
                     id="review-page"
                     role="tabpanel"
                     aria-labelledby="review-tab"
                     className={tabPanelClass}
-                    hidden={this.props.route.screen !== 'review'}
+                    hidden={activeTab !== 'review'}
                   >
-                    <ReviewScreenContainer
-                      active={this.props.route.screen === 'review'}
-                    />
+                    <ReviewScreenContainer active={activeTab === 'review'} />
                   </TabPanel>
                 </div>
                 <MainTabBlock
