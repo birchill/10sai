@@ -45,11 +45,8 @@ const DELETE_DURATION = 200;
 const STRETCH_EASING = 'cubic-bezier(.43,1.17,.88,1.1)';
 const STRETCH_DURATION = 250;
 
-// const MOVE_EASING = 'ease';
 const MOVE_DURATION = 250;
-
 const FADE_DURATION = 150;
-
 const ANIMATION_STAGGER = 50;
 
 export class NoteList extends React.PureComponent<Props, State> {
@@ -78,11 +75,14 @@ export class NoteList extends React.PureComponent<Props, State> {
   deletingNotesContainerRef: React.RefObject<HTMLDivElement>;
   lastNoteRef: React.RefObject<EditNoteForm>;
   addNoteButtonRef: React.RefObject<AddNoteButton>;
+
   sortNotes: (
     notes: Array<NoteState>,
     keywords: Array<string>
   ) => Array<NoteState>;
+
   state: State;
+  mounted: boolean;
 
   constructor(props: Props) {
     super(props);
@@ -97,6 +97,7 @@ export class NoteList extends React.PureComponent<Props, State> {
       deletingNotes: [],
       doAnimation,
     };
+    this.mounted = false;
 
     this.notesContainerRef = React.createRef<HTMLDivElement>();
     this.deletingNotesContainerRef = React.createRef<HTMLDivElement>();
@@ -201,6 +202,10 @@ export class NoteList extends React.PureComponent<Props, State> {
     return snapshot;
   }
 
+  componentDidMount() {
+    this.mounted = true;
+  }
+
   componentDidUpdate(
     previousProps: Props,
     previousState: State,
@@ -228,6 +233,10 @@ export class NoteList extends React.PureComponent<Props, State> {
     } else {
       this.animateExistingNotes(snapshot);
     }
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   animateNewNote(snapshot: AnimationSnapshot) {
@@ -340,7 +349,6 @@ export class NoteList extends React.PureComponent<Props, State> {
 
     // First animate-out any deleting notes
     let delay = 0;
-    const deletePromises: Array<Promise<Animation>> = [];
     for (const noteRef of snapshot.deletedNotes) {
       const form = this.getDeletingForm(noteRef.formId);
       if (form) {
@@ -359,7 +367,6 @@ export class NoteList extends React.PureComponent<Props, State> {
             fill: 'both',
           }
         );
-        deletePromises.push(getFinishedPromise(lastAnimation));
         delay += ANIMATION_STAGGER;
       }
     }
@@ -425,6 +432,10 @@ export class NoteList extends React.PureComponent<Props, State> {
     // delete animations have finished.
     if (lastAnimation && snapshot.deletedNotes.length) {
       getFinishedPromise(lastAnimation).then(() => {
+        if (!this.mounted) {
+          return;
+        }
+
         const deletingNotes = this.state.deletingNotes.slice();
         const toDelete = new Set<number>(
           snapshot.deletedNotes.map(ref => ref.formId)
