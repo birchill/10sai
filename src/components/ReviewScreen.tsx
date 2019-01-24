@@ -44,8 +44,12 @@ const ReviewButton = React.forwardRef<HTMLButtonElement, ReviewProps>(
     return (
       <button
         className="button start -primary -center"
-        onClick={() => {
+        onClick={evt => {
           props.onNewReview(props.maxNewCards, props.maxCards);
+          // Stop propagation or else if this was triggered by pressing 'Enter'
+          // the new ReviewPanel might catch the 'Enter' and reveal the back of
+          // the card immediately.
+          evt.stopPropagation();
         }}
         ref={ref}
       >
