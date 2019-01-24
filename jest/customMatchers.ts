@@ -5,6 +5,7 @@ declare namespace jest {
   }
   interface Matchers<R> {
     toBeInDateRange: (beginDate: Date, endDate: Date) => CustomMatcherResult;
+    toBeInRange: (floor: number, ceiling: number) => CustomMatcherResult;
   }
 }
 
@@ -51,4 +52,30 @@ function toBeInDateRange(
   return { actual: received, message, pass };
 }
 
-expect.extend({ toBeInDateRange });
+// Straight from the jest docs:
+// https://jestjs.io/docs/en/expect#expectextendmatchers
+function toBeInRange(
+  this: jest.MatcherUtils,
+  received: number,
+  floor: number,
+  ceiling: number
+) {
+  const pass = received >= floor && received <= ceiling;
+  if (pass) {
+    return {
+      actual: received,
+      message: () =>
+        `expected ${received} not to be within range ${floor} - ${ceiling}`,
+      pass: true,
+    };
+  } else {
+    return {
+      actual: received,
+      message: () =>
+        `expected ${received} to be within range ${floor} - ${ceiling}`,
+      pass: false,
+    };
+  }
+}
+
+expect.extend({ toBeInDateRange, toBeInRange });

@@ -147,6 +147,7 @@ export function failCard(): FailCardAction {
 export interface PassCardAction {
   type: 'PASS_CARD';
   nextCardSeed: number;
+  levelSeed: number;
 }
 
 export function passCard(): PassCardAction {
@@ -154,6 +155,7 @@ export function passCard(): PassCardAction {
     type: 'PASS_CARD',
     // Weight towards zero
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
+    levelSeed: Math.random(),
   };
 }
 

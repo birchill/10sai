@@ -5,6 +5,7 @@ import { getReviewSummary } from './selectors';
 import { generateCards } from '../utils/testing';
 import { Card, Review } from '../model';
 import { AppState, reducer } from '../reducer';
+import '../../jest/customMatchers';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -270,8 +271,8 @@ describe('reducer:review', () => {
     updatedState = subject(updatedState, Actions.passCard());
 
     // Card was due 5 days ago and we got it right, so the level should go to
-    // 10.
-    expect(updatedState.history[0].progress.level).toBe(10);
+    // ~10.
+    expect(updatedState.history[0].progress.level).toBeInRange(8, 12);
   });
 
   it('should update the card level for an existing card on PASS_CARD (before due date)', () => {
@@ -287,7 +288,7 @@ describe('reducer:review', () => {
     // Card isn't due for two days but if we just double the interval we'll end
     // up with a level *less* than the current level. Make sure that doesn't
     // happen.
-    expect(updatedState.history[0].progress.level).toBe(3);
+    expect(updatedState.history[0].progress.level).toBeGreaterThanOrEqual(3);
   });
 
   it('should update the card level on for a new card on PASS_CARD', () => {
@@ -298,7 +299,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, Actions.passCard());
 
-    expect(updatedState.history[0].progress.level).toBe(0.5);
+    expect(updatedState.history[0].progress.level).toBeInRange(0.4, 0.6);
   });
 
   it('should update the review time on PASS_CARD', () => {

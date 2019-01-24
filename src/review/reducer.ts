@@ -234,19 +234,24 @@ export function review(
 
       // Update the passed card
       if (finished) {
+        // Random jitter to add to the newly calculated level so that cards
+        // added or reviewd together get spread out somewhat.
+        const jitter = reviewAction.levelSeed * 0.2 + 0.9;
         if (updatedCard.progress.level && updatedCard.progress.reviewed) {
-          const intervalInDays =
+          const currentIntervalInDays =
             (state.reviewTime.getTime() -
               updatedCard.progress.reviewed.getTime()) /
             MS_PER_DAY;
+          const nextIntervalInDays = currentIntervalInDays * 2 * jitter;
+
           updatedCard.progress.level = Math.max(
-            intervalInDays * 2,
+            nextIntervalInDays,
             updatedCard.progress.level,
             0.5
           );
         } else {
-          // New / reset card: Review in a day
-          updatedCard.progress.level = 0.5;
+          // New / reset card: Review in 12 hours' time
+          updatedCard.progress.level = 0.5 * jitter;
         }
         updatedCard.progress.reviewed = state.reviewTime;
       } else {
