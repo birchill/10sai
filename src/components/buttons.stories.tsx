@@ -8,12 +8,12 @@ storiesOf('Forms|Buttons', module)
         <input
           className="button"
           type="submit"
-          value="&lt;input type=&quot;submit&quot;&gt;"
+          value='&lt;input type="submit"&gt;'
         />
         <input
           className="button"
           type="button"
-          value="&lt;input type=&quot;button&quot;&gt;"
+          value='&lt;input type="button"&gt;'
         />
         <button className="button">&lt;button&gt;</button>
         <a className="button" role="button">
@@ -29,7 +29,11 @@ storiesOf('Forms|Buttons', module)
           className="button -primary"
           value="disabled -primary"
         />
-        <input type="button" className="link" value="link" />
+        <input
+          type="button"
+          className="button -borderless"
+          value="-borderless"
+        />
         <input type="button" className="button -large" value="-large" />
       </div>
       <div className="series">
@@ -47,7 +51,9 @@ storiesOf('Forms|Buttons', module)
         <button className="button -icon -plus -large -primary">
           -icon -plus -large -primary
         </button>
-        <button className="link -icon -add-card">link -icon -add-card</button>
+        <button className="button -borderless -icon -add-card">
+          -borderless -icon -add-card
+        </button>
       </div>
     </>
   ))

@@ -39,6 +39,11 @@
     filter: grayscale(1);
   }
 
+  &:focus {
+    border-color: $highlight;
+    box-shadow: 0 0 0 .2rem lighten($highlight, 50%);
+  }
+
   // Variations
 
   // A default button
@@ -47,6 +52,11 @@
     color: white;
     &.-icon::before {
       background-position-y: -4em;
+    }
+
+    // Make the shadow a bit larger for primary buttons so it stands out more
+    &:focus {
+      box-shadow: 0 0 0 .4rem lighten($highlight, 50%);
     }
   }
 
@@ -57,7 +67,6 @@
 
     &:focus {
       border-color: $highlight;
-      border-radius: 0;
       outline: none;
     }
   }
