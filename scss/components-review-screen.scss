@@ -19,6 +19,10 @@
     /* This should be 'flex: 1 0 auto' but Chrome... :( */
     flex: 1;
 
+    &.summary-panel {
+      outline: none;
+    }
+
     &.summary-panel > .details {
       text-align: center;
     }
