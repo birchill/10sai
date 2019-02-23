@@ -1,4 +1,5 @@
 import { NoteState } from './reducer';
+import { getKeywordVariants } from '../text/keywords';
 
 // Returns a *copy* of the sorted notes.
 export const sortNotesByKeywordMatches = (
@@ -10,13 +11,15 @@ export const sortNotesByKeywordMatches = (
     score: number;
   };
 
+  const keywordsToUse = [...keywords, ...getKeywordVariants(keywords)];
+
   // First iterate through each of the notes and assign a score.
   const notesWithScores = notes.map(noteState => {
     let score = 0;
-    for (let i = 0; i < keywords.length; i++) {
-      const keyword = keywords[i].toLowerCase();
+    for (let i = 0; i < keywordsToUse.length; i++) {
+      const keyword = keywordsToUse[i].toLowerCase();
       if (noteState.originalKeywords.has(keyword)) {
-        score |= 1 << (keywords.length - i - 1);
+        score |= 1 << (keywordsToUse.length - i - 1);
       }
     }
     return {
