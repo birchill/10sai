@@ -20,17 +20,16 @@ export const sortNotesByKeywordMatches = (
       }
     }
     return {
-      noteState: noteState,
+      noteState,
       score,
     };
   });
 
   // Sort in place
-  notesWithScores.sort(
-    (a: NoteAndScore, b: NoteAndScore) =>
-      a.score === b.score
-        ? a.noteState.formId - b.noteState.formId
-        : b.score - a.score
+  notesWithScores.sort((a: NoteAndScore, b: NoteAndScore) =>
+    a.score === b.score
+      ? a.noteState.formId - b.noteState.formId
+      : b.score - a.score
   );
 
   // Unwrap
