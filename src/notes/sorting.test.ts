@@ -59,4 +59,15 @@ describe('sortNotesByKeywordMatches', () => {
 
     expect(result).toEqual([c, a, b]);
   });
+
+  it('sorts keyword variants too', () => {
+    const a = noteState(['源'], 1);
+    const b = noteState(['起源'], 2);
+    const c = noteState(['起'], 3);
+    const notes = [a, b, c];
+
+    const result = subject(notes, ['起源']);
+
+    expect(result).toEqual([b, c, a]);
+  });
 });

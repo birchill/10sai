@@ -35,6 +35,7 @@ interface AnimationSnapshot {
   }>;
   addedNotes: Array<number>;
   addNoteButtonBbox?: ClientRect;
+  focussedNote: number | null;
 }
 
 // Animation parameters
@@ -73,7 +74,7 @@ export class NoteList extends React.PureComponent<Props, State> {
 
   notesContainerRef: React.RefObject<HTMLDivElement>;
   deletingNotesContainerRef: React.RefObject<HTMLDivElement>;
-  lastNoteRef: React.RefObject<EditNoteForm>;
+  noteRefs: Array<EditNoteForm>;
   addNoteButtonRef: React.RefObject<AddNoteButton>;
 
   sortNotes: (
@@ -101,7 +102,7 @@ export class NoteList extends React.PureComponent<Props, State> {
 
     this.notesContainerRef = React.createRef<HTMLDivElement>();
     this.deletingNotesContainerRef = React.createRef<HTMLDivElement>();
-    this.lastNoteRef = React.createRef<EditNoteForm>();
+    this.noteRefs = [];
     this.addNoteButtonRef = React.createRef<AddNoteButton>();
 
     this.handleAddNote = this.handleAddNote.bind(this);
@@ -152,6 +153,7 @@ export class NoteList extends React.PureComponent<Props, State> {
       deletedNotes: [],
       addedNotes: [],
       movedNotes: [],
+      focussedNote: null,
     };
 
     const previousNotes = new Map<number, number>(
@@ -199,6 +201,22 @@ export class NoteList extends React.PureComponent<Props, State> {
       snapshot.addNoteButtonBbox = addNoteButton.elem.getBoundingClientRect();
     }
 
+    // See if the focus is in any of the notes. We only need this for deleting
+    // notes but for consistency we just do it anyway.
+    if (
+      this.notesContainerRef.current &&
+      this.notesContainerRef.current.contains(document.activeElement)
+    ) {
+      let node: HTMLElement = document.activeElement as HTMLElement;
+      while (node !== this.notesContainerRef.current) {
+        if (node.classList.contains('noteform')) {
+          snapshot.focussedNote = Number(node.dataset.formId!);
+          break;
+        }
+        node = node.parentElement!;
+      }
+    }
+
     return snapshot;
   }
 
@@ -226,12 +244,41 @@ export class NoteList extends React.PureComponent<Props, State> {
       this.animateNewNote(snapshot);
 
       // Focus the new note and scroll it into view.
-      if (this.lastNoteRef.current) {
-        this.lastNoteRef.current.focus();
-        this.lastNoteRef.current.scrollIntoView();
+      if (this.noteRefs.length) {
+        const newNote = this.noteRefs[this.noteRefs.length - 1];
+        newNote.focus();
+        newNote.scrollIntoView();
       }
     } else {
       this.animateExistingNotes(snapshot);
+
+      // If we are deleting a note that was focussed we need to update the focus
+      // to the next note, or if there is none, to the add button.
+      if (
+        snapshot.deletedNotes.some(
+          note => note.formId === snapshot.focussedNote
+        )
+      ) {
+        // Find the next note after the deleted one according to the order
+        // it would have sorted in.
+        const deletedNote = this.state.deletingNotes.find(
+          note => note.formId === snapshot.focussedNote
+        );
+        if (deletedNote) {
+          const sortedNotes = this.sortNotes(
+            [...this.props.notes, deletedNote],
+            this.props.keywords
+          );
+          const deletedIndex = sortedNotes.findIndex(
+            note => note.formId === snapshot.focussedNote
+          );
+          if (deletedIndex !== -1 && deletedIndex < sortedNotes.length - 1) {
+            this.noteRefs[deletedIndex].focus();
+          } else {
+            this.addNoteButtonRef.current!.elem!.focus();
+          }
+        }
+      }
     }
   }
 
@@ -258,10 +305,10 @@ export class NoteList extends React.PureComponent<Props, State> {
     }
 
     // Finally, check we have a notes form to align with.
-    if (!this.lastNoteRef.current) {
+    if (!this.noteRefs.length) {
       return;
     }
-    const newNote = this.lastNoteRef.current.form;
+    const newNote = this.noteRefs[this.noteRefs.length - 1].form;
     if (!newNote) {
       return;
     }
@@ -276,7 +323,7 @@ export class NoteList extends React.PureComponent<Props, State> {
     // Get the position of the new note.
     const newNotePosition = newNote.getBoundingClientRect();
 
-    // Streth the button to the size of the new note.
+    // Stretch the button to the size of the new note.
     //
     // (Note this currently assumes that both notes and the add note are
     // centered. If that ceases to be the case we'll need to pass the x position
@@ -472,11 +519,11 @@ export class NoteList extends React.PureComponent<Props, State> {
   render() {
     // Returns a copy of the array (i.e. props are not mutated).
     //
-    // It's also really important note to mutate sortedNotes itself since
+    // It's also really important not to mutate sortedNotes itself since
     // this.sortNotes is memo-ized and will return the same object, namely
     // |sortedNotes|, next time for the same input.
     const sortedNotes = this.sortNotes(this.props.notes, this.props.keywords);
-    const lastRealNoteIndex = this.props.notes.length - 1;
+    this.noteRefs = [];
 
     let className = 'note-list';
     if (this.props.className) {
@@ -492,7 +539,6 @@ export class NoteList extends React.PureComponent<Props, State> {
       <div className={className}>
         <div className="notecontainer" ref={this.notesContainerRef}>
           {sortedNotes.map((note, i) => {
-            const ref = i === lastRealNoteIndex ? this.lastNoteRef : undefined;
             return (
               <EditNoteForm
                 key={note.formId}
@@ -502,7 +548,11 @@ export class NoteList extends React.PureComponent<Props, State> {
                 saveState={note.saveState}
                 saveError={note.saveError ? note.saveError.message : undefined}
                 relatedKeywords={this.props.keywords}
-                ref={ref}
+                ref={elem => {
+                  if (elem) {
+                    this.noteRefs.push(elem);
+                  }
+                }}
                 onChange={this.handleNoteChange}
                 onDelete={this.props.onDeleteNote}
               />
