@@ -68,6 +68,7 @@
     &:focus {
       border-color: $highlight;
       outline: none;
+      box-shadow: none;
     }
   }
 
