@@ -53,8 +53,21 @@ export class AddNoteButton extends React.PureComponent<Props> {
 
     // Calculate a few useful numbers
     const bbox = this.buttonRef.current.getBoundingClientRect();
-    const scaleX = params.width / bbox.width;
-    const scaleY = params.height / bbox.height;
+
+    // The bbox returned by getBoundingClientRect will include any border
+    // specified on the button so we need to subtract that.
+    const gCS = getComputedStyle(this.buttonRef.current);
+    const innerWidth =
+      bbox.width -
+      parseFloat(gCS.borderLeftWidth!) -
+      parseFloat(gCS.borderRightWidth!);
+    const innerHeight =
+      bbox.height -
+      parseFloat(gCS.borderTopWidth!) -
+      parseFloat(gCS.borderBottomWidth!);
+
+    const scaleX = params.width / innerWidth;
+    const scaleY = params.height / innerHeight;
 
     // Animate the corner
     //
@@ -68,10 +81,10 @@ export class AddNoteButton extends React.PureComponent<Props> {
       '.corner'
     ) as HTMLElement;
     const oneEm = corner.getBoundingClientRect().width;
-    const cornerTranslateX = (params.width - bbox.width) / 2;
-    const cornerTranslateY = (params.height - bbox.height) / -2;
+    const cornerTranslateX = (params.width - innerWidth) / 2;
+    const cornerTranslateY = (params.height - innerHeight) / -2;
     const cornerTransform = `translate(${cornerTranslateX}px, ${cornerTranslateY}px)`;
-    // (There are more compact was of writing this but this format should have
+    // (There are more compact ways of writing this but this format should have
     // the best backwards compatibility with old versions of Firefox and
     // Chrome.)
     corner.animate(
@@ -87,7 +100,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     const topBit = this.buttonRef.current.querySelector(
       '.top'
     ) as HTMLDivElement;
-    const topScaleX = (params.width - oneEm) / (bbox.width - oneEm);
+    const topScaleX = (params.width - oneEm) / (innerWidth - oneEm);
     const topTransform = `translateY(${cornerTranslateY}px) scaleX(${topScaleX})`;
     topBit.animate(
       [
@@ -102,7 +115,7 @@ export class AddNoteButton extends React.PureComponent<Props> {
     const body = this.buttonRef.current.querySelector(
       '.body'
     ) as HTMLDivElement;
-    const bodyScaleY = (params.height - oneEm) / (bbox.height - oneEm);
+    const bodyScaleY = (params.height - oneEm) / (innerHeight - oneEm);
     const bodyTransform = `scale(${scaleX}, ${bodyScaleY})`;
     body.animate(
       [
