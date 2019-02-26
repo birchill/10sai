@@ -67,7 +67,7 @@ export class SaveStatus extends React.PureComponent<Props, State> {
     return (
       <div className={className}>
         <span className="label ok">Saved</span>
-        <span className="label inprogress">Saving…</span>
+        <span className="label inprogress" />
         <span className="label error" title={this.props.saveError}>
           Error
         </span>
