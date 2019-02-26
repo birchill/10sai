@@ -1,4 +1,5 @@
-import { notes as subject, NoteState, SaveState } from './reducer';
+import { notes as subject, NoteState } from './reducer';
+import { SaveState } from '../edit/reducer';
 import * as actions from './actions';
 import { Note } from '../model';
 import { Omit } from '../utils/type-helpers';

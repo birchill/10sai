@@ -12,7 +12,8 @@ import { Note } from '../model';
 import * as Actions from '../actions';
 import { EditNoteContext, EditScreenContext } from './actions';
 import { FormState } from '../edit/FormState';
-import { SaveState, NoteState } from '../notes/reducer';
+import { NoteState } from '../notes/reducer';
+import { SaveState } from '../edit/reducer';
 import { StoreError } from '../store/DataStore';
 
 const initialState = reducer(undefined, { type: 'none' } as any);
@@ -42,6 +43,7 @@ const noteState = (
               originalKeywords: new Set<string>(),
             },
           ],
+          saveState: SaveState.Ok,
         },
       },
     },

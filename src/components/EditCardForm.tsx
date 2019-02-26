@@ -2,14 +2,19 @@ import * as React from 'react';
 
 import { CardFaceEditControls } from './CardFaceEditControls';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
+import { SaveStatus } from './SaveStatus';
 import { TagSuggestionProvider } from './TagSuggestionProvider';
 import { TokenList } from './TokenList';
 
 import { Card } from '../model';
+import { SaveState } from '../edit/reducer';
+import { StoreError } from '../store/DataStore';
 import { KeywordSuggester } from '../suggestions/KeywordSuggester';
 
 interface Props {
   card: Partial<Card>;
+  saveState: SaveState;
+  saveError?: StoreError;
   onChange?: (topic: string, value: string | string[]) => void;
 }
 
@@ -106,78 +111,87 @@ export class EditCardForm extends React.Component<Props, State> {
     );
 
     return (
-      <form className="form editcard-form" autoComplete="off">
-        <CardFaceEditControls
-          card={this.props.card}
-          onChange={this.handleCardChange}
-          ref={this.cardControlsRef}
-        />
-        <div
-          className="keywords -yellow"
-          onClick={this.handleKeywordsClick}
-          title="Add words here to cross-reference with notes and other resources. For example, if this card is about &ldquo;running&rdquo;, adding &ldquo;run&rdquo; as a keyword will make it easy to find related notes, pictures, and dictionary entries."
-        >
-          <span className="icon -key" />
-          <KeywordSuggestionProvider
-            text={this.state.keywordsText}
-            defaultSuggestions={keywordSuggestions}
-            includeRecentKeywords={true}
+      <>
+        <form className="form editcard-form" autoComplete="off">
+          <CardFaceEditControls
+            card={this.props.card}
+            onChange={this.handleCardChange}
+            ref={this.cardControlsRef}
+          />
+          <div
+            className="keywords -yellow"
+            onClick={this.handleKeywordsClick}
+            title="Words to cross-reference with notes and other resources"
           >
-            {(
-              suggestions: string[],
-              loading: boolean,
-              addRecentEntry: (entry: string) => void
-            ) => (
-              <TokenList
-                className="tokens -yellow -seamless"
-                tokens={this.props.card.keywords || []}
-                placeholder="Keywords"
-                onTokensChange={(
-                  keywords: string[],
-                  addedKeywords: string[]
-                ) => {
-                  this.handleKeywordsChange(
-                    keywords,
-                    addedKeywords,
-                    addRecentEntry
-                  );
-                }}
-                onTextChange={this.handleKeywordsTextChange}
-                suggestions={suggestions}
-                loadingSuggestions={loading}
-                ref={this.keywordsTokenListRef}
-              />
-            )}
-          </KeywordSuggestionProvider>
-        </div>
-        <div
-          className="tags"
-          onClick={this.handleTagsClick}
-          title="Add labels here to help organize your cards such as &ldquo;vocabulary&rdquo;, &ldquo;Intermediate French Conversation&rdquo;, &ldquo;Needs picture&rdquo; etc."
-        >
-          <span className="icon -tag -grey" />
-          <TagSuggestionProvider text={this.state.tagsText}>
-            {(
-              suggestions: string[],
-              loading: boolean,
-              addRecentEntry: (entry: string) => void
-            ) => (
-              <TokenList
-                className="tokens -seamless"
-                tokens={this.props.card.tags || []}
-                placeholder="Tags"
-                onTokensChange={(tags: string[], addedTags: string[]) => {
-                  this.handleTagsChange(tags, addedTags, addRecentEntry);
-                }}
-                onTextChange={this.handleTagsTextChange}
-                suggestions={suggestions}
-                loadingSuggestions={loading}
-                ref={this.tagsTokenListRef}
-              />
-            )}
-          </TagSuggestionProvider>
-        </div>
-      </form>
+            <span className="icon -key" />
+            <KeywordSuggestionProvider
+              text={this.state.keywordsText}
+              defaultSuggestions={keywordSuggestions}
+              includeRecentKeywords={true}
+            >
+              {(
+                suggestions: string[],
+                loading: boolean,
+                addRecentEntry: (entry: string) => void
+              ) => (
+                <TokenList
+                  className="tokens -yellow -seamless"
+                  tokens={this.props.card.keywords || []}
+                  placeholder="Keywords"
+                  onTokensChange={(
+                    keywords: string[],
+                    addedKeywords: string[]
+                  ) => {
+                    this.handleKeywordsChange(
+                      keywords,
+                      addedKeywords,
+                      addRecentEntry
+                    );
+                  }}
+                  onTextChange={this.handleKeywordsTextChange}
+                  suggestions={suggestions}
+                  loadingSuggestions={loading}
+                  ref={this.keywordsTokenListRef}
+                />
+              )}
+            </KeywordSuggestionProvider>
+          </div>
+          <div
+            className="tags"
+            onClick={this.handleTagsClick}
+            title="Labels to help organize your cards"
+          >
+            <span className="icon -tag -grey" />
+            <TagSuggestionProvider text={this.state.tagsText}>
+              {(
+                suggestions: string[],
+                loading: boolean,
+                addRecentEntry: (entry: string) => void
+              ) => (
+                <TokenList
+                  className="tokens -seamless"
+                  tokens={this.props.card.tags || []}
+                  placeholder="Tags"
+                  onTokensChange={(tags: string[], addedTags: string[]) => {
+                    this.handleTagsChange(tags, addedTags, addRecentEntry);
+                  }}
+                  onTextChange={this.handleTagsTextChange}
+                  suggestions={suggestions}
+                  loadingSuggestions={loading}
+                  ref={this.tagsTokenListRef}
+                />
+              )}
+            </TagSuggestionProvider>
+          </div>
+        </form>
+        <SaveStatus
+          className="savestate"
+          saveState={this.props.saveState}
+          saveError={
+            this.props.saveError ? this.props.saveError.message : undefined
+          }
+        />
+      </>
     );
   }
 

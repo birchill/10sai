@@ -2,7 +2,7 @@ import * as React from 'react';
 import memoize from 'memoize-one';
 
 import { Note } from '../model';
-import { SaveState } from '../notes/reducer';
+import { SaveState } from '../edit/reducer';
 import { getKeywordVariants, getKeywordsToMatch } from '../text/keywords';
 import { NoteFrame } from './NoteFrame';
 import { SaveStatus } from './SaveStatus';

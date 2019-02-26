@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { SaveState } from '../notes/reducer';
+import { SaveState } from '../edit/reducer';
 
 interface Props {
   saveState: SaveState;

@@ -4,7 +4,7 @@ import { action } from '@storybook/addon-actions';
 
 import { NoteState } from '../notes/reducer';
 import { NoteList } from './NoteList';
-import { SaveState } from '../notes/reducer';
+import { SaveState } from '../edit/reducer';
 
 import { RecentKeywordHandling } from '../suggestions/KeywordSuggester';
 import { SuggestionResult } from '../suggestions/SuggestionResult';

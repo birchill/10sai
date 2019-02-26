@@ -1,5 +1,6 @@
 import { sortNotesByKeywordMatches as subject } from './sorting';
-import { NoteState, SaveState } from './reducer';
+import { NoteState } from './reducer';
+import { SaveState } from '../edit/reducer';
 
 describe('sortNotesByKeywordMatches', () => {
   const getRandomString = (len: number): string =>

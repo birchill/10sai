@@ -3,7 +3,8 @@ import memoize from 'memoize-one';
 
 import { Note } from '../model';
 import { getFinishedPromise } from '../utils/animation';
-import { NoteState, SaveState } from '../notes/reducer';
+import { NoteState } from '../notes/reducer';
+import { SaveState } from '../edit/reducer';
 import { sortNotesByKeywordMatches } from '../notes/sorting';
 import { AddNoteButton } from './AddNoteButton';
 import { EditNoteForm } from './EditNoteForm';

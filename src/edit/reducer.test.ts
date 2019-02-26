@@ -1,4 +1,4 @@
-import { edit as subject, EditState } from './reducer';
+import { edit as subject, EditState, SaveState } from './reducer';
 import { FormState } from './FormState';
 import * as Actions from '../actions';
 import { Card } from '../model';
@@ -17,6 +17,7 @@ const emptyState = (
       isNew: true,
       card: { tags: initialTags },
       notes: [],
+      saveState: SaveState.New,
     },
   },
 });
@@ -34,6 +35,7 @@ const okState = (
         isNew: false,
         card,
         notes: [],
+        saveState: SaveState.Ok,
       },
     },
   };
@@ -53,6 +55,7 @@ const loadingState = (newFormId: number): EditState => ({
       isNew: false,
       card: {},
       notes: [],
+      saveState: SaveState.Ok,
     },
   },
 });
@@ -71,6 +74,7 @@ const dirtyState = (
       card,
       dirtyFields,
       notes: [],
+      saveState: isNew ? SaveState.New : SaveState.Ok,
     },
   },
 });
@@ -83,6 +87,7 @@ const notFoundState = (formId: number): EditState => ({
       isNew: false,
       card: {},
       notes: [],
+      saveState: SaveState.Ok,
     },
   },
 });
@@ -95,6 +100,7 @@ const deletedState = (formId: number): EditState => ({
       isNew: false,
       card: {},
       notes: [],
+      saveState: SaveState.Ok,
     },
   },
 });
@@ -103,6 +109,7 @@ const withSaveError = (state: EditState, saveError: StoreError): EditState => ({
   forms: {
     active: {
       ...state.forms.active,
+      saveState: SaveState.Error,
       saveError,
     },
   },
@@ -322,6 +329,8 @@ describe('reducer:edit', () => {
       { id: 'abc', front: 'Updated question', back: 'Answer' },
       toDirtyFields('front')
     );
+    withoutErrorState.forms.active.saveState = SaveState.InProgress;
+
     const initialState = withSaveError(withoutErrorState, {
       name: 'bad',
       message: 'Bad bad bad',

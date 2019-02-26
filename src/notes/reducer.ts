@@ -3,14 +3,8 @@ import { collate } from 'pouchdb-collate';
 
 import * as actions from './actions';
 import { Note } from '../model';
+import { SaveState } from '../edit/reducer';
 import { StoreError } from '../store/DataStore';
-
-export const enum SaveState {
-  New = 'new',
-  Ok = 'ok',
-  InProgress = 'in-progress',
-  Error = 'error',
-}
 
 export interface NoteState {
   formId: number;

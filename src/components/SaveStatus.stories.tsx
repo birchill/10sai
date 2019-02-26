@@ -2,7 +2,7 @@ import * as React from 'react';
 import { storiesOf } from '@storybook/react';
 
 import { SaveStatus } from './SaveStatus';
-import { SaveState } from '../notes/reducer';
+import { SaveState } from '../edit/reducer';
 
 interface State {
   saveState: SaveState;

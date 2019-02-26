@@ -13,6 +13,7 @@ import {
   beforeEditScreenChange as beforeEditScreenChangeSaga,
 } from './sagas';
 import { Card } from '../model';
+import { SaveState } from './reducer';
 import { reducer, AppState } from '../reducer';
 import { FormState } from './FormState';
 import * as Actions from '../actions';
@@ -177,6 +178,7 @@ const okState = (
           isNew: typeof card.id === 'undefined',
           card,
           notes: [],
+          saveState: SaveState.Ok,
         },
       },
     },

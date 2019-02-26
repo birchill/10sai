@@ -8,6 +8,13 @@ import * as actions from './actions';
 import { StoreError } from '../store/DataStore';
 import { isNoteAction, NoteAction, EditNoteContext } from '../notes/actions';
 
+export const enum SaveState {
+  New = 'new',
+  Ok = 'ok',
+  InProgress = 'in-progress',
+  Error = 'error',
+}
+
 export interface EditFormState {
   formId: number;
   formState: FormState;
@@ -15,6 +22,7 @@ export interface EditFormState {
   card: Partial<Card>;
   dirtyFields?: Set<keyof Card>;
   notes: Array<NoteState>;
+  saveState: SaveState;
   saveError?: StoreError;
 }
 
@@ -32,6 +40,7 @@ const initialState: EditState = {
       isNew: true,
       card: {},
       notes: [],
+      saveState: SaveState.New,
     },
   },
 };
@@ -60,6 +69,7 @@ export function edit(state = initialState, action: Action): EditState {
             isNew: true,
             card,
             notes: [],
+            saveState: SaveState.New,
           },
         },
       };
@@ -74,6 +84,7 @@ export function edit(state = initialState, action: Action): EditState {
             isNew: false,
             card: {},
             notes: [],
+            saveState: SaveState.Ok,
           },
         },
       };
@@ -92,6 +103,7 @@ export function edit(state = initialState, action: Action): EditState {
             isNew: false,
             card: editAction.card,
             notes: [],
+            saveState: SaveState.Ok,
           },
         },
       };
@@ -115,6 +127,7 @@ export function edit(state = initialState, action: Action): EditState {
             isNew: false,
             card: {},
             notes: [],
+            saveState: SaveState.Ok,
           },
         },
       };
@@ -163,6 +176,7 @@ export function edit(state = initialState, action: Action): EditState {
             card: { ...state.forms.active.card, ...editAction.card },
             dirtyFields,
             notes: state.forms.active.notes,
+            saveState: editState.saveState,
           },
         },
       };
@@ -176,12 +190,18 @@ export function edit(state = initialState, action: Action): EditState {
         return state;
       }
 
-      if (typeof state.forms.active.saveError === 'undefined') {
-        return state;
-      }
-
-      const updatedState = { ...state };
+      const updatedState = {
+        ...state,
+        forms: {
+          ...state.forms,
+          active: {
+            ...state.forms.active,
+            saveState: SaveState.InProgress,
+          },
+        },
+      };
       delete updatedState.forms.active.saveError;
+
       return updatedState;
     }
 
@@ -210,6 +230,7 @@ export function edit(state = initialState, action: Action): EditState {
             isNew: state.forms.active.isNew,
             card: { ...editAction.card, ...state.forms.active.card },
             notes: state.forms.active.notes,
+            saveState: SaveState.Ok,
           },
         },
       };
@@ -232,6 +253,7 @@ export function edit(state = initialState, action: Action): EditState {
         forms: {
           active: {
             ...state.forms.active,
+            saveState: SaveState.Error,
             saveError: editAction.error,
           },
         },
@@ -255,6 +277,7 @@ export function edit(state = initialState, action: Action): EditState {
               isNew: false,
               card: {},
               notes: [],
+              saveState: state.forms.active.saveState,
             },
           },
         };
@@ -296,6 +319,7 @@ export function edit(state = initialState, action: Action): EditState {
               isNew: true,
               card: {},
               notes: [],
+              saveState: SaveState.New,
             },
           },
         };
@@ -309,6 +333,7 @@ export function edit(state = initialState, action: Action): EditState {
             isNew: false,
             card: {},
             notes: [],
+            saveState: state.forms.active.saveState,
           },
         },
       };
