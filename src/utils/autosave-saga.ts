@@ -10,7 +10,8 @@ import {
 } from 'redux-saga/effects';
 import { DataStore } from '../store/DataStore';
 import { Action } from 'redux';
-import { Task, delay } from 'redux-saga';
+import { Task } from 'redux-saga';
+import { delay } from 'redux-saga/effects';
 
 export interface ResourceState<Resource, SaveContext> {
   context: SaveContext;
@@ -32,9 +33,7 @@ export interface ResourceParams<
   deleteActionType: string;
   resourceStateSelector: (
     action: EditAction | SaveAction | DeleteAction
-  ) => ((
-    state: ReduxState
-  ) => ResourceState<Resource, SaveContext> | undefined);
+  ) => (state: ReduxState) => ResourceState<Resource, SaveContext> | undefined;
   delete: (
     dataStore: DataStore,
     action: DeleteAction,

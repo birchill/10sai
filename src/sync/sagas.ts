@@ -1,5 +1,4 @@
-import { call, takeEvery, takeLatest, put, select } from 'redux-saga/effects';
-import { delay } from 'redux-saga';
+import { delay, takeEvery, takeLatest, put, select } from 'redux-saga/effects';
 import { Dispatch } from 'redux';
 
 import { waitForDocLoad } from '../utils';
@@ -114,7 +113,11 @@ function* setSyncServer(
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* retrySync(dataStore: DataStore, dispatch: Dispatch<Actions.Action>) {
+function* retrySync(
+  dataStore: DataStore,
+  dispatch: Dispatch<Actions.Action>,
+  action: never
+) {
   const server = yield select(getServer);
   yield startReplication(dataStore, server, dispatch);
 }
@@ -133,7 +136,7 @@ function* finishSync(dataStore: DataStore, action: Actions.FinishSyncAction) {
   yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 }
 
-function* pauseSync(dataStore: DataStore) {
+function* pauseSync(dataStore: DataStore, action: never) {
   // Update stored paused state
   const server = yield select(getServer);
   const lastSyncTime = yield select(getLastSyncTimeAsNumber);
@@ -152,7 +155,11 @@ function* pauseSync(dataStore: DataStore) {
   yield stopReplication(dataStore);
 }
 
-function* resumeSync(dataStore: DataStore, dispatch: Dispatch<Actions.Action>) {
+function* resumeSync(
+  dataStore: DataStore,
+  dispatch: Dispatch<Actions.Action>,
+  action: never
+) {
   // Update stored paused state
   const server = yield select(getServer);
   const lastSyncTime = yield select(getLastSyncTimeAsNumber);
@@ -223,7 +230,7 @@ function* updateSetting(
     // However, we don't want to trigger replication *too* quickly on startup
     // because it will cause contention with all the other queries we run on
     // startup so we add a little delay to let other things happen first.
-    yield call(delay, 1500);
+    yield delay(1500);
 
     // Check that the server hasn't changed while we were waiting.
     // (The proper way to do this would be to make this saga cancelable and then
@@ -242,7 +249,11 @@ function* updateSetting(
   }
 }
 
-function* goOnline(dataStore: DataStore, dispatch: Dispatch<Actions.Action>) {
+function* goOnline(
+  dataStore: DataStore,
+  dispatch: Dispatch<Actions.Action>,
+  action: never
+) {
   if (yield select(getPaused)) {
     return;
   }
@@ -251,7 +262,7 @@ function* goOnline(dataStore: DataStore, dispatch: Dispatch<Actions.Action>) {
   yield startReplication(dataStore, server, dispatch);
 }
 
-function* goOffline(dataStore: DataStore) {
+function* goOffline(dataStore: DataStore, action: never) {
   yield stopReplication(dataStore);
 }
 

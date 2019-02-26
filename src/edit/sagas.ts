@@ -130,7 +130,7 @@ export function* watchCardEdits(dataStore: DataStore) {
       card: Partial<Card>
     ): CallEffect | undefined => {
       if (typeof card.id === 'string' || typeof action.cardId === 'string') {
-        return call([dataStore, 'deleteCard'], card.id || action.cardId);
+        return call([dataStore, 'deleteCard'], (card.id || action.cardId)!);
       }
       return undefined;
     },

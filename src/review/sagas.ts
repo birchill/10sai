@@ -33,8 +33,8 @@ export function* updateHeap(
     | Actions.SetReviewLimitAction
     | Actions.SetReviewTimeAction
 ) {
-  const reviewInfo = yield select(
-    (state: AppState) => (state ? state.review : {})
+  const reviewInfo = yield select((state: AppState) =>
+    state ? state.review : {}
   );
 
   // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
@@ -106,8 +106,8 @@ export function* updateProgress(
   dataStore: DataStore,
   action: Actions.PassCardAction | Actions.FailCardAction
 ) {
-  const reviewInfo: ReviewState = yield select(
-    (state: AppState) => (state ? state.review : {})
+  const reviewInfo: ReviewState = yield select((state: AppState) =>
+    state ? state.review : {}
   );
 
   // Fetch the updated card from the state. Normally this is the last card in
@@ -160,7 +160,7 @@ export function* updateReviewTime(
   yield call([dataStore, 'setReviewTime'], action.reviewTime);
 }
 
-export function* queryAvailableCards(dataStore: DataStore) {
+export function* queryAvailableCards(dataStore: DataStore, action: never) {
   // TODO: Error handling
   const availableCards: AvailableCards = yield call([
     dataStore,
@@ -200,8 +200,8 @@ export function* loadReview(
 
   // Fetch and update reviewInfo so that getCardsForHeap knows how many slots it
   // needs to fill.
-  const reviewInfo = yield select(
-    (state: AppState) => (state ? state.review : {})
+  const reviewInfo = yield select((state: AppState) =>
+    state ? state.review : {}
   );
   reviewInfo.history = history;
   reviewInfo.failedCardsLevel1 = failedCardsLevel1;
@@ -224,7 +224,7 @@ export function* loadReview(
   );
 }
 
-export function* cancelReview(dataStore: DataStore) {
+export function* cancelReview(dataStore: DataStore, action: never) {
   // TODO: Error handling
   yield call([dataStore, 'deleteReview']);
 }

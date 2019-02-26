@@ -81,7 +81,7 @@ export function* watchNoteEdits(dataStore: DataStore) {
       note: Partial<Note>
     ): CallEffect | undefined => {
       if (typeof note.id === 'string' || typeof action.noteId === 'string') {
-        return call([dataStore, 'deleteNote'], note.id || action.noteId);
+        return call([dataStore, 'deleteNote'], (note.id || action.noteId)!);
       }
       return undefined;
     },
