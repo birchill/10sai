@@ -83,14 +83,6 @@
     .delete {
       color: $warning-red;
     }
-
-    .savestate {
-      flex: 1;
-      padding: .4rem;
-      // This is to match the equivalent padding on the buttons on the right.
-      // It'll do for now.
-      padding-right: 1em;
-    }
   }
 
   @keyframes fade-in {
@@ -130,5 +122,10 @@
         }
       }
     }
+  }
+
+  > .savestate {
+    margin: 0.2rem 0.4rem;
+    opacity: 0.5;
   }
 }

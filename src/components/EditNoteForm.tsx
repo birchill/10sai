@@ -283,14 +283,14 @@ export class EditNoteForm extends React.Component<Props, State> {
             >
               Discard
             </button>
-            <SaveStatus
-              className="savestate"
-              saveState={this.props.saveState}
-              saveError={this.props.saveError}
-            />
           </div>
           {statusMessage ? <div className="status">{statusMessage}</div> : null}
         </NoteFrame>
+        <SaveStatus
+          className="savestate"
+          saveState={this.props.saveState}
+          saveError={this.props.saveError}
+        />
       </form>
     );
   }
