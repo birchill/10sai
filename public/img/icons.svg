@@ -162,10 +162,10 @@
         C22.48,53.09,28.35,67.27,40.72,72.4z"/>
     </g>
     <!-- Dot dot dot -->
-    <g transform="translate(1500 0)">
-      <circle cx="50.1" cy="50.4" r="8.1"/>
-      <circle cx="50.1" cy="25.4" r="8.1"/>
-      <circle cx="50.1" cy="75.4" r="8.1"/>
+    <g transform="translate(1500 0)" id="dotdotdot">
+      <circle cx="50.1" cy="50.4" r="8.1" fill="currentColor"/>
+      <circle cx="50.1" cy="25.4" r="8.1" fill="currentColor"/>
+      <circle cx="50.1" cy="75.4" r="8.1" fill="currentColor"/>
     </g>
     <!-- Review: finished -->
     <g transform="translate(1600 0) scale(0.95)">
@@ -361,6 +361,8 @@
   <!-- Red icons (this also uses the same row) -->
   <use x="0" y="500" xlink:href="#bin" color="#e14700"/>
   <use x="0" y="500" xlink:href="#error-circle" color="#e14700"/>
+  <!-- And just to mess things up completely... a yellow icon in the wrong column -->
+  <use x="100" y="500" xlink:href="#dotdotdot" color="#cdb900"/>
 
   <!-- Viewboxes used for textboxes (which can't use pseudo elements for the
        background -->

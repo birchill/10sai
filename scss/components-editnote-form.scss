@@ -1,16 +1,17 @@
 .editnote-form {
   .keywords {
     display: flex;
+    align-items: center;
     padding-top: 0.2rem;
     padding-bottom: 0.2rem;
 
     > .icon {
-      margin-top: 1rem;
       margin-left: .9rem;
     }
 
     > .tokens {
       flex: 1;
+      padding-right: .2rem;
     }
 
     > .icon {
@@ -24,6 +25,12 @@
       > .icon, > .tokens > .textentry {
         opacity: 1;
       }
+    }
+
+    .menu {
+      height: 2rem;
+      width: 2rem;
+      border-radius: 1rem;
     }
   }
 

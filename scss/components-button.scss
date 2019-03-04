@@ -166,7 +166,7 @@ button.-icon, a.-icon {
     background-position-x: -6em;
   }
   &.-lookup::before {
-    background-position-x: -7rem;
+    background-position-x: -7em;
   }
   &.-review::before {
     background-position-x: -8em;
@@ -179,6 +179,21 @@ button.-icon, a.-icon {
   }
   &.-settings::before {
     background-position-x: -14em;
+  }
+  &.-dotdotdot::before {
+    background-position-x: -15em;
+  }
+  &.-dotdotdot.-yellow::before {
+    background-position-x: -16rem;
+  }
+}
+
+button.-icon.-nolabel, a.-icon.-nolabel {
+  font-size: 0;
+  &::before {
+    font-size: 1rem;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
