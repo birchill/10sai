@@ -49,7 +49,7 @@
     min-height: calc(3rem - (0.4em * 2));
     margin: 0 .5em .4em 0;
 
-    // We move most of the padding to the label/button so its easier to click
+    // We move most of the padding to the label/button so it's easier to click
     // the clear button.
     padding-left: .4em;
 
@@ -136,7 +136,10 @@
   }
 
   > .suggestions {
-    padding-bottom: .6em - .4em;
+    display: flex;
+    align-items: center;
+    // See description of the calculation of .chip's height
+    min-height: calc(3rem - (0.4em * 2));
 
     > .label {
       display: inline-block;
