@@ -4,11 +4,13 @@ import memoize from 'memoize-one';
 import { Note } from '../model';
 import { SaveState } from '../edit/reducer';
 import { getKeywordVariants, getKeywordsToMatch } from '../text/keywords';
+import { ContentState, Editor, EditorState } from 'draft-js';
+
+import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
 import { NoteFrame } from './NoteFrame';
+import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 import { SaveStatus } from './SaveStatus';
 import { TokenList } from './TokenList';
-import { ContentState, Editor, EditorState } from 'draft-js';
-import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 
 interface Props {
   className?: string;
@@ -30,6 +32,7 @@ interface State {
   keywordText: string;
   keywordSuggestions: string[];
   loadingSuggestions: boolean;
+  menuOpen: boolean;
 }
 
 const getEditorContent = (editorState: EditorState): string => {
@@ -54,6 +57,7 @@ export class EditNoteForm extends React.Component<Props, State> {
   editor?: Editor;
   keywordsTokenList?: TokenList;
   formRef: React.RefObject<HTMLFormElement>;
+  menuButtonRef: React.RefObject<HTMLButtonElement>;
   hasCommonKeyword: (
     keywordsA: Array<string>,
     keywordsB: Array<string>
@@ -67,8 +71,10 @@ export class EditNoteForm extends React.Component<Props, State> {
       keywordText: '',
       keywordSuggestions: [],
       loadingSuggestions: false,
+      menuOpen: false,
     };
     this.formRef = React.createRef<HTMLFormElement>();
+    this.menuButtonRef = React.createRef<HTMLButtonElement>();
     this.hasCommonKeyword = memoize(hasCommonKeyword);
 
     // Content editor
@@ -80,6 +86,9 @@ export class EditNoteForm extends React.Component<Props, State> {
     this.handleKeywordsChange = this.handleKeywordsChange.bind(this);
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
 
+    // Menu
+    this.toggleMenu = this.toggleMenu.bind(this);
+    this.handleMenuKey = this.handleMenuKey.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
@@ -109,6 +118,8 @@ export class EditNoteForm extends React.Component<Props, State> {
     if (previousProps.note.content !== this.props.note.content) {
       this.updateContent(this.props.note.content);
     }
+
+    // TODO: If the menu open state has changed, focus the first menu item
   }
 
   updateContent(content?: string) {
@@ -172,6 +183,17 @@ export class EditNoteForm extends React.Component<Props, State> {
   handleDeleteClick(e: React.MouseEvent<HTMLButtonElement>) {
     if (this.props.onDelete) {
       this.props.onDelete(this.props.formId, this.props.note.id);
+    }
+  }
+
+  toggleMenu() {
+    this.setState({ menuOpen: !this.state.menuOpen });
+  }
+
+  handleMenuKey(evt: React.KeyboardEvent<{}>) {
+    if (evt.key === 'Escape') {
+      this.setState({ menuOpen: false });
+      evt.preventDefault();
     }
   }
 
@@ -263,12 +285,25 @@ export class EditNoteForm extends React.Component<Props, State> {
                 )}
               </KeywordSuggestionProvider>
               <button
-                className="button menu -icon -dotdotdot -yellow -borderless -nolabel -large"
+                className="button menubutton -icon -dotdotdot -yellow -borderless -nolabel -large"
                 type="button"
                 title="Menu"
+                ref={this.menuButtonRef}
+                onClick={this.toggleMenu}
               >
                 Menu
               </button>
+              <AnchoredSpeechBubble
+                className="menu"
+                position="below"
+                align="center"
+                anchorElement={this.menuButtonRef.current}
+                visible={this.state.menuOpen}
+                onClickOutside={this.toggleMenu}
+                onUnhandledKeyPress={this.handleMenuKey}
+              >
+                Menu goes here
+              </AnchoredSpeechBubble>
             </div>
           </>
           <div className="content" onClick={this.handleContentClick}>

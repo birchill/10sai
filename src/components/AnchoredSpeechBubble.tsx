@@ -6,9 +6,9 @@ import { SpeechBubble, Props as SpeechBubbleProps } from './SpeechBubble';
 
 interface Props
   extends Omit<
-      SpeechBubbleProps,
-      'left' | 'top' | 'arrowPosition' | 'arrowSide'
-    > {
+    SpeechBubbleProps,
+    'left' | 'top' | 'arrowPosition' | 'arrowSide'
+  > {
   // Preferred direction to which the speech bubble should hang
   align: 'center' | 'largest-side' | 'inline-direction';
   // Preferred side to show the speech bubble on
@@ -51,7 +51,8 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
     if (
       prevProps.anchorElement !== this.props.anchorElement ||
       prevProps.position !== this.props.position ||
-      prevProps.align !== this.props.align
+      prevProps.align !== this.props.align ||
+      (!prevProps.visible && this.props.visible)
     ) {
       this.updatePosition();
     }
