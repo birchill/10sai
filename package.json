@@ -57,7 +57,7 @@
     "@storybook/addon-actions": "^5.0.0",
     "@storybook/addon-notes": "^5.0.0",
     "@storybook/addon-options": "^4.1.13",
-    "@storybook/react": "^4.1.13",
+    "@storybook/react": "^5.0.0",
     "@types/enzyme-adapter-react-16": "^1.0.5",
     "@types/jest": "^24.0.9",
     "@types/memoize-one": "^4.1.0",
