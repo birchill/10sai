@@ -263,7 +263,7 @@ export class EditNoteForm extends React.Component<Props, State> {
                 )}
               </KeywordSuggestionProvider>
               <button
-                className="button menu -icon -dotdotdot -yellow -borderless -nolabel"
+                className="button menu -icon -dotdotdot -yellow -borderless -nolabel -large"
                 type="button"
                 title="Menu"
               >

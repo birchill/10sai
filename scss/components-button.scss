@@ -19,7 +19,7 @@
   outline: none;
 
   background: transparent;
-  border: $border-width solid $highlight;
+  border: 2px solid $highlight;
   border-radius: .3em;
   color: $highlight;
 
@@ -64,6 +64,7 @@
   &.-borderless {
     border-style: dotted;
     border-color: transparent;
+    transition: border-color 0.2s, background-color 0.2s;
 
     &:focus {
       border-color: $highlight;
@@ -98,12 +99,11 @@
     color: $keyword-yellow-dark;
 
     &:active, &:focus {
-      filter: brightness(1.05);
+      background: $keyword-yellow-lighter;
       border-color: $keyword-yellow-dark;
-      border-style: dotted;
     }
     &:hover {
-      filter: brightness(1.08);
+      filter: brightness(1.1);
     }
   }
 }
@@ -184,7 +184,7 @@ button.-icon, a.-icon {
     background-position-x: -15em;
   }
   &.-dotdotdot.-yellow::before {
-    background-position-x: -16rem;
+    background-position-x: -16em;
   }
 }
 
@@ -194,6 +194,9 @@ button.-icon.-nolabel, a.-icon.-nolabel {
     font-size: 1rem;
     margin-left: 0;
     margin-right: 0;
+  }
+  &.-large::before {
+    font-size: 1.4rem;
   }
 }
 
