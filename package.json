@@ -56,7 +56,6 @@
     "@babel/core": "^7.3.4",
     "@storybook/addon-actions": "^5.0.0",
     "@storybook/addon-notes": "^5.0.0",
-    "@storybook/addon-options": "^5.0.0",
     "@storybook/react": "^5.0.0",
     "@types/enzyme-adapter-react-16": "^1.0.5",
     "@types/jest": "^24.0.9",
@@ -70,6 +69,7 @@
     "@types/storybook__addon-notes": "^4.0.2",
     "babel-loader": "^8.0.5",
     "bundlesize": "^0.17.1",
+    "core-js": "^2.6.5",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.10.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
@@ -106,7 +106,9 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": ".test.(tsx?|jsx?)$",
-    "setupFilesAfterEnv": ["./jest/customMatchers.ts"],
+    "setupFilesAfterEnv": [
+      "./jest/customMatchers.ts"
+    ],
     "globals": {
       "ts-jest": {
         "tsConfig": {
