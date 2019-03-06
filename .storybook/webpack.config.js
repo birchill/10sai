@@ -1,17 +1,17 @@
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
 
-module.exports = (baseConfig, env, defaultConfig) => {
+module.exports = ({ config, mode }) => {
   // TypeScript
-  defaultConfig.module.rules.push({
+  config.module.rules.push({
     test: /\.tsx?$/,
     include: path.resolve(__dirname, '../src'),
     use: 'ts-loader',
   });
-  defaultConfig.resolve.extensions.push('.ts', '.tsx');
+  config.resolve.extensions.push('.ts', '.tsx');
 
   // SASS
-  defaultConfig.module.rules.push({
+  config.module.rules.push({
     test: /\.scss$/,
     use: ExtractTextPlugin.extract({
       use: [
@@ -26,10 +26,10 @@ module.exports = (baseConfig, env, defaultConfig) => {
       ],
     }),
   });
-  defaultConfig.resolve.modules.push(path.resolve(__dirname, '../scss'));
-  defaultConfig.plugins.push(
+  config.resolve.modules.push(path.resolve(__dirname, '../scss'));
+  config.plugins.push(
     new ExtractTextPlugin({ filename: 'storybook.css', allChunks: true })
   );
 
-  return defaultConfig;
+  return config;
 };

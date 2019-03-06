@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { storiesOf } from '@storybook/react';
-import { withMarkdownNotes } from '@storybook/addon-notes';
+import { withNotes } from '@storybook/addon-notes';
 
 import { TabBlock } from './TabBlock';
 
@@ -65,16 +65,14 @@ class TabBlockExample extends React.PureComponent<{}, State> {
 }
 
 storiesOf('Components|TabBlock', module)
-  .addDecorator(
-    withMarkdownNotes(
-      `
+  .addDecorator(withNotes)
+  .add('default', () => <TabBlockExample />, {
+    notes: `
 Each of the tab pages should have, e.g.:
 
 * \`id="lookup-page"\`
 * \`role="tabpanel"\`
 * \`aria-labelledby="lookup-tab"\`
 * \`aria-hidden="true"\` or just hidden boolean attribute
-  `
-    )
-  )
-  .add('default', () => <TabBlockExample />);
+  `,
+  });
