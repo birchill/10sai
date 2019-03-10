@@ -7,6 +7,8 @@ import { getKeywordVariants, getKeywordsToMatch } from '../text/keywords';
 import { ContentState, Editor, EditorState } from 'draft-js';
 
 import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
+import { MenuItem } from './MenuItem';
+import { MenuList } from './MenuList';
 import { NoteFrame } from './NoteFrame';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 import { SaveStatus } from './SaveStatus';
@@ -180,7 +182,7 @@ export class EditNoteForm extends React.Component<Props, State> {
     }
   }
 
-  handleDeleteClick(e: React.MouseEvent<HTMLButtonElement>) {
+  handleDeleteClick() {
     if (this.props.onDelete) {
       this.props.onDelete(this.props.formId, this.props.note.id);
     }
@@ -302,7 +304,13 @@ export class EditNoteForm extends React.Component<Props, State> {
                 onClickOutside={this.toggleMenu}
                 onUnhandledKeyPress={this.handleMenuKey}
               >
-                Menu goes here
+                <MenuList>
+                  <MenuItem
+                    className="-iconic -delete"
+                    label="Delete"
+                    onClick={this.handleDeleteClick}
+                  />
+                </MenuList>
               </AnchoredSpeechBubble>
             </div>
           </>

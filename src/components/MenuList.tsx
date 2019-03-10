@@ -3,7 +3,7 @@ import { focusableSelector } from '../utils/focus';
 
 interface Props {
   id?: string;
-  children: Array<React.ReactElement<any>>;
+  children: React.ReactElement<any> | Array<React.ReactElement<any>>;
 }
 
 interface Focusable extends Element {
