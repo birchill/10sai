@@ -1,4 +1,6 @@
 .menu-item {
+  list-style: none;
+
   & > .command {
     display: flex;
     align-items: baseline;
@@ -11,13 +13,16 @@
     text-align: start;
     width: 100%;
 
+    -moz-user-select: none;
+    user-select: none;
+
     &:not([disabled]):hover,
     &:not([disabled]):focus, {
-      background-color: $light-grey;
+      background-color: $really-light-grey;
     }
 
     &:not([disabled]):hover:active {
-      background-color: $standard-grey;
+      background-color: $light-grey;
     }
 
     &.-iconic > .label::before {
