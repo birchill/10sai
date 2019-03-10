@@ -1,0 +1,48 @@
+.menu-item {
+  & > .command {
+    display: flex;
+    align-items: baseline;
+    margin-inline-end: 15px;
+    padding: 4px 12px;
+    outline: none;
+    border: none;
+    color: $text-color;
+    background-color: transparent;
+    text-align: start;
+    width: 100%;
+
+    &:not([disabled]):hover,
+    &:not([disabled]):focus, {
+      background-color: $light-grey;
+    }
+
+    &:not([disabled]):hover:active {
+      background-color: $standard-grey;
+    }
+
+    &.-iconic > .label::before {
+      content: " ";
+      display: inline-block;
+      margin-inline-end: 0.5em;
+      width: 1em;
+      height: 1em;
+      background-image: url('img/icons.svg');
+      background-position-y: -3em;
+      background-size: $icon-columns+em $icon-rows+em;
+      background-repeat: no-repeat;
+      /* Better optical alignment than with 'vertical-align: middle'.
+         Works well with font sizes between 12px and 16px. */
+      vertical-align: -3px;
+    }
+    &.-edit > .label::before {
+      background-position-x: -5em;
+    }
+    &.-delete {
+      color: $fail-red;
+    }
+    &.-delete > .label::before {
+      background-position-x: -3em;
+      background-position-y: -5em;
+    }
+  }
+}
