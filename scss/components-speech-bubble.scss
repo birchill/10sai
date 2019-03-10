@@ -22,7 +22,7 @@
 
   > .panel {
     pointer-events: all;
-    padding: 2px 0;
+    padding: 6px 0;
     color: $text-color;
     margin: 4px;
     max-width: 320px;
@@ -104,11 +104,9 @@
 
     > .panel {
       //
-      // Drop the margin between the doorhanger and the arrow and add extra
-      // padding.
+      // Drop the margin between the doorhanger and the arrow.
       //
       margin-bottom: 0;
-      padding-bottom: 6px;
     }
 
     > .arrow {
@@ -129,11 +127,9 @@
 
     > .panel {
       //
-      // Drop the margin between the doorhanger and the arrow and add extra
-      // padding.
+      // Drop the margin between the doorhanger and the arrow.
       //
       margin-top: 0;
-      padding-top: 6px;
     }
 
     > .arrow {
