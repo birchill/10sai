@@ -1,10 +1,12 @@
 .menu-item {
   list-style: none;
+  min-width: 180px;
 
   & > .command {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     margin-inline-end: 15px;
+    min-height: 40px;
     padding: 4px 12px;
     outline: none;
     border: none;
