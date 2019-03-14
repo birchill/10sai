@@ -7,7 +7,7 @@ interface Props {
   onClick?: () => void;
 }
 
-export const MenuItem: React.SFC<Props> = props => {
+export const MenuItem: React.FC<Props> = props => {
   const buttonAttributes: React.ButtonHTMLAttributes<HTMLButtonElement> = {
     className: 'command',
   };

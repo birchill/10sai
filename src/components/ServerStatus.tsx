@@ -9,7 +9,7 @@ interface Props {
   onEdit: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-export const ServerStatus: React.SFC<Props> = (props: Props) => {
+export const ServerStatus: React.FC<Props> = (props: Props) => {
   return (
     <fieldset
       className={`${props.className || ''} server-status`}

@@ -5,7 +5,7 @@ interface Props {
   children?: React.ReactElement<any>;
 }
 
-export const SettingsPanel: React.SFC<Props> = (props: Props) => {
+export const SettingsPanel: React.FC<Props> = (props: Props) => {
   return (
     <div className="settings-panel">
       <h3 className="heading">{props.heading}</h3>

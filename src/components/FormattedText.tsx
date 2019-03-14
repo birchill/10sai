@@ -8,7 +8,7 @@ interface Props {
   text: string;
 }
 
-export const FormattedText: React.SFC<Props> = props => {
+export const FormattedText: React.FC<Props> = props => {
   let blocks;
   try {
     blocks = deserialize(props.text);

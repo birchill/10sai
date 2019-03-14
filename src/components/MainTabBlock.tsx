@@ -12,7 +12,7 @@ interface Props {
   remainingReviews?: number;
 }
 
-export const MainTabBlock: React.SFC<Props> = props => {
+export const MainTabBlock: React.FC<Props> = props => {
   const classes: string[] = ['tabbar'];
   if (props.className) {
     classes.push(...props.className.trim().split(/\s+/));

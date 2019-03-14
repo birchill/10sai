@@ -6,7 +6,7 @@ interface Props {
   className?: string | null;
 }
 
-export const NoteFrame: React.SFC<Props> = props => {
+export const NoteFrame: React.FC<Props> = props => {
   let className = 'note-frame';
   if (props.className) {
     className += ' ' + props.className;

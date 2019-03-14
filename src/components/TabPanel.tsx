@@ -5,7 +5,7 @@ interface Props extends React.HTMLProps<HTMLDivElement> {
   children?: React.ReactElement<any>;
 }
 
-export const TabPanel: React.SFC<Props> = (props: Props) => {
+export const TabPanel: React.FC<Props> = (props: Props) => {
   const className =
     typeof props.className === 'undefined'
       ? 'tab-panel'

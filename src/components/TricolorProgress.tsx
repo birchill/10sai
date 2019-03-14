@@ -12,7 +12,7 @@ interface Props {
   className?: string | null;
 }
 
-export const TricolorProgress: React.SFC<Props> = (props: Props) => {
+export const TricolorProgress: React.FC<Props> = (props: Props) => {
   const sum = props.aItems + props.bItems + props.cItems;
   const asScaleX = (numItems: number): string =>
     `scaleX(${sum ? numItems / sum : 0})`;

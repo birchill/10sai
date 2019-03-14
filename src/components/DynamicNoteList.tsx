@@ -61,7 +61,7 @@ interface PropsInner {
   onUpdateNoteList: (notes: Array<Note>, deletedIds: Array<string>) => void;
 }
 
-const DynamicNoteListInner: React.SFC<PropsInner> = (props: PropsInner) => (
+const DynamicNoteListInner: React.FC<PropsInner> = (props: PropsInner) => (
   <>
     <DataStoreContext.Consumer>
       {(dataStore?: DataStore) => (

@@ -6,7 +6,7 @@ interface Props {
   deleted: boolean;
 }
 
-export const EditCardNotFound: React.SFC<Props> = props => {
+export const EditCardNotFound: React.FC<Props> = props => {
   return (
     <div className="summary-panel editcard-notfound -notfound">
       <div className="icon -notfound" />

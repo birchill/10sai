@@ -3,14 +3,14 @@ import { focusableSelector } from '../utils/focus';
 
 interface Props {
   id?: string;
-  children: React.ReactElement<any> | Array<React.ReactElement<any>>;
+  children: React.ReactNode;
 }
 
 interface Focusable extends Element {
   focus(): void;
 }
 
-export const MenuList: React.SFC<Props> = props => {
+export const MenuList: React.FC<Props> = props => {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     if (!evt.target || !(evt.target instanceof HTMLElement)) {

@@ -12,7 +12,7 @@ interface Props {
   syncState: SyncDisplayState;
 }
 
-export const HomeScreen: React.SFC<Props> = (props: Props) => {
+export const HomeScreen: React.FC<Props> = (props: Props) => {
   let content: React.ReactNode;
   if (props.loading) {
     content = (

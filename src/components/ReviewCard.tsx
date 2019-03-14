@@ -11,7 +11,7 @@ interface Props {
   onShowBack?: () => void;
 }
 
-export const ReviewCard: React.SFC<Props> = (props: Props) => {
+export const ReviewCard: React.FC<Props> = (props: Props) => {
   let className = 'review-card';
   if (props.showBack) {
     className += ' -showback';
