@@ -41,6 +41,8 @@
 
   &:focus {
     border-color: $highlight;
+  }
+  &:focus, &[aria-expanded="true"] {
     box-shadow: 0 0 0 .2rem lighten($highlight, 50%);
   }
 
@@ -55,7 +57,7 @@
     }
 
     // Make the shadow a bit larger for primary buttons so it stands out more
-    &:focus {
+    &:focus, &[aria-expanded="true"] {
       box-shadow: 0 0 0 .4rem lighten($highlight, 50%);
     }
   }
@@ -69,6 +71,8 @@
     &:focus {
       border-color: $highlight;
       outline: none;
+    }
+    &:focus, &[aria-expanded="true"] {
       box-shadow: none;
     }
   }
@@ -99,8 +103,10 @@
     color: $keyword-yellow-dark;
 
     &:active, &:focus {
-      background: $keyword-yellow-lighter;
       border-color: $keyword-yellow-dark;
+    }
+    &:active, &:focus, &[aria-expanded="true"] {
+      background: $keyword-yellow-lighter;
     }
     &:hover {
       filter: brightness(1.1);

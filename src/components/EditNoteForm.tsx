@@ -293,6 +293,7 @@ export class EditNoteForm extends React.Component<Props, State> {
               title="Menu"
               ref={this.menuButtonRef}
               onClick={this.toggleMenu}
+              aria-expanded={this.state.menuOpen}
             >
               Menu
             </button>
