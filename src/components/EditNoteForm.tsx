@@ -286,33 +286,33 @@ export class EditNoteForm extends React.Component<Props, State> {
                   />
                 )}
               </KeywordSuggestionProvider>
-              <button
-                className="button menubutton -icon -dotdotdot -yellow -borderless -nolabel -large"
-                type="button"
-                title="Menu"
-                ref={this.menuButtonRef}
-                onClick={this.toggleMenu}
-              >
-                Menu
-              </button>
-              <AnchoredSpeechBubble
-                className="menu"
-                position="below"
-                align="center"
-                anchorElement={this.menuButtonRef.current}
-                visible={this.state.menuOpen}
-                onClickOutside={this.toggleMenu}
-                onUnhandledKeyPress={this.handleMenuKey}
-              >
-                <MenuList>
-                  <MenuItem
-                    className="-iconic -delete"
-                    label="Delete"
-                    onClick={this.handleDeleteClick}
-                  />
-                </MenuList>
-              </AnchoredSpeechBubble>
             </div>
+            <button
+              className="button menubutton -icon -dotdotdot -yellow -borderless -nolabel -large"
+              type="button"
+              title="Menu"
+              ref={this.menuButtonRef}
+              onClick={this.toggleMenu}
+            >
+              Menu
+            </button>
+            <AnchoredSpeechBubble
+              className="menu"
+              position="below"
+              align="center"
+              anchorElement={this.menuButtonRef.current}
+              visible={this.state.menuOpen}
+              onClickOutside={this.toggleMenu}
+              onUnhandledKeyPress={this.handleMenuKey}
+            >
+              <MenuList>
+                <MenuItem
+                  className="-iconic -delete"
+                  label="Delete"
+                  onClick={this.handleDeleteClick}
+                />
+              </MenuList>
+            </AnchoredSpeechBubble>
           </>
           <div className="content" onClick={this.handleContentClick}>
             <Editor

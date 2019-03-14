@@ -1,4 +1,13 @@
 .editnote-form {
+  .header {
+    display: flex;
+    align-items: center;
+
+    & > .keywords, & > .heading {
+      flex: 1;
+    }
+  }
+
   .keywords {
     display: flex;
     align-items: center;
@@ -26,12 +35,12 @@
         opacity: 1;
       }
     }
+  }
 
-    .menubutton {
-      height: 2rem;
-      width: 2rem;
-      border-radius: 1rem;
-    }
+  .menubutton {
+    height: 2rem;
+    width: 2rem;
+    border-radius: 1rem;
   }
 
   .heading {
