@@ -247,6 +247,8 @@ export class EditNoteForm extends React.Component<Props, State> {
       }
     }
 
+    const menuId = `note-menu-${this.props.formId}`;
+
     return (
       <form
         className={className}
@@ -294,6 +296,8 @@ export class EditNoteForm extends React.Component<Props, State> {
               ref={this.menuButtonRef}
               onClick={this.toggleMenu}
               aria-expanded={this.state.menuOpen}
+              aria-haspopup="menu"
+              aria-controls={menuId}
             >
               Menu
             </button>
@@ -306,7 +310,7 @@ export class EditNoteForm extends React.Component<Props, State> {
               onClickOutside={this.toggleMenu}
               onUnhandledKeyPress={this.handleMenuKey}
             >
-              <MenuList>
+              <MenuList id={menuId}>
                 <MenuItem
                   className="-iconic -delete"
                   label="Delete"
