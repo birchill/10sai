@@ -6,9 +6,8 @@ import { SaveState } from '../edit/reducer';
 import { getKeywordVariants, getKeywordsToMatch } from '../text/keywords';
 import { ContentState, Editor, EditorState } from 'draft-js';
 
-import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
+import { MenuButton } from './MenuButton';
 import { MenuItem } from './MenuItem';
-import { MenuList, MenuListInterface } from './MenuList';
 import { NoteFrame } from './NoteFrame';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 import { SaveStatus } from './SaveStatus';
@@ -34,8 +33,6 @@ interface State {
   keywordText: string;
   keywordSuggestions: string[];
   loadingSuggestions: boolean;
-  menuOpen: boolean;
-  menuToggledByKeyboard: boolean;
 }
 
 const getEditorContent = (editorState: EditorState): string => {
@@ -60,8 +57,6 @@ export class EditNoteForm extends React.Component<Props, State> {
   editor?: Editor;
   keywordsTokenList?: TokenList;
   formRef: React.RefObject<HTMLFormElement>;
-  menuButtonRef: React.RefObject<HTMLButtonElement>;
-  menuListRef: React.RefObject<MenuListInterface>;
   hasCommonKeyword: (
     keywordsA: Array<string>,
     keywordsB: Array<string>
@@ -75,12 +70,8 @@ export class EditNoteForm extends React.Component<Props, State> {
       keywordText: '',
       keywordSuggestions: [],
       loadingSuggestions: false,
-      menuOpen: false,
-      menuToggledByKeyboard: false,
     };
     this.formRef = React.createRef<HTMLFormElement>();
-    this.menuButtonRef = React.createRef<HTMLButtonElement>();
-    this.menuListRef = React.createRef<MenuListInterface>();
     this.hasCommonKeyword = memoize(hasCommonKeyword);
 
     // Content editor
@@ -93,10 +84,6 @@ export class EditNoteForm extends React.Component<Props, State> {
     this.handleKeywordsTextChange = this.handleKeywordsTextChange.bind(this);
 
     // Menu
-    this.toggleMenu = this.toggleMenu.bind(this);
-    this.handleMenuButtonClick = this.handleMenuButtonClick.bind(this);
-    this.handleMenuButtonKey = this.handleMenuButtonKey.bind(this);
-    this.handleMenuKey = this.handleMenuKey.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
@@ -125,16 +112,6 @@ export class EditNoteForm extends React.Component<Props, State> {
     // to a sync, since they don't match the state).
     if (previousProps.note.content !== this.props.note.content) {
       this.updateContent(this.props.note.content);
-    }
-
-    // If we opened the menu by keyboard, focus the first item.
-    if (
-      !previousState.menuOpen &&
-      this.state.menuOpen &&
-      this.state.menuToggledByKeyboard &&
-      this.menuListRef.current
-    ) {
-      this.menuListRef.current.focus();
     }
   }
 
@@ -199,56 +176,6 @@ export class EditNoteForm extends React.Component<Props, State> {
   handleDeleteClick() {
     if (this.props.onDelete) {
       this.props.onDelete(this.props.formId, this.props.note.id);
-    }
-  }
-
-  handleMenuButtonClick(evt: React.MouseEvent<HTMLButtonElement>) {
-    this.toggleMenu();
-
-    // We'd like to focus the menu here but until we render the menu will be
-    // in a display:none subtree so we can't. Instead just set a flag and do it
-    // later.
-    this.setState({
-      menuToggledByKeyboard: evt.screenX === 0 && evt.screenY === 0,
-    });
-  }
-
-  handleMenuButtonKey(evt: React.KeyboardEvent<HTMLButtonElement>) {
-    switch (evt.key) {
-      case 'Tab':
-      case 'ArrowDown':
-      case 'Home':
-        if (this.state.menuOpen && this.menuListRef.current) {
-          this.menuListRef.current.focus();
-          evt.preventDefault();
-        }
-        break;
-
-      case 'ArrowUp':
-      case 'End':
-        if (this.state.menuOpen && this.menuListRef.current) {
-          this.menuListRef.current.focusEnd();
-          evt.preventDefault();
-        }
-        break;
-
-      case 'Escape':
-        if (this.state.menuOpen) {
-          this.setState({ menuOpen: false });
-          evt.preventDefault();
-        }
-        break;
-    }
-  }
-
-  toggleMenu() {
-    this.setState({ menuOpen: !this.state.menuOpen });
-  }
-
-  handleMenuKey(evt: React.KeyboardEvent<{}>) {
-    if (evt.key === 'Escape') {
-      this.setState({ menuOpen: false });
-      evt.preventDefault();
     }
   }
 
@@ -342,36 +269,16 @@ export class EditNoteForm extends React.Component<Props, State> {
                 )}
               </KeywordSuggestionProvider>
             </div>
-            <button
+            <MenuButton
+              id={menuId}
               className="button menubutton -icon -dotdotdot -yellow -borderless -nolabel -large"
-              type="button"
-              title="Menu"
-              ref={this.menuButtonRef}
-              onClick={this.handleMenuButtonClick}
-              onKeyDown={this.handleMenuButtonKey}
-              aria-expanded={this.state.menuOpen}
-              aria-haspopup="menu"
-              aria-controls={menuId}
             >
-              Menu
-            </button>
-            <AnchoredSpeechBubble
-              className="menu"
-              position="below"
-              align="center"
-              anchorElement={this.menuButtonRef.current}
-              visible={this.state.menuOpen}
-              onClickOutside={this.toggleMenu}
-              onUnhandledKeyPress={this.handleMenuKey}
-            >
-              <MenuList id={menuId} ref={this.menuListRef}>
-                <MenuItem
-                  className="-iconic -delete"
-                  label="Delete"
-                  onClick={this.handleDeleteClick}
-                />
-              </MenuList>
-            </AnchoredSpeechBubble>
+              <MenuItem
+                className="-iconic -delete"
+                label="Delete"
+                onClick={this.handleDeleteClick}
+              />
+            </MenuButton>
           </>
           <div className="content" onClick={this.handleContentClick}>
             <Editor
