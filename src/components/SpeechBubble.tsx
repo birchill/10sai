@@ -40,10 +40,18 @@ export interface SpeechBubbleInterface {
   arrowPosition: 'left' | 'center' | 'right';
 }
 
+interface Focusable extends Element {
+  focus(): void;
+}
+
+const isFocusable = (elem: Element): elem is Focusable =>
+  typeof (elem as Focusable).focus === 'function';
+
 const SpeechBubbleImpl: React.FC<Props> = (props, ref) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const arrowRef = React.useRef<HTMLDivElement>(null);
   const panelRef = React.useRef<HTMLDivElement>(null);
+
   const visible = typeof props.visible === 'undefined' || props.visible;
 
   // Fade in/out
@@ -98,6 +106,28 @@ const SpeechBubbleImpl: React.FC<Props> = (props, ref) => {
       window.removeEventListener('click', handleWindowClick);
     };
   }, [props.visible, props.onClickOutside]);
+
+  // Store the previous focus in order to restore it
+  const [previousFocus, setPreviousFocus] = React.useState<Element | null>(
+    null
+  );
+  React.useLayoutEffect(() => {
+    if (visible) {
+      setPreviousFocus(document.activeElement);
+    } else {
+      // If the currently focussed element is inside us and we are being hidden,
+      // try to restore the previous focus.
+      if (
+        previousFocus &&
+        containerRef.current &&
+        containerRef.current.contains(document.activeElement) &&
+        isFocusable(previousFocus)
+      ) {
+        previousFocus.focus();
+      }
+      setPreviousFocus(null);
+    }
+  }, [props.visible]);
 
   // Keypresses not handled by the panel's contents
   const onKeyDown = React.useCallback(
