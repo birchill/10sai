@@ -10,8 +10,28 @@ interface Focusable extends Element {
   focus(): void;
 }
 
-export const MenuList: React.FC<Props> = props => {
+export interface MenuListInterface {
+  focus: () => void;
+}
+
+const MenuListImpl: React.FC<Props> = (props, ref) => {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
+
+  React.useImperativeHandle(ref, () => ({
+    focus: () => {
+      if (!wrapperRef.current) {
+        return;
+      }
+
+      const firstItem = wrapperRef.current.querySelector(
+        focusableSelector
+      ) as Focusable | null;
+      if (firstItem) {
+        firstItem.focus();
+      }
+    },
+  }));
+
   const onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     if (!evt.target || !(evt.target instanceof HTMLElement)) {
       return;
@@ -87,3 +107,7 @@ export const MenuList: React.FC<Props> = props => {
     </div>
   );
 };
+
+export const MenuList = React.forwardRef<MenuListInterface, Props>(
+  MenuListImpl
+);

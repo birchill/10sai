@@ -8,7 +8,7 @@ import { ContentState, Editor, EditorState } from 'draft-js';
 
 import { AnchoredSpeechBubble } from './AnchoredSpeechBubble';
 import { MenuItem } from './MenuItem';
-import { MenuList } from './MenuList';
+import { MenuList, MenuListInterface } from './MenuList';
 import { NoteFrame } from './NoteFrame';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 import { SaveStatus } from './SaveStatus';
@@ -35,6 +35,7 @@ interface State {
   keywordSuggestions: string[];
   loadingSuggestions: boolean;
   menuOpen: boolean;
+  menuToggledByKeyboard: boolean;
 }
 
 const getEditorContent = (editorState: EditorState): string => {
@@ -60,6 +61,7 @@ export class EditNoteForm extends React.Component<Props, State> {
   keywordsTokenList?: TokenList;
   formRef: React.RefObject<HTMLFormElement>;
   menuButtonRef: React.RefObject<HTMLButtonElement>;
+  menuListRef: React.RefObject<MenuListInterface>;
   hasCommonKeyword: (
     keywordsA: Array<string>,
     keywordsB: Array<string>
@@ -74,9 +76,11 @@ export class EditNoteForm extends React.Component<Props, State> {
       keywordSuggestions: [],
       loadingSuggestions: false,
       menuOpen: false,
+      menuToggledByKeyboard: false,
     };
     this.formRef = React.createRef<HTMLFormElement>();
     this.menuButtonRef = React.createRef<HTMLButtonElement>();
+    this.menuListRef = React.createRef<MenuListInterface>();
     this.hasCommonKeyword = memoize(hasCommonKeyword);
 
     // Content editor
@@ -90,6 +94,7 @@ export class EditNoteForm extends React.Component<Props, State> {
 
     // Menu
     this.toggleMenu = this.toggleMenu.bind(this);
+    this.handleMenuButtonClick = this.handleMenuButtonClick.bind(this);
     this.handleMenuKey = this.handleMenuKey.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
@@ -100,7 +105,7 @@ export class EditNoteForm extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(previousProps: Props) {
+  componentDidUpdate(previousProps: Props, previousState: State) {
     // We'd like to do this in getStateFromDerivedProps but we can't since we
     // end up with the following flow:
     //
@@ -121,7 +126,15 @@ export class EditNoteForm extends React.Component<Props, State> {
       this.updateContent(this.props.note.content);
     }
 
-    // TODO: If the menu open state has changed, focus the first menu item
+    // If we opened the menu by keyboard, focus the first item.
+    if (
+      !previousState.menuOpen &&
+      this.state.menuOpen &&
+      this.state.menuToggledByKeyboard &&
+      this.menuListRef.current
+    ) {
+      this.menuListRef.current.focus();
+    }
   }
 
   updateContent(content?: string) {
@@ -186,6 +199,17 @@ export class EditNoteForm extends React.Component<Props, State> {
     if (this.props.onDelete) {
       this.props.onDelete(this.props.formId, this.props.note.id);
     }
+  }
+
+  handleMenuButtonClick(evt: React.MouseEvent<HTMLButtonElement>) {
+    this.toggleMenu();
+
+    // We'd like to focus the menu here but until we render the menu will be
+    // in a display:none subtree so we can't. Instead just set a flag and do it
+    // later.
+    this.setState({
+      menuToggledByKeyboard: evt.screenX === 0 && evt.screenY === 0,
+    });
   }
 
   toggleMenu() {
@@ -294,7 +318,7 @@ export class EditNoteForm extends React.Component<Props, State> {
               type="button"
               title="Menu"
               ref={this.menuButtonRef}
-              onClick={this.toggleMenu}
+              onClick={this.handleMenuButtonClick}
               aria-expanded={this.state.menuOpen}
               aria-haspopup="menu"
               aria-controls={menuId}
@@ -310,7 +334,7 @@ export class EditNoteForm extends React.Component<Props, State> {
               onClickOutside={this.toggleMenu}
               onUnhandledKeyPress={this.handleMenuKey}
             >
-              <MenuList id={menuId}>
+              <MenuList id={menuId} ref={this.menuListRef}>
                 <MenuItem
                   className="-iconic -delete"
                   label="Delete"
