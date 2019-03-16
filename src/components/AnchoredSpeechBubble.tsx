@@ -2,7 +2,11 @@ import * as React from 'react';
 
 import { Omit, stripFields } from '../utils/type-helpers';
 
-import { SpeechBubble, Props as SpeechBubbleProps } from './SpeechBubble';
+import {
+  SpeechBubble,
+  SpeechBubbleInterface,
+  Props as SpeechBubbleProps,
+} from './SpeechBubble';
 
 interface Props
   extends Omit<
@@ -26,7 +30,7 @@ interface State {
 
 export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
   state: State;
-  speechBubbleRef: React.RefObject<SpeechBubble>;
+  speechBubbleRef: React.RefObject<SpeechBubbleInterface>;
 
   constructor(props: Props) {
     super(props);
@@ -38,7 +42,7 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
       arrowSide: 'top',
     };
 
-    this.speechBubbleRef = React.createRef<SpeechBubble>();
+    this.speechBubbleRef = React.createRef<SpeechBubbleInterface>();
     this.updatePosition = this.updatePosition.bind(this);
   }
 
@@ -102,9 +106,9 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
             // Get the distance from the center of the arrow to the far edge.
             const speechBubble = this.speechBubbleRef.current!;
             const extent =
-              speechBubble.props.arrowPosition === 'left'
-                ? contentBbox.right - speechBubble.props.left
-                : speechBubble.props.left - contentBbox.left;
+              speechBubble.arrowPosition === 'left'
+                ? contentBbox.right - speechBubble.left
+                : speechBubble.left - contentBbox.left;
             const inlineEnd = inlineOffset + extent;
             if (inlineEnd > inlineMax) {
               // Flip the arrow position

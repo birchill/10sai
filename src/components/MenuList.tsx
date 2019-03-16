@@ -17,20 +17,24 @@ export interface MenuListInterface {
 const MenuListImpl: React.FC<Props> = (props, ref) => {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
 
-  React.useImperativeHandle(ref, () => ({
-    focus: () => {
-      if (!wrapperRef.current) {
-        return;
-      }
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        if (!wrapperRef.current) {
+          return;
+        }
 
-      const firstItem = wrapperRef.current.querySelector(
-        focusableSelector
-      ) as Focusable | null;
-      if (firstItem) {
-        firstItem.focus();
-      }
-    },
-  }));
+        const firstItem = wrapperRef.current.querySelector(
+          focusableSelector
+        ) as Focusable | null;
+        if (firstItem) {
+          firstItem.focus();
+        }
+      },
+    }),
+    []
+  );
 
   const onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
     if (!evt.target || !(evt.target instanceof HTMLElement)) {
