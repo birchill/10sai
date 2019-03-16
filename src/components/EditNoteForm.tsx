@@ -95,6 +95,7 @@ export class EditNoteForm extends React.Component<Props, State> {
     // Menu
     this.toggleMenu = this.toggleMenu.bind(this);
     this.handleMenuButtonClick = this.handleMenuButtonClick.bind(this);
+    this.handleMenuButtonKey = this.handleMenuButtonKey.bind(this);
     this.handleMenuKey = this.handleMenuKey.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
@@ -212,6 +213,34 @@ export class EditNoteForm extends React.Component<Props, State> {
     });
   }
 
+  handleMenuButtonKey(evt: React.KeyboardEvent<HTMLButtonElement>) {
+    switch (evt.key) {
+      case 'Tab':
+      case 'ArrowDown':
+      case 'Home':
+        if (this.state.menuOpen && this.menuListRef.current) {
+          this.menuListRef.current.focus();
+          evt.preventDefault();
+        }
+        break;
+
+      case 'ArrowUp':
+      case 'End':
+        if (this.state.menuOpen && this.menuListRef.current) {
+          this.menuListRef.current.focusEnd();
+          evt.preventDefault();
+        }
+        break;
+
+      case 'Escape':
+        if (this.state.menuOpen) {
+          this.setState({ menuOpen: false });
+          evt.preventDefault();
+        }
+        break;
+    }
+  }
+
   toggleMenu() {
     this.setState({ menuOpen: !this.state.menuOpen });
   }
@@ -319,6 +348,7 @@ export class EditNoteForm extends React.Component<Props, State> {
               title="Menu"
               ref={this.menuButtonRef}
               onClick={this.handleMenuButtonClick}
+              onKeyDown={this.handleMenuButtonKey}
               aria-expanded={this.state.menuOpen}
               aria-haspopup="menu"
               aria-controls={menuId}

@@ -12,6 +12,7 @@ interface Focusable extends Element {
 
 export interface MenuListInterface {
   focus: () => void;
+  focusEnd: () => void;
 }
 
 const MenuListImpl: React.FC<Props> = (props, ref) => {
@@ -30,6 +31,19 @@ const MenuListImpl: React.FC<Props> = (props, ref) => {
         ) as Focusable | null;
         if (firstItem) {
           firstItem.focus();
+        }
+      },
+
+      focusEnd: () => {
+        if (!wrapperRef.current) {
+          return;
+        }
+
+        const focusableElements = wrapperRef.current.querySelectorAll(
+          focusableSelector
+        ) as NodeListOf<Focusable>;
+        if (focusableElements.length) {
+          focusableElements[focusableElements.length - 1].focus();
         }
       },
     }),
