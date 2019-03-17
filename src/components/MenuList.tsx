@@ -13,6 +13,7 @@ interface Focusable extends Element {
 export interface MenuListInterface {
   focus: () => void;
   focusEnd: () => void;
+  contains: (other: Node | null) => boolean;
 }
 
 const MenuListImpl: React.FC<Props> = (props, ref) => {
@@ -45,6 +46,12 @@ const MenuListImpl: React.FC<Props> = (props, ref) => {
         if (focusableElements.length) {
           focusableElements[focusableElements.length - 1].focus();
         }
+      },
+
+      contains: (other: Node | null) => {
+        return (
+          other && wrapperRef.current && wrapperRef.current.contains(other)
+        );
       },
     }),
     []

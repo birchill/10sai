@@ -85,6 +85,23 @@ export const MenuButton: React.FC<Props> = props => {
         setMenuState({ isOpen: false, toggledByKeyboard: true });
         evt.preventDefault();
       }
+
+      // Prevent tabbing out of the menu
+      //
+      // We currently don't allow this because the SpeechBubble used for the
+      // menu is added to a separate layer in a completely different part of the
+      // DOM. This isn't great, so ultimately we should either:
+      //
+      // a) Manually manage the prev/next focus (e.g. using tabIndex), or
+      //
+      // b) Rework SpeechBubble so we can put it in the correct part of the DOM.
+      //
+      // In either case we will want to add an onBlur handler to MenuList that
+      // takes care to close the menu when we tab out of it (the onBlur handler
+      // defined below should work fine for this).
+      if (evt.key === 'Tab' && !evt.defaultPrevented) {
+        evt.preventDefault();
+      }
     },
     [menuState.isOpen]
   );
@@ -100,6 +117,28 @@ export const MenuButton: React.FC<Props> = props => {
     }
   }, [menuState.isOpen]);
 
+  // If the menu button loses focus, but not to the menu content, close the
+  // menu.
+  const onBlur = React.useCallback((evt: React.FocusEvent<{}>) => {
+    if (
+      buttonRef.current &&
+      buttonRef.current.contains(evt.relatedTarget as Node)
+    ) {
+      return;
+    }
+
+    if (
+      menuListRef.current &&
+      menuListRef.current.contains(evt.relatedTarget as Node)
+    ) {
+      return;
+    }
+
+    // It doesn't matter what we set toggledByKeyboard to. It's only used when
+    // opening the menu.
+    setMenuState({ isOpen: false, toggledByKeyboard: false });
+  }, []);
+
   return (
     <>
       <button
@@ -109,6 +148,7 @@ export const MenuButton: React.FC<Props> = props => {
         ref={buttonRef}
         onClick={onClick}
         onKeyDown={onKeyDown}
+        onBlur={onBlur}
         aria-expanded={menuState.isOpen}
         aria-haspopup="menu"
         aria-controls={props.id}
