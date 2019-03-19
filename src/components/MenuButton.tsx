@@ -75,7 +75,7 @@ export const MenuButton: React.FC<Props> = props => {
           break;
       }
     },
-    [menuState.isOpen]
+    [menuState.isOpen, menuListRef.current]
   );
 
   // Unhandled keypresses while the menu is focussed
@@ -115,29 +115,84 @@ export const MenuButton: React.FC<Props> = props => {
     ) {
       menuListRef.current.focus();
     }
-  }, [menuState.isOpen]);
+  }, [menuState.isOpen, menuListRef.current]);
 
   // If the menu button loses focus, but not to the menu content, close the
   // menu.
-  const onBlur = React.useCallback((evt: React.FocusEvent<{}>) => {
-    if (
-      buttonRef.current &&
-      buttonRef.current.contains(evt.relatedTarget as Node)
-    ) {
+  const onBlur = React.useCallback(
+    (evt: React.FocusEvent<{}>) => {
+      if (
+        buttonRef.current &&
+        buttonRef.current.contains(evt.relatedTarget as Node)
+      ) {
+        return;
+      }
+
+      if (
+        menuListRef.current &&
+        menuListRef.current.contains(evt.relatedTarget as Node)
+      ) {
+        return;
+      }
+
+      // It doesn't matter what we set toggledByKeyboard to. It's only used when
+      // opening the menu.
+      setMenuState({ isOpen: false, toggledByKeyboard: false });
+    },
+    [buttonRef.current, menuListRef.current]
+  );
+
+  // Automatically close the menu when the screen changes.
+  React.useEffect(() => {
+    if (!menuState.isOpen) {
       return;
     }
 
-    if (
-      menuListRef.current &&
-      menuListRef.current.contains(evt.relatedTarget as Node)
-    ) {
-      return;
-    }
+    const callback = (mutations: Array<MutationRecord>) => {
+      for (const mutation of mutations) {
+        if (mutation.type !== 'attributes') {
+          continue;
+        }
 
-    // It doesn't matter what we set toggledByKeyboard to. It's only used when
-    // opening the menu.
-    setMenuState({ isOpen: false, toggledByKeyboard: false });
-  }, []);
+        const attributeValue = (mutation.target as Element).getAttribute(
+          mutation.attributeName!
+        );
+
+        let isHidden = false;
+        switch (mutation.attributeName) {
+          case 'aria-hidden':
+            isHidden = attributeValue === 'true';
+            break;
+
+          case 'hidden':
+            isHidden = attributeValue === '';
+            break;
+        }
+        if (!isHidden) {
+          return;
+        }
+
+        const isAncestor =
+          buttonRef.current &&
+          (mutation.target as Element).contains(buttonRef.current);
+        if (!isAncestor) {
+          return;
+        }
+
+        setMenuState({ isOpen: false, toggledByKeyboard: false });
+      }
+    };
+
+    const observer = new MutationObserver(callback);
+    observer.observe(document.documentElement, {
+      attributeFilter: ['hidden', 'aria-hidden'],
+      subtree: true,
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [menuState.isOpen, buttonRef.current]);
 
   return (
     <>
