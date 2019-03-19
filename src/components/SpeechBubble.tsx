@@ -80,27 +80,27 @@ const SpeechBubbleImpl: React.FC<Props> = (props, ref) => {
 
   // Listen for clicks outside the menu while it is open
   React.useLayoutEffect(() => {
+    if (!visible || !props.onClickOutside) {
+      return;
+    }
+
     const handleWindowClick = (evt: MouseEvent) => {
-      if (!props.onClickOutside || !containerRef.current) {
+      if (!containerRef.current) {
         return;
       }
 
       if (evt.target && !containerRef.current.contains(evt.target as Node)) {
-        props.onClickOutside(evt);
+        props.onClickOutside!(evt);
       }
     };
 
-    if (visible) {
-      // We register the click handler on the window but if this render was
-      // triggered as part of a click event we can still end up calling
-      // 'handleWindowClick' for _this_ event so we need to spin the event
-      // loop first.
-      setTimeout(() => {
-        window.addEventListener('click', handleWindowClick);
-      }, 0);
-    } else {
-      window.removeEventListener('click', handleWindowClick);
-    }
+    // We register the click handler on the window but if this render was
+    // triggered as part of a click event we can still end up calling
+    // 'handleWindowClick' for _this_ event so we need to spin the event
+    // loop first.
+    setTimeout(() => {
+      window.addEventListener('click', handleWindowClick);
+    }, 0);
 
     return () => {
       window.removeEventListener('click', handleWindowClick);
