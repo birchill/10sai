@@ -18,14 +18,14 @@
       // In the case of the "Tags" thing though we use $standard-grey as applied
       // through textbox-styles, and then do the lighter version by applying
       // a 70% opacity to the whole thing when it's not hovered or focussed.
-      color: lighten($standard-grey, 10%);
+      color: $neutral-8;
       transform: translateY(-2em);
       text-transform: uppercase;
     }
 
     &:hover > .public-DraftEditorPlaceholder-root,
     &:focus-within > .public-DraftEditorPlaceholder-root {
-      color: $standard-grey;
+      color: $neutral-7;
     }
 
     // Vertically center contents

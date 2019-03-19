@@ -13,7 +13,7 @@ $edit-icons-size: 16px;
     transition: background-color 0.1s;
 
     &:hover:not(:disabled) {
-      background: $really-light-grey;
+      background: $neutral-10;
       opacity: 1;
       transition-property: none;
       filter: none;
@@ -24,7 +24,7 @@ $edit-icons-size: 16px;
       opacity: 1;
     }
     &:active {
-      background: $light-grey;
+      background: $neutral-9;
       opacity: 1;
     }
 

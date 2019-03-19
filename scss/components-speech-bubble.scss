@@ -15,6 +15,9 @@
       // content we won't have dimensions available for positioning it.
       visibility: hidden;
     }
+    & > .panel {
+      pointer-events: none;
+    }
   }
   &.-fadein {
     opacity: 0;

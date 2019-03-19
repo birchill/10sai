@@ -1,7 +1,7 @@
 .nav-bar {
   height: 3rem;
   background: white;
-  box-shadow: 0 1.5px 3px rgba(0,0,0,0.25);
+  box-shadow: 0 1.5px 3px $neutral-8;
   display: flex;
 
   > .app-title {

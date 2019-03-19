@@ -1,6 +1,6 @@
 .note-frame {
   box-sizing: border-box;
-  box-shadow: 0px 1px 3px rgba(0, 0, 30, 0.2);
+  box-shadow: 0px 1px 3px $neutral-8;
 
   @supports (display: grid) {
     display: grid;

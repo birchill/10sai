@@ -3,7 +3,7 @@
   position: relative;
   background: white;
   border-radius: .5rem;
-  box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 1px 2px 2px $neutral-8;
   margin: .6rem;
   height: 8rem;
   width: 8rem;
@@ -36,7 +36,7 @@
   box-sizing: border-box;
 
   &:hover {
-    border: $border-width solid $hover-highlight;
+    border: $border-width solid $highlight-6;
     transform: scale(1.07);
   }
 }

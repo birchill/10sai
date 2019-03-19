@@ -10,7 +10,7 @@
     padding: 4px 12px;
     outline: none;
     border: none;
-    color: $text-color;
+    color: $highlight-4;
     background-color: transparent;
     text-align: start;
     width: 100%;
@@ -20,11 +20,11 @@
 
     &:not([disabled]):hover,
     &:not([disabled]):focus, {
-      background-color: $really-light-grey;
+      background-color: $highlight-10;
     }
 
     &:not([disabled]):hover:active {
-      background-color: $light-grey;
+      background-color: $highlight-9;
     }
 
     &.-iconic > .label::before {
@@ -44,12 +44,22 @@
     &.-edit > .label::before {
       background-position-x: -5em;
     }
+
     &.-delete {
-      color: $fail-red;
-    }
-    &.-delete > .label::before {
-      background-position-x: -3em;
-      background-position-y: -5em;
+      color: $red-6;
+      &:not([disabled]):hover,
+      &:not([disabled]):focus, {
+        background-color: $red-10;
+      }
+
+      &:not([disabled]):hover:active {
+        background-color: $red-9;
+      }
+
+      & > .label::before {
+        background-position-x: -3em;
+        background-position-y: -5em;
+      }
     }
   }
 }
