@@ -49,6 +49,7 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
   componentDidMount() {
     this.updatePosition();
     window.addEventListener('resize', this.updatePosition);
+    window.addEventListener('scroll', this.updatePosition, { capture: true });
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -64,6 +65,9 @@ export class AnchoredSpeechBubble extends React.PureComponent<Props, State> {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.updatePosition);
+    window.removeEventListener('scroll', this.updatePosition, {
+      capture: true,
+    });
   }
 
   updatePosition() {
