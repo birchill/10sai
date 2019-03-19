@@ -54,7 +54,7 @@ const MenuListImpl: React.FC<Props> = (props, ref) => {
         );
       },
     }),
-    []
+    [wrapperRef.current]
   );
 
   const onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
