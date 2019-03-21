@@ -98,7 +98,7 @@ class EditCardScreenInner extends React.PureComponent<PropsInner> {
     return (
       <section className="edit-screen" aria-hidden={!this.props.active}>
         {this.renderTitle()}
-        <EditCardToolbar canDelete={canDelete} onDelete={this.handleDelete} />
+        <EditCardToolbar />
         {formState !== FormState.NotFound && formState !== FormState.Deleted ? (
           <>
             <EditCardForm
