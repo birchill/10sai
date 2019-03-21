@@ -32,7 +32,7 @@
       vertical-align: middle;
 
       background-image: url('img/icons.svg');
-      background-position-y: -1em;
+      background-position-y: -1em * $icon-row-text-color;
       background-position-x: -22em;
       background-size: $icon-columns+em $icon-rows+em;
       background-repeat: no-repeat;
