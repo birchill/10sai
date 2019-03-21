@@ -291,15 +291,7 @@ export class EditNoteForm extends React.Component<Props, State> {
               }}
             />
           </div>
-          <div className="controls">
-            <button
-              type="button"
-              className="button delete -icon -delete -borderless -yellow"
-              onClick={this.handleDeleteClick}
-            >
-              Discard
-            </button>
-          </div>
+          <div className="controls" />
           {statusMessage ? <div className="status">{statusMessage}</div> : null}
         </NoteFrame>
         <SaveStatus
