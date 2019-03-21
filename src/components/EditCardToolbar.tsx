@@ -5,7 +5,7 @@ import { Link } from './Link';
 export const EditCardToolbar: React.FC<{}> = props => {
   return (
     <nav className="buttons tool-bar editcard-toolbar">
-      <div className="-center">
+      <div>
         <Link
           href="/cards/new"
           className="add button -icon -plus -borderless"
