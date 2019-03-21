@@ -168,7 +168,7 @@
       <circle cx="50.1" cy="75.4" r="8.1" fill="currentColor"/>
     </g>
     <!-- Review: finished -->
-    <g transform="translate(1600 0) scale(0.95)">
+    <g transform="translate(1602 0) scale(0.95)">
       <path fill="none" stroke="currentColor" stroke-width="6"
         d="M88,85.58C88,91.89,83.07,97,76.99,97H14.01
         C7.93,97,3,91.89,3,85.58V23.42C3,17.11,7.93,12,14.01,12
