@@ -27,6 +27,19 @@
       background-color: $highlight-9;
     }
 
+    &.-yellow {
+      color: $yellow-4;
+
+      &:not([disabled]):hover,
+      &:not([disabled]):focus, {
+        background-color: $yellow-8;
+      }
+
+      &:not([disabled]):hover:active {
+        background-color: $yellow-9;
+      }
+    }
+
     &.-iconic > .label::before {
       content: " ";
       display: inline-block;
@@ -41,6 +54,13 @@
          Works well with font sizes between 12px and 16px. */
       vertical-align: -3px;
     }
+
+    &.-yellow {
+      &.-iconic > .label::before {
+        background-position-y: -1em * $icon-row-yellow-4;;
+      }
+    }
+
     &.-edit > .label::before {
       background-position-x: -5em;
     }

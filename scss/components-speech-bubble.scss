@@ -38,6 +38,13 @@
     border-radius: 10px;
     box-shadow: 0 0 4px $neutral-8;
   }
+  &.-yellow {
+    > .panel, > .arrow::before {
+      background: $yellow-10;
+      border-color: $yellow-4;
+      box-shadow: 0 0 1px $yellow-4;
+    }
+  }
 
   > .arrow {
     position: relative;

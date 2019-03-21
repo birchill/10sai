@@ -211,7 +211,7 @@ export const MenuButton: React.FC<Props> = props => {
         Menu
       </button>
       <AnchoredSpeechBubble
-        className="menu"
+        className="menu -yellow"
         position="below"
         align="center"
         anchorElement={buttonRef.current}
