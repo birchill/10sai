@@ -109,7 +109,6 @@ class EditCardScreenInner extends React.PureComponent<PropsInner> {
               ref={this.activeFormRef}
               key={`card-${formId}`}
             />
-            <hr className="note-divider divider" />
             <DynamicNoteList
               noteListContext={
                 {
