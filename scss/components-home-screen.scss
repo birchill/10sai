@@ -9,6 +9,7 @@
     // summary panel screens, but it turns out it doesn't interfere with the
     // card view either.
     height: 100%;
+    scrollbar-color: $neutral-6 $neutral-9;
 
     // XXX Not sure if I need this...
     box-sizing: border-box;
