@@ -218,6 +218,9 @@ button.-icon, a.-icon {
   &.-review::before {
     background-position-x: -8em;
   }
+  &.-close::before {
+    background-position-x: -9em;
+  }
   &.-play::before {
     background-position-x: -12em;
   }

@@ -9,19 +9,19 @@ export const EditCardToolbar: React.FC<{}> = props => {
         <Link
           href="/cards/new"
           className="add button -icon -plus -borderless"
-          title="Add card (Ctrl+Shift+C)"
+          title="New card (Ctrl+Shift+C)"
           active
         >
-          Add
+          New
         </Link>
       </div>
       <div>
         <Link
           href="/"
-          className="button close-button -borderless"
+          className="close button -icon -close -borderless"
           direction="backwards"
         >
-          Close
+          Done
         </Link>
       </div>
     </nav>
