@@ -8,6 +8,17 @@
     width: 100%;
   }
 
+  > .menubutton {
+    height: 2rem;
+    width: 2rem;
+    border-radius: 1rem;
+    float: right;
+    margin-right: .2rem;
+    margin-top: 0.2rem;
+    margin-bottom: -2rem;
+    position: relative;
+  }
+
   > .tags, > .keywords {
     display: flex;
     border-top: 1px dotted transparent;

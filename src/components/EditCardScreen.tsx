@@ -103,6 +103,8 @@ class EditCardScreenInner extends React.PureComponent<PropsInner> {
           <>
             <EditCardForm
               onChange={this.handleFormChange}
+              onDelete={this.handleDelete}
+              canDelete={canDelete}
               {...this.props.forms.active}
               ref={this.activeFormRef}
               key={`card-${formId}`}

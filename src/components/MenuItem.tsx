@@ -4,6 +4,7 @@ interface Props {
   id?: string;
   className?: string;
   label: string;
+  disabled?: boolean;
   onClick?: () => void;
 }
 
@@ -26,7 +27,7 @@ export const MenuItem: React.FC<Props> = props => {
 
   return (
     <li className="menu-item" role="presentation">
-      <button {...buttonAttributes} role="menuitem">
+      <button {...buttonAttributes} role="menuitem" disabled={props.disabled}>
         <span className="label">{props.label}</span>
       </button>
     </li>

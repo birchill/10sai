@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import { CardFaceEditControls } from './CardFaceEditControls';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
+import { MenuButton } from './MenuButton';
+import { MenuItem } from './MenuItem';
 import { SaveStatus } from './SaveStatus';
 import { TagSuggestionProvider } from './TagSuggestionProvider';
 import { TokenList } from './TokenList';
@@ -15,7 +17,9 @@ interface Props {
   card: Partial<Card>;
   saveState: SaveState;
   saveError?: StoreError;
+  canDelete: boolean;
   onChange?: (topic: string, value: string | string[]) => void;
+  onDelete: () => void;
 }
 
 interface State {
@@ -113,6 +117,17 @@ export class EditCardForm extends React.Component<Props, State> {
     return (
       <>
         <form className="form editcard-form" autoComplete="off">
+          <MenuButton
+            id="card-edit-menu"
+            className="button menubutton -icon -dotdotdot -grey -borderless -nolabel -large"
+          >
+            <MenuItem
+              className="-iconic -delete"
+              label="Delete"
+              disabled={!this.props.canDelete}
+              onClick={this.props.onDelete}
+            />
+          </MenuButton>
           <CardFaceEditControls
             card={this.props.card}
             onChange={this.handleCardChange}

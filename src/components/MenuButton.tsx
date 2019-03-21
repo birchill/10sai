@@ -6,6 +6,7 @@ import { MenuList, MenuListInterface } from './MenuList';
 interface Props {
   id?: string;
   className?: string;
+  popupClassName?: string;
   children: React.ReactNode;
 }
 
@@ -21,6 +22,11 @@ export const MenuButton: React.FC<Props> = props => {
   let className = 'menu-button';
   if (props.className) {
     className += ' ' + props.className;
+  }
+
+  let popupClassName = 'menu';
+  if (props.popupClassName) {
+    popupClassName += ' ' + props.popupClassName;
   }
 
   const [menuState, setMenuState] = React.useState<MenuState>({
@@ -213,7 +219,7 @@ export const MenuButton: React.FC<Props> = props => {
         Menu
       </button>
       <AnchoredSpeechBubble
-        className="menu -yellow"
+        className={popupClassName}
         position="below"
         align="center"
         anchorElement={buttonRef.current}

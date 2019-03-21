@@ -32,6 +32,12 @@
   z-index: 11;
 }
 
+// Similarly, we squeeze the menu button right up against the draft.js editor so
+// we need to make sure it sits above it.
+.editcard-form .menubutton {
+  z-index: 16
+}
+
 // Popups sit above everything
 .pop-up {
   z-index: 50;

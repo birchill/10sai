@@ -78,6 +78,7 @@
 
     &:hover:not(:disabled) {
       border-color: transparent;
+      background-color: $highlight-10;
     }
 
     &:focus {
@@ -86,9 +87,11 @@
     }
     &:focus, &[aria-expanded="true"] {
       box-shadow: none;
+      background-color: $highlight-9-5;
     }
     &:focus:hover:not(:disabled) {
       border-color: $highlight-7;
+      background-color: $highlight-10;
     }
   }
 
@@ -179,6 +182,13 @@ button.-icon, a.-icon {
   }
   &.-yellow:hover:not(:disabled)::before {
     background-position-y: -1em * $icon-row-yellow-5;
+  }
+
+  &.-grey::before {
+    background-position-y: -1em * $icon-row-neutral-6;
+  }
+  &.-grey:focus::before {
+    background-position-y: -1em * $icon-row-highlight-6;
   }
 
   &.-search::before {

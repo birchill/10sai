@@ -244,6 +244,7 @@ export class EditNoteForm extends React.Component<Props, State> {
             <MenuButton
               id={menuId}
               className="button menubutton -icon -dotdotdot -yellow -borderless -nolabel -large"
+              popupClassName="-yellow"
             >
               <MenuItem
                 className="-iconic -delete"

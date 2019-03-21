@@ -18,24 +18,28 @@
     -moz-user-select: none;
     user-select: none;
 
-    &:not([disabled]):hover,
-    &:not([disabled]):focus, {
+    &:not(:disabled):hover,
+    &:not(:disabled):focus, {
       background-color: $highlight-10;
     }
 
-    &:not([disabled]):hover:active {
+    &:not(:disabled):hover:active {
       background-color: $highlight-9;
+    }
+
+    &:disabled {
+      color: $neutral-6;
     }
 
     &.-yellow {
       color: $yellow-4;
 
-      &:not([disabled]):hover,
-      &:not([disabled]):focus, {
+      &:not(:disabled):hover,
+      &:not(:disabled):focus, {
         background-color: $yellow-8;
       }
 
-      &:not([disabled]):hover:active {
+      &:not(:disabled):hover:active {
         background-color: $yellow-9;
       }
     }
@@ -47,12 +51,16 @@
       width: 1em;
       height: 1em;
       background-image: url('img/icons.svg');
-      background-position-y: -1em * $icon-row-highlight-5;;
+      background-position-y: -1em * $icon-row-highlight-5;
       background-size: $icon-columns+em $icon-rows+em;
       background-repeat: no-repeat;
       /* Better optical alignment than with 'vertical-align: middle'.
          Works well with font sizes between 12px and 16px. */
       vertical-align: -3px;
+    }
+
+    &:disabled.-iconic > .label::before {
+      background-position-y: -1em * $icon-row-neutral-6;
     }
 
     &.-yellow {
@@ -66,14 +74,15 @@
     }
 
     &.-delete {
-      color: $red-6;
-      &:not([disabled]):hover,
-      &:not([disabled]):focus, {
-        background-color: $red-10;
-      }
+      &:not(:disabled) {
+        color: $red-6;
 
-      &:not([disabled]):hover:active {
-        background-color: $red-9;
+        &:hover, &:focus {
+          background-color: $red-10;
+        }
+        &:hover:active {
+          background-color: $red-9;
+        }
       }
 
       & > .label::before {
