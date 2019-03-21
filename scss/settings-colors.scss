@@ -9,16 +9,17 @@ $highlight-8: hsl(197, 84%, 74%);
 $highlight-9: hsl(197, 97%, 85%);
 $highlight-10: hsl(197, 79%, 92%);
 
-$yellow-1: hsl(15, 86%, 30%);
-$yellow-2: hsl(22, 82%, 39%);
-$yellow-3: hsl(29, 80%, 44%);
-$yellow-4: hsl(36, 77%, 49%);
-$yellow-5: hsl(42, 87%, 55%);
-$yellow-6: hsl(44, 92%, 63%);
-$yellow-7: hsl(48, 94%, 68%);
-$yellow-8: hsl(48, 95%, 76%);
-$yellow-9: hsl(48, 100%, 88%);
-$yellow-10: hsl(49, 100%, 96%);
+$yellow-10: hsl(55, 100%, 99%);
+$yellow-9-5: hsl(53.3, 100%, 98%);
+$yellow-9: hsl(55.7, 100%, 96%);
+$yellow-8: hsl(53.8, 100%, 91.2%);
+$yellow-7: hsl(54.8, 90%, 85.1%);
+$yellow-6: hsl(53.2, 74%, 74.3%);
+$yellow-5: hsl(52.6, 70%, 59.4%);
+$yellow-4: hsl(50.9, 68.5%, 47.3%);
+$yellow-3: hsl(48.5, 79.9%, 37.1%);
+$yellow-2: hsl(45.3, 85.1%, 26.3%);
+$yellow-1: hsl(42.3, 85.9%, 13.9%);
 
 $neutral-1: hsl(209, 61%, 16%);
 $neutral-2: hsl(211, 39%, 23%);
@@ -42,51 +43,18 @@ $red-8: hsl(360, 77%, 78%);
 $red-9: hsl(360, 82%, 89%);
 $red-10: hsl(360, 100%, 97%);
 
-$green-1: hsl(125, 97%, 14%);
-$green-2: hsl(125, 86%, 20%);
-$green-3: hsl(125, 79%, 26%);
-$green-4: hsl(122, 80%, 29%);
-$green-5: hsl(122, 73%, 35%);
-$green-6: hsl(123, 57%, 45%);
-$green-7: hsl(123, 53%, 55%);
-$green-8: hsl(124, 63%, 74%);
-$green-9: hsl(127, 65%, 85%);
+$green-1: hsl(125, 86%, 14%);
+$green-2: hsl(125, 73%, 20%);
+$green-3: hsl(125, 56%, 29%);
+$green-4: hsl(122, 47%, 35%);
+$green-5: hsl(122, 39%, 41%);
+$green-6: hsl(123, 35%, 51%);
+$green-7: hsl(123, 38%, 63%);
+$green-8: hsl(122, 42%, 75%);
+$green-9: hsl(126, 49%, 84%);
 $green-10: hsl(125, 65%, 93%);
 
-// Alternative green palette that's less vivid
-//
-// $green-1: hsl(125, 86%, 14%);
-// $green-2: hsl(125, 73%, 20%);
-// $green-3: hsl(125, 56%, 29%);
-// $green-4: hsl(122, 47%, 35%);
-// $green-5: hsl(122, 39%, 41%);
-// $green-6: hsl(123, 35%, 51%);
-// $green-7: hsl(123, 38%, 63%);
-// $green-8: hsl(122, 42%, 75%);
-// $green-9: hsl(126, 49%, 84%);
-// $green-10: hsl(125, 65%, 93%);
-
-// Legacy definitions
-$highlight: $highlight-5;
-$hover-highlight: $highlight-7;
-
 $text-color: #323335;
-
-$standard-grey: #aaabad;
-$really-light-grey: #f1f2f3;
-$light-grey: #dbdcde;
-$dark-grey: #c3c5ce;
-
-$keyword-yellow: hsl(54, 100%, 90.2%);
-$keyword-yellow-dark: hsl(54, 100%, 40.2%);
-$keyword-yellow-lighter: hsl(54, 75%, 95%);
-$keyword-yellow-dim: hsl(54, 75%, 90.2%);
-$keyword-yellow-dimmer: hsl(54, 50%, 90.2%);
-
-$fail-red: #e10000;
-$pass-green: #00b900;
-
-$warning-red: #e14700;
 
 :root {
   // These colors need to be synchronized with the color icons in
@@ -95,6 +63,6 @@ $warning-red: #e14700;
   --text-green: #4cbd4c;
   --text-blue: #0f5bde;
   --text-purple: #cb3fcb;
-  --text-red: #{$fail-red};
+  --text-red: #{$red-6};
   --text-orange: orange;
 }

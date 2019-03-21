@@ -11,11 +11,11 @@
   }
 
   &.-toolbarfocus {
-    --selection-bg: #{lighten($highlight, 20%)};
+    --selection-bg: #{$highlight-7};
   }
 
   ::selection {
-    background-color: $highlight;
+    background-color: $highlight-5;
     color: white;
   }
 

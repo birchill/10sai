@@ -2,7 +2,6 @@
 
 .button {
   padding: .4em 1em;
-  outline: 0;
   cursor: pointer;
 
   -webkit-user-select: none;
@@ -19,46 +18,55 @@
   outline: none;
 
   background: transparent;
-  border: 2px solid $highlight;
+  border: 2px solid $highlight-5;
   border-radius: .3em;
-  color: $highlight;
+  color: $highlight-5;
 
   text-align: center;
   vertical-align: middle;
   white-space: nowrap;
 
-  &:hover {
-    /*
-     * Using a filter here (and below) means that when we put SVG icons in
-     * the buttons we don't have to prepare special recolored versions of them.
-     */
-    filter: brightness(1.2);
-  }
-
-  &:disabled, &:hover:disabled {
+  &:disabled {
     filter: grayscale(1);
   }
 
   &:focus {
-    border-color: $highlight;
+    color: $highlight-6;
+    border-color: $highlight-6;
+    outline: none;
   }
   &:focus, &[aria-expanded="true"] {
-    box-shadow: 0 0 0 .2rem lighten($highlight, 50%);
+    box-shadow: 0 0 .1em .2rem $highlight-10;
+  }
+
+  &:hover:not(:disabled) {
+    color: $highlight-7;
+    border-color: $highlight-7;
   }
 
   // Variations
 
   // A default button
   &.-primary {
-    background: $highlight;
+    background: $highlight-5;
     color: white;
-    &.-icon::before {
-      background-position-y: -4em;
+    &.-icon::before,
+    &.-icon:focus::before,
+    &.-icon:hover::before {
+      background-position-y: -1em * $icon-row-white;
     }
 
+    &:focus {
+      background-color: $highlight-6;
+    }
     // Make the shadow a bit larger for primary buttons so it stands out more
     &:focus, &[aria-expanded="true"] {
-      box-shadow: 0 0 0 .4rem lighten($highlight, 50%);
+      box-shadow: 0 0 .2rem .4rem $highlight-10;
+    }
+
+    &:hover:not(:disabled) {
+      color: white;
+      background-color: $highlight-7;
     }
   }
 
@@ -68,12 +76,19 @@
     border-color: transparent;
     transition: border-color 0.2s, background-color 0.2s;
 
+    &:hover:not(:disabled) {
+      border-color: transparent;
+    }
+
     &:focus {
-      border-color: $highlight;
+      border-color: $highlight-6;
       outline: none;
     }
     &:focus, &[aria-expanded="true"] {
       box-shadow: none;
+    }
+    &:focus:hover:not(:disabled) {
+      border-color: $highlight-7;
     }
   }
 
@@ -99,17 +114,21 @@
   }
 
   &.-yellow {
-    background: $keyword-yellow;
-    color: $keyword-yellow-dark;
+    background: $yellow-8;
+    color: $yellow-4;
 
+    &:hover:not(:disabled) {
+      background-color: $yellow-9-5;
+      border-color: transparent;
+    }
     &:active, &:focus {
-      border-color: $keyword-yellow-dark;
+      border-color: $yellow-4;
+      &:hover:not(:disabled) {
+        border-color: $yellow-5;
+      }
     }
     &:active, &:focus, &[aria-expanded="true"] {
-      background: $keyword-yellow-lighter;
-    }
-    &:hover {
-      filter: brightness(1.1);
+      background-color: $yellow-9;
     }
   }
 }
@@ -140,16 +159,28 @@ button.-icon, a.-icon {
     height: 1em;
 
     background-image: url('img/icons.svg');
-    background-position-y: -3em;
+    background-position-y: -1em * $icon-row-highlight-5;
     background-size: $icon-columns+em $icon-rows+em;
     background-repeat: no-repeat;
 
     margin-left: -1.5em;
     margin-right: 0.5em;
   }
-  &.-yellow::before {
-    background-position-y: -5em;
+
+  &:focus::before {
+    background-position-y: -1em * $icon-row-highlight-6;
   }
+  &:hover:not(:disabled)::before {
+    background-position-y: -1em * $icon-row-highlight-7;
+  }
+
+  &.-yellow::before {
+    background-position-y: -1em * $icon-row-yellow-4;
+  }
+  &.-yellow:hover:not(:disabled)::before {
+    background-position-y: -1em * $icon-row-yellow-5;
+  }
+
   &.-search::before {
     background-position-x: -1em;
   }
@@ -189,9 +220,6 @@ button.-icon, a.-icon {
   &.-dotdotdot::before {
     background-position-x: -15em;
   }
-  &.-dotdotdot.-yellow::before {
-    background-position-x: -16em;
-  }
 }
 
 button.-icon.-nolabel, a.-icon.-nolabel {
@@ -217,7 +245,7 @@ button.-badge::after, a.-badge::after {
   text-align: center;
   whitespace: nowrap;
 
-  background: $highlight;
+  background: $highlight-5;
   border-radius: .5rem;
   color: white;
   content: attr(data-badge);
@@ -233,7 +261,7 @@ button.-badge::after, a.-badge::after {
     height: 1.2rem;
     padding: 1rem;
     display: inline-block;
-    background: url('img/icons.svg') ($icon-column * -100%) -200% / (($icon-columns * 1.2)+rem) ($icon-rows * 1.2)+rem content-box;
+    background: url('img/icons.svg') ($icon-column * -100%) -400% / (($icon-columns * 1.2)+rem) ($icon-rows * 1.2)+rem content-box;
   }
 }
 

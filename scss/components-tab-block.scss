@@ -19,7 +19,7 @@
     top: 0;
 
     height: $border-width * 2;
-    background-color: $highlight;
+    background-color: $highlight-5;
     transition: transform 0.15s;
     transform: scale(0, 0) translate(0%);
     will-change: transform;
@@ -32,7 +32,6 @@
   min-height: 45px;
 
   border-top: $border-width * 2 solid transparent;
-  color: $text-color;
 
   @include vertical-center;
 
@@ -44,21 +43,31 @@
   &:not(.-active) > a {
     color: $text-color;
     &.-icon::before {
-      background-position-y: -1rem;
+      background-position-y: -1rem * $icon-row-text-color;
     }
   }
 
-  &:hover,
   &:focus-within {
-    border-color: $dark-grey;
+    border-color: $neutral-6;
   }
-  &.-active {
-    color: $highlight;
+  &:hover {
+    border-color: $neutral-7;
+  }
+  &.-active > a {
+    color: $highlight-5;
+  }
+  &.-active:focus-within > a {
+    color: $highlight-6;
+  }
+  &.-active:hover > a {
+    color: $highlight-7;
   }
   // Make the highlight bar also go brighter
-  &.-active:hover ~ .highlight-bar,
   &.-active:focus-within ~ .highlight-bar {
-    filter: brightness(1.2);
+    background-color: $highlight-6;
+  }
+  &.-active:hover ~ .highlight-bar {
+    background-color: $highlight-7;
   }
 
   // Turn off outlines on links since it looks silly on touchscreen devices and

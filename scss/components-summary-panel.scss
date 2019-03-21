@@ -23,7 +23,7 @@
       background-image: url('img/icons.svg');
       background-size: ($icon-columns * $icon-size) ($icon-rows * $icon-size);
       background-repeat: no-repeat;
-      background-position-y: -(3 * $icon-size);
+      background-position-y: -($icon-row-highlight-5 * $icon-size);
     }
     &.-general.-review {
       background-position-x: -(8 * $icon-size);

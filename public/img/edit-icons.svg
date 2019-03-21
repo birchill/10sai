@@ -124,6 +124,6 @@
   <use y="32" xlink:href="#cloze" color="#4cbd4c"/>
   <use y="48" xlink:href="#cloze" color="#0f5bde"/>
   <use y="64" xlink:href="#cloze" color="#cb3fcb"/>
-  <use y="80" xlink:href="#cloze" color="#e10000"/>
+  <use y="80" xlink:href="#cloze" color="hsl(360, 64%, 55%)"/>
   <use y="96" xlink:href="#cloze" color="orange"/>
 </svg>

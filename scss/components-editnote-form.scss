@@ -24,7 +24,7 @@
     }
 
     > .icon {
-      background-position-y: -5em;
+      background-position-y: -1em * $icon-row-yellow-4;
     }
 
     > .icon, > .tokens > .textentry {
@@ -52,7 +52,7 @@
   }
 
   .body {
-    border-top: 1px dotted $keyword-yellow-dark;
+    border-top: 1px dotted $yellow-4;
   }
 
   &.-nomatch:not(.-hideeditcontrols) .body,
@@ -79,7 +79,7 @@
     }
 
     .public-DraftEditorPlaceholder-root {
-      color: $keyword-yellow-dark;
+      color: $yellow-4;
       opacity: 0.7;
     }
 
@@ -97,7 +97,7 @@
     padding: .4rem;
 
     .delete {
-      color: $warning-red;
+      color: $red-6;
     }
   }
 

@@ -27,7 +27,7 @@
       opacity: 0.7;
     }
     &:hover, &:focus-within {
-      border-top: 1px dotted $dark-grey;
+      border-top: 1px dotted $neutral-6;
       > .icon, > .tokens > .textentry {
         opacity: 1;
       }
@@ -35,14 +35,14 @@
   }
 
   > .keywords {
-    background-color: $keyword-yellow;
+    background-color: $yellow-8;
 
     &:hover, &:focus-within {
-      border-top-color: $keyword-yellow-dark;
+      border-top-color: $yellow-4;
     }
 
     > .icon {
-      background-position-y: -5em;
+      background-position-y: -1em * $icon-row-yellow-4;
     }
   }
 }

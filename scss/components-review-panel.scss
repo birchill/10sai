@@ -113,7 +113,7 @@
 
       > .buttonface {
         transform: translateX(calc(-1 * var(--buttonface-diameter)));
-        background: $fail-red;
+        background: $red-6;
 
         > .icon {
           margin-left: calc(var(--buttonface-diameter) * 0.7);
@@ -131,7 +131,7 @@
         transform: translateX(
           calc(var(--hit-region-width) - var(--buttonface-diameter))
         );
-        background: $pass-green;
+        background: $green-6;
 
         > svg {
           margin-left: calc(var(--buttonface-diameter) * -0.7);

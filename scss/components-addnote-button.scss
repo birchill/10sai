@@ -1,5 +1,5 @@
 .addnote-button {
-  color: $keyword-yellow-dark;
+  color: $yellow-4;
   border-color: transparent;
   border-width: $border-width;
   border-radius: 0;
@@ -7,10 +7,11 @@
   background: transparent;
   position: relative;
   will-change: transform, opacity;
+  -webkit-tap-highlight-color: transparent;
 
   > .front {
     > .toprow > .top, > .body {
-      background: $keyword-yellow;
+      background: $yellow-8;
     }
 
     > .toprow {
@@ -51,7 +52,7 @@
 
         background-image: url('img/icons.svg');
         background-position-x: -19em;
-        background-position-y: -5em;
+        background-position-y: -1em * $icon-row-yellow-4;
         background-size: $icon-columns+em $icon-rows+em;
         background-repeat: no-repeat;
 
@@ -80,35 +81,27 @@
   }
 
   &:focus, &:active {
-    // We want to use the following filter here:
-    //
-    //   filter: brightness(1.03);
-    //
-    // But that seems to affect animation perf on Firefox so we just directly
-    // apply the colors to the components.
-    //
-    // That means the icon won't get recolored correctly but you generally won't
-    // notice it (not like the jankiness which you definitely notice!) and we
-    // can always prepare other color versions of those icons if needed.
     filter: none;
     color: #d3bf00;
     > .front {
       > .toprow > .top, > .body {
         background-color: #ffffd3;
       }
+      > .body > .label::before {
+        background-position-y: -1em * $icon-row-yellow-5;
+      }
     }
   }
 
   &:hover {
-    // As above, we'd like to use the following filter if we could:
-    //
-    //   filter: brightness(1.08);
-    //
     filter: none;
     color: #ddc800;
     > .front {
       > .toprow > .top, > .body {
         background-color: #ffffdd;
+      }
+      > .body > .label::before {
+        background-position-y: -1em * $icon-row-yellow-5;
       }
     }
   }
@@ -117,10 +110,10 @@
     outline: none;
   }
   &:-moz-focusring {
-    border: $border-width dotted $keyword-yellow-dark;
+    border: $border-width dotted $yellow-4;
   }
   &:focus-visible {
-    border: $border-width dotted $keyword-yellow-dark;
+    border: $border-width dotted $yellow-4;
   }
 
   &:active {

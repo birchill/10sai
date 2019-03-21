@@ -4,7 +4,7 @@ span.icon {
   height: 1em;
 
   background-image: url('img/icons.svg');
-  background-position-y: -3em;
+  background-position-y: -1em * $icon-row-highlight-5;
   background-size: $icon-columns+em $icon-rows+em;
   background-repeat: no-repeat;
 
@@ -18,6 +18,6 @@ span.icon {
     background-position-x: -18em;
   }
   &.-grey {
-    background-position-y: -2em;
+    background-position-y: -1em * $icon-row-neutral-6;
   }
 }

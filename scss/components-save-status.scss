@@ -17,7 +17,7 @@
       transform: translateY(-1.4em);
     }
     &.error {
-      color: $warning-red;
+      color: $red-6;
       transform: translateY(-2.8em);
     }
 
@@ -43,7 +43,7 @@
     }
     &.error::after {
       background-position-x: -23em;
-      background-position-y: -5em;
+      background-position-y: -1em * $icon-row-red-6;
     }
   }
 

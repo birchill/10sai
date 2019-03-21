@@ -1,7 +1,7 @@
 .loading-indicator {
   & > .dot {
-    fill: $highlight;
-    fill: var(--indicator-color, $highlight);
+    fill: $highlight-5;
+    fill: var(--indicator-color, $highlight-5);
     animation: loading-indicator-swell 1.7s infinite backwards ease-out;
     transform-origin: 50% 50%;
     transform-box: fill-box;

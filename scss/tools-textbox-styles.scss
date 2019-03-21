@@ -2,7 +2,7 @@
   -webkit-appearance: none;
   background: #fff;
   background-image: none;
-  border: $border-width solid $light-grey;
+  border: $border-width solid $neutral-8;
   border-radius: .3em;
   color: $text-color;
 
@@ -10,16 +10,16 @@
   padding: .4em .6em;
 
   &:hover {
-    border-color: $dark-grey;
+    border-color: $neutral-6;
   }
 
   &:focus-within {
-    border-color: $highlight;
-    box-shadow: 0 0 0 .2rem lighten($highlight, 50%);
+    border-color: $highlight-6;
+    box-shadow: 0 0 .2rem .2rem $highlight-10;
   }
 
   &::placeholder {
-    color: $standard-grey;
+    color: $neutral-7;
     opacity: 1;
   }
 }

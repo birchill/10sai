@@ -13,13 +13,14 @@ $edit-icons-size: 16px;
     transition: background-color 0.1s;
 
     &:hover:not(:disabled) {
+      border-color: transparent;
       background: $neutral-10;
       opacity: 1;
       transition-property: none;
       filter: none;
     }
     &:focus {
-      border-color: $highlight;
+      border-color: $highlight-5;
       border-style: dotted;
       opacity: 1;
     }

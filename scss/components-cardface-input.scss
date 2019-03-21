@@ -12,12 +12,6 @@
     }
 
     > .public-DraftEditorPlaceholder-root {
-      // The shades of grey here and in the next rule match the greys we use for
-      // the "Tags" placeholder and we should do our best to keep it that way.
-      //
-      // In the case of the "Tags" thing though we use $standard-grey as applied
-      // through textbox-styles, and then do the lighter version by applying
-      // a 70% opacity to the whole thing when it's not hovered or focussed.
       color: $neutral-8;
       transform: translateY(-2em);
       text-transform: uppercase;

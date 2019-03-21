@@ -16,7 +16,7 @@ storiesOf('Forms|Buttons', module)
           value='&lt;input type="button"&gt;'
         />
         <button className="button">&lt;button&gt;</button>
-        <a className="button" role="button">
+        <a href="#" className="button" role="button">
           &lt;a class="button"&gt;
         </a>
       </div>

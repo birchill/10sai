@@ -20,12 +20,12 @@
       transform: scale(0);
     }
     &::after {
-      color: lightgrey;
+      color: $neutral-8;
       content: "X";
       font-weight: bold;
     }
     &:hover::after {
-      color: grey;
+      color: $neutral-6;
     }
 
     & > .label {

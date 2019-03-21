@@ -9,7 +9,7 @@
     border-radius: 0 1.6rem 0 0;
 
     > .header,  > .cornerfiller {
-      background: $keyword-yellow;
+      background: $yellow-8;
     }
 
     > .header {
@@ -22,13 +22,13 @@
     }
 
     .body {
-      background: $keyword-yellow;
+      background: $yellow-8;
       grid-column-end: span 2;
     }
   }
 
   @supports not (display: grid) {
-    background: $keyword-yellow;
+    background: $yellow-8;
     padding-top: 1rem;
 
     > .header, > .corner, > .cornerfiller {

@@ -180,10 +180,11 @@ storiesOf('Components|TokenList', module)
       </div>
       <div className="row">
         <TokenListWithText
-          value="Suggest"
+          value="With linked token"
           className="-yellow"
-          placeholder="With linked tag"
           tokens={['漢字', 'N1']}
+          linkedTokens={['漢字']}
+          linkedTooltip="This token is linked"
           suggestions={['Suggestion']}
           onTokensChange={action('onTokensChange')}
           onTextChange={action('onTextChange')}

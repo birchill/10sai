@@ -16,16 +16,16 @@
   height: auto;
 
   --text-color: #{$text-color};
-  --chip-fgcolor: #{$highlight};
-  --chip-bgcolor: #{lighten($highlight, 50%)};
-  --suggestion-label-color: #{$standard-grey};
-  --suggestion-fgcolor: #{$highlight};
-  --suggestion-bgcolor: #{lighten($highlight, 50%)};
+  --chip-fgcolor: #{$highlight-5};
+  --chip-bgcolor: #{$highlight-10};
+  --suggestion-label-color: #{$neutral-7};
+  --suggestion-fgcolor: #{$highlight-5};
+  --suggestion-bgcolor: #{$highlight-10};
   --mark-bgcolor: yellow;
   --mark-fgcolor: #{$text-color};
-  --loading-fgcolor: #{$standard-grey};
-  --loading-bgcolor: #{$really-light-grey};
-  --indicator-color: #{$light-grey};
+  --loading-fgcolor: #{$neutral-7};
+  --loading-bgcolor: #{$neutral-10};
+  --indicator-color: #{$neutral-8};
 
   display: flex;
   align-content: flex-start;
@@ -109,7 +109,7 @@
       height: 1em;
 
       background-image: url('img/icons.svg');
-      background-position-y: -3em;
+      background-position-y: -1em * $icon-row-highlight-5;
       background-position-x: -20em;
       background-size: $icon-columns+em $icon-rows+em;
       background-repeat: no-repeat;
@@ -238,25 +238,25 @@
   }
 
   &.-yellow {
-    --text-color: #{$keyword-yellow-dark};
-    --chip-fgcolor: #{$keyword-yellow-dark};
-    --chip-bgcolor: #{lighten($keyword-yellow, 5%)};
-    --suggestion-label-color: #{$keyword-yellow-dark};
-    --suggestion-fgcolor: #{$keyword-yellow-dark};
-    --suggestion-bgcolor: #{lighten($keyword-yellow, 10%)}; // white, but, oh well
+    --text-color: #{$yellow-4};
+    --chip-fgcolor: #{$yellow-4};
+    --chip-bgcolor: #{$yellow-9};
+    --suggestion-label-color: #{$yellow-4};
+    --suggestion-fgcolor: #{$yellow-4};
+    --suggestion-bgcolor: #{$yellow-10};
     --mark-bgcolor: white;
     --mark-fgcolor: #{$text-color};
-    --loading-fgcolor: #{desaturate($keyword-yellow-dark, 80%)};
-    --loading-bgcolor: rgba(255, 255, 255, 0.7);
-    --indicator-color: #{$keyword-yellow-dark};
+    --loading-fgcolor: #{$yellow-5};
+    --loading-bgcolor: #{$yellow-10};
+    --indicator-color: #{$yellow-4};
 
-    background-color: $keyword-yellow;
-    border-color: $keyword-yellow-dark;
+    background-color: $yellow-8;
+    border-color: $yellow-4;
 
     > .textentry {
-      background-color: $keyword-yellow;
+      background-color: $yellow-8;
       &::placeholder {
-        color: $keyword-yellow-dark;
+        color: $yellow-4;
       }
     }
 
@@ -266,7 +266,7 @@
         filter: brightness(1.06);
       }
       &.-linked::before {
-        background-position-y: -5em;
+        background-position-y: -1em * $icon-row-yellow-4;
       }
     }
 
