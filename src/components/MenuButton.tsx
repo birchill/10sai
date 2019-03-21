@@ -81,9 +81,11 @@ export const MenuButton: React.FC<Props> = props => {
   // Unhandled keypresses while the menu is focussed
   const onUnhandledKeyPress = React.useCallback(
     (evt: React.KeyboardEvent<{}>) => {
-      if (evt.key === 'Escape') {
+      if (evt.key === 'Escape' || evt.key === 'Enter') {
         setMenuState({ isOpen: false, toggledByKeyboard: true });
-        evt.preventDefault();
+        if (evt.key !== 'Enter') {
+          evt.preventDefault();
+        }
       }
 
       // Prevent tabbing out of the menu
@@ -99,7 +101,7 @@ export const MenuButton: React.FC<Props> = props => {
       // In either case we will want to add an onBlur handler to MenuList that
       // takes care to close the menu when we tab out of it (the onBlur handler
       // defined below should work fine for this).
-      if (evt.key === 'Tab' && !evt.defaultPrevented) {
+      if (evt.key === 'Tab') {
         evt.preventDefault();
       }
     },
@@ -115,7 +117,7 @@ export const MenuButton: React.FC<Props> = props => {
     ) {
       menuListRef.current.focus();
     }
-  }, [menuState.isOpen, menuListRef.current]);
+  }, [menuState.isOpen, menuState.toggledByKeyboard, menuListRef.current]);
 
   // If the menu button loses focus, but not to the menu content, close the
   // menu.

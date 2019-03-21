@@ -123,7 +123,18 @@ const SpeechBubbleImpl: React.FC<Props> = (props, ref) => {
         containerRef.current.contains(document.activeElement) &&
         isFocusable(previousFocus)
       ) {
-        previousFocus.focus();
+        // Queue a task to update the focus.
+        //
+        // If we do this immediately, then any queued keydown events (e.g.
+        // 'Enter') will end up targeting previousFocus meaning, for the case of
+        // an 'Enter' keydown, we would dispatch a 'click' event there instead.
+        // In the case of MenuButton, that would mean that we end up re-opening
+        // the menu as soon as we close it.
+        setTimeout(() => {
+          if (previousFocus.parentElement) {
+            previousFocus.focus();
+          }
+        }, 0);
       }
       setPreviousFocus(null);
     }
