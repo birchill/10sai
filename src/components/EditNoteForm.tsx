@@ -241,6 +241,16 @@ export class EditNoteForm extends React.Component<Props, State> {
             <div className="heading">
               {(this.props.note.keywords || []).join(', ')}
             </div>
+            <MenuButton
+              id={menuId}
+              className="button menubutton -icon -dotdotdot -yellow -borderless -nolabel -large"
+            >
+              <MenuItem
+                className="-iconic -delete"
+                label="Delete"
+                onClick={this.handleDeleteClick}
+              />
+            </MenuButton>
             <div
               className="keywords -yellow"
               onClick={this.handleKeywordsClick}
@@ -269,16 +279,6 @@ export class EditNoteForm extends React.Component<Props, State> {
                 )}
               </KeywordSuggestionProvider>
             </div>
-            <MenuButton
-              id={menuId}
-              className="button menubutton -icon -dotdotdot -yellow -borderless -nolabel -large"
-            >
-              <MenuItem
-                className="-iconic -delete"
-                label="Delete"
-                onClick={this.handleDeleteClick}
-              />
-            </MenuButton>
           </>
           <div className="content" onClick={this.handleContentClick}>
             <Editor

@@ -2,6 +2,9 @@
   .header {
     display: flex;
     align-items: center;
+    // Allow the menu to appear first in source order so that we can skip
+    // tabbing through it when moving between the keywords and body.
+    flex-direction: row-reverse;
 
     & > .keywords, & > .heading {
       flex: 1;
