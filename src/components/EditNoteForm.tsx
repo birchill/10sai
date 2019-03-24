@@ -238,9 +238,6 @@ export class EditNoteForm extends React.Component<Props, State> {
       >
         <NoteFrame>
           <>
-            <div className="heading">
-              {(this.props.note.keywords || []).join(', ')}
-            </div>
             <MenuButton
               id={menuId}
               className="button menubutton -icon -dotdotdot -yellow -borderless -nolabel -large"
@@ -252,6 +249,9 @@ export class EditNoteForm extends React.Component<Props, State> {
                 onClick={this.handleDeleteClick}
               />
             </MenuButton>
+            <div className="heading">
+              {(this.props.note.keywords || []).join(', ')}
+            </div>
             <div
               className="keywords -yellow"
               onClick={this.handleKeywordsClick}
