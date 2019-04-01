@@ -4,12 +4,14 @@ import { CardFaceEditControls } from './CardFaceEditControls';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 import { MenuButton } from './MenuButton';
 import { MenuItem } from './MenuItem';
+import { MenuItemLink } from './MenuItemLink';
 import { SaveStatus } from './SaveStatus';
 import { TagSuggestionProvider } from './TagSuggestionProvider';
 import { TokenList } from './TokenList';
 
 import { Card } from '../model';
 import { SaveState } from '../edit/reducer';
+import { URLFromRoute } from '../route/router';
 import { StoreError } from '../store/DataStore';
 import { KeywordSuggester } from '../suggestions/KeywordSuggester';
 
@@ -114,6 +116,19 @@ export class EditCardForm extends React.Component<Props, State> {
       this.props.card
     );
 
+    let addReverseLink: string | undefined;
+    if (this.props.card.front || this.props.card.back) {
+      addReverseLink = URLFromRoute({
+        screen: 'edit-card',
+        search: {
+          front: this.props.card.back || undefined,
+          back: this.props.card.front || undefined,
+          keywords: this.props.card.keywords || undefined,
+          tags: this.props.card.tags || undefined,
+        },
+      });
+    }
+
     return (
       <>
         <form className="form editcard-form" autoComplete="off">
@@ -121,6 +136,12 @@ export class EditCardForm extends React.Component<Props, State> {
             id="card-edit-menu"
             className="button menubutton -icon -dotdotdot -grey -borderless -nolabel -large"
           >
+            <MenuItemLink
+              className="-iconic -add"
+              label="Add reverse"
+              disabled={!addReverseLink}
+              href={addReverseLink || ''}
+            />
             <MenuItem
               className="-iconic -delete"
               label="Delete"
