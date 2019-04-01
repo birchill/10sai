@@ -7,6 +7,7 @@ import {
   Editor,
   EditorState,
   RichUtils,
+  SelectionState,
 } from 'draft-js';
 
 import { Note } from '../model';
@@ -46,12 +47,16 @@ interface Props {
 }
 
 interface State {
+  // Content
   contentEditorState: EditorState;
+  currentMarks: Set<string>;
+  selectionToRestore: SelectionState | null;
+  isContentFocussed: boolean;
+
+  // Keywords
   keywordText: string;
   keywordSuggestions: string[];
   loadingSuggestions: boolean;
-  currentMarks: Set<string>;
-  isContentFocussed: boolean;
 }
 
 const styleMap: any = {
@@ -87,6 +92,7 @@ const hasCommonKeyword = (
 export class EditNoteForm extends React.Component<Props, State> {
   state: State;
   editorRef: React.RefObject<Editor>;
+  editorContainerRef: React.RefObject<HTMLDivElement>;
   keywordsTokenList?: TokenList;
   formRef: React.RefObject<HTMLFormElement>;
   hasCommonKeyword: (
@@ -99,17 +105,21 @@ export class EditNoteForm extends React.Component<Props, State> {
 
     this.state = {
       contentEditorState: EditorState.createEmpty(),
+      currentMarks: new Set<string>(),
+      selectionToRestore: null,
+      isContentFocussed: false,
+
       keywordText: '',
       keywordSuggestions: [],
       loadingSuggestions: false,
-      currentMarks: new Set<string>(),
-      isContentFocussed: false,
     };
     this.formRef = React.createRef<HTMLFormElement>();
     this.editorRef = React.createRef<Editor>();
+    this.editorContainerRef = React.createRef<HTMLDivElement>();
     this.hasCommonKeyword = memoize(hasCommonKeyword);
 
     // Content editor
+    this.handleContentMouseDown = this.handleContentMouseDown.bind(this);
     this.handleContentClick = this.handleContentClick.bind(this);
     this.handleContentChange = this.handleContentChange.bind(this);
     this.handleContentKeyCommand = this.handleContentKeyCommand.bind(this);
@@ -172,6 +182,17 @@ export class EditNoteForm extends React.Component<Props, State> {
     );
 
     this.setState({ contentEditorState });
+  }
+
+  handleContentMouseDown() {
+    if (this.state.isContentFocussed) {
+      return;
+    }
+
+    // Clear the selection. We only restore it when we tab into the text box.
+    if (this.state.selectionToRestore) {
+      this.setState({ selectionToRestore: null });
+    }
   }
 
   handleContentClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -257,11 +278,24 @@ export class EditNoteForm extends React.Component<Props, State> {
   }
 
   handleContentFocus(e: React.FocusEvent<{}>) {
-    this.setState({ isContentFocussed: true });
+    // See notes in CardFaceInput.jsx:handleFocus explaining why we need to
+    // handle selection this way.
+    const selectionToRestore = this.state.selectionToRestore;
+    const targetIsEditor = e.currentTarget === this.editorContainerRef.current;
+    this.setState({ isContentFocussed: true, selectionToRestore: null }, () => {
+      if (selectionToRestore && targetIsEditor) {
+        const contentEditorState = EditorState.forceSelection(
+          this.state.contentEditorState,
+          selectionToRestore
+        );
+        this.setState({ contentEditorState });
+      }
+    });
   }
 
-  handleContentBlur(e: React.FocusEvent<{}>) {
-    this.setState({ isContentFocussed: false });
+  handleContentBlur() {
+    const selectionToRestore = this.state.contentEditorState.getSelection();
+    this.setState({ isContentFocussed: false, selectionToRestore });
   }
 
   scrollIntoView() {
@@ -409,9 +443,11 @@ export class EditNoteForm extends React.Component<Props, State> {
           </>
           <div
             className="content"
+            onMouseDown={this.handleContentMouseDown}
             onClick={this.handleContentClick}
             onFocus={this.handleContentFocus}
             onBlur={this.handleContentBlur}
+            ref={this.editorContainerRef}
           >
             <Editor
               editorState={this.state.contentEditorState}
