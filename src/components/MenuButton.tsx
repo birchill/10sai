@@ -221,7 +221,7 @@ export const MenuButton: React.FC<Props> = props => {
       <AnchoredSpeechBubble
         className={popupClassName}
         position="below"
-        align="center"
+        align="largest-side"
         anchorElement={buttonRef.current}
         visible={menuState.isOpen}
         onClickOutside={onClickOutside}
