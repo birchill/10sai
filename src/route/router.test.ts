@@ -32,6 +32,13 @@ describe('router:routeFromPath', () => {
     });
   });
 
+  it('converts new card path with params to route', () => {
+    expect(routeFromPath('/cards/new', 'front=ABC&back=DEF')).toEqual({
+      screen: 'edit-card',
+      search: { front: 'ABC', back: 'DEF' },
+    });
+  });
+
   it('converts review path to route', () => {
     expect(routeFromPath('/review')).toEqual({ screen: 'review' });
   });
@@ -208,6 +215,12 @@ describe('router:URLFromRoute', () => {
 
   it('serializes new card route to path', () => {
     expect(URLFromRoute({ screen: 'edit-card' })).toEqual('/cards/new');
+  });
+
+  it('serializes new card route with keyword to path', () => {
+    expect(
+      URLFromRoute({ screen: 'lookup', search: { front: 'ABC', back: 'DEF' } })
+    ).toEqual('/lookup?back=DEF&front=ABC');
   });
 
   it('serializes edit card route to path', () => {

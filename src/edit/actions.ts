@@ -30,15 +30,24 @@ export type EditAction =
   | SyncEditCardAction
   | DeleteCardAction;
 
+export type PrefilledCard = Partial<
+  Pick<Card, 'front' | 'back' | 'keywords' | 'tags'>
+>;
+
 export interface NewCardAction {
   type: 'NEW_CARD';
   newFormId: number;
+  card?: PrefilledCard;
 }
 
-export function newCard(testFormId?: number): NewCardAction {
+export function newCard(
+  card?: PrefilledCard,
+  testFormId?: number
+): NewCardAction {
   return {
     type: 'NEW_CARD',
     newFormId: typeof testFormId === 'undefined' ? newFormId() : testFormId,
+    card,
   };
 }
 

@@ -78,7 +78,7 @@ describe('reducer:selection', () => {
   });
 
   it('should clear a newly-created active card when it is deleted', () => {
-    let state = subject(undefined, Actions.newCard(7));
+    let state = subject(undefined, Actions.newCard(undefined, 7));
 
     const card = {
       front: 'Question',

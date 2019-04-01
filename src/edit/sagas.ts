@@ -8,6 +8,7 @@ import {
   CallEffect,
 } from 'redux-saga/effects';
 import { Store } from 'redux';
+
 import { watchEdits, ResourceState } from '../utils/autosave-saga';
 import { beforeNotesScreenChange } from '../notes/sagas';
 import {
@@ -37,7 +38,53 @@ export function* navigate(
   }
 
   if (!route.card) {
-    yield put(Actions.newCard());
+    let card: Actions.PrefilledCard | undefined;
+    if (route.search) {
+      card = {};
+      const { search } = route;
+
+      const assignStringField = (key: keyof Actions.PrefilledCard) => {
+        if (!search[key]) {
+          return;
+        }
+
+        if (Array.isArray(search[key]) && (search[key] as Array<any>).length) {
+          const array = search[key] as Array<any>;
+          const lastElement = array[array.length - 1];
+          if (typeof lastElement === 'string') {
+            card![key] = lastElement;
+          }
+        } else if (typeof search[key] === 'string') {
+          card![key] = search[key] as string;
+        }
+      };
+
+      assignStringField('front');
+      assignStringField('back');
+
+      const assignStringArray = (key: keyof Actions.PrefilledCard) => {
+        if (!search[key]) {
+          return;
+        }
+
+        if (Array.isArray(search[key]) && (search[key] as Array<any>).length) {
+          card![key] = [];
+          for (const value of search[key] as Array<any>) {
+            if (typeof value === 'string') {
+              (card![key] as Array<string>).push(value);
+            }
+          }
+        } else if (typeof search[key] === 'string') {
+          card![key] = [search[key] as string];
+        }
+      };
+
+      assignStringArray('keywords');
+      assignStringArray('tags');
+    }
+
+    yield put(Actions.newCard(card));
+
     return;
   }
 

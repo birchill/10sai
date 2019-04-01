@@ -105,8 +105,88 @@ describe('sagas:edit navigate', () => {
       dataStore,
       Actions.navigate({ url: '/cards/new' })
     )
-      .put(Actions.newCard(formId))
+      .put(Actions.newCard(undefined, formId))
       .not.call.fn(dataStore.getCard)
+      .run();
+  });
+
+  it('includes any query string parameters in a triggered new action', () => {
+    const dataStore = { getCard: (id: string) => ({ id }) };
+    const formId = Actions.newCard().newFormId + 1;
+
+    return expectSaga(
+      navigateSaga,
+      dataStore,
+      Actions.navigate({
+        url: '/cards/new?front=ABC&back=DEF',
+      })
+    )
+      .put(Actions.newCard({ front: 'ABC', back: 'DEF' }, formId))
+      .run();
+  });
+
+  it('handles array query string parameters for the new card route', () => {
+    const dataStore = { getCard: (id: string) => ({ id }) };
+    const formId = Actions.newCard().newFormId + 1;
+
+    return expectSaga(
+      navigateSaga,
+      dataStore,
+      Actions.navigate({
+        url: '/cards/new?keywords=1&tags=tag&keywords&keywords=2&keywords=3',
+      })
+    )
+      .put(
+        Actions.newCard({ keywords: ['1', '2', '3'], tags: ['tag'] }, formId)
+      )
+      .run();
+  });
+
+  it('ignores irrelevant fields in the new card route', () => {
+    const dataStore = { getCard: (id: string) => ({ id }) };
+    const formId = Actions.newCard().newFormId + 1;
+
+    return expectSaga(
+      navigateSaga,
+      dataStore,
+      Actions.navigate({
+        url: '/cards/new?modified=12345&front=hello&progress=5',
+      })
+    )
+      .put(Actions.newCard({ front: 'hello' }, formId))
+      .run();
+  });
+
+  it('takes just the last element for string fields specified as arrays', () => {
+    const dataStore = { getCard: (id: string) => ({ id }) };
+    const formId = Actions.newCard().newFormId + 1;
+
+    return expectSaga(
+      navigateSaga,
+      dataStore,
+      Actions.navigate({
+        url:
+          '/cards/new?front=Front%20One&front=Front%20Two&back=Back%20One&back=Back%20Two',
+      })
+    )
+      .put(Actions.newCard({ front: 'Front Two', back: 'Back Two' }, formId))
+      .run();
+  });
+
+  it('ignores does not get tripped up on commas in the new card route', () => {
+    const dataStore = { getCard: (id: string) => ({ id }) };
+    const formId = Actions.newCard().newFormId + 1;
+
+    return expectSaga(
+      navigateSaga,
+      dataStore,
+      Actions.navigate({
+        url: '/cards/new?front=hello,mate&keywords=one,two',
+      })
+    )
+      .put(
+        Actions.newCard({ front: 'hello,mate', keywords: ['one,two'] }, formId)
+      )
       .run();
   });
 

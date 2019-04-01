@@ -126,7 +126,7 @@ describe('reducer:edit', () => {
   });
 
   it('should update formId on NEW_CARD', () => {
-    const updatedState = subject(undefined, Actions.newCard(1));
+    const updatedState = subject(undefined, Actions.newCard(undefined, 1));
 
     expect(updatedState).toEqual(emptyState(1));
   });
@@ -138,7 +138,7 @@ describe('reducer:edit', () => {
       toDirtyFields('front', 'back')
     );
 
-    const updatedState = subject(initialState, Actions.newCard(2));
+    const updatedState = subject(initialState, Actions.newCard(undefined, 2));
 
     expect(updatedState).toEqual(emptyState(2));
   });
@@ -146,7 +146,7 @@ describe('reducer:edit', () => {
   it('should persist the tags on NEW_CARD if the previous card was also new', () => {
     const initialState = emptyState(4, ['Tag 1', 'Tag 2']);
 
-    const updatedState = subject(initialState, Actions.newCard(5));
+    const updatedState = subject(initialState, Actions.newCard(undefined, 5));
 
     expect(updatedState.forms.active.card.tags).toEqual(['Tag 1', 'Tag 2']);
   });
@@ -158,10 +158,45 @@ describe('reducer:edit', () => {
       toDirtyFields('front', 'back')
     );
 
-    const updatedState = subject(initialState, Actions.newCard(5));
+    const updatedState = subject(initialState, Actions.newCard(undefined, 5));
 
     expect(updatedState.forms.active.card.tags).toBeUndefined();
   });
+
+  it('should apply any specified fields on NEW_CARD', () => {
+    const updatedState = subject(
+      undefined,
+      Actions.newCard(
+        {
+          front: 'Front',
+          back: 'Back',
+          keywords: ['One', 'Two'],
+          tags: ['Tag 1', 'Tag 2'],
+        },
+        6
+      )
+    );
+
+    expect(updatedState.forms.active.card).toEqual({
+      front: 'Front',
+      back: 'Back',
+      keywords: ['One', 'Two'],
+      tags: ['Tag 1', 'Tag 2'],
+    });
+  });
+
+  it('should overwrite any previous tags with ones specified in the NEW_CARD action', () => {
+    const initialState = emptyState(7, ['Tag 1', 'Tag 2']);
+
+    const updatedState = subject(
+      initialState,
+      Actions.newCard({ tags: ['Tag 3', 'Tag 4'] }, 8)
+    );
+
+    expect(updatedState.forms.active.card.tags).toEqual(['Tag 3', 'Tag 4']);
+  });
+
+  // XXX Make sure any specified tags replace previous ones
 
   it('should update formId and state on LOAD_CARD', () => {
     const updatedState = subject(undefined, Actions.loadCard('abc', 2));

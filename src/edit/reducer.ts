@@ -53,12 +53,29 @@ export function edit(state = initialState, action: Action): EditState {
       // If the last card was a new card, then we're adding cards in bulk and we
       // should persist the tags field since generally you add a bunch of cards
       // with similar tags at the same time.
-      const card: Partial<Card> = {};
+      let card: Partial<Card> = {};
       if (
         state.forms.active.isNew &&
         typeof state.forms.active.card.tags !== 'undefined'
       ) {
         card.tags = state.forms.active.card.tags;
+      }
+
+      let dirtyFields: undefined | Set<keyof Card>;
+
+      if (editAction.card) {
+        card = { ...card, ...editAction.card };
+
+        // This isn't great. A malicious site could potentially just start
+        // opening windows with the appropriate URL and query string and thereby
+        // add junk to the user's set of cards. NOT setting this to dirty,
+        // however, will mean that if the user clicks "Done" nothing will be
+        // saved.
+        //
+        // Perhaps in future we could add a referer check of some sort for this?
+        dirtyFields = new Set<keyof Card>(Object.keys(editAction.card) as Array<
+          keyof Card
+        >);
       }
 
       return {
@@ -68,6 +85,7 @@ export function edit(state = initialState, action: Action): EditState {
             formState: FormState.Ok,
             isNew: true,
             card,
+            dirtyFields,
             notes: [],
             saveState: SaveState.New,
           },
