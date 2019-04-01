@@ -65,7 +65,6 @@
     "@types/react-dom": "^16.8.2",
     "@types/react-redux": "^7.0.1",
     "@types/storybook__addon-actions": "^3.4.2",
-    "@types/storybook__addon-notes": "^4.0.2",
     "babel-loader": "^8.0.5",
     "bundlesize": "^0.17.1",
     "enzyme": "^3.9.0",
