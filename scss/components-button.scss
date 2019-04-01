@@ -128,10 +128,12 @@
       border-color: $yellow-4;
       &:hover:not(:disabled) {
         border-color: $yellow-5;
+        background: $yellow-10;
       }
     }
     &:active, &:focus, &[aria-expanded="true"] {
       background-color: $yellow-9;
+      box-shadow: none;
     }
   }
 }

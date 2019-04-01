@@ -105,14 +105,22 @@ $edit-icons-size: 16px;
   &.-yellow > .button {
     &:hover:not(:disabled) {
       background: $yellow-9-5;
+      border-color: transparent;
     }
-    &:focus {
-      border-color: $yellow-4;
-      background: $yellow-9-5;
+    &:active, &:focus {
+      background: $yellow-9;
       box-shadow: none;
     }
     &:active {
+      border-style: dotted;
       background: $yellow-9;
+    }
+    &:active, &:focus {
+      border-color: $yellow-4;
+      &:hover:not(:disabled) {
+        border-color: $yellow-5;
+        background: $yellow-10;
+      }
     }
 
     &::before {
