@@ -51,6 +51,7 @@ interface State {
   keywordSuggestions: string[];
   loadingSuggestions: boolean;
   currentMarks: Set<string>;
+  isContentFocussed: boolean;
 }
 
 const styleMap: any = {
@@ -102,6 +103,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       keywordSuggestions: [],
       loadingSuggestions: false,
       currentMarks: new Set<string>(),
+      isContentFocussed: false,
     };
     this.formRef = React.createRef<HTMLFormElement>();
     this.editorRef = React.createRef<Editor>();
@@ -112,6 +114,8 @@ export class EditNoteForm extends React.Component<Props, State> {
     this.handleContentChange = this.handleContentChange.bind(this);
     this.handleContentKeyCommand = this.handleContentKeyCommand.bind(this);
     this.handleFormat = this.handleFormat.bind(this);
+    this.handleContentFocus = this.handleContentFocus.bind(this);
+    this.handleContentBlur = this.handleContentBlur.bind(this);
 
     // Keyword suggestion feature
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
@@ -252,6 +256,14 @@ export class EditNoteForm extends React.Component<Props, State> {
     );
   }
 
+  handleContentFocus(e: React.FocusEvent<{}>) {
+    this.setState({ isContentFocussed: true });
+  }
+
+  handleContentBlur(e: React.FocusEvent<{}>) {
+    this.setState({ isContentFocussed: false });
+  }
+
   scrollIntoView() {
     if (this.formRef.current) {
       this.formRef.current.scrollIntoView({
@@ -269,11 +281,6 @@ export class EditNoteForm extends React.Component<Props, State> {
 
   get form(): HTMLFormElement | null {
     return this.formRef.current;
-  }
-
-  get isFocussed(): boolean {
-    // XXX
-    return true;
   }
 
   get formatButtonConfig(): Array<FormatButtonConfig> {
@@ -400,7 +407,12 @@ export class EditNoteForm extends React.Component<Props, State> {
               </KeywordSuggestionProvider>
             </div>
           </>
-          <div className="content" onClick={this.handleContentClick}>
+          <div
+            className="content"
+            onClick={this.handleContentClick}
+            onFocus={this.handleContentFocus}
+            onBlur={this.handleContentBlur}
+          >
             <Editor
               editorState={this.state.contentEditorState}
               onChange={this.handleContentChange}
@@ -412,11 +424,15 @@ export class EditNoteForm extends React.Component<Props, State> {
               ref={this.editorRef}
             />
           </div>
-          <div className="controls">
+          <div
+            className="controls"
+            onFocus={this.handleContentFocus}
+            onBlur={this.handleContentBlur}
+          >
             <FormatToolbar
               className={
                 'toolbar -center -yellow' +
-                (this.isFocussed ? ' -areafocus' : '')
+                (this.state.isContentFocussed ? ' -areafocus' : '')
               }
               onClick={this.handleFormat}
               buttons={this.formatButtonConfig}
