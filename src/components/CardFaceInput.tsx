@@ -14,7 +14,7 @@ import {
 import { cardKeyBindings } from '../text/key-bindings';
 import { deserialize, serialize } from '../text/rich-text';
 import { ColorKeywordOrBlack, ColorKeywords } from '../text/rich-text-styles';
-import { fromDraft, toDraft } from '../text/draft-conversion';
+import { fromDraft, toDraft, toMarkSet } from '../text/draft-conversion';
 import { setsEqual } from '../utils/sets-equal';
 
 function serializeContent(editorState: EditorState): string {
@@ -75,22 +75,6 @@ export interface SimpleSelection {
   endBlock: number;
   endOffset: number;
 }
-
-// We store the current style as an Immutable.OrderedSet since it makes
-// comparing with changes cheap but we return a standard ES6 Set, lowercased
-// since:
-//
-// - We don't want to force consumers to use Immutable (10sai doesn't currently
-//   use Immutable anywhere else)
-// - The interface here is in terms of lowercase strings (e.g. toggleMark takes
-//   lowercase strings)
-const toMarkSet = (input: Immutable.OrderedSet<string>): Set<string> =>
-  new Set<string>(
-    input
-      .toArray()
-      .filter(style => !style.startsWith('COLOR:'))
-      .map(style => style.toLowerCase())
-  );
 
 // This monster is the results of days and days of infuriating work to get
 // draft-js to:

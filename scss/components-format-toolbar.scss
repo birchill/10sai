@@ -1,5 +1,5 @@
 $edit-icons-columns: 12;
-$edit-icons-rows: 7;
+$edit-icons-rows: 8;
 $edit-icons-size: 16px;
 
 .format-toolbar {
@@ -82,23 +82,48 @@ $edit-icons-size: 16px;
       background-position-x: -6 * $edit-icons-size;
     }
     &:not(:disabled).cloze.-green::before  {
-      background-position-y: -2 * $edit-icons-size;
-    }
-    &:not(:disabled).cloze.-blue::before  {
       background-position-y: -3 * $edit-icons-size;
     }
-    &:not(:disabled).cloze.-purple::before  {
+    &:not(:disabled).cloze.-blue::before  {
       background-position-y: -4 * $edit-icons-size;
     }
-    &:not(:disabled).cloze.-red::before  {
+    &:not(:disabled).cloze.-purple::before  {
       background-position-y: -5 * $edit-icons-size;
     }
-    &:not(:disabled).cloze.-orange::before  {
+    &:not(:disabled).cloze.-red::before  {
       background-position-y: -6 * $edit-icons-size;
+    }
+    &:not(:disabled).cloze.-orange::before  {
+      background-position-y: -7 * $edit-icons-size;
     }
 
     &:hover:not(:disabled)::before {
       background-position-y: 0;
+    }
+  }
+
+  &.-yellow > .button {
+    &:hover:not(:disabled) {
+      background: $yellow-9-5;
+    }
+    &:focus {
+      border-color: $yellow-4;
+      background: $yellow-9-5;
+      box-shadow: none;
+    }
+    &:active {
+      background: $yellow-9;
+    }
+
+    &::before {
+      background-position-y: -2 * $edit-icons-size;
+    }
+    &.color-dropdown::before  {
+      $icon-scale: 5 / 8;
+      background-position-y: -2 * $edit-icons-size * $icon-scale;
+    }
+    &:hover:not(:disabled)::before {
+      background-position-y: -2 * $edit-icons-size;
     }
   }
 

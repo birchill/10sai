@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink"
-  viewBox="0 0 192 112" width="100%" height="100%"
+  viewBox="0 0 192 128" width="100%" height="100%"
   color="#323335">
   <g id="icons" fill="currentColor">
     <!-- Bold -->
@@ -118,12 +118,14 @@
         a2 2 0 0 0-2-2z"/>
     </g>
   </g>
-  <!-- Standard grey -->
-  <use y="16" xlink:href="#icons" color="#aaabad"/>
+  <!-- Neutral 6 -->
+  <use y="16" xlink:href="#icons" color="hsl(209, 23%, 60%)"/>
+  <!-- Yellow -->
+  <use y="32" xlink:href="#icons" color="hsl(50.9, 68.5%, 47.3%)"/>
   <!-- Color icons -->
-  <use y="32" xlink:href="#cloze" color="#4cbd4c"/>
-  <use y="48" xlink:href="#cloze" color="#0f5bde"/>
-  <use y="64" xlink:href="#cloze" color="#cb3fcb"/>
-  <use y="80" xlink:href="#cloze" color="hsl(360, 64%, 55%)"/>
-  <use y="96" xlink:href="#cloze" color="orange"/>
+  <use y="48" xlink:href="#cloze" color="#4cbd4c"/>
+  <use y="64" xlink:href="#cloze" color="#0f5bde"/>
+  <use y="80" xlink:href="#cloze" color="#cb3fcb"/>
+  <use y="96" xlink:href="#cloze" color="hsl(360, 64%, 55%)"/>
+  <use y="112" xlink:href="#cloze" color="orange"/>
 </svg>

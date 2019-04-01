@@ -1,3 +1,5 @@
+import * as Immutable from 'immutable';
+
 import {
   RawDraftContentState,
   RawDraftInlineStyleRange,
@@ -273,3 +275,19 @@ function convertNode(
 
   return { text, length, inlineStyles };
 }
+
+// Within components that use Editor, we store the current style as an
+// Immutable.OrderedSet since it makes comparing with changes cheap but we
+// return a standard ES6 Set, lowercased since:
+//
+// - We don't want to force consumers of these components to use Immutable
+//   (10sai doesn't currently use Immutable anywhere else)
+// - The interface for thes components is in terms of lowercase strings (e.g.
+//   toggleMark takes lowercase strings)
+export const toMarkSet = (input: Immutable.OrderedSet<string>): Set<string> =>
+  new Set<string>(
+    input
+      .toArray()
+      .filter(style => !style.startsWith('COLOR:'))
+      .map(style => style.toLowerCase())
+  );

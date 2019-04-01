@@ -97,11 +97,7 @@
 
   .controls {
     display: flex;
-    padding: .4rem;
-
-    .delete {
-      color: $red-6;
-    }
+    padding: 0 .7rem .5rem;
   }
 
   @keyframes fade-in {
@@ -141,6 +137,14 @@
         }
       }
     }
+
+    .controls {
+      opacity: 0;
+    }
+  }
+
+  &.-hideeditcontrols .controls {
+    transition: opacity .5s;
   }
 
   > .savestate {

@@ -1,11 +1,28 @@
 import * as React from 'react';
 import memoize from 'memoize-one';
+import {
+  convertFromRaw,
+  convertToRaw,
+  ContentState,
+  Editor,
+  EditorState,
+  RichUtils,
+} from 'draft-js';
 
 import { Note } from '../model';
 import { SaveState } from '../edit/reducer';
+import { fromDraft, toDraft, toMarkSet } from '../text/draft-conversion';
+import { cardKeyBindings } from '../text/key-bindings';
+import { deserialize, serialize } from '../text/rich-text';
 import { getKeywordVariants, getKeywordsToMatch } from '../text/keywords';
-import { ContentState, Editor, EditorState } from 'draft-js';
+import { setsEqual } from '../utils/sets-equal';
 
+import {
+  FormatToolbar,
+  FormatButtonCommand,
+  FormatButtonConfig,
+  FormatButtonState,
+} from './FormatToolbar';
 import { MenuButton } from './MenuButton';
 import { MenuItem } from './MenuItem';
 import { NoteFrame } from './NoteFrame';
@@ -33,11 +50,25 @@ interface State {
   keywordText: string;
   keywordSuggestions: string[];
   loadingSuggestions: boolean;
+  currentMarks: Set<string>;
 }
 
-const getEditorContent = (editorState: EditorState): string => {
-  return editorState.getCurrentContent().getPlainText();
+const styleMap: any = {
+  EMPHASIS: {
+    textEmphasis: 'dot',
+    WebkitTextEmphasis: 'dot',
+  },
 };
+
+const getEditorContent = (editorState: EditorState): string => {
+  return serialize(fromDraft(convertToRaw(editorState.getCurrentContent())));
+};
+
+function deserializeContent(text: string): ContentState {
+  return text === ''
+    ? ContentState.createFromText('')
+    : convertFromRaw(toDraft(deserialize(text)));
+}
 
 const hasCommonKeyword = (
   keywordsA: Array<string>,
@@ -54,7 +85,7 @@ const hasCommonKeyword = (
 
 export class EditNoteForm extends React.Component<Props, State> {
   state: State;
-  editor?: Editor;
+  editorRef: React.RefObject<Editor>;
   keywordsTokenList?: TokenList;
   formRef: React.RefObject<HTMLFormElement>;
   hasCommonKeyword: (
@@ -70,13 +101,17 @@ export class EditNoteForm extends React.Component<Props, State> {
       keywordText: '',
       keywordSuggestions: [],
       loadingSuggestions: false,
+      currentMarks: new Set<string>(),
     };
     this.formRef = React.createRef<HTMLFormElement>();
+    this.editorRef = React.createRef<Editor>();
     this.hasCommonKeyword = memoize(hasCommonKeyword);
 
     // Content editor
     this.handleContentClick = this.handleContentClick.bind(this);
     this.handleContentChange = this.handleContentChange.bind(this);
+    this.handleContentKeyCommand = this.handleContentKeyCommand.bind(this);
+    this.handleFormat = this.handleFormat.bind(this);
 
     // Keyword suggestion feature
     this.handleKeywordsClick = this.handleKeywordsClick.bind(this);
@@ -123,7 +158,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       return;
     }
 
-    const contentState = ContentState.createFromText(content || '');
+    const contentState = deserializeContent(content || '');
     // Ok, so insert-characters is not quite right, but it's good enough for now
     // until we implement proper rich text editing.
     const contentEditorState = EditorState.push(
@@ -136,12 +171,20 @@ export class EditNoteForm extends React.Component<Props, State> {
   }
 
   handleContentClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (!e.defaultPrevented && this.editor) {
-      this.editor.focus();
+    if (!e.defaultPrevented && this.editorRef.current) {
+      this.editorRef.current.focus();
     }
   }
 
   handleContentChange(editorState: EditorState) {
+    const nextMarkSet = toMarkSet(editorState.getCurrentInlineStyle());
+    const currentMarkSet = toMarkSet(
+      this.state.contentEditorState.getCurrentInlineStyle()
+    );
+    if (!setsEqual(nextMarkSet, currentMarkSet)) {
+      this.setState({ currentMarks: nextMarkSet });
+    }
+
     // We defer calling |onChange| until the state is actually updated so that
     // if that triggers a call to updateContent we can successfully recognize it
     // as a redundant change and avoid re-setting the editor state.
@@ -155,6 +198,27 @@ export class EditNoteForm extends React.Component<Props, State> {
 
       return { contentEditorState: editorState };
     });
+  }
+
+  handleContentKeyCommand(command: string, editorState: EditorState) {
+    let newState: EditorState | null = RichUtils.handleKeyCommand(
+      editorState,
+      command
+    );
+
+    if (!newState) {
+      switch (command) {
+        case 'emphasis':
+          newState = RichUtils.toggleInlineStyle(editorState, 'EMPHASIS');
+          break;
+      }
+    }
+
+    if (newState) {
+      this.handleContentChange(newState);
+      return 'handled';
+    }
+    return 'not-handled';
   }
 
   handleKeywordsClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -179,6 +243,15 @@ export class EditNoteForm extends React.Component<Props, State> {
     }
   }
 
+  handleFormat(command: FormatButtonCommand) {
+    this.handleContentChange(
+      RichUtils.toggleInlineStyle(
+        this.state.contentEditorState,
+        command.toUpperCase()
+      )
+    );
+  }
+
   scrollIntoView() {
     if (this.formRef.current) {
       this.formRef.current.scrollIntoView({
@@ -189,13 +262,59 @@ export class EditNoteForm extends React.Component<Props, State> {
   }
 
   focus() {
-    if (this.editor) {
-      this.editor.focus();
+    if (this.editorRef.current) {
+      this.editorRef.current.focus();
     }
   }
 
   get form(): HTMLFormElement | null {
     return this.formRef.current;
+  }
+
+  get isFocussed(): boolean {
+    // XXX
+    return true;
+  }
+
+  get formatButtonConfig(): Array<FormatButtonConfig> {
+    const { currentMarks } = this.state;
+
+    const buttons: Array<FormatButtonConfig> = [
+      {
+        type: 'bold',
+        label: 'Bold',
+        accelerator: 'Ctrl+B',
+        state: currentMarks.has('bold')
+          ? FormatButtonState.Set
+          : FormatButtonState.Normal,
+      },
+      {
+        type: 'italic',
+        label: 'Italic',
+        accelerator: 'Ctrl+I',
+        state: currentMarks.has('italic')
+          ? FormatButtonState.Set
+          : FormatButtonState.Normal,
+      },
+      {
+        type: 'underline',
+        label: 'Underline',
+        accelerator: 'Ctrl+U',
+        state: currentMarks.has('underline')
+          ? FormatButtonState.Set
+          : FormatButtonState.Normal,
+      },
+      {
+        type: 'emphasis',
+        label: 'Dot emphasis',
+        accelerator: 'Ctrl+.',
+        state: currentMarks.has('emphasis')
+          ? FormatButtonState.Set
+          : FormatButtonState.Normal,
+      },
+    ];
+
+    return buttons;
   }
 
   render() {
@@ -285,14 +404,24 @@ export class EditNoteForm extends React.Component<Props, State> {
             <Editor
               editorState={this.state.contentEditorState}
               onChange={this.handleContentChange}
+              handleKeyCommand={this.handleContentKeyCommand}
+              customStyleMap={styleMap}
+              keyBindingFn={cardKeyBindings}
               placeholder="Note"
               stripPastedStyles
-              ref={editor => {
-                this.editor = editor || undefined;
-              }}
+              ref={this.editorRef}
             />
           </div>
-          <div className="controls" />
+          <div className="controls">
+            <FormatToolbar
+              className={
+                'toolbar -center -yellow' +
+                (this.isFocussed ? ' -areafocus' : '')
+              }
+              onClick={this.handleFormat}
+              buttons={this.formatButtonConfig}
+            />
+          </div>
           {statusMessage ? <div className="status">{statusMessage}</div> : null}
         </NoteFrame>
         <SaveStatus
