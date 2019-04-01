@@ -15,7 +15,7 @@ interface LocalProps {
   active?: boolean;
 }
 
-type Props = Overwrite<
+export type Props = Overwrite<
   React.AnchorHTMLAttributes<HTMLAnchorElement>,
   LocalProps
 >;

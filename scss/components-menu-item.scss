@@ -15,31 +15,39 @@
     text-align: start;
     width: 100%;
 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-size: 1rem;
+    box-sizing: border-box;
+
     -moz-user-select: none;
     user-select: none;
 
-    &:not(:disabled):hover,
-    &:not(:disabled):focus, {
+    &:hover,
+    &:focus, {
       background-color: $highlight-10;
     }
 
-    &:not(:disabled):hover:active {
+    &:hover:active {
       background-color: $highlight-9;
     }
 
-    &:disabled {
+    &:disabled, &.-disabled {
+      pointer-events: none;
+      cursor: default;
       color: $neutral-6;
     }
 
     &.-yellow {
       color: $yellow-4;
 
-      &:not(:disabled):hover,
-      &:not(:disabled):focus, {
+      &:hover,
+      &:focus, {
         background-color: $yellow-8;
       }
 
-      &:not(:disabled):hover:active {
+      &:hover:active {
         background-color: $yellow-9;
       }
     }
@@ -59,7 +67,8 @@
       vertical-align: -3px;
     }
 
-    &:disabled.-iconic > .label::before {
+    &:disabled.-iconic > .label::before,
+    &.-disabled.-iconic > .label::before {
       background-position-y: -1em * $icon-row-neutral-6;
     }
 
