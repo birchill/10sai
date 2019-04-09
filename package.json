@@ -43,7 +43,7 @@
     "react": "^16.8.3",
     "react-document-title": "*",
     "react-dom": "^16.8.3",
-    "react-redux": "^6.0.1",
+    "react-redux": "^7.0.0",
     "redux": "^4.0.1",
     "redux-saga": "^1.0.2",
     "reselect": "^4.0.0",
