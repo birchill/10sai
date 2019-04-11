@@ -27,7 +27,7 @@
     "@types/pouchdb-upsert": "^2.2.6",
     "@types/react-document-title": "^2.0.3",
     "@types/storybook__react": "^4.0.1",
-    "@types/ua-parser-js": "^0.7.32",
+    "@types/ua-parser-js": "^0.7.33",
     "cross-env": "^5.2.0",
     "deep-equal": "^1.0.1",
     "draft-js": "^0.10.5",
