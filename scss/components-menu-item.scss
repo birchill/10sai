@@ -82,6 +82,10 @@
       background-position-x: -5em;
     }
 
+    &.-add-reversed > .label::before {
+      background-position-x: -24em;
+    }
+
     &.-delete {
       &:not(:disabled) {
         color: $red-6;

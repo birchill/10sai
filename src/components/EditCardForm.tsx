@@ -137,7 +137,7 @@ export class EditCardForm extends React.Component<Props, State> {
             className="button menubutton -icon -dotdotdot -grey -borderless -nolabel -large"
           >
             <MenuItemLink
-              className="-iconic -add"
+              className="-iconic -add-reversed"
               label="Add reverse card"
               disabled={!addReverseLink}
               href={addReverseLink || ''}
