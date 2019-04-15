@@ -184,7 +184,6 @@ export class TokenList extends React.PureComponent<Props> {
                   {
                     focusRegion: FocusRegion.Suggestions,
                     focusIndex: 0,
-                    text: suggestions[0],
                   },
                   () => this.updateFocus()
                 );
@@ -207,11 +206,8 @@ export class TokenList extends React.PureComponent<Props> {
               e.preventDefault();
             } else {
               // Otherwise navigate within the set of tokens
-              this.setState(
-                {
-                  focusIndex: this.state.focusIndex + 1,
-                },
-                () => this.updateFocus()
+              this.setState({ focusIndex: this.state.focusIndex + 1 }, () =>
+                this.updateFocus()
               );
               e.preventDefault();
             }
@@ -225,12 +221,8 @@ export class TokenList extends React.PureComponent<Props> {
               return;
             }
 
-            this.setState(
-              {
-                focusIndex: suggestionIndex,
-                text: suggestions[suggestionIndex],
-              },
-              () => this.updateFocus()
+            this.setState({ focusIndex: suggestionIndex }, () =>
+              this.updateFocus()
             );
             e.preventDefault();
             return;
@@ -250,7 +242,6 @@ export class TokenList extends React.PureComponent<Props> {
               {
                 focusRegion: FocusRegion.Suggestions,
                 focusIndex: 0,
-                text: suggestions[0],
               },
               () => this.updateFocus()
             );
@@ -649,9 +640,9 @@ export class TokenList extends React.PureComponent<Props> {
     // a dynamic list of references (which is tricky because React doesn't make
     // it easy to free those references).
     const getNthTokenButton = (i: number) =>
-      this.rootElem!.querySelector(
-        `.tokens > .chip:nth-of-type(${i + 1}) > .clear`
-      ) as HTMLButtonElement | undefined;
+      this.rootElem!.querySelector(`.chip:nth-of-type(${i + 1}) > .clear`) as
+        | HTMLButtonElement
+        | undefined;
 
     const getNthSuggestionLink = (i: number) =>
       this.rootElem!.querySelector(
