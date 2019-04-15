@@ -33,7 +33,6 @@ const noteState = (
           formId: cardFormId,
           formState: FormState.Ok,
           card: {},
-          isNew: false,
           notes: [
             {
               formId: noteFormId,
@@ -46,6 +45,7 @@ const noteState = (
           saveState: SaveState.Ok,
         },
       },
+      newCardTags: [],
     },
   };
 };
@@ -123,6 +123,7 @@ const multiNoteState = (cardFormId: number, notes: Array<NoteState>) => {
           notes,
         },
       },
+      newCardTags: [],
     },
   };
 };

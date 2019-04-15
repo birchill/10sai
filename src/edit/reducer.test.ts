@@ -6,20 +6,17 @@ import { CardChange } from '../store/CardStore';
 import { StoreError } from '../store/DataStore';
 import { generateCard } from '../utils/testing';
 
-const emptyState = (
-  newFormId: number,
-  initialTags?: Array<string> | undefined
-): EditState => ({
+const emptyState = (newFormId: number): EditState => ({
   forms: {
     active: {
       formId: newFormId,
       formState: FormState.Ok,
-      isNew: true,
-      card: { tags: initialTags },
+      card: {},
       notes: [],
       saveState: SaveState.New,
     },
   },
+  newCardTags: [],
 });
 
 const okState = (
@@ -32,12 +29,12 @@ const okState = (
       active: {
         formId,
         formState: FormState.Ok,
-        isNew: false,
         card,
         notes: [],
         saveState: SaveState.Ok,
       },
     },
+    newCardTags: [],
   };
 
   if (dirtyFields) {
@@ -52,12 +49,12 @@ const loadingState = (newFormId: number): EditState => ({
     active: {
       formId: newFormId,
       formState: FormState.Loading,
-      isNew: false,
       card: {},
       notes: [],
       saveState: SaveState.Ok,
     },
   },
+  newCardTags: [],
 });
 
 const dirtyState = (
@@ -70,13 +67,13 @@ const dirtyState = (
     active: {
       formId,
       formState: FormState.Ok,
-      isNew,
       card,
       dirtyFields,
       notes: [],
       saveState: isNew ? SaveState.New : SaveState.Ok,
     },
   },
+  newCardTags: [],
 });
 
 const notFoundState = (formId: number): EditState => ({
@@ -84,12 +81,12 @@ const notFoundState = (formId: number): EditState => ({
     active: {
       formId,
       formState: FormState.NotFound,
-      isNew: false,
       card: {},
       notes: [],
       saveState: SaveState.Ok,
     },
   },
+  newCardTags: [],
 });
 
 const deletedState = (formId: number): EditState => ({
@@ -97,12 +94,12 @@ const deletedState = (formId: number): EditState => ({
     active: {
       formId,
       formState: FormState.Deleted,
-      isNew: false,
       card: {},
       notes: [],
       saveState: SaveState.Ok,
     },
   },
+  newCardTags: [],
 });
 
 const withSaveError = (state: EditState, saveError: StoreError): EditState => ({
@@ -113,6 +110,7 @@ const withSaveError = (state: EditState, saveError: StoreError): EditState => ({
       saveError,
     },
   },
+  newCardTags: [],
 });
 
 const toDirtyFields = (...fields: Array<keyof Card>): Set<keyof Card> =>
@@ -143,24 +141,19 @@ describe('reducer:edit', () => {
     expect(updatedState).toEqual(emptyState(2));
   });
 
-  it('should persist the tags on NEW_CARD if the previous card was also new', () => {
-    const initialState = emptyState(4, ['Tag 1', 'Tag 2']);
+  it('should add the new tags to a NEW_CARD if set', () => {
+    const initialState = emptyState(4);
 
-    const updatedState = subject(initialState, Actions.newCard(undefined, 5));
-
-    expect(updatedState.forms.active.card.tags).toEqual(['Tag 1', 'Tag 2']);
-  });
-
-  it('should NOT persist the tags on NEW_CARD if the previous card was not new', () => {
-    const initialState = okState(
-      4,
-      { ...generateCard('abc'), tags: ['Tag 1', 'Tag 2'] },
-      toDirtyFields('front', 'back')
+    // Set some tags to apply to the next card
+    let updatedState = subject(initialState, Actions.newCard(undefined, 5));
+    updatedState = subject(
+      updatedState,
+      Actions.editCard(5, { tags: ['Tag 1', 'Tag 2'] })
     );
 
-    const updatedState = subject(initialState, Actions.newCard(undefined, 5));
+    updatedState = subject(updatedState, Actions.newCard(undefined, 6));
 
-    expect(updatedState.forms.active.card.tags).toBeUndefined();
+    expect(updatedState.forms.active.card.tags).toEqual(['Tag 1', 'Tag 2']);
   });
 
   it('should apply any specified fields on NEW_CARD', () => {
@@ -186,17 +179,24 @@ describe('reducer:edit', () => {
   });
 
   it('should overwrite any previous tags with ones specified in the NEW_CARD action', () => {
-    const initialState = emptyState(7, ['Tag 1', 'Tag 2']);
+    const initialState = emptyState(7);
 
-    const updatedState = subject(
+    // Set some tags to apply to the next card
+    let updatedState = subject(initialState, Actions.newCard(undefined, 8));
+    updatedState = subject(
+      updatedState,
+      Actions.editCard(8, { tags: ['Tag 1', 'Tag 2'] })
+    );
+    expect(updatedState.newCardTags).toEqual(['Tag 1', 'Tag 2']);
+
+    // Create a new card where tags are specified
+    updatedState = subject(
       initialState,
-      Actions.newCard({ tags: ['Tag 3', 'Tag 4'] }, 8)
+      Actions.newCard({ tags: ['Tag 3', 'Tag 4'] }, 9)
     );
 
     expect(updatedState.forms.active.card.tags).toEqual(['Tag 3', 'Tag 4']);
   });
-
-  // XXX Make sure any specified tags replace previous ones
 
   it('should update formId and state on LOAD_CARD', () => {
     const updatedState = subject(undefined, Actions.loadCard('abc', 2));

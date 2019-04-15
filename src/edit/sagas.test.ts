@@ -40,6 +40,7 @@ const loadingState = (formId: number) => ({
         card: {},
       },
     },
+    newCardTags: [],
   },
 });
 
@@ -56,6 +57,7 @@ const dirtyState = (formId: number, cardToUse: Partial<Card> | undefined) => {
           dirtyFields: new Set(['front']),
         },
       },
+      newCardTags: [],
     },
   };
 };
@@ -255,12 +257,12 @@ const okState = (
         active: {
           formId,
           formState: FormState.Ok,
-          isNew: typeof card.id === 'undefined',
           card,
           notes: [],
           saveState: SaveState.Ok,
         },
       },
+      newCardTags: [],
     },
   };
 };
@@ -274,6 +276,7 @@ const emptyState = (formId: number) => ({
         card: {},
       },
     },
+    newCardTags: [],
   },
 });
 
@@ -286,6 +289,7 @@ const deletedState = (formId: number) => ({
         card: {},
       },
     },
+    newCardTags: [],
   },
 });
 
