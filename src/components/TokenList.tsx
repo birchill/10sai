@@ -159,12 +159,8 @@ export class TokenList extends React.PureComponent<Props> {
             }
 
             const suggestionIndex = this.state.focusIndex - 1;
-            this.setState(
-              {
-                focusIndex: suggestionIndex,
-                text: this.suggestionsToDisplay()[suggestionIndex],
-              },
-              () => this.updateFocus()
+            this.setState({ focusIndex: suggestionIndex }, () =>
+              this.updateFocus()
             );
             e.preventDefault();
             return;
