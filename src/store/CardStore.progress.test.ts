@@ -136,7 +136,7 @@ describe('CardStore progress reporting', () => {
     });
     const updatedCard = await subject.putCard({
       id: newCard.id,
-      progress: { level: 1 },
+      progress: { level: 1, reviewed: null },
     });
     expect(updatedCard.modified).toBe(newCard.modified);
 
@@ -153,7 +153,10 @@ describe('CardStore progress reporting', () => {
     let fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.progress.level).toBe(1);
 
-    await subject.putCard({ id: newCard.id, progress: { level: 0 } });
+    await subject.putCard({
+      id: newCard.id,
+      progress: { level: 0, reviewed: null },
+    });
 
     fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.progress.level).toBe(0);

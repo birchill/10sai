@@ -178,10 +178,12 @@ export class CardStore {
     }
 
     const result = await this.db.query<CardContent>(view, queryOptions);
-    return result.rows.filter(row => row.doc).map(row => ({
-      ...parseCard(row.doc!),
-      progress: parseProgress(row.value.progress),
-    }));
+    return result.rows
+      .filter(row => row.doc)
+      .map(row => ({
+        ...parseCard(row.doc!),
+        progress: parseProgress(row.value.progress),
+      }));
   }
 
   async getCardsById(ids: string[]): Promise<Card[]> {
@@ -193,10 +195,12 @@ export class CardStore {
     };
     const result = await this.db.query<CardContent>('cards', options);
 
-    return result.rows.filter(row => row.doc).map(row => ({
-      ...parseCard(row.doc!),
-      progress: parseProgress(row.value.progress),
-    }));
+    return result.rows
+      .filter(row => row.doc)
+      .map(row => ({
+        ...parseCard(row.doc!),
+        progress: parseProgress(row.value.progress),
+      }));
   }
 
   async getAvailableCards(): Promise<AvailableCards> {
@@ -214,7 +218,7 @@ export class CardStore {
     };
   }
 
-  async putCard(card: DeepPartial<Card>): Promise<Card> {
+  async putCard(card: Partial<Card>): Promise<Card> {
     if (!card.id) {
       return this._putNewCard(card);
     }
@@ -230,7 +234,7 @@ export class CardStore {
 
   async _putNewCard(card: DeepPartial<Card>): Promise<Card> {
     const now = new Date().getTime();
-    const cardContent: CardContent = {
+    let cardContent: CardContent = {
       ...stripFields(card, ['id', 'progress']),
       // Fill-in mandatory fields
       front: card.front || '',
@@ -239,17 +243,7 @@ export class CardStore {
       created: now,
       modified: now,
     };
-
-    // Drop empty optional fields
-    if (cardContent.keywords && !cardContent.keywords.length) {
-      delete cardContent.keywords;
-    }
-    if (cardContent.tags && !cardContent.tags.length) {
-      delete cardContent.tags;
-    }
-    if (typeof cardContent.starred !== 'undefined' && !cardContent.starred) {
-      delete cardContent.starred;
-    }
+    cardContent = normalizeCardForDB(cardContent, cardContent);
 
     const progressContent: ProgressContent = {
       reviewed:
@@ -337,16 +331,7 @@ export class CardStore {
         return false;
       }
 
-      if (update.keywords && !update.keywords.length) {
-        delete card.keywords;
-      }
-      if (update.tags && !update.tags.length) {
-        delete card.tags;
-      }
-      if (typeof update.starred !== 'undefined' && !update.starred) {
-        delete card.starred;
-      }
-
+      card = normalizeCardForDB(card, update);
       card.modified = new Date().getTime();
 
       return card;
@@ -813,4 +798,33 @@ export class CardStore {
       return false;
     }
   }
+}
+
+function normalizeCardForDB<T extends CardContent | CardDoc>(
+  cardContent: T,
+  update: CardContent | Partial<Card>
+): T {
+  const normalized = { ...cardContent };
+
+  if (update.keywords && !update.keywords.length) {
+    delete normalized.keywords;
+  }
+  if (normalized.keywords) {
+    normalized.keywords = normalized.keywords.map(keyword =>
+      keyword.normalize()
+    );
+  }
+
+  if (update.tags && !update.tags.length) {
+    delete normalized.tags;
+  }
+  if (normalized.tags) {
+    normalized.tags = normalized.tags.map(tag => tag.normalize());
+  }
+
+  if (typeof update.starred !== 'undefined' && !update.starred) {
+    delete normalized.starred;
+  }
+
+  return normalized;
 }

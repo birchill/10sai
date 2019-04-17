@@ -405,6 +405,39 @@ describe('CardStore', () => {
     }
   });
 
+  it('normalizes tags/keywords in DB when adding a new card', async () => {
+    let card = await subject.putCard({
+      front: 'Question',
+      back: 'Answer',
+      tags: ['\u212B'], // Angstrom sign -> \u00C5 Latin capital A with ring above
+      keywords: ['\u1100\u1161'], // \u1100\u1161 (Jamo) -> \uAC00 (Precomposed hangul)
+    });
+    expect(card.tags).toEqual(['\u00C5']);
+    expect(card.keywords).toEqual(['\uAC00']);
+
+    card = await subject.getCard(card.id);
+    expect(card.tags).toEqual(['\u00C5']);
+    expect(card.keywords).toEqual(['\uAC00']);
+  });
+
+  it('normalizes tags/keywords in DB when updating a card', async () => {
+    let card = await subject.putCard({
+      front: 'Question',
+      back: 'Answer',
+    });
+    card = await subject.putCard({
+      id: card.id,
+      tags: ['\u212B'],
+      keywords: ['\u1100\u1161'],
+    });
+    expect(card.tags).toEqual(['\u00C5']);
+    expect(card.keywords).toEqual(['\uAC00']);
+
+    card = await subject.getCard(card.id);
+    expect(card.tags).toEqual(['\u00C5']);
+    expect(card.keywords).toEqual(['\uAC00']);
+  });
+
   it('reports changes to cards', async () => {
     const changesPromise = waitForChangeEvents<CardChange>(
       dataStore,
