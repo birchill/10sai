@@ -405,35 +405,45 @@ describe('CardStore', () => {
     }
   });
 
-  it('normalizes tags/keywords in DB when adding a new card', async () => {
+  it('normalizes text fields when adding a new card', async () => {
     let card = await subject.putCard({
-      front: 'Question',
-      back: 'Answer',
+      front: 'か\u3099', // か+〃 -> が
+      back: '\u0071\u0307\u0323',
       tags: ['\u212B'], // Angstrom sign -> \u00C5 Latin capital A with ring above
       keywords: ['\u1100\u1161'], // \u1100\u1161 (Jamo) -> \uAC00 (Precomposed hangul)
     });
+    expect(card.front).toEqual('が');
+    expect(card.back).toEqual('\u0071\u0323\u0307');
     expect(card.tags).toEqual(['\u00C5']);
     expect(card.keywords).toEqual(['\uAC00']);
 
     card = await subject.getCard(card.id);
+    expect(card.front).toEqual('が');
+    expect(card.back).toEqual('\u0071\u0323\u0307');
     expect(card.tags).toEqual(['\u00C5']);
     expect(card.keywords).toEqual(['\uAC00']);
   });
 
-  it('normalizes tags/keywords in DB when updating a card', async () => {
+  it('normalizes text fields when updating a card', async () => {
     let card = await subject.putCard({
       front: 'Question',
       back: 'Answer',
     });
     card = await subject.putCard({
       id: card.id,
+      front: 'か\u3099',
+      back: '\u0071\u0307\u0323',
       tags: ['\u212B'],
       keywords: ['\u1100\u1161'],
     });
+    expect(card.front).toEqual('が');
+    expect(card.back).toEqual('\u0071\u0323\u0307');
     expect(card.tags).toEqual(['\u00C5']);
     expect(card.keywords).toEqual(['\uAC00']);
 
     card = await subject.getCard(card.id);
+    expect(card.front).toEqual('が');
+    expect(card.back).toEqual('\u0071\u0323\u0307');
     expect(card.tags).toEqual(['\u00C5']);
     expect(card.keywords).toEqual(['\uAC00']);
   });

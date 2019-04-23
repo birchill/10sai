@@ -804,7 +804,11 @@ function normalizeCardForDB<T extends CardContent | CardDoc>(
   cardContent: T,
   update: CardContent | Partial<Card>
 ): T {
-  const normalized = { ...cardContent };
+  const normalized = {
+    ...cardContent,
+    front: cardContent.front.normalize(),
+    back: cardContent.back.normalize(),
+  };
 
   if (update.keywords && !update.keywords.length) {
     delete normalized.keywords;
