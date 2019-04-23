@@ -56,12 +56,13 @@ export class TagSuggester {
   }
 
   recordRecentTag(tag: string) {
-    this.recentTags.set(tag, undefined);
+    this.recentTags.set(tag.normalize(), undefined);
   }
 
   getSuggestions(input: string): SuggestionResult {
     const result: SuggestionResult = {};
 
+    input = input.normalize();
     this.currentInput = input;
 
     // Initial suggestions case:

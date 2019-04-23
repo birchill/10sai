@@ -74,6 +74,14 @@ describe('TagSuggester', () => {
     expect(result.initialResult).toEqual(['D', 'A', 'C']);
   });
 
+  it('normalized recently added tags before storing', () => {
+    subject.recordRecentTag('せんた\u3099い');
+
+    const result = subject.getSuggestions('');
+
+    expect(result.initialResult).toEqual(['せんだい']);
+  });
+
   it('returns frequently used tags asynchronously', async () => {
     store._tags = ['F1', 'F2', 'F3'];
     subject.recordRecentTag('R1');
@@ -124,6 +132,19 @@ describe('TagSuggester', () => {
     // Do a subsequent fetch
     const secondFetch = subject.getSuggestions('');
     expect(secondFetch.initialResult).toEqual(['C', 'B', 'A', 'D', 'E', 'F']);
+    expect(secondFetch.asyncResult).toBeUndefined();
+  });
+
+  it('caches tags in normalized form', async () => {
+    store._tags = ['せんだい'];
+
+    // Do initial fetch
+    const initialFetch = subject.getSuggestions('せんた\u3099い');
+    await initialFetch.asyncResult;
+
+    // Do a subsequent fetch -- using normalized form
+    const secondFetch = subject.getSuggestions('せんだい');
+    expect(secondFetch.initialResult).toEqual(['せんだい']);
     expect(secondFetch.asyncResult).toBeUndefined();
   });
 

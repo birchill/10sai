@@ -72,7 +72,7 @@ export class KeywordSuggester {
   }
 
   recordRecentKeyword(keyword: string) {
-    this.recentKeywords.set(keyword, undefined);
+    this.recentKeywords.set(keyword.normalize(), undefined);
   }
 
   getSuggestions(
@@ -81,6 +81,7 @@ export class KeywordSuggester {
     recentKeywordHandling: RecentKeywordHandling
   ): SuggestionResult {
     const result: SuggestionResult = {};
+    input = input.normalize();
 
     if (input === '') {
       const recentKeywords: string[] =
@@ -122,8 +123,8 @@ export class KeywordSuggester {
       return [];
     }
 
-    const front = stripRuby(toPlainText(card.front));
-    const back = stripRuby(toPlainText(card.back));
+    const front = stripRuby(toPlainText(card.front)).normalize();
+    const back = stripRuby(toPlainText(card.back)).normalize();
 
     // Look for a cloze -- if we find some stop there.
     const clozeKeywords = extractKeywordsFromCloze(front, back);
