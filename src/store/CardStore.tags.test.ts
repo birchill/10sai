@@ -112,6 +112,14 @@ describe('CardStore:tags', () => {
 
     expect(tags).toEqual(['Abc', 'abc', 'ABC', 'Abcd']);
   });
+
+  it('looks up normalized forms', async () => {
+    await putNewCardWithTags(['がぶがぶ', 'かふかふ'], subject);
+
+    const tags = await subject.getTags('か\u3099ふ\u3099か\u3099ふ\u3099', 5);
+
+    expect(tags).toEqual(['がぶがぶ']);
+  });
 });
 
 // Helper function to generate random cards and put them

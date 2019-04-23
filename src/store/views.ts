@@ -101,7 +101,7 @@ export const keywordMapFunction = (
     }
 
     for (const keyword of doc.keywords) {
-      emit([keyword.toLowerCase(), keyword], isNote ? 1000 : 1);
+      emit([keyword.toLowerCase().normalize(), keyword], isNote ? 1000 : 1);
     }
   }`;
 
@@ -115,6 +115,6 @@ export const tagMapFunction = (cardPrefix: string) => `function(doc) {
     }
 
     for (const tag of doc.tags) {
-      emit([tag.toLowerCase(), tag], 1);
+      emit([tag.toLowerCase().normalize(), tag], 1);
     }
   }`;

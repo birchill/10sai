@@ -413,13 +413,13 @@ export class CardStore {
   async getKeywords(prefix: string, limit: number): Promise<string[]> {
     await this.viewPromises.keywords.promise;
 
-    return this.getKeywordsOrTags('keywords', prefix, limit);
+    return this.getKeywordsOrTags('keywords', prefix.normalize(), limit);
   }
 
   async getTags(prefix: string, limit: number): Promise<string[]> {
     await this.viewPromises.tags.promise;
 
-    return this.getKeywordsOrTags('tags', prefix, limit);
+    return this.getKeywordsOrTags('tags', prefix.normalize(), limit);
   }
 
   async getKeywordsOrTags(
