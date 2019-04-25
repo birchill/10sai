@@ -16,7 +16,7 @@ import { stripRuby } from '../text/ruby';
 import { Return } from '../utils/type-helpers';
 
 import { EditCardToolbar } from './EditCardToolbar';
-import { EditCardForm } from './EditCardForm';
+import { EditCardForm, EditCardFormInterface } from './EditCardForm';
 import { EditCardNotFound } from './EditCardNotFound';
 import { DynamicNoteList } from './DynamicNoteList';
 
@@ -34,12 +34,12 @@ interface PropsInner extends Props {
 }
 
 class EditCardScreenInner extends React.PureComponent<PropsInner> {
-  activeFormRef: React.RefObject<EditCardForm>;
+  activeFormRef: React.RefObject<EditCardFormInterface>;
 
   constructor(props: PropsInner) {
     super(props);
 
-    this.activeFormRef = React.createRef<EditCardForm>();
+    this.activeFormRef = React.createRef<EditCardFormInterface>();
 
     this.handleFormChange = this.handleFormChange.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
