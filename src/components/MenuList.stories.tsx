@@ -36,11 +36,21 @@ storiesOf('Components|MenuList', module)
   .addDecorator(withStore)
   .add('default', () => (
     <MenuList>
-      <MenuItem className="-iconic -add" label="Add" />
+      <MenuItem
+        className="-iconic -add"
+        label="Add"
+        accelerator="Ctrl+Shift+N"
+      />
       <MenuItem className="-iconic -edit" label="Edit" />
       <MenuItem className="-iconic -delete" label="Delete" />
       <MenuItem className="-iconic -yellow" label="Yellow" />
       <MenuItemLink className="-iconic -add" href="/new" label="Link" />
+      <MenuItemLink
+        className="-iconic -add"
+        href="/new"
+        label="Link"
+        accelerator="Ctrl+Shift+L"
+      />
       <MenuItem
         className="-iconic -add"
         label="Disabled button"

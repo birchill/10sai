@@ -5,6 +5,7 @@
   & > .command {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-inline-end: 15px;
     min-height: 40px;
     padding: 4px 12px;
@@ -70,6 +71,11 @@
     &:disabled.-iconic > .label::before,
     &.-disabled.-iconic > .label::before {
       background-position-y: -1em * $icon-row-neutral-6;
+    }
+
+    > .accelerator {
+      margin-left: 1em;
+      color: $neutral-8;
     }
 
     &.-yellow {

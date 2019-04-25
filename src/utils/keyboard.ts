@@ -55,6 +55,25 @@ export const hasNoModifiers = (
   e: React.KeyboardEvent<{}> | KeyboardEvent
 ): boolean => !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
 
+// We only want to show shortcut keys if the user has a physical keyboard.
+// However, there's no way of doing that yet:
+//
+//   https://github.com/w3c/csswg-drafts/issues/3871
+//
+// What we can do, though, is something very very hacky. Browsers pretend they
+// don't support touch events for touchscreen desktops when you use certain
+// legacy touch event handlers to feature detect. See:
+//
+//   https://groups.google.com/a/chromium.org/forum/#!msg/blink-dev/KV6kqDJpYiE/YFM28ZNBBAAJ
+//   https://bugzilla.mozilla.org/show_bug.cgi?id=1412485
+//   https://github.com/w3c/touch-events/issues/64
+//
+// So we can exploit that and say, "If this thing is a touchscreen (but not
+// a desktop) then it probably doesn't have a keyboard, otherwise, assume it
+// does." That should be close enough until the CSSWG gets around to speccing
+// something for this.
+export const hasPhysicalKeyboard = !('ontouchstart' in window);
+
 // Test if an object is some sort of editable element.
 //
 // If we are listening for keyboard shortcuts on some element high up the DOM

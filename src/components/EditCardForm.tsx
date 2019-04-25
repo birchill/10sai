@@ -139,6 +139,7 @@ export class EditCardForm extends React.Component<Props, State> {
             <MenuItemLink
               className="-iconic -add-reversed"
               label="Add reverse card"
+              accelerator="Ctrl+Shift+X"
               disabled={!addReverseLink}
               href={addReverseLink || ''}
             />
