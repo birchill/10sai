@@ -16,12 +16,14 @@ import { StoreError } from '../store/DataStore';
 import { KeywordSuggester } from '../suggestions/KeywordSuggester';
 
 interface Props {
+  active: boolean;
   card: Partial<Card>;
   saveState: SaveState;
   saveError?: StoreError;
   canDelete: boolean;
   onChange?: (topic: string, value: string | string[]) => void;
   onDelete: () => void;
+  onAddReverse: (href: string) => void;
 }
 
 interface State {
@@ -111,23 +113,28 @@ export class EditCardForm extends React.Component<Props, State> {
     }
   }
 
+  getAddReverseLink(): string | null {
+    if (!this.props.card.front || !this.props.card.back) {
+      return null;
+    }
+
+    return URLFromRoute({
+      screen: 'edit-card',
+      search: {
+        front: this.props.card.back || undefined,
+        back: this.props.card.front || undefined,
+        keywords: this.props.card.keywords || undefined,
+        tags: this.props.card.tags || undefined,
+      },
+    });
+  }
+
   render() {
     const keywordSuggestions = KeywordSuggester.getSuggestionsFromCard(
       this.props.card
     );
 
-    let addReverseLink: string | undefined;
-    if (this.props.card.front || this.props.card.back) {
-      addReverseLink = URLFromRoute({
-        screen: 'edit-card',
-        search: {
-          front: this.props.card.back || undefined,
-          back: this.props.card.front || undefined,
-          keywords: this.props.card.keywords || undefined,
-          tags: this.props.card.tags || undefined,
-        },
-      });
-    }
+    const addReverseLink = this.getAddReverseLink();
 
     return (
       <>

@@ -30,6 +30,7 @@ interface PropsInner extends Props {
   };
   onEdit: (formId: number, change: Partial<Card>) => void;
   onDelete: (formId: number, cardId?: string) => void;
+  onAddReverse: (href: string) => void;
 }
 
 class EditCardScreenInner extends React.PureComponent<PropsInner> {
@@ -102,8 +103,10 @@ class EditCardScreenInner extends React.PureComponent<PropsInner> {
         {formState !== FormState.NotFound && formState !== FormState.Deleted ? (
           <>
             <EditCardForm
+              active={this.props.active}
               onChange={this.handleFormChange}
               onDelete={this.handleDelete}
+              onAddReverse={this.props.onAddReverse}
               canDelete={canDelete}
               {...this.props.forms.active}
               ref={this.activeFormRef}
@@ -177,6 +180,9 @@ const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   onDelete: (formId: number, cardId?: string) => {
     dispatch(Actions.deleteCard(formId, cardId));
     dispatch(Actions.followLink('/'));
+  },
+  onAddReverse: (href: string) => {
+    dispatch(Actions.followLink(href));
   },
 });
 
