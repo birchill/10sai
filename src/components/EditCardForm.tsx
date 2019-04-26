@@ -14,6 +14,7 @@ import { SaveState } from '../edit/reducer';
 import { URLFromRoute } from '../route/router';
 import { StoreError } from '../store/DataStore';
 import { KeywordSuggester } from '../suggestions/KeywordSuggester';
+import { hasCommandModifier } from '../utils/keyboard';
 
 interface Props {
   active: boolean;
@@ -91,6 +92,40 @@ const EditCardFormImpl: React.FC<Props> = (props, ref) => {
     },
     [props.onChange]
   );
+
+  // Handle Ctrl+Shift+X for adding a reversed card.
+  //
+  // See notes in App.tsx for why we use the Ctrl+Shift+<Letter> pattern.
+  //
+  // We don't use Ctrl+Shift+R because that's the shortcut for the review
+  // screen.
+  //
+  // We don't use Ctrl+Shift+F (flip) because we'll likely want to use that as
+  // a shortcut for searching in future.
+  //
+  // X is close to C (for creating) so we use that for now.
+  React.useEffect(() => {
+    if (!props.active || !addReverseLink) {
+      return;
+    }
+
+    const keyDownHandler = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) {
+        return;
+      }
+
+      if (e.key.toLowerCase() === 'x' && hasCommandModifier(e) && e.shiftKey) {
+        props.onAddReverse(addReverseLink);
+        e.preventDefault();
+      }
+    };
+
+    document.documentElement.addEventListener('keydown', keyDownHandler);
+
+    return () => {
+      document.documentElement.removeEventListener('keydown', keyDownHandler);
+    };
+  }, [props.active, props.onAddReverse, addReverseLink]);
 
   return (
     <>
