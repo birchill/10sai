@@ -16,6 +16,7 @@ import { fromDraft, toDraft, toMarkSet } from '../text/draft-conversion';
 import { cardKeyBindings } from '../text/key-bindings';
 import { deserialize, serialize } from '../text/rich-text';
 import { getKeywordVariants, getKeywordsToMatch } from '../text/keywords';
+import { localizeShortcut } from '../utils/keyboard';
 import { setsEqual } from '../utils/sets-equal';
 
 import {
@@ -324,7 +325,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       {
         type: 'bold',
         label: 'Bold',
-        accelerator: 'Ctrl+B',
+        accelerator: localizeShortcut('Ctrl+B'),
         state: currentMarks.has('bold')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,
@@ -332,7 +333,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       {
         type: 'italic',
         label: 'Italic',
-        accelerator: 'Ctrl+I',
+        accelerator: localizeShortcut('Ctrl+I'),
         state: currentMarks.has('italic')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,
@@ -340,7 +341,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       {
         type: 'underline',
         label: 'Underline',
-        accelerator: 'Ctrl+U',
+        accelerator: localizeShortcut('Ctrl+U'),
         state: currentMarks.has('underline')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,
@@ -348,7 +349,7 @@ export class EditNoteForm extends React.Component<Props, State> {
       {
         type: 'emphasis',
         label: 'Dot emphasis',
-        accelerator: 'Ctrl+.',
+        accelerator: localizeShortcut('Ctrl+.'),
         state: currentMarks.has('emphasis')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,

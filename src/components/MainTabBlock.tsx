@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { localizeShortcut } from '../utils/keyboard';
+
 import { Link } from './Link';
 import { TabBlock } from './TabBlock';
 
@@ -38,6 +40,10 @@ export const MainTabBlock: React.FC<Props> = props => {
     ? ['lookup', 'edit-card', 'review'].indexOf(props.activeTab)
     : undefined;
 
+  const editTitle = props.activeCardId
+    ? 'Edit'
+    : `Add (C, ${localizeShortcut('Ctrl+Alt+C')})`;
+
   return (
     <TabBlock active={activeIndex} className={classes.join(' ')}>
       <Link
@@ -45,6 +51,7 @@ export const MainTabBlock: React.FC<Props> = props => {
         href={lookupLink}
         aria-controls="lookup-page"
         className="-icon -lookup"
+        title={`Lookup (L, ${localizeShortcut('Ctrl+Alt+L')})`}
       >
         Lookup
       </Link>
@@ -53,6 +60,7 @@ export const MainTabBlock: React.FC<Props> = props => {
         href={addEditLink}
         aria-controls="edit-page"
         className={`-icon ${addEditClass}`}
+        title={editTitle}
       >
         {addEditLabel}
       </Link>
@@ -62,6 +70,7 @@ export const MainTabBlock: React.FC<Props> = props => {
         aria-controls="review-page"
         className={`-icon -review ${props.remainingReviews ? '-badge' : ''}`}
         data-badge={props.remainingReviews}
+        title={`Review (R, ${localizeShortcut('Ctrl+Alt+R')})`}
       >
         Review
       </Link>

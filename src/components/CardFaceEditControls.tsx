@@ -12,6 +12,7 @@ import {
   hasAllTheKeys,
   hasCommandModifierOnly,
   hasNoModifiers,
+  localizeShortcut,
 } from '../utils/keyboard';
 
 import { Card } from '../model';
@@ -325,7 +326,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       {
         type: 'bold',
         label: 'Bold',
-        accelerator: 'Ctrl+B',
+        accelerator: localizeShortcut('Ctrl+B'),
         state: hasMark('bold')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,
@@ -333,7 +334,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       {
         type: 'italic',
         label: 'Italic',
-        accelerator: 'Ctrl+I',
+        accelerator: localizeShortcut('Ctrl+I'),
         state: hasMark('italic')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,
@@ -341,7 +342,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       {
         type: 'underline',
         label: 'Underline',
-        accelerator: 'Ctrl+U',
+        accelerator: localizeShortcut('Ctrl+U'),
         state: hasMark('underline')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,
@@ -349,7 +350,7 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       {
         type: 'emphasis',
         label: 'Dot emphasis',
-        accelerator: 'Ctrl+.',
+        accelerator: localizeShortcut('Ctrl+.'),
         state: hasMark('emphasis')
           ? FormatButtonState.Set
           : FormatButtonState.Normal,
@@ -357,20 +358,22 @@ export class CardFaceEditControls extends React.Component<Props, State> {
       {
         type: 'color',
         label: 'Text color',
-        accelerator: 'Ctrl+/ or F7',
+        accelerator: `${localizeShortcut('Ctrl+/')} or F7`,
         state: FormatButtonState.Normal,
         initialColor: 'blue',
       },
       {
         type: 'color-dropdown',
         label: 'Select text color',
-        accelerator: 'Ctrl+\\ or F8',
+        accelerator: `${localizeShortcut('Ctrl+\\')} or F8`,
         state: FormatButtonState.Normal,
       },
       {
         type: 'cloze',
         label: 'Cloze',
-        accelerator: 'Ctrl+[ or Ctrl+Shift+Alt+C',
+        accelerator: `${localizeShortcut('Ctrl+[')} or ${localizeShortcut(
+          'Ctrl+Shift+Alt+C'
+        )}`,
         state: hasSelection
           ? FormatButtonState.Normal
           : FormatButtonState.Disabled,
