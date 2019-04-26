@@ -103,3 +103,46 @@ export const isTextBox = (elem: any) => {
 
   return false;
 };
+
+export const localizeShortcut = (shortcut: string): string => {
+  if (!isMac) {
+    return shortcut;
+  }
+
+  return shortcut
+    .split('+')
+    .map(part => {
+      switch (part) {
+        case 'Ctrl':
+          return '\u2318';
+        case 'Alt':
+          return '\u2325';
+        case 'Shift':
+          return '\u21e7';
+        case 'MacCtrl':
+          return '\u2303';
+        default:
+          return part;
+      }
+    })
+    .sort((a: string, b: string) => {
+      const order = (key: string): number => {
+        switch (key) {
+          case 'Fn':
+            return 0;
+          case '\u2303':
+            return 1;
+          case '\u2325':
+            return 2;
+          case '\u21e7':
+            return 3;
+          case '\u2318':
+            return 4;
+          default:
+            return 10;
+        }
+      };
+      return order(a) - order(b);
+    })
+    .join('');
+};

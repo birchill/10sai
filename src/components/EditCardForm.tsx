@@ -14,7 +14,7 @@ import { SaveState } from '../edit/reducer';
 import { URLFromRoute } from '../route/router';
 import { StoreError } from '../store/DataStore';
 import { KeywordSuggester } from '../suggestions/KeywordSuggester';
-import { hasCommandModifier } from '../utils/keyboard';
+import { hasCommandModifier, localizeShortcut } from '../utils/keyboard';
 
 interface Props {
   active: boolean;
@@ -127,6 +127,8 @@ const EditCardFormImpl: React.FC<Props> = (props, ref) => {
     };
   }, [props.active, props.onAddReverse, addReverseLink]);
 
+  const addReverseAccelerator = localizeShortcut('Ctrl+Shift+X');
+
   return (
     <>
       <form className="form editcard-form" autoComplete="off">
@@ -137,7 +139,7 @@ const EditCardFormImpl: React.FC<Props> = (props, ref) => {
           <MenuItemLink
             className="-iconic -add-reversed"
             label="Add reverse card"
-            accelerator="Ctrl+Shift+X"
+            accelerator={addReverseAccelerator}
             disabled={!addReverseLink}
             href={addReverseLink || ''}
           />
