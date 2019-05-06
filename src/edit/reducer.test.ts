@@ -358,6 +358,23 @@ describe('reducer:edit', () => {
     );
   });
 
+  it('should preserve new card tags on EDIT_CARD', () => {
+    const initialState = emptyState(7);
+
+    let updatedState = subject(initialState, Actions.newCard(undefined, 8));
+    updatedState = subject(
+      updatedState,
+      Actions.editCard(8, { tags: ['Tag 1', 'Tag 2'] })
+    );
+    expect(updatedState.newCardTags).toEqual(['Tag 1', 'Tag 2']);
+
+    updatedState = subject(
+      updatedState,
+      Actions.editCard(8, { front: 'Question' })
+    );
+    expect(updatedState.newCardTags).toEqual(['Tag 1', 'Tag 2']);
+  });
+
   it('should clear the saveError on SAVE_CARD', () => {
     const withoutErrorState = dirtyState(
       11,

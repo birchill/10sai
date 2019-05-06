@@ -180,7 +180,10 @@ export function edit(state = initialState, action: Action): EditState {
       }
 
       let newCardTags = state.newCardTags;
-      if (dirtyFields.has('tags')) {
+      if (
+        dirtyFields.has('tags') &&
+        typeof editAction.card.tags !== 'undefined'
+      ) {
         newCardTags = editAction.card.tags || [];
       }
 
