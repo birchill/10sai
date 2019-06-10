@@ -20,14 +20,9 @@ import deepEqual from 'deep-equal';
 // We don't anticipate sharing cards between subjects. But what about reviewing
 // across subjects?
 
-export interface SearchParams {
-  // The OutputParams in @types/query-string seems to ignore the null case.
-  [key: string]: string | string[] | undefined | null;
-}
-
 interface RouteBase {
   popup?: 'settings';
-  search?: SearchParams;
+  search?: queryString.ParsedQuery;
   fragment?: string;
 }
 
