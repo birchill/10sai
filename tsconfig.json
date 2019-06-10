@@ -17,6 +17,7 @@
     "target": "es2017"
   },
   "include": [
+    "./*.js",
     ".storybook/*.js",
     "./src/**/*.ts",
     "./src/**/*.tsx"

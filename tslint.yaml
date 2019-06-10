@@ -1,3 +1,5 @@
 ---
 rules:
   no-console: [true, "log"]
+jsRules:
+  no-empty: true
