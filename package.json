@@ -36,7 +36,7 @@
     "normalize-css": "^2.3.1",
     "pouch-resolve-conflicts": "github:jo/pouch-resolve-conflicts#5677508b650118c1",
     "pouchdb": "^7.1.1",
-    "pouchdb-collate": "^7.0.0",
+    "pouchdb-collate": "^7.1.1",
     "pouchdb-find": "^7.0.0",
     "pouchdb-upsert": "^2.2.0",
     "query-string": "^6.7.0",
