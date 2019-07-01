@@ -71,7 +71,7 @@
     "enzyme-adapter-react-16": "^1.10.0",
     "husky": "^2.1.0",
     "jest": "^24.1.0",
-    "lint-staged": "^8.1.4",
+    "lint-staged": "^9.0.0",
     "mini-css-extract-plugin": "^0.7.0",
     "node-sass": "^4.11.0",
     "pouchdb-adapter-memory": "^7.1.1",
