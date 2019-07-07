@@ -7,6 +7,7 @@ import { notes as notesReducer, NoteState } from '../notes/reducer';
 import * as actions from './actions';
 import { StoreError } from '../store/DataStore';
 import { isNoteAction, NoteAction, EditNoteContext } from '../notes/actions';
+import { copyField } from '../utils/type-helpers';
 
 export const enum SaveState {
   New = 'new',
@@ -312,11 +313,14 @@ export function edit(state = initialState, action: Action): EditState {
       for (const field of Object.keys(editAction.change.card) as Array<
         keyof Card
       >) {
-        card[field] =
+        if (
           state.forms.active.dirtyFields &&
           state.forms.active.dirtyFields.has(field)
-            ? state.forms.active.card[field]
-            : editAction.change.card[field];
+        ) {
+          copyField(card, state.forms.active.card, field);
+        } else {
+          copyField(card, editAction.change.card, field);
+        }
       }
 
       return {

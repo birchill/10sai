@@ -21,11 +21,11 @@ const cardForDirectPut = (card: Omit<Card, 'progress'>): CardDoc => ({
 // active again so we add a little timeout after getting an initial onIdle
 // callback to make sure it really is idle.
 
-function idleSync(): [({}) => any, Promise<{}>] {
+function idleSync(): [({}) => any, Promise<void>] {
   const idleTimeout = 50; // ms
 
   let resolver: () => void;
-  const idlePromise = new Promise(resolve => {
+  const idlePromise = new Promise<void>(resolve => {
     resolver = resolve;
   });
 

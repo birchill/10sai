@@ -5,6 +5,7 @@ import * as actions from './actions';
 import { Note } from '../model';
 import { SaveState } from '../edit/reducer';
 import { StoreError } from '../store/DataStore';
+import { copyField } from '../utils/type-helpers';
 
 export interface NoteState {
   formId: number;
@@ -274,7 +275,7 @@ export function notes(
               // Keep the dirty (unsaved) values rather than clobbering them
               // with whatever we got from the database.
               for (const field of match.dirtyFields) {
-                noteState.note[field] = match.note[field];
+                copyField(noteState.note, match.note, field);
               }
             }
             if (typeof match.saveError !== 'undefined') {

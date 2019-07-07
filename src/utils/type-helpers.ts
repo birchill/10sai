@@ -27,8 +27,8 @@ export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer U>
     ? Array<DeepPartial<U>>
     : T[P] extends ReadonlyArray<infer U>
-      ? ReadonlyArray<DeepPartial<U>>
-      : DeepPartial<T[P]>
+    ? ReadonlyArray<DeepPartial<U>>
+    : DeepPartial<T[P]>;
 };
 
 /**
@@ -46,6 +46,26 @@ export function stripFields<T extends object, K extends keyof T>(
 }
 
 /**
+ * A helper to copy a field from one object to another of the same type.
+ *
+ * This seems to be needed as of TS 3.5. There's probably a better way of doing this but I haven't found it.
+ */
+export function copyField<T, K extends keyof T>(a: T, b: T, field: K) {
+  a[field] = b[field];
+}
+
+/**
  * Return type of a function.
  */
 export type Return<T> = T extends (...args: any[]) => infer R ? R : never;
+
+/**
+ * Restrict to keys of TObj with a certain type
+ *
+ * From: https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#workarounds-1
+ */
+export type KeysOfType<
+  TObj,
+  TProp,
+  K extends keyof TObj = keyof TObj
+> = K extends K ? (TObj[K] extends TProp ? K : never) : never;

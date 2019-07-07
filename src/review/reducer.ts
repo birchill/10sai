@@ -5,6 +5,7 @@ import { AvailableCards, Card } from '../model';
 import * as actions from './actions';
 import { notes as notesReducer, NoteState } from '../notes/reducer';
 import { isNoteAction } from '../notes/actions';
+import { KeysOfType } from '../utils/type-helpers';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -404,7 +405,9 @@ export function review(
 
     case 'UPDATE_REVIEW_CARD': {
       const update: Partial<ReviewState> = {};
-      const fieldsWithCards: (keyof ReviewState)[] = [
+      const fieldsWithCards: Array<
+        KeysOfType<ReviewState, Card[] | Card | null>
+      > = [
         'currentCard',
         'nextCard',
         'heap',
@@ -432,10 +435,11 @@ export function review(
           });
 
           if (found) {
-            update[field] = updatedArray;
+            update[field as KeysOfType<ReviewState, Card[]>] = updatedArray;
           }
         } else if (isCard(value) && value.id === reviewAction.card.id) {
-          update[field] = reviewAction.card;
+          update[field as KeysOfType<ReviewState, Card | null>] =
+            reviewAction.card;
         }
       }
 

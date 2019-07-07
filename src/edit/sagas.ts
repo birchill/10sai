@@ -10,6 +10,7 @@ import {
 import { Store } from 'redux';
 
 import { watchEdits, ResourceState } from '../utils/autosave-saga';
+import { KeysOfType } from '../utils/type-helpers';
 import { beforeNotesScreenChange } from '../notes/sagas';
 import {
   routeFromURL,
@@ -43,7 +44,9 @@ export function* navigate(
       card = {};
       const { search } = route;
 
-      const assignStringField = (key: keyof Actions.PrefilledCard) => {
+      const assignStringField = (
+        key: KeysOfType<Actions.PrefilledCard, string | undefined>
+      ) => {
         if (!search[key]) {
           return;
         }
@@ -62,7 +65,9 @@ export function* navigate(
       assignStringField('front');
       assignStringField('back');
 
-      const assignStringArray = (key: keyof Actions.PrefilledCard) => {
+      const assignStringArray = (
+        key: KeysOfType<Actions.PrefilledCard, string[] | undefined>
+      ) => {
         if (!search[key]) {
           return;
         }
