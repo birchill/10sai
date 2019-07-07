@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: frame-ancestors 'none'; default-src 'none'; img-src https:; script-src 'unsafe-inline' 'unsafe-eval' 'self' typesquare.com wf.typesquare.com; style-src 'unsafe-inline' 'self'; manifest-src 'self'; connect-src https:;
+  Content-Security-Policy: frame-ancestors 'none'; default-src 'none'; img-src https:; script-src 'unsafe-inline' 'unsafe-eval' 'self' typesquare.com wf.typesquare.com; style-src 'unsafe-inline' 'self'; manifest-src 'self'; connect-src https:; font-src wf.typesquare.com;
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
