@@ -154,7 +154,9 @@ export function* save(
   }
 }
 
-export function* watchCardEdits(dataStore: DataStore) {
+export function* watchCardEdits(
+  dataStore: DataStore
+): Generator<any, void, any> {
   const params = {
     editActionType: 'EDIT_CARD',
     saveActionType: 'SAVE_CARD',
