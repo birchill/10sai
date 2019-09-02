@@ -107,7 +107,9 @@ export abstract class SuggestionProvider<
   }
 
   render() {
-    return this.props.children(
+    // Typings somewhere seem to be overriding the type we defined for children above.
+    // Probably we should fix this somehow.
+    return (this.props as Props).children(
       this.state.suggestions,
       this.state.loading,
       this.addRecentEntry
