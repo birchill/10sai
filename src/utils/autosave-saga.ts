@@ -43,9 +43,7 @@ export interface ResourceParams<
     dataStore: DataStore,
     saveContext: SaveContext,
     resource: Partial<Resource>
-  ) => IterableIterator<any>;
-  // ^ The above should be IterableIterator<Partial<Resource>> but we're still
-  // waiting on typing for return values from generators: Typescript #2983
+  ) => Generator<any, Partial<Resource>>;
   saveActionCreator: (saveContext: SaveContext) => SaveAction;
   finishSaveActionCreator: (
     saveContext: SaveContext,

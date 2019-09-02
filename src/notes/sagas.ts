@@ -18,7 +18,7 @@ export function* save(
   dataStore: DataStore,
   context: NoteContext,
   note: Partial<Note>
-) {
+): Generator<any, Partial<Note>, any> {
   try {
     const savedNote = yield call([dataStore, 'putNote'], note);
 
@@ -33,7 +33,9 @@ export function* save(
   }
 }
 
-export function* watchNoteEdits(dataStore: DataStore) {
+export function* watchNoteEdits(
+  dataStore: DataStore
+): Generator<any, void, any> {
   const params = {
     editActionType: 'EDIT_NOTE',
     saveActionType: 'SAVE_NOTE',
@@ -98,7 +100,9 @@ export function* noteSagas(dataStore: DataStore) {
   yield* [watchNoteEdits(dataStore)];
 }
 
-export function* beforeNotesScreenChange(context: NoteListContext) {
+export function* beforeNotesScreenChange(
+  context: NoteListContext
+): Generator<any, boolean, any> {
   const noteList = yield select(getNoteListSelector(context));
 
   const keyFromContext = (context: NoteContext): string =>

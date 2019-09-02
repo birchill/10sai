@@ -116,7 +116,7 @@ export function* save(
   dataStore: DataStore,
   formId: number,
   card: Partial<Card>
-) {
+): Generator<any, Partial<Card>, any> {
   try {
     const savedCard = yield call([dataStore, 'putCard'], card);
 
@@ -205,7 +205,7 @@ export function* editSagas(dataStore: DataStore) {
   ];
 }
 
-export function* beforeEditScreenChange() {
+export function* beforeEditScreenChange(): Generator<any, boolean, any> {
   const activeRecord = yield select(getActiveRecord);
 
   const [saveCardResult, saveNotesResult] = yield all([
@@ -216,7 +216,7 @@ export function* beforeEditScreenChange() {
     }),
   ]);
 
-  return saveCardResult && saveNotesResult;
+  return !!saveCardResult && !!saveNotesResult;
 }
 
 function* saveBeforeScreenChange(formId: number) {

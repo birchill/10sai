@@ -32,7 +32,7 @@ export function* updateHeap(
     | Actions.NewReviewAction
     | Actions.SetReviewLimitAction
     | Actions.SetReviewTimeAction
-) {
+): Generator<any, void, any> {
   const reviewInfo = yield select((state: AppState) =>
     state ? state.review : {}
   );
@@ -105,7 +105,7 @@ function* getCardsForHeap(
 export function* updateProgress(
   dataStore: DataStore,
   action: Actions.PassCardAction | Actions.FailCardAction
-) {
+): Generator<any, void, any> {
   const reviewInfo: ReviewState = yield select((state: AppState) =>
     state ? state.review : {}
   );
@@ -172,7 +172,7 @@ export function* queryAvailableCards(dataStore: DataStore, action: never) {
 export function* loadReview(
   dataStore: DataStore,
   action: Actions.LoadReviewAction
-) {
+): Generator<any, void, any> {
   // Load cards from history
   const history = yield call(
     [dataStore, 'getCardsById'],

@@ -96,7 +96,7 @@ export function* followLink(action: Actions.FollowLinkAction) {
   }
 }
 
-export function* beforeScreenChange() {
+export function* beforeScreenChange(): Generator<any, boolean, any> {
   const currentRoute = yield select(getCurrentRoute);
 
   if (currentRoute && currentRoute.screen === 'edit-card') {
