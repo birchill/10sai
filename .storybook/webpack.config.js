@@ -30,7 +30,9 @@ module.exports = ({ config, mode }) => {
       {
         loader: 'sass-loader',
         options: {
-          includePaths: [path.resolve(__dirname, '../scss')],
+          sassOptions: {
+            includePaths: [path.resolve(__dirname, '../scss')],
+          },
           sourceMap: true,
         },
       },
