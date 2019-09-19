@@ -10,7 +10,7 @@
   "scripts": {
     "build": "cross-env NODE_ENV=development webpack --config webpack.dev.js --colors",
     "build:prod": "cross-env NODE_ENV=production webpack --config webpack.prod.js --colors",
-    "//": "For EACCES errors, try 'npm start -- --port 8085'",
+    "//": "For EACCES errors, try 'yarn start --port 8085'",
     "start": "cross-env NODE_ENV=development webpack-dev-server --config webpack.dev.js --progress --colors --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack-dev-server --config webpack.prod.js --progress --colors --history-api-fallback --content-base public/",
     "test": "jest",
