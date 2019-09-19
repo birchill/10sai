@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { storiesOf, RenderFunction } from '@storybook/react';
+import { storiesOf } from '@storybook/react';
+import { DecoratorFunction } from '@storybook/addons';
 import { action as notifyAction } from '@storybook/addon-actions';
 import { createStore, Store } from 'redux';
 import { Provider } from 'react-redux';
@@ -28,7 +29,7 @@ const reducer = (state: any, action: FollowLinkAction) => {
 };
 
 const store: Store = createStore(reducer);
-const withStore = (story: RenderFunction) => (
+const withStore: DecoratorFunction<React.ReactElement> = story => (
   <Provider store={store}>{story()}</Provider>
 );
 

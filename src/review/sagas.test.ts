@@ -26,7 +26,7 @@ describe('sagas:review updateHeap', () => {
     overdueCards: Array<string>
   ): EffectProviders => {
     return {
-      call(effect: CallEffectDescriptor, next: () => Object) {
+      call(effect: CallEffectDescriptor<any>, next: () => Object) {
         if (effect.fn === dataStore.getCards) {
           const type = effect.args[0] ? effect.args[0].type : '';
           if (type === 'new') {
