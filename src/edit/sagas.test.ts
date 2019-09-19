@@ -13,6 +13,7 @@ import {
   beforeEditScreenChange as beforeEditScreenChangeSaga,
 } from './sagas';
 import { Card } from '../model';
+import { DataStore } from '../store/DataStore';
 import { SaveState } from './reducer';
 import { reducer, AppState } from '../reducer';
 import { FormState } from './FormState';
@@ -66,7 +67,9 @@ const initialState = reducer(undefined, { type: 'none' } as any);
 
 describe('sagas:edit navigate', () => {
   it('triggers a load action if the route is for editing a card (URL)', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
 
     // The load action increments a global counter so we need to read where it
     // is up to.
@@ -84,7 +87,9 @@ describe('sagas:edit navigate', () => {
   });
 
   it('triggers a load action if the route is for editing a card (path)', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
     const formId = Actions.loadCard('123').newFormId + 1;
 
     return expectSaga(
@@ -99,7 +104,9 @@ describe('sagas:edit navigate', () => {
   });
 
   it('triggers a new action if the route is for adding a card', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
     const formId = Actions.newCard().newFormId + 1;
 
     return expectSaga(
@@ -113,7 +120,9 @@ describe('sagas:edit navigate', () => {
   });
 
   it('includes any query string parameters in a triggered new action', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
     const formId = Actions.newCard().newFormId + 1;
 
     return expectSaga(
@@ -128,7 +137,9 @@ describe('sagas:edit navigate', () => {
   });
 
   it('handles array query string parameters for the new card route', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
     const formId = Actions.newCard().newFormId + 1;
 
     return expectSaga(
@@ -145,7 +156,9 @@ describe('sagas:edit navigate', () => {
   });
 
   it('ignores irrelevant fields in the new card route', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
     const formId = Actions.newCard().newFormId + 1;
 
     return expectSaga(
@@ -160,7 +173,9 @@ describe('sagas:edit navigate', () => {
   });
 
   it('takes just the last element for string fields specified as arrays', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
     const formId = Actions.newCard().newFormId + 1;
 
     return expectSaga(
@@ -176,7 +191,9 @@ describe('sagas:edit navigate', () => {
   });
 
   it('ignores does not get tripped up on commas in the new card route', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
     const formId = Actions.newCard().newFormId + 1;
 
     return expectSaga(
@@ -193,7 +210,9 @@ describe('sagas:edit navigate', () => {
   });
 
   it('does not triggers a load action if the route is something else', () => {
-    const dataStore = { getCard: (id: string) => ({ id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ id }),
+    } as unknown) as DataStore;
     const formId = Actions.loadCard('123').newFormId + 1;
 
     return expectSaga(navigateSaga, dataStore, Actions.navigate({ url: '/' }))
@@ -204,7 +223,9 @@ describe('sagas:edit navigate', () => {
 
   it('dispatches a finished action if the load successfully complete', () => {
     const card = generateCard('123');
-    const dataStore = { getCard: (id: string) => ({ ...card, id }) };
+    const dataStore = ({
+      getCard: (id: string) => ({ ...card, id }),
+    } as unknown) as DataStore;
     const formId = Actions.loadCard('123').newFormId + 1;
 
     return expectSaga(
@@ -221,12 +242,12 @@ describe('sagas:edit navigate', () => {
 
   it('dispatches a failed action if the load failed to complete', () => {
     const error = { status: 404, name: 'not_found', message: 'Not found' };
-    const dataStore = {
+    const dataStore = ({
       getCard: () =>
         new Promise((resolve, reject) => {
           reject(error);
         }),
-    };
+    } as unknown) as DataStore;
     const formId = Actions.loadCard('123').newFormId + 1;
 
     return expectSaga(
@@ -303,7 +324,9 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('saves the card', () => {
-    const dataStore = { putCard: (card: Partial<Card>) => card };
+    const dataStore = ({
+      putCard: (card: Partial<Card>) => card,
+    } as unknown) as DataStore;
     const card = { front: 'yer' };
     const formId = 5;
 
@@ -316,7 +339,9 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('does NOT save the card if it is not dirty', () => {
-    const dataStore = { putCard: (card: Partial<Card>) => card };
+    const dataStore = ({
+      putCard: (card: Partial<Card>) => card,
+    } as unknown) as DataStore;
     const card = { front: 'yer' };
     const formId = 5;
 
@@ -329,7 +354,9 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('fails if there is no card to save', () => {
-    const dataStore = { putCard: (card: Partial<Card>) => card };
+    const dataStore = ({
+      putCard: (card: Partial<Card>) => card,
+    } as unknown) as DataStore;
     const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
@@ -346,9 +373,9 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('reports the ID of the saved card', () => {
-    const dataStore = {
+    const dataStore = ({
       putCard: (card: Partial<Card>) => ({ ...card, id: 'generated-id' }),
-    };
+    } as unknown) as DataStore;
     const card = { front: 'yer' };
     const formId = 5;
 
@@ -361,9 +388,9 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('updates the history so the current URL reflects the saved card', () => {
-    const dataStore = {
+    const dataStore = ({
       putCard: (card: Partial<Card>) => ({ ...card, id: '1234' }),
-    };
+    } as unknown) as DataStore;
     const card = { front: 'yer' };
     const formId = 5;
     global.location.pathname = '/cards/new';
@@ -378,7 +405,9 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('does NOT update history if the card is not new', () => {
-    const dataStore = { putCard: (card: Partial<Card>) => card };
+    const dataStore = ({
+      putCard: (card: Partial<Card>) => card,
+    } as unknown) as DataStore;
     const card = { front: 'yer', id: '1234' };
     const formId = 5;
     global.location.pathname = '/cards/new';
@@ -393,9 +422,9 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('does NOT update history if we are no longer on the new card screen', () => {
-    const dataStore = {
+    const dataStore = ({
       putCard: (card: Partial<Card>) => ({ ...card, id: '2345' }),
-    };
+    } as unknown) as DataStore;
     const card = { front: 'yer' };
     const formId = 18;
     global.location.pathname = '/';
@@ -411,12 +440,12 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('dispatches a failed action when the card cannot be saved', () => {
     const error = { status: 404, name: 'not_found', message: 'Not found' };
-    const dataStore = {
+    const dataStore = ({
       putCard: () =>
         new Promise((resolve, reject) => {
           reject(error);
         }),
-    };
+    } as unknown) as DataStore;
     const card = { front: 'yer' };
     const formId = 13;
 
@@ -429,7 +458,7 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('deletes the card when requested', () => {
-    const dataStore = { deleteCard: () => {} };
+    const dataStore = ({ deleteCard: () => {} } as unknown) as DataStore;
     const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
@@ -440,7 +469,7 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('deletes the card even if it has not been saved', () => {
-    const dataStore = { deleteCard: () => {} };
+    const dataStore = ({ deleteCard: () => {} } as unknown) as DataStore;
     const card = { id: 'abc', front: 'Prompt', back: 'Answer' };
     const formId = 5;
 
@@ -453,12 +482,12 @@ describe('sagas:edit watchCardEdits', () => {
 
   it('ignores any errors when deleting', () => {
     const error = { status: 404, name: 'not_found', reason: 'deleted' };
-    const dataStore = {
+    const dataStore = ({
       deleteCard: () =>
         new Promise((resolve, reject) => {
           reject(error);
         }),
-    };
+    } as unknown) as DataStore;
     const formId = 5;
 
     return expectSaga(watchCardEditsSaga, dataStore)
@@ -469,7 +498,10 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('cancels autosaving when the card is deleted', () => {
-    const dataStore = { deleteCard: () => {}, putCard: () => {} };
+    const dataStore = ({
+      deleteCard: () => {},
+      putCard: () => {},
+    } as unknown) as DataStore;
     const card = { id: 'abc', front: 'Question', back: 'Answer' };
     const formId = 5;
 
@@ -483,7 +515,7 @@ describe('sagas:edit watchCardEdits', () => {
   });
 
   it('deletes the card even if the initial save is in progress', () => {
-    const dataStore = {
+    const dataStore = ({
       putCard: async (card: Partial<Card>) => {
         // This needs to take a tick or two so that the delete runs before we
         // finish saving.
@@ -494,7 +526,7 @@ describe('sagas:edit watchCardEdits', () => {
         });
       },
       deleteCard: () => {},
-    };
+    } as unknown) as DataStore;
     const card = { front: 'Question', back: 'Answer' };
     const formId = 5;
 
@@ -514,9 +546,9 @@ describe('sagas:edit watchCardEdits', () => {
 // mid-course).
 describe('sagas:edit save', () => {
   it('does NOT update history if the app is navigated while saving', () => {
-    const dataStore = {
+    const dataStore = ({
       putCard: (card: Partial<Card>) => ({ ...card, id: '4567' }),
-    };
+    } as unknown) as DataStore;
     const card = { front: 'yer' };
     const oldFormId = 17;
     const newFormId = 18;

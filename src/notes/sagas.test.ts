@@ -14,7 +14,7 @@ import { EditNoteContext, EditScreenContext } from './actions';
 import { FormState } from '../edit/FormState';
 import { NoteState } from '../notes/reducer';
 import { SaveState } from '../edit/reducer';
-import { StoreError } from '../store/DataStore';
+import { DataStore, StoreError } from '../store/DataStore';
 
 const initialState = reducer(undefined, { type: 'none' } as any);
 
@@ -52,7 +52,9 @@ const noteState = (
 
 describe('sagas:notes watchNoteEdits', () => {
   it('saves the note', () => {
-    const dataStore = { putNote: (note: Partial<Note>) => note };
+    const dataStore = ({
+      putNote: (note: Partial<Note>) => note,
+    } as unknown) as DataStore;
     const note = {
       content: 'Noterifictastical!',
       keywords: ['abc', 'def'],
@@ -75,7 +77,7 @@ describe('sagas:notes watchNoteEdits', () => {
   });
 
   it('deletes note from the store even if the initial save is in progress', () => {
-    const dataStore = {
+    const dataStore = ({
       putNote: async (note: Partial<Note>) => {
         // This needs to take a tick or two so that the delete runs before we
         // finish saving.
@@ -86,7 +88,7 @@ describe('sagas:notes watchNoteEdits', () => {
         });
       },
       deleteNote: () => {},
-    };
+    } as unknown) as DataStore;
     const note = {
       content: 'Noterifictastical!',
       keywords: ['abc', 'def'],

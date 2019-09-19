@@ -10,16 +10,17 @@ import * as Actions from '../actions';
 import { reducer } from '../reducer';
 import { Card } from '../model';
 import { AppState } from '../reducer';
+import { DataStore } from '../store/DataStore';
 import { EffectProviders } from 'redux-saga-test-plan/providers';
 import { CallEffectDescriptor } from 'redux-saga/effects';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 describe('sagas:review updateHeap', () => {
-  const dataStore = {
+  const dataStore = ({
     getCards: () => {},
     putReview: () => {},
-  };
+  } as unknown) as DataStore;
 
   const getDataStoreProvider = (
     newCards: Array<string>,
@@ -213,11 +214,11 @@ describe('sagas:review updateHeap', () => {
 });
 
 describe('sagas:review updateProgress', () => {
-  const dataStore = {
+  const dataStore = ({
     putCard: (card: Partial<Card>) => card,
     putReview: () => {},
     deleteReview: () => {},
-  };
+  } as unknown) as DataStore;
 
   const getCards = (
     maxNewCards: number,
@@ -410,11 +411,11 @@ describe('sagas:review updateProgress', () => {
 });
 
 describe('sagas:review loadReview', () => {
-  const dataStore = {
+  const dataStore = ({
     reviewTime: new Date(),
     getCards: () => {},
     getCardsById: () => {},
-  };
+  } as unknown) as DataStore;
 
   const getDataStoreProvider = (
     cards: Array<Partial<Card>>
