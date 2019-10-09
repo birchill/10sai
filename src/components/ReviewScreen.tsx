@@ -287,8 +287,12 @@ export class ReviewScreen extends React.PureComponent<Props> {
       );
     }
 
+    // Something is messed up with react-redux's typings for ref attributes
+    //
+    // See: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/35661
+    const refAttribute: any = { ref: this.reviewPanelRef };
     return (
-      <ReviewPanelContainer className="content" ref={this.reviewPanelRef} />
+      <ReviewPanelContainer className="content" {...refAttribute} />
     );
   }
 

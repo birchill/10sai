@@ -39,5 +39,5 @@ export const ReviewPanelContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
   null,
-  { forwardRef: true } as any
+  { forwardRef: true }
 )(ReviewPanel);
