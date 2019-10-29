@@ -3,7 +3,7 @@ declare namespace jest {
     pass: boolean;
     message: string | (() => string);
   }
-  interface Matchers<R> {
+  interface Matchers<R, T> {
     toBeInDateRange: (beginDate: Date, endDate: Date) => CustomMatcherResult;
     toBeInRange: (floor: number, ceiling: number) => CustomMatcherResult;
   }
