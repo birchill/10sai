@@ -1,8 +1,6 @@
-import { Action } from 'redux';
-
 import { ReviewPhase } from './ReviewPhase';
+import { Action } from '../actions';
 import { AvailableCards, Card } from '../model';
-import * as actions from './actions';
 import { notes as notesReducer, NoteState } from '../notes/reducer';
 import { isNoteAction } from '../notes/actions';
 import { KeysOfType } from '../utils/type-helpers';
@@ -108,16 +106,14 @@ export function review(
   state: ReviewState = initialState,
   action: Action
 ): ReviewState {
-  const reviewAction = action as actions.ReviewAction;
-
-  switch (reviewAction.type) {
+  switch (action.type) {
     case 'NEW_REVIEW': {
       return {
         ...initialState,
         phase: ReviewPhase.Loading,
         reviewTime: state.reviewTime,
-        maxCards: reviewAction.maxCards,
-        maxNewCards: reviewAction.maxNewCards,
+        maxCards: action.maxCards,
+        maxNewCards: action.maxNewCards,
         availableCards: undefined,
       };
     }
@@ -126,15 +122,15 @@ export function review(
       return {
         ...state,
         phase: ReviewPhase.Loading,
-        maxCards: reviewAction.maxCards,
-        maxNewCards: reviewAction.maxNewCards,
+        maxCards: action.maxCards,
+        maxNewCards: action.maxNewCards,
       };
     }
 
     case 'SET_REVIEW_TIME': {
       return {
         ...state,
-        reviewTime: reviewAction.reviewTime,
+        reviewTime: action.reviewTime,
       };
     }
 
@@ -145,7 +141,7 @@ export function review(
       // there should no longer be a next card.
       let updatedState = {
         ...state,
-        heap: reviewAction.cards,
+        heap: action.cards,
       };
 
       // Fill in extra fields (only set when doing a sync)
@@ -154,15 +150,15 @@ export function review(
         'failedCardsLevel1',
         'failedCardsLevel2',
       ] as ('history' | 'failedCardsLevel1' | 'failedCardsLevel2')[]) {
-        if (typeof reviewAction[field] !== 'undefined') {
-          updatedState[field] = reviewAction[field]!;
+        if (typeof action[field] !== 'undefined') {
+          updatedState[field] = action[field]!;
         }
       }
 
       // Update the next card
       updatedState = updateNextCard(
         updatedState,
-        reviewAction.nextCardSeed,
+        action.nextCardSeed,
         Update.ReplaceNextCard
       );
 
@@ -173,7 +169,7 @@ export function review(
       if (updatedState.nextCard && !updatedState.currentCard) {
         updatedState = updateNextCard(
           updatedState,
-          reviewAction.currentCardSeed,
+          action.currentCardSeed,
           Update.UpdateCurrentCard
         );
       }
@@ -190,10 +186,7 @@ export function review(
 
       // If we are complete but this is the initial load, then it makes more
       // sense to show the user the idle state.
-      if (
-        updatedState.phase === ReviewPhase.Complete &&
-        reviewAction.initialReview
-      ) {
+      if (updatedState.phase === ReviewPhase.Complete && action.initialReview) {
         updatedState.phase = ReviewPhase.Idle;
       }
 
@@ -237,7 +230,7 @@ export function review(
       if (finished) {
         // Random jitter to add to the newly calculated level so that cards
         // added or reviewd together get spread out somewhat.
-        const jitter = reviewAction.levelSeed * 0.2 + 0.9;
+        const jitter = action.levelSeed * 0.2 + 0.9;
         if (updatedCard.progress.level && updatedCard.progress.reviewed) {
           const currentIntervalInDays =
             (state.reviewTime.getTime() -
@@ -286,7 +279,7 @@ export function review(
 
       return updateNextCard(
         intermediateState,
-        reviewAction.nextCardSeed,
+        action.nextCardSeed,
         Update.UpdateCurrentCard
       );
     }
@@ -361,7 +354,7 @@ export function review(
 
       return updateNextCard(
         intermediateState,
-        reviewAction.nextCardSeed,
+        action.nextCardSeed,
         Update.UpdateCurrentCard
       );
     }
@@ -398,16 +391,17 @@ export function review(
 
       return {
         ...state,
-        availableCards: reviewAction.availableCards,
+        availableCards: action.availableCards,
         loadingAvailableCards: false,
       };
     }
 
     case 'UPDATE_REVIEW_CARD': {
       const update: Partial<ReviewState> = {};
-      const fieldsWithCards: Array<
-        KeysOfType<ReviewState, Card[] | Card | null>
-      > = [
+      const fieldsWithCards: Array<KeysOfType<
+        ReviewState,
+        Card[] | Card | null
+      >> = [
         'currentCard',
         'nextCard',
         'heap',
@@ -427,9 +421,9 @@ export function review(
         if (isArrayOfCards(value)) {
           let found = false;
           const updatedArray = value.map(card => {
-            if (card.id === reviewAction.card.id) {
+            if (card.id === action.card.id) {
               found = true;
-              return reviewAction.card;
+              return action.card;
             }
             return card;
           });
@@ -437,9 +431,8 @@ export function review(
           if (found) {
             update[field as KeysOfType<ReviewState, Card[]>] = updatedArray;
           }
-        } else if (isCard(value) && value.id === reviewAction.card.id) {
-          update[field as KeysOfType<ReviewState, Card | null>] =
-            reviewAction.card;
+        } else if (isCard(value) && value.id === action.card.id) {
+          update[field as KeysOfType<ReviewState, Card | null>] = action.card;
         }
       }
 
@@ -458,21 +451,15 @@ export function review(
         | 'heap'
         | 'failedCardsLevel1'
         | 'failedCardsLevel2'
-        | 'history')[] = [
-        'heap',
-        'failedCardsLevel1',
-        'failedCardsLevel2',
-        'history',
-      ];
+        | 'history'
+      )[] = ['heap', 'failedCardsLevel1', 'failedCardsLevel2', 'history'];
       const update: Partial<ReviewState> = {};
       for (const field of arrayFieldsWithCards) {
         if (!state[field]) {
           continue;
         }
 
-        const index = state[field].findIndex(
-          card => card.id === reviewAction.id
-        );
+        const index = state[field].findIndex(card => card.id === action.id);
         if (index === -1) {
           continue;
         }
@@ -483,18 +470,18 @@ export function review(
         update[field]!.splice(index, 1);
       }
 
-      if (state.nextCard && state.nextCard.id === reviewAction.id) {
+      if (state.nextCard && state.nextCard.id === action.id) {
         return updateNextCard(
           { ...state, ...update },
-          reviewAction.nextCardSeed,
+          action.nextCardSeed,
           Update.ReplaceNextCard
         );
       }
 
-      if (state.currentCard && state.currentCard.id === reviewAction.id) {
+      if (state.currentCard && state.currentCard.id === action.id) {
         return updateNextCard(
           { ...state, ...update, currentCard: null },
-          reviewAction.nextCardSeed,
+          action.nextCardSeed,
           Update.UpdateCurrentCard
         );
       }
@@ -513,10 +500,10 @@ export function review(
       return {
         ...state,
         phase: ReviewPhase.Loading,
-        maxCards: reviewAction.review.maxCards,
-        maxNewCards: reviewAction.review.maxNewCards,
-        completed: reviewAction.review.completed,
-        newCardsInPlay: reviewAction.review.newCardsCompleted,
+        maxCards: action.review.maxCards,
+        maxNewCards: action.review.maxNewCards,
+        completed: action.review.completed,
+        newCardsInPlay: action.review.newCardsCompleted,
         // We set the current card to null simply to reflect the fact that
         // newCardsInPlay will not count the current card if it was a new card.
         currentCard: null,

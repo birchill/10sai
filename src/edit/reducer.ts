@@ -1,10 +1,9 @@
 import deepEqual from 'deep-equal';
-import { Action } from 'redux';
 
 import { FormState } from './FormState';
 import { Card } from '../model';
 import { notes as notesReducer, NoteState } from '../notes/reducer';
-import * as actions from './actions';
+import { Action } from '../actions';
 import { StoreError } from '../store/DataStore';
 import { isNoteAction, NoteAction, EditNoteContext } from '../notes/actions';
 import { copyField } from '../utils/type-helpers';
@@ -47,9 +46,7 @@ const initialState: EditState = {
 };
 
 export function edit(state = initialState, action: Action): EditState {
-  const editAction = action as actions.EditAction;
-
-  switch (editAction.type) {
+  switch (action.type) {
     case 'NEW_CARD': {
       let card: Partial<Card> = {};
       if (state.newCardTags.length) {
@@ -58,8 +55,8 @@ export function edit(state = initialState, action: Action): EditState {
 
       let dirtyFields: undefined | Set<keyof Card>;
 
-      if (editAction.card) {
-        card = { ...card, ...editAction.card };
+      if (action.card) {
+        card = { ...card, ...action.card };
 
         // This isn't great. A malicious site could potentially just start
         // opening windows with the appropriate URL and query string and thereby
@@ -68,16 +65,16 @@ export function edit(state = initialState, action: Action): EditState {
         // saved.
         //
         // Perhaps in future we could add a referer check of some sort for this?
-        dirtyFields = new Set<keyof Card>(Object.keys(editAction.card) as Array<
-          keyof Card
-        >);
+        dirtyFields = new Set<keyof Card>(
+          Object.keys(action.card) as Array<keyof Card>
+        );
       }
 
       return {
         ...state,
         forms: {
           active: {
-            formId: editAction.newFormId,
+            formId: action.newFormId,
             formState: FormState.Ok,
             card,
             dirtyFields,
@@ -93,7 +90,7 @@ export function edit(state = initialState, action: Action): EditState {
         ...state,
         forms: {
           active: {
-            formId: editAction.newFormId,
+            formId: action.newFormId,
             formState: FormState.Loading,
             card: {},
             notes: [],
@@ -104,7 +101,7 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'FINISH_LOAD_CARD': {
-      if (editAction.formId !== state.forms.active.formId) {
+      if (action.formId !== state.forms.active.formId) {
         return state;
       }
 
@@ -112,9 +109,9 @@ export function edit(state = initialState, action: Action): EditState {
         ...state,
         forms: {
           active: {
-            formId: editAction.formId,
+            formId: action.formId,
             formState: FormState.Ok,
-            card: editAction.card,
+            card: action.card,
             notes: [],
             saveState: SaveState.Ok,
           },
@@ -123,20 +120,20 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'FAIL_LOAD_CARD': {
-      if (editAction.formId !== state.forms.active.formId) {
+      if (action.formId !== state.forms.active.formId) {
         return state;
       }
 
       const deleted = Boolean(
-        editAction.error &&
-          typeof editAction.error === 'object' &&
-          editAction.error.reason === 'deleted'
+        action.error &&
+          typeof action.error === 'object' &&
+          action.error.reason === 'deleted'
       );
       return {
         ...state,
         forms: {
           active: {
-            formId: editAction.formId,
+            formId: action.formId,
             formState: deleted ? FormState.Deleted : FormState.NotFound,
             card: {},
             notes: [],
@@ -148,7 +145,7 @@ export function edit(state = initialState, action: Action): EditState {
 
     case 'EDIT_CARD': {
       if (
-        editAction.formId !== state.forms.active.formId ||
+        action.formId !== state.forms.active.formId ||
         state.forms.active.formState === FormState.Deleted
       ) {
         return state;
@@ -156,8 +153,8 @@ export function edit(state = initialState, action: Action): EditState {
 
       if (process.env.NODE_ENV === 'development') {
         console.assert(
-          !Object.keys(editAction.card).includes('progress') &&
-            !Object.keys(editAction.card).includes('reviewed'),
+          !Object.keys(action.card).includes('progress') &&
+            !Object.keys(action.card).includes('reviewed'),
           'Should not be passing review fields as part of editing a card'
         );
       }
@@ -168,7 +165,7 @@ export function edit(state = initialState, action: Action): EditState {
       const dirtyFields: Set<keyof Card> = editState.dirtyFields
         ? new Set(editState.dirtyFields.values())
         : new Set();
-      for (const [field, value] of Object.entries(editAction.card) as Array<
+      for (const [field, value] of Object.entries(action.card) as Array<
         [keyof Card, any]
       >) {
         if (
@@ -181,20 +178,17 @@ export function edit(state = initialState, action: Action): EditState {
       }
 
       let newCardTags = state.newCardTags;
-      if (
-        dirtyFields.has('tags') &&
-        typeof editAction.card.tags !== 'undefined'
-      ) {
-        newCardTags = editAction.card.tags || [];
+      if (dirtyFields.has('tags') && typeof action.card.tags !== 'undefined') {
+        newCardTags = action.card.tags || [];
       }
 
       return {
         ...state,
         forms: {
           active: {
-            formId: editAction.formId,
+            formId: action.formId,
             formState: FormState.Ok,
-            card: { ...state.forms.active.card, ...editAction.card },
+            card: { ...state.forms.active.card, ...action.card },
             dirtyFields,
             notes: state.forms.active.notes,
             saveState: editState.saveState,
@@ -206,7 +200,7 @@ export function edit(state = initialState, action: Action): EditState {
 
     case 'SAVE_CARD': {
       if (
-        editAction.formId !== state.forms.active.formId ||
+        action.formId !== state.forms.active.formId ||
         state.forms.active.formState === FormState.Deleted
       ) {
         return state;
@@ -229,18 +223,18 @@ export function edit(state = initialState, action: Action): EditState {
 
     case 'FINISH_SAVE_CARD': {
       if (
-        editAction.formId !== state.forms.active.formId ||
+        action.formId !== state.forms.active.formId ||
         state.forms.active.formState === FormState.Deleted
       ) {
         return state;
       }
 
       const dirtyFields: Set<keyof Card> = new Set(
-        (Object.keys(editAction.card) as Array<keyof Card>).filter(
+        (Object.keys(action.card) as Array<keyof Card>).filter(
           field =>
             field !== 'id' &&
             field !== 'modified' &&
-            !deepEqual(editAction.card[field], state.forms.active.card[field])
+            !deepEqual(action.card[field], state.forms.active.card[field])
         )
       );
 
@@ -248,9 +242,9 @@ export function edit(state = initialState, action: Action): EditState {
         ...state,
         forms: {
           active: {
-            formId: editAction.formId,
+            formId: action.formId,
             formState: FormState.Ok,
-            card: { ...editAction.card, ...state.forms.active.card },
+            card: { ...action.card, ...state.forms.active.card },
             notes: state.forms.active.notes,
             saveState: SaveState.Ok,
           },
@@ -265,7 +259,7 @@ export function edit(state = initialState, action: Action): EditState {
 
     case 'FAIL_SAVE_CARD': {
       if (
-        editAction.formId !== state.forms.active.formId ||
+        action.formId !== state.forms.active.formId ||
         state.forms.active.formState === FormState.Deleted
       ) {
         return state;
@@ -277,7 +271,7 @@ export function edit(state = initialState, action: Action): EditState {
           active: {
             ...state.forms.active,
             saveState: SaveState.Error,
-            saveError: editAction.error,
+            saveError: action.error,
           },
         },
       };
@@ -285,13 +279,13 @@ export function edit(state = initialState, action: Action): EditState {
 
     case 'SYNC_EDIT_CARD': {
       if (
-        editAction.change.card.id !== state.forms.active.card.id ||
+        action.change.card.id !== state.forms.active.card.id ||
         state.forms.active.formState === FormState.Deleted
       ) {
         return state;
       }
 
-      if (editAction.change.deleted) {
+      if (action.change.deleted) {
         return {
           ...state,
           forms: {
@@ -310,7 +304,7 @@ export function edit(state = initialState, action: Action): EditState {
       // that are currently marked as dirty--for those we choose the value in
       // the state.
       const card: Partial<Card> = {};
-      for (const field of Object.keys(editAction.change.card) as Array<
+      for (const field of Object.keys(action.change.card) as Array<
         keyof Card
       >) {
         if (
@@ -319,7 +313,7 @@ export function edit(state = initialState, action: Action): EditState {
         ) {
           copyField(card, state.forms.active.card, field);
         } else {
-          copyField(card, editAction.change.card, field);
+          copyField(card, action.change.card, field);
         }
       }
 
@@ -332,7 +326,7 @@ export function edit(state = initialState, action: Action): EditState {
     }
 
     case 'DELETE_CARD': {
-      if (editAction.formId !== state.forms.active.formId) {
+      if (action.formId !== state.forms.active.formId) {
         return state;
       }
 
@@ -342,7 +336,7 @@ export function edit(state = initialState, action: Action): EditState {
           ...state,
           forms: {
             active: {
-              formId: editAction.formId,
+              formId: action.formId,
               formState: FormState.Ok,
               card: {},
               notes: [],
@@ -356,7 +350,7 @@ export function edit(state = initialState, action: Action): EditState {
         ...state,
         forms: {
           active: {
-            formId: editAction.formId,
+            formId: action.formId,
             formState: FormState.Deleted,
             card: {},
             notes: [],
