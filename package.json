@@ -39,7 +39,7 @@
     "pouchdb-collate": "^7.1.1",
     "pouchdb-find": "^7.1.1",
     "pouchdb-upsert": "^2.2.0",
-    "query-string": "^6.8.3",
+    "query-string": "^6.9.0",
     "react": "^16.12.0",
     "react-document-title": "*",
     "react-dom": "^16.12.0",
