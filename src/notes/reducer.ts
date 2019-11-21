@@ -1,5 +1,5 @@
-import deepEqual from 'deep-equal';
 import { collate } from 'pouchdb-collate';
+import { jsonEqualish } from '@birchill/json-equalish';
 
 import * as actions from './actions';
 import { Note } from '../model';
@@ -67,7 +67,7 @@ export function notes(
       for (const [field, value] of Object.entries(action.change) as Array<
         [keyof Note, any]
       >) {
-        if (field !== 'id' && !deepEqual(value, noteState.note[field])) {
+        if (field !== 'id' && !jsonEqualish(value, noteState.note[field])) {
           dirtyFields.add(field);
           madeChange = true;
         }
@@ -123,7 +123,7 @@ export function notes(
             field !== 'id' &&
             field !== 'created' &&
             field !== 'modified' &&
-            !deepEqual(action.note[field], noteState.note[field])
+            !jsonEqualish(action.note[field], noteState.note[field])
         )
       );
 
@@ -261,7 +261,7 @@ export function notes(
         }
 
         if (match) {
-          if (deepEqual(match.note, newNote)) {
+          if (jsonEqualish(match.note, newNote)) {
             updatedState.push(match);
           } else {
             const noteState: NoteState = {

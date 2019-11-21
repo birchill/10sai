@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal';
+import { jsonEqualish } from '@birchill/json-equalish';
 
 import { FormState } from './FormState';
 import { Card } from '../model';
@@ -171,7 +171,7 @@ export function edit(state = initialState, action: Action): EditState {
         if (
           field !== 'id' &&
           field !== 'modified' &&
-          !deepEqual(value, editState.card[field])
+          !jsonEqualish(value, editState.card[field])
         ) {
           dirtyFields.add(field);
         }
@@ -234,7 +234,7 @@ export function edit(state = initialState, action: Action): EditState {
           field =>
             field !== 'id' &&
             field !== 'modified' &&
-            !deepEqual(action.card[field], state.forms.active.card[field])
+            !jsonEqualish(action.card[field], state.forms.active.card[field])
         )
       );
 

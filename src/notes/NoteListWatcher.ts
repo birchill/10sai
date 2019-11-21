@@ -1,5 +1,5 @@
 import { collate } from 'pouchdb-collate';
-import deepEqual from 'deep-equal';
+import { jsonEqualish } from '@birchill/json-equalish';
 
 import { Note } from '../model';
 import { DataStore } from '../store/DataStore';
@@ -66,7 +66,7 @@ export class NoteListWatcher {
         // The changed note is on of our notes (and still is). Did something
         // change that we might care about?
         // Assume something this.
-        if (!deepEqual(this.notes[index], change.note)) {
+        if (!jsonEqualish(this.notes[index], change.note)) {
           updatedNotes = this.notes.slice();
           updatedNotes[index] = change.note;
         }
@@ -94,7 +94,7 @@ export class NoteListWatcher {
 
   setKeywords(keywords: string[]) {
     const preparedKeywords = prepareKeywords(keywords);
-    if (deepEqual(preparedKeywords, this.keywords)) {
+    if (jsonEqualish(preparedKeywords, this.keywords)) {
       return;
     }
 
@@ -103,7 +103,7 @@ export class NoteListWatcher {
 
   updateKeywords(keywords: string[]) {
     console.assert(
-      deepEqual(keywords, prepareKeywords(keywords)),
+      jsonEqualish(keywords, prepareKeywords(keywords)),
       'Keywords should already be prepared'
     );
     this.keywords = keywords;
@@ -118,7 +118,7 @@ export class NoteListWatcher {
             return;
           }
 
-          if (!deepEqual(this.notes, notes)) {
+          if (!jsonEqualish(this.notes, notes)) {
             this.notes = notes;
             this.listener(notes, []);
           }

@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal';
+import { jsonEqualish } from '@birchill/json-equalish';
 import { Store } from 'redux';
 
 import {
@@ -89,7 +89,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     }
 
     // Ignore changes that are already reflected in the review state.
-    if (deepEqual(reviewCard, change.doc)) {
+    if (jsonEqualish(reviewCard, change.doc)) {
       return;
     }
 
@@ -112,7 +112,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
       return;
     }
 
-    if (!deepEqual(currentState, review)) {
+    if (!jsonEqualish(currentState, review)) {
       store.dispatch(Actions.loadReview(review));
     }
   });

@@ -1,5 +1,5 @@
 import queryString from 'query-string';
-import deepEqual from 'deep-equal';
+import { jsonEqualish } from '@birchill/json-equalish';
 
 // Rough sketch of URL structure
 //
@@ -142,5 +142,5 @@ export function URLFromRoute(route: Route = { screen: '' }): string {
 }
 
 export function routesEqual(a: Route, b: Route): boolean {
-  return deepEqual(a, b);
+  return jsonEqualish(a, b);
 }
