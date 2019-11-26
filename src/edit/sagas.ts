@@ -24,7 +24,7 @@ import * as Actions from '../actions';
 import { DataStore, StoreError } from '../store/DataStore';
 import { Card } from '../model';
 
-const SAVE_DELAY = 2000;
+const SAVE_DELAY = 5000;
 
 export function* navigate(
   dataStore: DataStore,

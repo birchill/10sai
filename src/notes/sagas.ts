@@ -12,7 +12,7 @@ import { Note } from '../model';
 import { NoteContext, NoteListContext } from './actions';
 import { AppState } from '../reducer';
 
-const SAVE_DELAY = 2000;
+const SAVE_DELAY = 5000;
 
 export function* save(
   dataStore: DataStore,
