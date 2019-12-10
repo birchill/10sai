@@ -13,7 +13,7 @@ Setup
 1. `yarn start` should start a server running on `http://localhost:8080`.
    If you just want to build the project, try `npm run build`.
    * If you're trying to connect by IP (e.g. to test on your phone) you might
-     need to use `npm start -- --host 0.0.0.0`. Nobody really knows why.
+     need to use `yarn start --host 0.0.0.0`. Nobody really knows why.
 
 Other targets:
 
