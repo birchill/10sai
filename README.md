@@ -1,8 +1,8 @@
 10sai
 =====
 
-[![CircleCI](https://circleci.com/gh/birtles/10sai.svg?style=svg)](https://circleci.com/gh/birtles/10sai)
-[![Greenkeeper badge](https://badges.greenkeeper.io/birtles/10sai.svg)](https://greenkeeper.io/)
+[![CircleCI](https://circleci.com/gh/birchill/10sai.svg?style=svg)](https://circleci.com/gh/birtles/10sai)
+![](https://api.dependabot.com/badges/status?host=github&repo=birchill/10sai)
 
 Setup
 -----
