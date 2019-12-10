@@ -1,0 +1,42 @@
+name: Automated tests
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '10.x'
+
+    - name: Check versions
+      run: |
+        node --version
+        yarn --version
+
+    - name: Verify build
+      run: |
+        yarn install
+        yarn build:prod
+      env:
+        CI: true
+
+    - name: Run tests
+      # Limit the number of workers to avoid out of memory issues
+      # See: https://discuss.circleci.com/t/memory-problems-with-jest-and-workers/10297/3
+      run: yarn test --maxWorkers 2
+      env:
+        CI: true
+
+    - name: Lint
+      run: yarn lint
+
+    - name: Verify storybook setup
+      run: yarn build:storybook
+      env:
+        CI: true
+
+    - name: Check bundle size
+      run: yarn bundlesize
