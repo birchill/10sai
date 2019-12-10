@@ -1,5 +1,7 @@
 name: Automated tests
 on: [push]
+env:
+  CI: true
 
 jobs:
   build:
@@ -20,31 +22,24 @@ jobs:
       run: |
         yarn install
         yarn build:prod
-      env:
-        CI: true
 
     - name: Run tests
       # Limit the number of workers to avoid out of memory issues
       # See: https://discuss.circleci.com/t/memory-problems-with-jest-and-workers/10297/3
       run: yarn test --maxWorkers 2
-      env:
-        CI: true
 
     - name: Lint
       run: yarn lint
 
     - name: Verify storybook setup
       run: yarn build:storybook
-      env:
-        CI: true
 
     - name: Check bundle size
       run:
-        - echo ::set-env name=CI_COMMIT_MESSAGE::$(git show -s --format=%s ${{ github.sha }})
+        - echo ::set-env \"name=CI_COMMIT_MESSAGE::$(git show -s --format=%s ${GITHUB_SHA})\"
         - yarn bundlesize
       env:
         BUNDLESIZE_GITHUB_TOKEN: ${{ secrets.BUNDLESIZE_GITHUB_TOKEN }}
         CI_REPO_OWNER: birchill
         CI_REPO_NAME: 10sai
         CI_COMMIT_SHA: ${{ github.sha }}
-        CI: true
