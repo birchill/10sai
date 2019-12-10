@@ -5,7 +5,7 @@
   "author": "Brian Birtles",
   "repository": {
     "type": "git",
-    "url": "https://github.com/birtles/10sai.git"
+    "url": "https://github.com/birchill/10sai.git"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=development webpack --config webpack.dev.js --colors",
