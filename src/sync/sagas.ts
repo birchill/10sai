@@ -183,10 +183,10 @@ function* updateSetting(
     return;
   }
 
-  const settingValue = action.value as SyncServerSetting;
-  const updatedServer = normalizeServer(settingValue.server);
-  const updatedPaused = !!settingValue.paused;
-  let updatedLastSyncTime = settingValue.lastSyncTime;
+  const settingValue = action.value as SyncServerSetting | undefined;
+  const updatedServer = normalizeServer(settingValue?.server);
+  const updatedPaused = settingValue ? !!settingValue.paused : false;
+  let updatedLastSyncTime = settingValue?.lastSyncTime;
 
   const server = yield select(getServer);
   const paused = yield select(getPaused);
