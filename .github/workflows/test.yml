@@ -37,7 +37,8 @@ jobs:
     - name: Check bundle size
       run: |
         - echo ::set-env \"name=CI_COMMIT_MESSAGE::$(git show -s --format=%s ${GITHUB_SHA})\"
-        - yarn bundlesize
+        # Blocked on https://github.com/siddharthkp/bundlesize/issues/348
+        # - yarn bundlesize
       env:
         BUNDLESIZE_GITHUB_TOKEN: ${{ secrets.BUNDLESIZE_GITHUB_TOKEN }}
         CI_REPO_OWNER: birchill
