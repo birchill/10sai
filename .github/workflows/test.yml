@@ -36,6 +36,8 @@ jobs:
 
     - name: Check bundle size
       run: |
+        - git --version
+        - echo ${GITHUB_SHA}
         - echo ::set-env \"name=CI_COMMIT_MESSAGE::$(git show -s --format=%s ${GITHUB_SHA})\"
         # Blocked on https://github.com/siddharthkp/bundlesize/issues/348
         # - yarn bundlesize
