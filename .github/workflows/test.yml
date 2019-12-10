@@ -40,7 +40,7 @@ jobs:
 
     - name: Check bundle size
       run:
-        - echo ::set-env name=CI_COMMIT_MESSAGE::$(echo -n "git show -s --format=%s ${{ github.sha }}")
+        - echo ::set-env name=CI_COMMIT_MESSAGE::$(git show -s --format=%s ${{ github.sha }})
         - yarn bundlesize
       env:
         BUNDLESIZE_GITHUB_TOKEN: ${{ secrets.BUNDLESIZE_GITHUB_TOKEN }}
