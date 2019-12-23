@@ -56,7 +56,7 @@
     "@storybook/addon-notes": "^5.2.8",
     "@storybook/react": "^5.2.8",
     "@types/enzyme-adapter-react-16": "^1.0.5",
-    "@types/jest": "^24.0.23",
+    "@types/jest": "^24.0.24",
     "@types/memoize-one": "^5.1.2",
     "@types/pouchdb": "^6.4.0",
     "@types/prop-types": "^15.7.3",
