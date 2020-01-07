@@ -10,6 +10,7 @@ export interface ReviewContent {
   history: string[];
   failedCardsLevel1: string[];
   failedCardsLevel2: string[];
+  finished: boolean;
 }
 
 type ReviewDoc = PouchDB.Core.Document<ReviewContent>;
@@ -17,12 +18,25 @@ type ExistingReviewDoc = PouchDB.Core.ExistingDocument<ReviewContent>;
 type ExistingReviewDocWithChanges = PouchDB.Core.ExistingDocument<
   ReviewContent & PouchDB.Core.ChangesMeta
 >;
+type ExistingReviewDocWithGetMeta = PouchDB.Core.ExistingDocument<
+  ReviewContent & PouchDB.Core.GetMeta
+>;
 
-export const REVIEW_PREFIX = 'review-';
+export const REVIEW_ID = 'review-default';
 
-const parseReview = (review: ExistingReviewDoc | ReviewDoc): Review => {
+const parseReview = (
+  review: ExistingReviewDoc | ExistingReviewDocWithGetMeta | ReviewDoc
+): Review => {
   const result = {
-    ...stripFields(review as ExistingReviewDoc, ['_id', '_rev']),
+    ...stripFields(review as ExistingReviewDocWithGetMeta, [
+      '_id',
+      '_rev',
+      '_conflicts',
+      '_revs_info',
+      '_revisions',
+      '_attachments',
+      'finished',
+    ]),
     reviewTime: new Date(review.reviewTime),
   };
 
@@ -34,7 +48,7 @@ const isReviewChangeDoc = (
     | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
     | undefined
 ): changeDoc is ExistingReviewDocWithChanges => {
-  return changeDoc && changeDoc._id.startsWith(REVIEW_PREFIX);
+  return changeDoc && changeDoc._id === REVIEW_ID;
 };
 
 type EmitFunction = (type: string, ...args: any[]) => void;
@@ -47,84 +61,41 @@ export class ReviewStore {
   }
 
   async getReview(): Promise<Review | null> {
-    const review = await this._getReview();
-    return review ? parseReview(review) : null;
+    const review = await this.getReviewDoc();
+    return review && !review.finished ? parseReview(review) : null;
   }
 
-  async _getReview(): Promise<ExistingReviewDoc | null> {
-    const reviews = await this.db.allDocs<ReviewContent>({
-      include_docs: true,
-      descending: true,
-      limit: 1,
-      startkey: REVIEW_PREFIX + '\ufff0',
-      endkey: REVIEW_PREFIX,
-    });
-
-    if (!reviews.rows.length || !reviews.rows[0].doc) {
+  private async getReviewDoc(): Promise<ExistingReviewDocWithGetMeta | null> {
+    try {
+      return await this.db.get<ReviewContent>(REVIEW_ID);
+    } catch (_) {
       return null;
     }
-
-    return reviews.rows[0].doc!;
   }
 
   async putReview(review: Review): Promise<void> {
-    const existingReview = await this._getReview();
-
-    // If we don't have an existing review doc to update generate an ID for the
-    // review based on the current time.
-    // We don't care do much about collisions here. If we overlap, it's ok to
-    // just clobber the existing data.
-    let reviewId: string;
-    if (!existingReview) {
-      const timestamp = Date.now() - Date.UTC(2016, 0, 1);
-      reviewId = REVIEW_PREFIX + `0${timestamp.toString(36)}`.slice(-8);
-    } else {
-      reviewId = existingReview._id;
-    }
-
     const reviewToPut: PouchDB.Core.Document<ReviewContent> = {
       ...review,
-      _id: reviewId,
+      _id: REVIEW_ID,
       reviewTime: review.reviewTime.getTime(),
+      finished: false,
     };
 
-    // Copy passed-in review object so upsert doesn't mutate it
-    await this.db.upsert<ReviewContent>(reviewId, () => reviewToPut);
+    await this.db.upsert<ReviewContent>(REVIEW_ID, () => reviewToPut);
   }
 
-  async deleteReview(): Promise<void> {
-    const deleteReviews = async () => {
-      const reviews = await this.db.allDocs({
-        startkey: REVIEW_PREFIX,
-        endkey: REVIEW_PREFIX + '\ufff0',
-      });
-      if (!reviews.rows.length) {
-        return;
+  async finishReview(): Promise<void> {
+    await this.db.upsert<ReviewContent>(REVIEW_ID, doc => {
+      if (!doc.hasOwnProperty('finished') || doc.finished) {
+        return false;
       }
-      const results = await this.db.bulkDocs(
-        reviews.rows.map(row => ({
-          _id: row.id,
-          _rev: row.value.rev,
-          _deleted: true,
-        }))
-      );
-      // Check for any conflicts
-      // (Either my reading of the docs is wrong or the types for bulkDocs is
-      // wrong but as far as I can tell bulkDocs returns an array of Response
-      // and Error objects)
-      // FIXME: Verify the above and submit a PR for the typings if they're
-      // wrong
-      if (
-        results.some(
-          result =>
-            !!(<PouchDB.Core.Error>result).error &&
-            (<PouchDB.Core.Error>result).status === 409
-        )
-      ) {
-        await deleteReviews();
-      }
-    };
-    await deleteReviews();
+
+      // This cast is needed because the typings for pouchdb-upsert deliberately
+      // chose to represent `{} | Core.Document<Content>` as
+      // `Partial<Core.Document<Content>>`. We have already dealt with the empty
+      // object case above so this is safe.
+      return { ...(doc as ReviewDoc), finished: true };
+    });
   }
 
   async onChange(
@@ -135,16 +106,9 @@ export class ReviewStore {
       return;
     }
 
-    const currentReviewDoc = await this._getReview();
-
-    // If a review doc was deleted, report null but only if it was the most
-    // recent review doc that was deleted.
-    if (change.doc._deleted) {
-      if (!currentReviewDoc || currentReviewDoc._id < change.doc._id) {
-        emit('review', null);
-      }
-      // Only report changes if they are to the current review doc
-    } else if (currentReviewDoc && change.doc._id === currentReviewDoc._id) {
+    if (change.doc._deleted || change.doc.finished) {
+      emit('review', null);
+    } else {
       emit('review', parseReview(change.doc));
     }
   }
@@ -160,9 +124,7 @@ export class ReviewStore {
       return;
     }
 
-    // We could (and we used to) check for old review docs and delete them but
-    // in the interests of keeping things simple we just wait until the next
-    // call to deleteReview() to delete them.
+    // Check for conflicts to resolve.
     const result = await this.db.get<ReviewContent>(doc._id, {
       conflicts: true,
     });
@@ -179,6 +141,10 @@ export class ReviewStore {
     };
 
     await this.db.resolveConflicts(result, (a, b) => {
+      if (a.reviewTime !== b.reviewTime) {
+        return a.reviewTime > b.reviewTime ? a : b;
+      }
+
       return completeness(a) >= completeness(b) ? a : b;
     });
   }

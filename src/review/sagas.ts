@@ -144,7 +144,7 @@ export function* updateProgress(
 
   try {
     if (reviewInfo.phase === ReviewPhase.Complete) {
-      yield call([dataStore, 'deleteReview']);
+      yield call([dataStore, 'finishReview']);
     } else {
       yield call([dataStore, 'putReview'], yield select(getReviewSummary));
     }
@@ -226,7 +226,7 @@ export function* loadReview(
 
 export function* cancelReview(dataStore: DataStore, action: never) {
   // TODO: Error handling
-  yield call([dataStore, 'deleteReview']);
+  yield call([dataStore, 'finishReview']);
 }
 
 export function* reviewSagas(dataStore: DataStore) {

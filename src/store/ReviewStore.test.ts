@@ -3,15 +3,9 @@ import PouchDB from 'pouchdb';
 import { DataStore } from './DataStore';
 import { ReviewContent, ReviewStore } from './ReviewStore';
 import { Review } from '../model';
-import { waitForEvents } from '../utils/testing';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
-
-const waitForMs = (ms: number) =>
-  new Promise(resolve => {
-    setTimeout(resolve, ms);
-  });
 
 // Note: Using numbers other than 1 for 'num' might be unsafe since, if the
 // changes are to the same document they might get batched together.
@@ -66,118 +60,67 @@ describe('ReviewStore', () => {
   afterEach(() => Promise.all([dataStore.destroy(), testRemote.destroy()]));
 
   it('returns a newly-added review', async () => {
+    // Initially there should be no review
+    expect(await subject.getReview()).toBeNull();
+
     await subject.putReview(typicalReview);
     const gotReview = await subject.getReview();
     expect(gotReview).toEqual(typicalReview);
   });
 
-  it('updates the latest review', async () => {
+  it('updates a review', async () => {
     // Setup a remote so we can read back the review document
     await dataStore.setSyncServer(testRemote);
 
-    // Put documents twice
+    // Put document with changes
     await subject.putReview(typicalReview);
     await waitForNumReviewChanges(testRemote, 1);
 
-    // But wait a few milliseconds between to ensure they have different IDs
-    await waitForMs(2);
     await subject.putReview({ ...typicalReview, completed: 2 });
     await waitForNumReviewChanges(testRemote, 1);
 
-    const reviews = await testRemote.allDocs<ReviewContent>({
-      startkey: 'review-',
-      endkey: 'review-\ufff0',
-      include_docs: true,
-    });
+    const review = await testRemote.get<ReviewContent>('review-default');
 
     // We should have updated the one document
-    expect(reviews.rows).toHaveLength(1);
-    expect(reviews.rows[0].value.rev).toEqual(expect.stringMatching(/^2-/));
-    expect(reviews.rows[0].doc!.completed).toBe(2);
+    expect(review._rev).toEqual(expect.stringMatching(/^2-/));
+    expect(review.completed).toBe(2);
+    expect(review.finished).toBe(false);
   });
 
-  it('returns the latest review', async () => {
-    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
-
-    // Push two new docs to the remote
-    await testRemote.put({
-      ...typicalReview,
-      completed: 1,
-      _id: 'review-1',
-    });
-    await testRemote.put({
-      ...typicalReview,
-      completed: 2,
-      _id: 'review-2',
-    });
-
-    // Wait for sync to finish
-    await waitForIdle();
-
-    // Check the result of getReview
-    const review = await subject.getReview();
-    expect(review).not.toBe(null);
-    expect(review!.completed).toBe(2);
-  });
-
-  it('allows deleting reviews', async () => {
+  it('allows finishing reviews', async () => {
     await subject.putReview(typicalReview);
-    await subject.deleteReview();
+    await subject.finishReview();
     const gotReview = await subject.getReview();
-    expect(gotReview).toBe(null);
-  });
-
-  it('deletes all reviews', async () => {
-    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
-
-    // Push two new docs to the remote
-    await testRemote.put({
-      ...typicalReview,
-      completed: 1,
-      _id: 'review-1',
-    });
-    await testRemote.put({
-      ...typicalReview,
-      completed: 2,
-      _id: 'review-2',
-    });
-
-    // Wait for sync to finish then delete
-    await waitForIdle();
-    await subject.deleteReview();
-
-    // Wait for sync to finish
-    await waitForIdle();
-
-    // Check there are no review docs in the remote
-    const result = await testRemote.allDocs({
-      startkey: 'review',
-      endkey: 'review-\ufff0',
-    });
-    expect(result.rows).toHaveLength(0);
+    expect(gotReview).toBeNull();
   });
 
   it('resolves conflicts by choosing the furthest review progress', async () => {
-    // Create a new review and get the ID
+    // Create a new review locally.
     await subject.putReview(typicalReview);
-    const localReview = (await subject._getReview()) as PouchDB.Core.ExistingDocument<
-      ReviewContent
-    >;
 
-    // Create a new review with the same ID on the remote but with a greater
-    // completed value.
+    // Create a new review on the remote with a greater completed value.
     await testRemote.put({
       ...typicalReview,
+      _id: 'review-default',
       completed: 2,
-      _id: localReview._id,
+      finished: false,
+      reviewTime: typicalReview.reviewTime.getTime(),
     });
+
+    // Wait a moment for the different stores to update their sequence stores.
+    //
+    // (There seems to be a bug in pouchdb-adapter-leveldb-core where if we
+    // don't do this, we'll sometimes end up with random errors from picking up
+    // undefined documents from the sequence store. It appears to be doing some
+    // work async so I suspect we just need to let it settle down.)
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     // Now connect the two and let chaos ensue
     const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
     await waitForIdle();
 
     // Check that the conflict is gone...
-    const result = await testRemote.get<ReviewContent>(localReview._id, {
+    const result = await testRemote.get<ReviewContent>('review-default', {
       conflicts: true,
     });
     expect(result._conflicts).toBeUndefined();
@@ -198,45 +141,15 @@ describe('ReviewStore', () => {
     });
   });
 
-  it('reports deleted review docs', async () => {
+  it('reports finished review docs', async () => {
     await subject.putReview(typicalReview);
     const changesPromise = waitForChangeEvents<Review | null>(
       dataStore,
       'review',
       1
     );
-    await subject.deleteReview();
+    await subject.finishReview();
     const changes = await changesPromise;
     expect(changes[0]).toBeNull();
-  });
-
-  it('does not report new review docs older than current', async () => {
-    // Create regular review and wait for it to be reported
-    const changesPromise = waitForChangeEvents<Review | null>(
-      dataStore,
-      'review',
-      1
-    );
-    await subject.putReview(typicalReview);
-    await changesPromise;
-
-    // Start monitoring for further changes
-    const changes: Array<Review | null> = [];
-    dataStore.changes.on('review', change => {
-      changes.push(change);
-    });
-
-    // Create remote with a review with earlier ID and wait for them to sync
-    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
-    await testRemote.put({
-      ...typicalReview,
-      completed: 2,
-      _id: 'review-0',
-    });
-    await waitForIdle();
-
-    // Wait for a few cycles and test that no changes are reported
-    await waitForEvents(5);
-    expect(changes).toHaveLength(0);
   });
 });

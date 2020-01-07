@@ -11,7 +11,7 @@ import {
   PROGRESS_PREFIX,
 } from './CardStore';
 import { NoteStore, NOTE_PREFIX } from './NoteStore';
-import { ReviewStore, REVIEW_PREFIX } from './ReviewStore';
+import { ReviewStore, REVIEW_ID } from './ReviewStore';
 import { Settings, SettingsStore, SETTING_PREFIX } from './SettingsStore';
 
 PouchDB.plugin(require('pouchdb-upsert'));
@@ -154,8 +154,8 @@ export class DataStore {
   putReview(review: Review): Promise<void> {
     return this.reviewStore.putReview(review);
   }
-  deleteReview(): Promise<void> {
-    return this.reviewStore.deleteReview();
+  finishReview(): Promise<void> {
+    return this.reviewStore.finishReview();
   }
 
   // Settings API
@@ -513,7 +513,7 @@ export class DataStore {
         !doc.id.startsWith(CARD_PREFIX) &&
         !doc.id.startsWith(NOTE_PREFIX) &&
         !doc.id.startsWith(PROGRESS_PREFIX) &&
-        !doc.id.startsWith(REVIEW_PREFIX) &&
+        doc.id !== REVIEW_ID &&
         !doc.id.startsWith(SETTING_PREFIX)
       ) {
         unrecognized.push(doc.doc);
@@ -530,7 +530,7 @@ export class DataStore {
         id.startsWith(CARD_PREFIX) ||
         id.startsWith(NOTE_PREFIX) ||
         id.startsWith(PROGRESS_PREFIX) ||
-        id.startsWith(REVIEW_PREFIX) ||
+        id === REVIEW_ID ||
         id.startsWith(SETTING_PREFIX)
       ) {
         throw new Error('I recognize this doc');

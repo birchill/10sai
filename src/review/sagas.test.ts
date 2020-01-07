@@ -217,7 +217,7 @@ describe('sagas:review updateProgress', () => {
   const dataStore = ({
     putCard: (card: Partial<Card>) => card,
     putReview: () => {},
-    deleteReview: () => {},
+    finishReview: () => {},
   } as unknown) as DataStore;
 
   const getCards = (
@@ -405,7 +405,7 @@ describe('sagas:review updateProgress', () => {
 
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
-      .call([dataStore, 'deleteReview'])
+      .call([dataStore, 'finishReview'])
       .run();
   });
 });
