@@ -66,8 +66,7 @@ function* getCardsForHeap(
     0,
     reviewInfo.maxCards -
       reviewInfo.completed -
-      reviewInfo.failedCardsLevel1.length -
-      reviewInfo.failedCardsLevel2.length -
+      reviewInfo.failed.length -
       (reviewInfo.currentCard ? 1 : 0)
   );
   // Note that we ignore 'nextCard' above since we assume that the reducer that
@@ -180,13 +179,11 @@ export function* loadReview(
   );
   // We could do this by looking into historyCards but this action is so rare
   // it's not worth optimizing.
-  const failedCardsLevel1 = yield call(
+  const failedCards = yield call(
     [dataStore, 'getCardsById'],
-    action.review.failedCardsLevel1
-  );
-  const failedCardsLevel2 = yield call(
-    [dataStore, 'getCardsById'],
-    action.review.failedCardsLevel2
+    // The checked for a missing 'failed' queue here is just a temporary measure
+    // as part of updating the format of review documents.
+    action.review.failed ?? []
   );
 
   // Update review time if necessary (and before we query for overdue cards)
@@ -204,8 +201,7 @@ export function* loadReview(
     state ? state.review : {}
   );
   reviewInfo.history = history;
-  reviewInfo.failedCardsLevel1 = failedCardsLevel1;
-  reviewInfo.failedCardsLevel2 = failedCardsLevel2;
+  reviewInfo.failedCards = failedCards;
 
   const heap = yield* getCardsForHeap(
     dataStore,
@@ -214,16 +210,12 @@ export function* loadReview(
   );
 
   yield put(
-    Actions.reviewLoaded(
-      heap,
-      history,
-      failedCardsLevel1,
-      failedCardsLevel2,
-      !!action.initialReview
-    )
+    Actions.reviewLoaded(heap, history, failedCards, !!action.initialReview)
   );
 }
 
+// XXX Is this needed? This action is only called in response to sync in which
+// case the data store has already been updated.
 export function* cancelReview(dataStore: DataStore, action: never) {
   // TODO: Error handling
   yield call([dataStore, 'finishReview']);

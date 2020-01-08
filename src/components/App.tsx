@@ -33,8 +33,7 @@ interface Props {
   route: Route;
   activeCardId?: string;
   reviewProgress: {
-    failedCardsLevel1: number;
-    failedCardsLevel2: number;
+    failedCards: number;
     completedCards: number;
     unreviewedCards: number;
   };
@@ -158,13 +157,8 @@ class AppInner extends React.PureComponent<Props> {
     // Review status
     let remainingReviews: number | undefined;
     if (this.props.reviewProgress) {
-      const {
-        failedCardsLevel1,
-        failedCardsLevel2,
-        unreviewedCards,
-      } = this.props.reviewProgress;
-      remainingReviews =
-        failedCardsLevel1 + failedCardsLevel2 * 2 + unreviewedCards;
+      const { failedCards, unreviewedCards } = this.props.reviewProgress;
+      remainingReviews = failedCards + unreviewedCards;
     }
 
     return (

@@ -7,40 +7,26 @@ import { Card, Review } from '../model';
 
 const getHeapLength = (state: AppState) => state.review.heap.length;
 const getCurrentCard = (state: AppState) => state.review.currentCard;
-const getFailedCardsLevel1 = (state: AppState) =>
-  state.review.failedCardsLevel1;
-const getFailedCardsLevel2 = (state: AppState) =>
-  state.review.failedCardsLevel2;
+const getFailedCards = (state: AppState) => state.review.failed;
 
 const getUnreviewedCards = createSelector(
-  [getHeapLength, getCurrentCard, getFailedCardsLevel1, getFailedCardsLevel2],
-  (heapLength, currentCard, failedCardsLevel1, failedCardsLevel2) => {
+  [getHeapLength, getCurrentCard, getFailedCards],
+  (heapLength, currentCard, failedCards) => {
     if (!currentCard) {
       return 0;
     }
-    const currentCardIsFailedCard =
-      failedCardsLevel1.indexOf(currentCard) !== -1 ||
-      failedCardsLevel2.indexOf(currentCard) !== -1;
+    const currentCardIsFailedCard = failedCards.indexOf(currentCard) !== -1;
     return heapLength + (currentCardIsFailedCard ? 0 : 1);
   }
 );
 
-const getFailedCardsLevel1Length = (state: AppState) =>
-  state.review.failedCardsLevel1.length;
-const getFailedCardsLevel2Length = (state: AppState) =>
-  state.review.failedCardsLevel2.length;
+const getFailedCardsLength = (state: AppState) => state.review.failed.length;
 const getCompleted = (state: AppState) => state.review.completed;
 
 export const getReviewProgress = createSelector(
-  [
-    getFailedCardsLevel1Length,
-    getFailedCardsLevel2Length,
-    getCompleted,
-    getUnreviewedCards,
-  ],
-  (failedCardsLevel1, failedCardsLevel2, completedCards, unreviewedCards) => ({
-    failedCardsLevel1,
-    failedCardsLevel2,
+  [getFailedCardsLength, getCompleted, getUnreviewedCards],
+  (failedCards, completedCards, unreviewedCards) => ({
+    failedCards,
     completedCards,
     unreviewedCards,
   })
@@ -62,13 +48,14 @@ export const getSavingProgress = (state: AppState) =>
   state.review.savingProgress;
 
 export const getReviewCards = (state: AppState): Card[] => [
-  ...new Set([
-    ...state.review.heap,
-    ...state.review.failedCardsLevel1,
-    ...state.review.failedCardsLevel2,
-    ...state.review.history,
-    state.review.currentCard,
-  ].filter(card => card) as Card[]),
+  ...new Set(
+    [
+      ...state.review.heap,
+      ...state.review.failed,
+      ...state.review.history,
+      state.review.currentCard,
+    ].filter(card => !!card) as Card[]
+  ),
 ];
 
 export const getReviewInfo = (state: AppState) => (state ? state.review : {});
@@ -87,6 +74,5 @@ export const getReviewSummary = (state: AppState): Review => ({
   completed: state.review.completed,
   newCardsCompleted: newCardsCompleted(state),
   history: state.review.history.map(extractId),
-  failedCardsLevel1: state.review.failedCardsLevel1.map(extractId),
-  failedCardsLevel2: state.review.failedCardsLevel2.map(extractId),
+  failed: state.review.failed.map(extractId),
 });

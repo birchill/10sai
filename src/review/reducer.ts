@@ -33,11 +33,8 @@ export interface ReviewState {
   // Cards we have queued up but have yet to show to the user.
   heap: Card[];
 
-  // Cards which we once failed but have since answered correctly once.
-  failedCardsLevel1: Card[];
-
-  // Cards which we have failed and have since yet to answer correctly.
-  failedCardsLevel2: Card[];
+  // Cards which we failed.
+  failed: Card[];
 
   // An array of the cards we've presented to the user in order from most
   // to least recently seen. If a card has been shown more than once only the
@@ -80,8 +77,7 @@ const initialState: ReviewState = {
   completed: 0,
   newCardsInPlay: 0,
   heap: [],
-  failedCardsLevel1: [],
-  failedCardsLevel2: [],
+  failed: [],
   history: [],
   currentCard: null,
   nextCard: null,
@@ -145,11 +141,7 @@ export function review(
       };
 
       // Fill in extra fields (only set when doing a sync)
-      for (const field of [
-        'history',
-        'failedCardsLevel1',
-        'failedCardsLevel2',
-      ] as ('history' | 'failedCardsLevel1' | 'failedCardsLevel2')[]) {
+      for (const field of ['history', 'failed'] as ('history' | 'failed')[]) {
         if (typeof action[field] !== 'undefined') {
           updatedState[field] = action[field]!;
         }
@@ -206,57 +198,42 @@ export function review(
       // But we push a copy of it that we will (probably) update
       const updatedCard = { ...passedCard };
 
-      // Update failed queues
-      let finished = true;
-      let { failedCardsLevel1, failedCardsLevel2 } = state;
-      let failedIndex = failedCardsLevel2.indexOf(passedCard);
+      // Update failed queue
+      let { failed } = state;
+      let failedIndex = failed.indexOf(passedCard);
       if (failedIndex !== -1) {
-        // Move from queue two queue one
-        failedCardsLevel2 = failedCardsLevel2.slice();
-        failedCardsLevel2.splice(failedIndex, 1);
-        failedCardsLevel1 = failedCardsLevel1.slice();
-        failedCardsLevel1.push(updatedCard);
-        finished = false;
-      } else {
-        failedIndex = failedCardsLevel1.indexOf(passedCard);
-        if (failedIndex !== -1) {
-          // Drop from queue one
-          failedCardsLevel1 = failedCardsLevel1.slice();
-          failedCardsLevel1.splice(failedIndex, 1);
-        }
+        // Drop from the queue
+        failed = failed.slice();
+        failed.splice(failedIndex, 1);
+        // Sometimes it seems like we can end up with a card in the failed queue
+        // without a progress of zero. It's not clear why this happens: a sync
+        // where the chosen review record and progress record don't match? In
+        // any case, to be sure, force the progress to zero here.
+        updatedCard.progress.level = 0;
       }
 
       // Update the passed card
-      if (finished) {
-        // Random jitter to add to the newly calculated level so that cards
-        // added or reviewd together get spread out somewhat.
-        const jitter = action.levelSeed * 0.2 + 0.9;
-        if (updatedCard.progress.level && updatedCard.progress.reviewed) {
-          const currentIntervalInDays =
-            (state.reviewTime.getTime() -
-              updatedCard.progress.reviewed.getTime()) /
-            MS_PER_DAY;
-          const nextIntervalInDays = currentIntervalInDays * 2 * jitter;
+      //
+      // Add random jitter to add to the newly calculated level so that cards
+      // added or reviewed together get spread out somewhat.
+      const jitter = action.levelSeed * 0.2 + 0.9;
+      if (updatedCard.progress.level && updatedCard.progress.reviewed) {
+        const currentIntervalInDays =
+          (state.reviewTime.getTime() -
+            updatedCard.progress.reviewed.getTime()) /
+          MS_PER_DAY;
+        const nextIntervalInDays = currentIntervalInDays * 2 * jitter;
 
-          updatedCard.progress.level = Math.max(
-            nextIntervalInDays,
-            updatedCard.progress.level,
-            0.5
-          );
-        } else {
-          // New / reset card: Review in 12 hours' time
-          updatedCard.progress.level = 0.5 * jitter;
-        }
-        updatedCard.progress.reviewed = state.reviewTime;
+        updatedCard.progress.level = Math.max(
+          nextIntervalInDays,
+          updatedCard.progress.level,
+          0.5
+        );
       } else {
-        // Sometimes it seems like we can end up with a card in one of the
-        // failed queues without a progress of zero. It's not clear why this
-        // happens: a sync where the chosen review record and progress record
-        // don't match? In any case, to be sure, force the progress to zero
-        // here.
-        updatedCard.progress.level = 0;
+        // New / reset card: Review in 12 hours' time
+        updatedCard.progress.level = 0.5 * jitter;
       }
-      const completed = finished ? state.completed + 1 : state.completed;
+      updatedCard.progress.reviewed = state.reviewTime;
 
       // Add to end of history
       const history = state.history.slice();
@@ -269,9 +246,8 @@ export function review(
       const intermediateState = {
         ...state,
         phase: ReviewPhase.Front,
-        completed,
-        failedCardsLevel2,
-        failedCardsLevel1,
+        completed: state.completed + 1,
+        failed,
         history,
         currentCard: updatedCard,
         savingProgress: true,
@@ -308,27 +284,15 @@ export function review(
       // But we push a copy of it that we will (probably) update
       const updatedCard = { ...failedCard };
 
-      // Update failed queues
+      // Update failed queue
 
-      // Remove from queue one if it's there
-      let { failedCardsLevel1 } = state;
-      let failedIndex = failedCardsLevel1.indexOf(failedCard);
+      // Append to failed queue but remove it first if it's already there
+      const failed = state.failed.slice();
+      const failedIndex = failed.indexOf(failedCard);
       if (failedIndex !== -1) {
-        failedCardsLevel1 = failedCardsLevel1.slice();
-        failedCardsLevel1.splice(failedIndex, 1);
+        failed.splice(failedIndex, 1);
       }
-
-      // Append to queue 2 but remove it first if it's already there
-      const failedCardsLevel2 = state.failedCardsLevel2.slice();
-      // (If we already found it in queue one it won't be in queue two)
-      if (failedIndex === -1) {
-        failedIndex = failedCardsLevel2.indexOf(failedCard);
-        if (failedIndex !== -1) {
-          // It's not in level 2, so add it there
-          failedCardsLevel2.splice(failedIndex, 1);
-        }
-      }
-      failedCardsLevel2.push(updatedCard);
+      failed.push(updatedCard);
 
       // Update the failed card
       updatedCard.progress.level = 0;
@@ -345,8 +309,7 @@ export function review(
       const intermediateState = {
         ...state,
         phase: ReviewPhase.Front,
-        failedCardsLevel1,
-        failedCardsLevel2,
+        failed,
         history,
         currentCard: updatedCard,
         savingProgress: true,
@@ -401,14 +364,7 @@ export function review(
       const fieldsWithCards: Array<KeysOfType<
         ReviewState,
         Card[] | Card | null
-      >> = [
-        'currentCard',
-        'nextCard',
-        'heap',
-        'failedCardsLevel1',
-        'failedCardsLevel2',
-        'history',
-      ];
+      >> = ['currentCard', 'nextCard', 'heap', 'failed', 'history'];
       const isArrayOfCards = (
         value: ReviewState[keyof ReviewState]
       ): value is Card[] => !!value && Array.isArray(value);
@@ -447,12 +403,11 @@ export function review(
     }
 
     case 'DELETE_REVIEW_CARD': {
-      const arrayFieldsWithCards: (
-        | 'heap'
-        | 'failedCardsLevel1'
-        | 'failedCardsLevel2'
-        | 'history'
-      )[] = ['heap', 'failedCardsLevel1', 'failedCardsLevel2', 'history'];
+      const arrayFieldsWithCards: ('heap' | 'failed' | 'history')[] = [
+        'heap',
+        'failed',
+        'history',
+      ];
       const update: Partial<ReviewState> = {};
       for (const field of arrayFieldsWithCards) {
         if (!state[field]) {
@@ -527,8 +482,7 @@ export function review(
         completed: 0,
         newCardsInPlay: 0,
         heap: [],
-        failedCardsLevel1: [],
-        failedCardsLevel2: [],
+        failed: [],
         history: [],
         currentCard: null,
         nextCard: null,
@@ -558,10 +512,7 @@ function updateNextCard(
   let { phase, currentCard, heap, history, newCardsInPlay } = state;
   let nextCard;
 
-  let cardsAvailable =
-    state.failedCardsLevel2.length +
-    state.failedCardsLevel1.length +
-    heap.length;
+  let cardsAvailable = state.failed.length + heap.length;
   if (!cardsAvailable) {
     if (updateMode === Update.UpdateCurrentCard || !currentCard) {
       phase = ReviewPhase.Complete;
@@ -597,13 +548,9 @@ function updateNextCard(
     if (cardsAvailable) {
       let cardIndex = Math.floor(seed * cardsAvailable);
       const getCardAtIndex = (cardIndex: number) => {
-        const level1Start = state.failedCardsLevel2.length;
-        const heapStart =
-          state.failedCardsLevel2.length + state.failedCardsLevel1.length;
-        if (cardIndex < level1Start) {
-          return state.failedCardsLevel2[cardIndex];
-        } else if (cardIndex < heapStart) {
-          return state.failedCardsLevel1[cardIndex - level1Start];
+        const heapStart = state.failed.length;
+        if (cardIndex < heapStart) {
+          return state.failed[cardIndex];
         }
         return heap[cardIndex - heapStart];
       };

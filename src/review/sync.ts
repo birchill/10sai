@@ -101,7 +101,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     const currentState = getReviewSummary(store.getState());
     const currentPhase = getReviewPhase(store.getState());
 
-    // Review document was deleted
+    // Review was finished
     if (!review) {
       if (
         currentPhase !== ReviewPhase.Idle &&

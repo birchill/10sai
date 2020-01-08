@@ -31,8 +31,7 @@ export interface Review {
   completed: number;
   newCardsCompleted: number;
   history: string[];
-  failedCardsLevel1: string[];
-  failedCardsLevel2: string[];
+  failed: string[];
 }
 
 /**

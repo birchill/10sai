@@ -8,8 +8,7 @@ export interface ReviewContent {
   completed: number;
   newCardsCompleted: number;
   history: string[];
-  failedCardsLevel1: string[];
-  failedCardsLevel2: string[];
+  failed: string[];
   finished: boolean;
 }
 
@@ -133,11 +132,7 @@ export class ReviewStore {
     }
 
     const completeness = (review: ReviewContent) => {
-      return (
-        review.completed -
-        review.failedCardsLevel2.length * 2 -
-        review.failedCardsLevel1.length
-      );
+      return review.completed - review.failed.length;
     };
 
     await this.db.resolveConflicts(result, (a, b) => {

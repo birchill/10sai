@@ -87,8 +87,7 @@ export interface ReviewLoadedAction {
   type: 'REVIEW_LOADED';
   cards: Card[];
   history?: Card[];
-  failedCardsLevel1?: Card[];
-  failedCardsLevel2?: Card[];
+  failed?: Card[];
   initialReview: boolean;
   currentCardSeed: number;
   nextCardSeed: number;
@@ -100,16 +99,14 @@ const WEIGHT_FACTOR = 1.4;
 export function reviewLoaded(
   cards: Card[],
   history?: Card[],
-  failedCardsLevel1?: Card[],
-  failedCardsLevel2?: Card[],
+  failed?: Card[],
   initialReview: boolean = false
 ): ReviewLoadedAction {
   return {
     type: 'REVIEW_LOADED',
     cards,
     history,
-    failedCardsLevel1,
-    failedCardsLevel2,
+    failed,
     initialReview,
 
     // The way we avoid caring about if these two overlap is that we assign the

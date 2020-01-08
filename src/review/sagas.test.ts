@@ -113,7 +113,7 @@ describe('sagas:review updateHeap', () => {
     state = reducer(state, action);
     state.review.newCardsInPlay = 1;
     state.review.completed = 2;
-    state.review.failedCardsLevel1 = [{} as Card];
+    state.review.failed = [{} as Card];
 
     return expectSaga(updateHeapSaga, dataStore, action)
       .withState(state)
@@ -206,8 +206,7 @@ describe('sagas:review updateHeap', () => {
         completed: 0,
         newCardsCompleted: 0,
         history: [],
-        failedCardsLevel1: [],
-        failedCardsLevel2: [],
+        failed: [],
       })
       .run();
   });
@@ -388,8 +387,7 @@ describe('sagas:review updateProgress', () => {
         completed: 2,
         newCardsCompleted: 1,
         history: [0, 1],
-        failedCardsLevel1: [],
-        failedCardsLevel2: [2],
+        failed: [2],
       })
       .run();
   });
@@ -481,8 +479,7 @@ describe('sagas:review loadReview', () => {
       completed: 2,
       newCardsCompleted: 1,
       history: ['a', 'c'],
-      failedCardsLevel1: ['b'],
-      failedCardsLevel2: ['d'],
+      failed: ['b', 'd'],
       reviewTime: dataStore.reviewTime,
     });
     state = reducer(state, action);
@@ -509,10 +506,8 @@ describe('sagas:review loadReview', () => {
             { id: 'a', front: 'Question A', back: 'Answer A' },
             { id: 'c', front: 'Question C', back: 'Answer C' },
           ],
-          failedCardsLevel1: [
+          failed: [
             { id: 'b', front: 'Question B', back: 'Answer B' },
-          ],
-          failedCardsLevel2: [
             { id: 'd', front: 'Question D', back: 'Answer D' },
           ],
         },

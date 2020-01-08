@@ -23,8 +23,7 @@ interface Props extends ReviewProps {
   active: boolean;
   phase: ReviewPhase;
   reviewProgress: {
-    failedCardsLevel1: number;
-    failedCardsLevel2: number;
+    failedCards: number;
     completedCards: number;
     unreviewedCards: number;
   };
@@ -156,18 +155,13 @@ export class ReviewScreen extends React.PureComponent<Props> {
       case ReviewPhase.Back:
         {
           const {
-            failedCardsLevel1,
-            failedCardsLevel2,
+            failedCards,
             completedCards,
             unreviewedCards,
           } = this.props.reviewProgress;
 
-          const total =
-            completedCards +
-            unreviewedCards +
-            failedCardsLevel1 +
-            failedCardsLevel2;
-          const complete = completedCards + failedCardsLevel1 * 0.5;
+          const total = completedCards + unreviewedCards + failedCards;
+          const complete = completedCards + failedCards * 0.5;
           const percentComplete = Math.round((complete / total) * 100);
           subtitle = `Review (${percentComplete}%)`;
         }
@@ -291,9 +285,7 @@ export class ReviewScreen extends React.PureComponent<Props> {
     //
     // See: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/35661
     const refAttribute: any = { ref: this.reviewPanelRef };
-    return (
-      <ReviewPanelContainer className="content" {...refAttribute} />
-    );
+    return <ReviewPanelContainer className="content" {...refAttribute} />;
   }
 
   renderProgressBar(): React.ReactNode | null {
@@ -312,21 +304,19 @@ export class ReviewScreen extends React.PureComponent<Props> {
     // effectively we skipped the two reviews we would do if we failed it.
     // Similarly, for unseen cards.
     const {
-      failedCardsLevel1,
-      failedCardsLevel2,
+      failedCards,
       completedCards,
       unreviewedCards,
     } = this.props.reviewProgress;
-    const failCount = failedCardsLevel1 + failedCardsLevel2 * 2;
-    const remaining = failCount + unreviewedCards;
+    const remaining = failedCards + unreviewedCards;
     const title =
       remaining === 1 ? '1 review remaining' : `${remaining} reviews remaining`;
     return (
       <TricolorProgress
         className="progress"
-        aItems={completedCards * 2}
-        bItems={failCount}
-        cItems={unreviewedCards * 2}
+        aItems={completedCards}
+        bItems={failedCards}
+        cItems={unreviewedCards}
         title={title}
       />
     );

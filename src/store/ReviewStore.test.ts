@@ -39,8 +39,7 @@ describe('ReviewStore', () => {
     completed: 1,
     newCardsCompleted: 0,
     history: ['abc', 'def'],
-    failedCardsLevel1: ['def'],
-    failedCardsLevel2: [],
+    failed: ['def'],
     reviewTime: new Date(),
   };
 

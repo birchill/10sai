@@ -342,7 +342,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          failedCardsLevel2: [card],
+          failed: [card],
         },
       });
 
@@ -490,8 +490,7 @@ describe('review:sync', () => {
         completed: 1,
         newCardsCompleted: 0,
         history: ['abc', 'def'],
-        failedCardsLevel1: ['def'],
-        failedCardsLevel2: [],
+        failed: ['def'],
       };
 
       dataStore.__triggerChange('review', review);

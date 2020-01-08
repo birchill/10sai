@@ -186,78 +186,53 @@ describe('reducer:review', () => {
     expect(updatedState.phase).toBe(ReviewPhase.Back);
   });
 
-  it('should update the failed cards queues on PASS_CARD for a recently failed card', () => {
+  it('should update the failed cards queue on PASS_CARD for a recently failed card', () => {
     const [initialState, cards] = newReview(1, 3);
 
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
     expect(updatedState.currentCard).toEqual(cards[0]);
 
+    // Fail the first card
     updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.failedCardsLevel2).toEqual([cards[0]]);
+    expect(updatedState.failed).toEqual([cards[0]]);
 
+    // Pass the next card so that the failed card becomes current again
     updatedState = subject(updatedState, passCard(0));
     expect(updatedState.currentCard).toEqual(cards[0]);
 
+    // Pass the previously failed card
     updatedState = subject(updatedState, passCard(0));
 
-    expect(updatedState.failedCardsLevel1).toEqual([cards[0]]);
-    expect(updatedState.failedCardsLevel2).toEqual([]);
+    expect(updatedState.history).toEqual([cards[1], cards[0]]);
+    expect(updatedState.failed).toEqual([]);
   });
 
-  it('should update the failed cards queues on PASS_CARD for a card passed once', () => {
-    const [initialState, cards] = newReview(1, 3);
-
-    // Load the card...
-    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
-    expect(updatedState.currentCard).toEqual(cards[0]);
-
-    // Fail it once so it is in the second failure queue...
-    updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.failedCardsLevel2).toEqual([cards[0]]);
-    expect(updatedState.currentCard).toEqual(cards[1]);
-
-    // Fail another card so that the first card becomes the current card...
-    updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.currentCard).toEqual(cards[0]);
-
-    // Pass the card so that it is in the first failure queue...
-    updatedState = subject(updatedState, passCard(0));
-    expect(updatedState.failedCardsLevel1).toEqual([cards[0]]);
-    expect(updatedState.nextCard).toEqual(cards[0]);
-
-    // Fail the current card so that the first card becomes the current card...
-    updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.currentCard).toEqual(cards[0]);
-
-    // Finally, we can test it
-    updatedState = subject(updatedState, passCard(0));
-
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([cards[1]]);
-  });
-
-  it('should update the failed cards queues on PASS_CARD for a recently failed card with incorrect progress', () => {
+  it('should update the failed cards queue on PASS_CARD for a recently failed card with incorrect progress', () => {
     const [initialState, cards] = newReview(1, 3);
 
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
     expect(updatedState.currentCard).toEqual(cards[0]);
 
+    // Fail a card
     updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.failedCardsLevel2).toEqual([cards[0]]);
+    expect(updatedState.failed).toEqual([cards[0]]);
 
     // Make the progress incorrect. I'm not sure exactly how this
     // happens--probably a messed-up sync--but it has been observed to happen
     // at least once anyway.
-    updatedState.failedCardsLevel2[0].progress.level = 13;
+    updatedState.failed[0].progress.level = 13;
 
+    // Pass the next card so that the failed card becomes current again
     updatedState = subject(updatedState, passCard(0));
     expect(updatedState.currentCard).toEqual(cards[0]);
 
+    // Pass it
     updatedState = subject(updatedState, passCard(0));
 
-    expect(updatedState.failedCardsLevel1).toEqual([cards[0]]);
-    expect(updatedState.failedCardsLevel1[0].progress.level).toEqual(0);
-    expect(updatedState.failedCardsLevel2).toEqual([]);
+    // Check the progress was correctly updated
+    expect(updatedState.history).toEqual([cards[1], cards[0]]);
+    expect(updatedState.failed).toEqual([]);
+    expect(updatedState.history[1].progress.level).toBeLessThanOrEqual(1);
   });
 
   it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
@@ -337,10 +312,6 @@ describe('reducer:review', () => {
     expect(updatedState.completed).toBe(0);
 
     updatedState = subject(updatedState, Actions.passCard());
-    expect(updatedState.currentCard).not.toBeNull();
-    expect(updatedState.completed).toBe(0);
-
-    updatedState = subject(updatedState, Actions.passCard());
     expect(updatedState.currentCard).toBeNull();
     expect(updatedState.completed).toBe(1);
   });
@@ -399,64 +370,26 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, Actions.failCard());
 
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual(cards);
+    expect(updatedState.failed).toEqual(cards);
   });
 
   it('should update the failed cards queue on FAIL_CARD for a recently failed card', () => {
     const [initialState, cards] = newReview(3, 3);
 
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([]);
+    expect(updatedState.failed).toEqual([]);
 
     updatedState = subject(updatedState, failCard(0.5));
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([cards[0]]);
+    expect(updatedState.failed).toEqual([cards[0]]);
 
     updatedState = subject(updatedState, failCard(1));
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([cards[0], cards[1]]);
+    expect(updatedState.failed).toEqual([cards[0], cards[1]]);
 
     updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([
-      cards[0],
-      cards[1],
-      cards[2],
-    ]);
+    expect(updatedState.failed).toEqual([cards[0], cards[1], cards[2]]);
 
     updatedState = subject(updatedState, failCard(0));
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([
-      cards[1],
-      cards[2],
-      cards[0],
-    ]);
-  });
-
-  it('should update the failed cards queue on FAIL_CARD for a card that still needs to be reviewed once more', () => {
-    const [initialState, cards] = newReview(1, 1);
-
-    let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([]);
-
-    updatedState = subject(updatedState, Actions.failCard());
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([cards[0]]);
-
-    updatedState = subject(updatedState, Actions.passCard());
-    expect(updatedState.failedCardsLevel1).toEqual([cards[0]]);
-    expect(updatedState.failedCardsLevel2).toEqual([]);
-
-    updatedState = subject(updatedState, Actions.failCard());
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([cards[0]]);
-
-    updatedState = subject(updatedState, Actions.failCard());
-    expect(updatedState.failedCardsLevel1).toEqual([]);
-    expect(updatedState.failedCardsLevel2).toEqual([cards[0]]);
+    expect(updatedState.failed).toEqual([cards[1], cards[2], cards[0]]);
   });
 
   it('should update the card level and review time on FAIL_CARD', () => {
@@ -469,10 +402,8 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, Actions.failCard());
 
-    expect(updatedState.failedCardsLevel2[0].progress.level).toBe(0);
-    expect(updatedState.failedCardsLevel2[0].progress.reviewed).toBe(
-      reviewTime
-    );
+    expect(updatedState.failed[0].progress.level).toBe(0);
+    expect(updatedState.failed[0].progress.reviewed).toBe(reviewTime);
   });
 
   it('should NOT update the completed count on FAIL_CARD', () => {
@@ -517,8 +448,7 @@ describe('reducer:review', () => {
     expect(updatedState.phase).toBe(ReviewPhase.Front);
     expect(updatedState.currentCard).toEqual(cards[0]);
     expect(updatedState.nextCard).toEqual(null);
-    expect(updatedState.failedCardsLevel2).toEqual(cards);
-    expect(updatedState.failedCardsLevel1).toEqual([]);
+    expect(updatedState.failed).toEqual(cards);
   });
 
   it('should update the current card on UPDATE_REVIEW_CARD', () => {
