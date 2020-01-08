@@ -24,6 +24,12 @@
 
     > .front {
       @include rich-text;
+
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+
       p {
         margin-top: 0.1em;
         margin-bottom: 0.1em;
