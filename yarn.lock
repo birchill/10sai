@@ -1528,10 +1528,10 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@birchill/json-equalish@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@birchill/json-equalish/-/json-equalish-1.0.2.tgz#8b655ed8d0cd5549a5c8693e2eb97024a0757c49"
-  integrity sha512-+KXFuBTq7uMbJYIIre1bkC7eTQVSfyiFmzFXflvpcYrKUWtlSFtVGnLkDGzfWLOHdt/f1Kme8Yn0EGOw59kuSw==
+"@birchill/json-equalish@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@birchill/json-equalish/-/json-equalish-1.1.0.tgz#cb01ac1ef032209ada516b6a4bf3d7a2306e972d"
+  integrity sha512-p6XZQQVTsqRh5wYg3Rf4EWuynWANMupIHykDS373RSVPzSJiZ2ID9gRvQs7/MZKdW7Ejaw587WLGV8C+wSitzw==
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.3"

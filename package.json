@@ -20,7 +20,7 @@
     "bundlesize": "bundlesize"
   },
   "dependencies": {
-    "@birchill/json-equalish": "^1.0.2",
+    "@birchill/json-equalish": "^1.1.0",
     "@types/deep-equal": "^1.0.1",
     "@types/draft-js": "^0.10.38",
     "@types/event-emitter": "^0.3.3",
