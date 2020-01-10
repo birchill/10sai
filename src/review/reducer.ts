@@ -26,8 +26,9 @@ export interface ReviewState {
   // presented again in this review.
   completed: number;
 
-  // The number of cards that *were* in the heap but are now in one of
-  // the failed heaps or are the current card.
+  // The number of new cards that *were* in the heap but which have been
+  // reviewed or are the current card. This is so we can accurately gauge how
+  // many new cards to add when re-building the heap.
   newCardsInPlay: number;
 
   // Cards we have queued up but have yet to show to the user.
@@ -88,15 +89,15 @@ const initialState: ReviewState = {
 };
 
 // When we update the current / next cards there are two modes:
-const Update = {
+const enum UpdateMode {
   // Updates the current card with the next card before updating the next card.
   // If the current card is not null, it will be added to the history. This is
   // the normal mode used when reviewing.
-  UpdateCurrentCard: Symbol('UpdateCurrentCard'),
+  UpdateCurrentCard,
   // Simply replaces the next card without modifying the current card. This is
   // the mode used when we re-load cards from the database.
-  ReplaceNextCard: Symbol('ReplaceNextCard'),
-};
+  ReplaceNextCard,
+}
 
 export function review(
   state: ReviewState = initialState,
@@ -151,7 +152,7 @@ export function review(
       updatedState = updateNextCard(
         updatedState,
         action.nextCardSeed,
-        Update.ReplaceNextCard
+        UpdateMode.ReplaceNextCard
       );
 
       // When we first load, or after we have completed once, neither the next
@@ -162,7 +163,7 @@ export function review(
         updatedState = updateNextCard(
           updatedState,
           action.currentCardSeed,
-          Update.UpdateCurrentCard
+          UpdateMode.UpdateCurrentCard
         );
       }
 
@@ -256,7 +257,7 @@ export function review(
       return updateNextCard(
         intermediateState,
         action.nextCardSeed,
-        Update.UpdateCurrentCard
+        UpdateMode.UpdateCurrentCard
       );
     }
 
@@ -284,8 +285,6 @@ export function review(
       // But we push a copy of it that we will (probably) update
       const updatedCard = { ...failedCard };
 
-      // Update failed queue
-
       // Append to failed queue but remove it first if it's already there
       const failed = state.failed.slice();
       const failedIndex = failed.indexOf(failedCard);
@@ -298,7 +297,7 @@ export function review(
       updatedCard.progress.level = 0;
       updatedCard.progress.reviewed = state.reviewTime;
 
-      // Drop from history if it already exists then add to the end
+      // Add to the end of history
       const history = state.history.slice();
       console.assert(
         history.indexOf(failedCard) === -1,
@@ -318,7 +317,7 @@ export function review(
       return updateNextCard(
         intermediateState,
         action.nextCardSeed,
-        Update.UpdateCurrentCard
+        UpdateMode.UpdateCurrentCard
       );
     }
 
@@ -429,7 +428,7 @@ export function review(
         return updateNextCard(
           { ...state, ...update },
           action.nextCardSeed,
-          Update.ReplaceNextCard
+          UpdateMode.ReplaceNextCard
         );
       }
 
@@ -437,7 +436,7 @@ export function review(
         return updateNextCard(
           { ...state, ...update, currentCard: null },
           action.nextCardSeed,
-          Update.UpdateCurrentCard
+          UpdateMode.UpdateCurrentCard
         );
       }
 
@@ -502,11 +501,10 @@ export function review(
 
 // TODO: I'm sure I can factor this out better---perhaps into two methods? One
 // for updating the current card and one for updating the next card?
-// XXX Use an enum type for updateMode below
 function updateNextCard(
   state: ReviewState,
   seed: number,
-  updateMode: symbol
+  updateMode: UpdateMode
 ): ReviewState {
   // The fields we might update
   let { phase, currentCard, heap, history, newCardsInPlay } = state;
@@ -514,7 +512,7 @@ function updateNextCard(
 
   let cardsAvailable = state.failed.length + heap.length;
   if (!cardsAvailable) {
-    if (updateMode === Update.UpdateCurrentCard || !currentCard) {
+    if (updateMode === UpdateMode.UpdateCurrentCard || !currentCard) {
       phase = ReviewPhase.Complete;
       currentCard = null;
       nextCard = null;
@@ -523,7 +521,7 @@ function updateNextCard(
     }
   } else {
     // Update current card
-    if (updateMode === Update.UpdateCurrentCard) {
+    if (updateMode === UpdateMode.UpdateCurrentCard) {
       currentCard = state.nextCard;
       // Drop current card from heap
       const heapIndex = currentCard ? heap.indexOf(currentCard) : -1;
