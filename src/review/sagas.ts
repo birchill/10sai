@@ -214,13 +214,6 @@ export function* loadReview(
   );
 }
 
-// XXX Is this needed? This action is only called in response to sync in which
-// case the data store has already been updated.
-export function* cancelReview(dataStore: DataStore, action: never) {
-  // TODO: Error handling
-  yield call([dataStore, 'finishReview']);
-}
-
 export function* reviewSagas(dataStore: DataStore) {
   yield* [
     takeEvery(
@@ -232,7 +225,6 @@ export function* reviewSagas(dataStore: DataStore) {
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, dataStore),
     takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, dataStore),
     takeLatest(['LOAD_REVIEW'], loadReview, dataStore),
-    takeLatest(['CANCEL_REVIEW'], cancelReview, dataStore),
   ];
 }
 
