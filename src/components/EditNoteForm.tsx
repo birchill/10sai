@@ -30,7 +30,7 @@ import { MenuItem } from './MenuItem';
 import { NoteFrame } from './NoteFrame';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
 import { SaveStatus } from './SaveStatus';
-import { TokenList } from './TokenList';
+import { TokenList, TokenListInterface } from './TokenList';
 
 interface Props {
   className?: string;
@@ -94,7 +94,7 @@ export class EditNoteForm extends React.Component<Props, State> {
   state: State;
   editorRef: React.RefObject<Editor>;
   editorContainerRef: React.RefObject<HTMLDivElement>;
-  keywordsTokenList?: TokenList;
+  keywordsTokenList?: TokenListInterface;
   formRef: React.RefObject<HTMLFormElement>;
   hasCommonKeyword: (
     keywordsA: Array<string>,

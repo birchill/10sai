@@ -2,18 +2,22 @@ import * as React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 
-import { TokenList, Props as TokenListProps } from './TokenList';
+import {
+  TokenList,
+  TokenListInterface,
+  Props as TokenListProps,
+} from './TokenList';
 
 interface Props extends TokenListProps {
   value: string;
 }
 
 class TokenListWithText extends React.PureComponent<Props> {
-  ref: React.RefObject<TokenList>;
+  ref: React.RefObject<TokenListInterface>;
 
   constructor(props: Props) {
     super(props);
-    this.ref = React.createRef<TokenList>();
+    this.ref = React.createRef<TokenListInterface>();
   }
 
   componentDidMount() {

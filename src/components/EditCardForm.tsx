@@ -7,7 +7,7 @@ import { MenuItem } from './MenuItem';
 import { MenuItemLink } from './MenuItemLink';
 import { SaveStatus } from './SaveStatus';
 import { TagSuggestionProvider } from './TagSuggestionProvider';
-import { TokenList } from './TokenList';
+import { TokenList, TokenListInterface } from './TokenList';
 
 import { Card } from '../model';
 import { SaveState } from '../edit/reducer';
@@ -63,8 +63,8 @@ const EditCardFormImpl: React.FC<Props> = (props, ref) => {
     [props.onChange]
   );
 
-  const keywordsTokenListRef = React.useRef<TokenList>(null);
-  const tagsTokenListRef = React.useRef<TokenList>(null);
+  const keywordsTokenListRef = React.useRef<TokenListInterface>(null);
+  const tagsTokenListRef = React.useRef<TokenListInterface>(null);
 
   const onKeywordsClick = React.useCallback(
     onTokenListClick.bind(null, keywordsTokenListRef),
@@ -245,7 +245,7 @@ function getAddReverseLink(props: Props): string | null {
 }
 
 function onTokenListClick(
-  tokenListRef: React.RefObject<TokenList>,
+  tokenListRef: React.RefObject<TokenListInterface>,
   e: React.MouseEvent<HTMLDivElement>
 ) {
   if (!e.defaultPrevented && tokenListRef.current) {
