@@ -66,25 +66,9 @@ type EmitFunction = (type: string, ...args: any[]) => void;
 
 export class NoteStore {
   db: PouchDB.Database;
-  keywordsViewReady: Promise<PouchDB.Find.CreateIndexResponse<NoteContent>>;
 
   constructor(db: PouchDB.Database) {
     this.db = db;
-    // I'm not sure if this index is actually necessary. Our call to find()
-    // doesn't actually use it (because the keywords_idx selector there doesn't
-    // have an logical operators for the keywords_idx field and because it
-    // doesn't seem to handle array-type fields properly anyway).
-    this.keywordsViewReady = this.db.createIndex({
-      index: {
-        fields: ['keywords_idx'],
-        name: 'keywords_idx',
-        ddoc: 'notes_by_keywords',
-      },
-    });
-  }
-
-  async destroy(): Promise<any> {
-    return this.keywordsViewReady;
   }
 
   async getNote(id: string): Promise<Note> {

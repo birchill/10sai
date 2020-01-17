@@ -442,7 +442,7 @@ export class DataStore {
     this.remoteSync.on('change', changeCallback);
 
     const callbackMap: {
-      [key in 'paused' | 'active' | 'error' | 'denied']: keyof SyncOptions
+      [key in 'paused' | 'active' | 'error' | 'denied']: keyof SyncOptions;
     } = {
       paused: 'onIdle',
       active: 'onActive',
@@ -474,12 +474,12 @@ export class DataStore {
 
   async onSyncChange(docs: PouchDB.Core.ExistingDocument<{}>[]) {
     for (const doc of docs) {
-      await this.noteStore.onSyncChange(<
-        PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
-      >doc);
-      await this.reviewStore.onSyncChange(<
-        PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
-      >doc);
+      await this.noteStore.onSyncChange(
+        <PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>>doc
+      );
+      await this.reviewStore.onSyncChange(
+        <PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>>doc
+      );
 
       // NOTE: resolveConflicts will currently drop attachments on the floor.
       // Need to be careful once we start using them.
@@ -550,7 +550,6 @@ export class DataStore {
   // Intended for unit testing only
 
   async destroy(): Promise<void> {
-    await this.noteStore.destroy();
     await this.settingsStore.destroy();
 
     if (!this.db) {
