@@ -550,6 +550,7 @@ export class DataStore {
   // Intended for unit testing only
 
   async destroy(): Promise<void> {
+    await this.initDone;
     await this.settingsStore.destroy();
 
     if (!this.db) {
