@@ -24,9 +24,7 @@ jobs:
         yarn build:prod
 
     - name: Run tests
-      # Limit the number of workers to avoid out of memory issues
-      # See: https://discuss.circleci.com/t/memory-problems-with-jest-and-workers/10297/3
-      run: yarn test --maxWorkers 2
+      run: yarn test
 
     - name: Lint
       run: yarn lint
