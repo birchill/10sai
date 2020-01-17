@@ -21,7 +21,7 @@ describe('SettingsStore', () => {
   afterEach(() => dataStore.destroy());
 
   it('is initially empty', async () => {
-    const settings = subject.getSettings();
+    const settings = await subject.getSettings();
     expect(Object.getOwnPropertyNames(settings).length).toBe(0);
   });
 

@@ -50,7 +50,7 @@ export class SettingsStore {
   }
 
   async destroy(): Promise<any> {
-    this.localDb.destroy();
+    return this.localDb.destroy();
   }
 
   async getSettings(): Promise<Settings> {
