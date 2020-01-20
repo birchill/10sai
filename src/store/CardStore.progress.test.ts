@@ -46,7 +46,7 @@ describe('CardStore progress reporting', () => {
     const cards = await subject.getCards();
     expect(cards).toHaveLength(1);
     expect(cards[0].progress.level).toBe(0);
-    expect(cards[0].progress.reviewed).toBeNull();
+    expect(cards[0].progress.due).toBeNull();
   });
 
   it('returns the progress when getting a single card', async () => {
@@ -55,10 +55,7 @@ describe('CardStore progress reporting', () => {
       back: 'Answer',
     });
     const card = await subject.getCard(newCard.id);
-    expect(card.progress).toMatchObject({
-      level: 0,
-      reviewed: null,
-    });
+    expect(card.progress).toMatchObject({ level: 0, due: null });
   });
 
   it('returns the progress when getting cards by id', async () => {
@@ -71,14 +68,8 @@ describe('CardStore progress reporting', () => {
       back: 'Answer 2',
     });
     const cards = await subject.getCardsById([card1.id, card2.id]);
-    expect(cards[0].progress).toMatchObject({
-      level: 0,
-      reviewed: null,
-    });
-    expect(cards[1].progress).toMatchObject({
-      level: 0,
-      reviewed: null,
-    });
+    expect(cards[0].progress).toMatchObject({ level: 0, due: null });
+    expect(cards[1].progress).toMatchObject({ level: 0, due: null });
   });
 
   it('returns the progress when reporting added cards', async () => {
@@ -95,7 +86,7 @@ describe('CardStore progress reporting', () => {
       card: {
         progress: {
           level: 0,
-          reviewed: null,
+          due: null,
         },
       },
     });
@@ -106,12 +97,7 @@ describe('CardStore progress reporting', () => {
       front: 'Question',
       back: 'Answer',
     });
-    expect(newCard).toMatchObject({
-      progress: {
-        level: 0,
-        reviewed: null,
-      },
-    });
+    expect(newCard).toMatchObject({ progress: { level: 0, due: null } });
   });
 
   it('returns the progress when updating cards', async () => {
@@ -123,10 +109,7 @@ describe('CardStore progress reporting', () => {
       id: newCard.id,
       front: 'Updated question',
     });
-    expect(updatedCard.progress).toMatchObject({
-      level: 0,
-      reviewed: null,
-    });
+    expect(updatedCard.progress).toMatchObject({ level: 0, due: null });
   });
 
   it('does not update the card modified time when only updating the progress', async () => {
@@ -136,7 +119,7 @@ describe('CardStore progress reporting', () => {
     });
     const updatedCard = await subject.putCard({
       id: newCard.id,
-      progress: { level: 1, reviewed: null },
+      progress: { level: 1, due: null },
     });
     expect(updatedCard.modified).toBe(newCard.modified);
 
@@ -148,14 +131,14 @@ describe('CardStore progress reporting', () => {
     const newCard = await subject.putCard({
       front: 'Question',
       back: 'Answer',
-      progress: { reviewed: relativeTime(-1), level: 1 },
+      progress: { due: relativeTime(0), level: 1 },
     });
     let fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.progress.level).toBe(1);
 
     await subject.putCard({
       id: newCard.id,
-      progress: { level: 0, reviewed: null },
+      progress: { level: 0, due: null },
     });
 
     fetchedCard = await subject.getCard(newCard.id);
@@ -171,17 +154,17 @@ describe('CardStore progress reporting', () => {
     const updatedCard = await subject.putCard({
       id: newCard.id,
       front: 'Updated question',
-      progress: { level: 1, reviewed: relativeTime(-1) },
+      progress: { level: 1, due: relativeTime(0) },
     });
     expect(updatedCard.front).toBe('Updated question');
     expect(updatedCard.progress.level).toBe(1);
-    expect(updatedCard.progress.reviewed).toEqual(relativeTime(-1));
+    expect(updatedCard.progress.due).toEqual(relativeTime(0));
     expect(updatedCard.modified).not.toEqual(newCard.modified);
 
     const fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.front).toBe('Updated question');
     expect(fetchedCard.progress.level).toBe(1);
-    expect(fetchedCard.progress.reviewed).toEqual(relativeTime(-1));
+    expect(fetchedCard.progress.due).toEqual(relativeTime(0));
     expect(fetchedCard.modified).not.toEqual(newCard.modified);
   });
 
@@ -189,13 +172,13 @@ describe('CardStore progress reporting', () => {
     const newCard = await subject.putCard({
       front: 'Question',
       back: 'Answer',
-      progress: { level: 1, reviewed: relativeTime(-2) },
+      progress: { level: 1, due: relativeTime(-2) },
     });
     expect(newCard.progress.level).toBe(1);
 
     const fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.progress.level).toBe(1);
-    expect(fetchedCard.progress.reviewed).toEqual(relativeTime(-2));
+    expect(fetchedCard.progress.due).toEqual(relativeTime(-2));
   });
 
   it('reports changes to the progress', async () => {
@@ -208,13 +191,13 @@ describe('CardStore progress reporting', () => {
     const card = await subject.putCard({ front: 'Q1', back: 'A1' });
     await subject.putCard({
       id: card.id,
-      progress: { level: 1, reviewed: relativeTime(-3) },
+      progress: { level: 1, due: relativeTime(-3) },
     });
 
     const changes = await changesPromise;
 
     expect(changes[1].card.progress!.level).toBe(1);
-    expect(changes[1].card.progress!.reviewed).toEqual(relativeTime(-3));
+    expect(changes[1].card.progress!.due).toEqual(relativeTime(-3));
     expect(changes[1].card.front).toBe('Q1');
   });
 
@@ -321,33 +304,33 @@ describe('CardStore progress reporting', () => {
     // Card 1: Not *quite* overdue yet
     await subject.putCard({
       id: cards[0].id,
-      progress: { reviewed: relativeTime(-1.9), level: 2 },
+      progress: { due: relativeTime(0.1), level: 2 },
     });
     // Card 2: Very overdue
     await subject.putCard({
       id: cards[1].id,
-      progress: { reviewed: relativeTime(-200), level: 20 },
+      progress: { due: relativeTime(-180), level: 20 },
     });
     // Card 3: Just overdue
     await subject.putCard({
       id: cards[2].id,
-      progress: { reviewed: relativeTime(-2.1), level: 2 },
+      progress: { due: relativeTime(-0.1), level: 2 },
     });
     // Card 4: Precisely overdue to the second
     await subject.putCard({
       id: cards[3].id,
-      progress: { reviewed: relativeTime(-1), level: 1 },
+      progress: { due: relativeTime(0), level: 1 },
     });
     // Card 5: Somewhat overdue
     await subject.putCard({
       id: cards[4].id,
-      progress: { reviewed: relativeTime(-12), level: 8 },
+      progress: { due: relativeTime(-4), level: 8 },
     });
 
     // Given, the above we'd expect the result to be:
     //
     //     [ Card 2, Card 5, Card 3, Card 4 ]
-    const result = await subject.getCards({ type: 'overdue' });
+    const result = await dataStore.getOverdueCards();
     expect(result).toHaveLength(4);
     expect(result[0].front).toBe('Question 2');
     expect(result[1].front).toBe('Question 5');
@@ -355,7 +338,7 @@ describe('CardStore progress reporting', () => {
     expect(result[3].front).toBe('Question 4');
 
     // Check that the the availability API matches
-    expect(await subject.getAvailableCards()).toMatchObject({
+    expect(await dataStore.getAvailableCards()).toMatchObject({
       newCards: 0,
       overdueCards: 4,
     });
@@ -366,16 +349,16 @@ describe('CardStore progress reporting', () => {
     const cards = await addCards(4);
 
     // Make the cards progressively overdue.
-    const reviewed = new Date(dataStore.reviewTime.getTime() - 3 * MS_PER_DAY);
+    const due = new Date(dataStore.reviewTime.getTime());
     for (const card of cards) {
-      reviewed.setTime(reviewed.getTime() - MS_PER_DAY);
+      due.setTime(due.getTime() - MS_PER_DAY);
       await subject.putCard({
         id: card.id,
-        progress: { reviewed, level: 3 },
+        progress: { due, level: 3 },
       });
     }
 
-    const result = await subject.getCards({ type: 'overdue', limit: 2 });
+    const result = await dataStore.getOverdueCards({ limit: 2 });
     expect(result).toHaveLength(2);
     expect(result[0].front).toBe('Question 4');
     expect(result[1].front).toBe('Question 3');
@@ -387,24 +370,24 @@ describe('CardStore progress reporting', () => {
     // Card 1: Just overdue
     await subject.putCard({
       id: cards[0].id,
-      progress: { reviewed: relativeTime(-2.1), level: 2 },
+      progress: { due: relativeTime(-0.1), level: 2 },
     });
     // Card 2: Failed (and overdue)
     await subject.putCard({
       id: cards[1].id,
-      progress: { reviewed: relativeTime(-2.1), level: 0 },
+      progress: { due: relativeTime(-0.1), level: 0 },
     });
     // Card 3: Just overdue
     await subject.putCard({
       id: cards[2].id,
-      progress: { reviewed: relativeTime(-2.1), level: 2 },
+      progress: { due: relativeTime(-0.1), level: 2 },
     });
 
-    const result = await subject.getCards({ type: 'overdue' });
+    const result = await dataStore.getOverdueCards();
     expect(result).toHaveLength(3);
     expect(result[0].front).toBe('Question 2');
-    expect(result[1].front).toBe('Question 3');
-    expect(result[2].front).toBe('Question 1');
+    expect(result[1].front).toBe('Question 1');
+    expect(result[2].front).toBe('Question 3');
   });
 
   it('allows skipping failed cards', async () => {
@@ -413,26 +396,25 @@ describe('CardStore progress reporting', () => {
     // Card 1: Just overdue
     await subject.putCard({
       id: cards[0].id,
-      progress: { reviewed: relativeTime(-2.1), level: 2 },
+      progress: { due: relativeTime(-0.1), level: 2 },
     });
     // Card 2: Failed (and overdue)
     await subject.putCard({
       id: cards[1].id,
-      progress: { reviewed: relativeTime(-2.1), level: 0 },
+      progress: { due: relativeTime(-0.1), level: 0 },
     });
     // Card 3: Just overdue
     await subject.putCard({
       id: cards[2].id,
-      progress: { reviewed: relativeTime(-2.1), level: 2 },
+      progress: { due: relativeTime(-0.1), level: 2 },
     });
 
-    const result = await subject.getCards({
-      type: 'overdue',
+    const result = await dataStore.getOverdueCards({
       skipFailedCards: true,
     });
     expect(result).toHaveLength(2);
-    expect(result[0].front).toBe('Question 3');
-    expect(result[1].front).toBe('Question 1');
+    expect(result[0].front).toBe('Question 1');
+    expect(result[1].front).toBe('Question 3');
   });
 
   it('allows the review time to be updated', async () => {
@@ -441,37 +423,37 @@ describe('CardStore progress reporting', () => {
     // Card 1: Level now: -1, in 10 days' time: 9
     await subject.putCard({
       id: cards[0].id,
-      progress: { reviewed: dataStore.reviewTime, level: 1 },
+      progress: { due: relativeTime(1), level: 1 },
     });
     // Card 2: Level now: 0.2, in 10 days' time: 10.2
     await subject.putCard({
       id: cards[1].id,
-      progress: { reviewed: relativeTime(-1.2), level: 1 },
+      progress: { due: relativeTime(-0.2), level: 1 },
     });
     // Card 3: Level now: 0.333, in 10 days' time: 0.666
     await subject.putCard({
       id: cards[2].id,
-      progress: { reviewed: relativeTime(-40), level: 30 },
+      progress: { due: relativeTime(-10), level: 30 },
     });
 
     // Initially only cards 3 and 2 are due, and in that order ...
-    let result = await subject.getCards({ type: 'overdue' });
+    let result = await dataStore.getOverdueCards();
     expect(result).toHaveLength(2);
     expect(result[0].front).toBe('Question 3');
     expect(result[1].front).toBe('Question 2');
 
     // ... but in 10 days' time ...
-    await subject.updateReviewTime(relativeTime(10));
+    await dataStore.setReviewTime(relativeTime(10));
 
     // ... we should get card 2, card 1, card 3
-    result = await subject.getCards({ type: 'overdue' });
+    result = await dataStore.getOverdueCards();
     expect(result).toHaveLength(3);
     expect(result[0].front).toBe('Question 2');
     expect(result[1].front).toBe('Question 1');
     expect(result[2].front).toBe('Question 3');
 
     // Check availability API matches
-    expect(await subject.getAvailableCards()).toMatchObject({
+    expect(await dataStore.getAvailableCards()).toMatchObject({
       newCards: 0,
       overdueCards: 3,
     });
@@ -492,31 +474,33 @@ describe('CardStore progress reporting', () => {
       await waitASec();
     }
 
-    const result = await subject.getCards({ type: 'new' });
+    const result = await subject.getNewCards();
     expect(result).toHaveLength(3);
-    expect(result[0].front).toBe('Question 3');
+    expect(result[0].front).toBe('Question 1');
     expect(result[1].front).toBe('Question 2');
-    expect(result[2].front).toBe('Question 1');
+    expect(result[2].front).toBe('Question 3');
 
     // Check availability API matches
-    expect(await subject.getAvailableCards()).toMatchObject({
+    expect(await dataStore.getAvailableCards()).toMatchObject({
       newCards: 3,
       overdueCards: 0,
     });
   });
+
+  // XXX Test limiting new cards
 
   it('drops deleted cards from the new card count', async () => {
     const card = await subject.putCard({
       front: 'Question',
       back: 'Answer',
     });
-    expect(await subject.getAvailableCards()).toMatchObject({
+    expect(await dataStore.getAvailableCards()).toMatchObject({
       newCards: 1,
       overdueCards: 0,
     });
 
     await subject.deleteCard(card.id);
-    expect(await subject.getAvailableCards()).toMatchObject({
+    expect(await dataStore.getAvailableCards()).toMatchObject({
       newCards: 0,
       overdueCards: 0,
     });
@@ -527,40 +511,40 @@ describe('CardStore progress reporting', () => {
 
     await subject.putCard({
       id: cards[0].id,
-      progress: { reviewed: relativeTime(-1), level: 1 },
+      progress: { due: relativeTime(0), level: 1 },
     });
     await subject.putCard({
       id: cards[1].id,
-      progress: { reviewed: relativeTime(-4), level: 2 },
+      progress: { due: relativeTime(-2), level: 2 },
     });
 
-    const result = await subject.getCards({ type: 'overdue' });
+    const result = await dataStore.getOverdueCards();
     expect(result).toHaveLength(2);
     expect(result[0].front).toBe('Question 2');
     expect(result[0].progress.level).toBe(2);
-    expect(result[0].progress.reviewed).toEqual(relativeTime(-4));
+    expect(result[0].progress.due).toEqual(relativeTime(-2));
     expect(result[1].front).toBe('Question 1');
     expect(result[1].progress.level).toBe(1);
-    expect(result[1].progress.reviewed).toEqual(relativeTime(-1));
+    expect(result[1].progress.due).toEqual(relativeTime(0));
   });
 
   it('returns the review progress along with new cards', async () => {
     await addCards(2);
 
-    const result = await subject.getCards({ type: 'new' });
+    const result = await dataStore.getNewCards();
     expect(result).toHaveLength(2);
     expect(result[0]).toMatchObject({
-      front: 'Question 2',
-      progress: {
-        level: 0,
-        reviewed: null,
-      },
-    });
-    expect(result[1]).toMatchObject({
       front: 'Question 1',
       progress: {
         level: 0,
-        reviewed: null,
+        due: null,
+      },
+    });
+    expect(result[1]).toMatchObject({
+      front: 'Question 2',
+      progress: {
+        level: 0,
+        due: null,
       },
     });
   });

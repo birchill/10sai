@@ -63,9 +63,7 @@ export const getReviewInfo = (state: AppState) => (state ? state.review : {});
 const extractId = (card: Card) => card.id;
 const newCardsCompleted = (state: AppState) =>
   state.review.newCardsInPlay -
-  (state.review.currentCard && !state.review.currentCard.progress.reviewed
-    ? 1
-    : 0);
+  (state.review.currentCard && !state.review.currentCard.progress.due ? 1 : 0);
 
 export const getReviewSummary = (state: AppState): Review => ({
   reviewTime: state.review.reviewTime,

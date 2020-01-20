@@ -296,9 +296,7 @@ export class ReviewScreen extends React.PureComponent<Props> {
       return null;
     }
 
-    // We want to roughly represent the number of reviews. Bear in mind that
-    // a failed card will need to be reviewed twice before it is considered to
-    // have passed.
+    // We want to roughly represent the number of reviews.
     //
     // If we pass a card immediately, we treat that as passing two reviews since
     // effectively we skipped the two reviews we would do if we failed it.

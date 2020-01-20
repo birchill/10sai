@@ -218,13 +218,18 @@ export function review(
       // Add random jitter to add to the newly calculated level so that cards
       // added or reviewed together get spread out somewhat.
       const jitter = action.levelSeed * 0.2 + 0.9;
-      if (updatedCard.progress.level && updatedCard.progress.reviewed) {
-        const currentIntervalInDays =
-          (state.reviewTime.getTime() -
-            updatedCard.progress.reviewed.getTime()) /
-          MS_PER_DAY;
-        const nextIntervalInDays = currentIntervalInDays * 2 * jitter;
+      if (updatedCard.progress.level && updatedCard.progress.due) {
+        // Account for the fact that we might have reviewed this early, or
+        // late.
+        const reviewedIntervalInDays =
+          (state.reviewTime.getTime() - updatedCard.progress.due.getTime()) /
+            MS_PER_DAY +
+          updatedCard.progress.level;
+        const nextIntervalInDays = reviewedIntervalInDays * 2 * jitter;
 
+        // Currently we don't want to go backwards in level.
+        //
+        // (This will need to change once we introduce variable marking.)
         updatedCard.progress.level = Math.max(
           nextIntervalInDays,
           updatedCard.progress.level,
@@ -234,7 +239,9 @@ export function review(
         // New / reset card: Review in 12 hours' time
         updatedCard.progress.level = 0.5 * jitter;
       }
-      updatedCard.progress.reviewed = state.reviewTime;
+      updatedCard.progress.due = new Date(
+        state.reviewTime.getTime() + updatedCard.progress.level * MS_PER_DAY
+      );
 
       // Add to end of history
       const history = state.history.slice();
@@ -295,7 +302,7 @@ export function review(
 
       // Update the failed card
       updatedCard.progress.level = 0;
-      updatedCard.progress.reviewed = state.reviewTime;
+      updatedCard.progress.due = state.reviewTime;
 
       // Add to the end of history
       const history = state.history.slice();
@@ -530,12 +537,12 @@ function updateNextCard(
         heap = heap.slice();
         heap.splice(heapIndex, 1);
         cardsAvailable--;
-        // If we found a level zero card that hasn't been reviewed in the heap
+        // If we found a level zero card that has not due date in the heap
         // it's fair to say it's a new card.
         if (
           currentCard!.progress &&
           currentCard!.progress.level === 0 &&
-          currentCard!.progress.reviewed === null
+          currentCard!.progress.due === null
         ) {
           newCardsInPlay++;
         }

@@ -18,7 +18,8 @@ export interface Card {
  */
 export interface Progress {
   level: number;
-  reviewed: Date | null;
+  // null for a new card
+  due: Date | null;
 }
 
 /**

@@ -238,29 +238,25 @@ describe('reducer:review', () => {
   it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
     const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 3; // 3 day span
-    cards[0].progress.reviewed = new Date(
-      reviewTime.getTime() - 5 * MS_PER_DAY
-    );
+    cards[0].progress.due = new Date(reviewTime.getTime() - 2 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, Actions.passCard());
 
-    // Card was due 5 days ago and we got it right, so the level should go to
-    // ~10.
+    // Card was last reviewed 5 days ago and we got it right, so the level
+    // should go to ~10.
     expect(updatedState.history[0].progress.level).toBeInRange(8, 12);
   });
 
   it('should update the card level for an existing card on PASS_CARD (before due date)', () => {
     const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 3; // 3 day span
-    cards[0].progress.reviewed = new Date(
-      reviewTime.getTime() - 1 * MS_PER_DAY
-    );
+    cards[0].progress.due = new Date(reviewTime.getTime() + 1 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, Actions.passCard());
 
-    // Card isn't due for two days but if we just double the interval we'll end
+    // Card isn't due for one day but if we just double the interval we'll end
     // up with a level *less* than the current level. Make sure that doesn't
     // happen.
     expect(updatedState.history[0].progress.level).toBeGreaterThanOrEqual(3);
@@ -277,17 +273,20 @@ describe('reducer:review', () => {
     expect(updatedState.history[0].progress.level).toBeInRange(0.4, 0.6);
   });
 
-  it('should update the review time on PASS_CARD', () => {
+  it('should update the due time on PASS_CARD', () => {
     const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 4;
-    cards[0].progress.reviewed = new Date(
-      reviewTime.getTime() - 10 * MS_PER_DAY
-    );
+    cards[0].progress.due = new Date(reviewTime.getTime() - 6 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, Actions.passCard());
 
-    expect(updatedState.history[0].progress.reviewed).toBe(reviewTime);
+    // It was 10 days since the card was last reviewed, so the next
+    // review time should be in roughly ~20 days time
+    expect(updatedState.history[0].progress.due).toBeInDateRange(
+      new Date(reviewTime.getTime() + 16 * MS_PER_DAY),
+      new Date(reviewTime.getTime() + 24 * MS_PER_DAY)
+    );
   });
 
   it('should update the complete count on PASS_CARD', () => {
@@ -392,18 +391,16 @@ describe('reducer:review', () => {
     expect(updatedState.failed).toEqual([cards[1], cards[2], cards[0]]);
   });
 
-  it('should update the card level and review time on FAIL_CARD', () => {
+  it('should update the card level and due time on FAIL_CARD', () => {
     const [initialState, cards, reviewTime] = newReview(0, 1);
     cards[0].progress.level = 3;
-    cards[0].progress.reviewed = new Date(
-      reviewTime.getTime() - 5 * MS_PER_DAY
-    );
+    cards[0].progress.due = new Date(reviewTime.getTime() - 2 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, Actions.failCard());
 
     expect(updatedState.failed[0].progress.level).toBe(0);
-    expect(updatedState.failed[0].progress.reviewed).toBe(reviewTime);
+    expect(updatedState.failed[0].progress.due).toBe(reviewTime);
   });
 
   it('should NOT update the completed count on FAIL_CARD', () => {

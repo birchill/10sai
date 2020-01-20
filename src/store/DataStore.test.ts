@@ -163,7 +163,7 @@ describe('DataStore remote sync', () => {
     };
     const initialProgress = {
       level: 0,
-      reviewed: null,
+      due: null,
     };
 
     const expectedCards = [firstCard, secondCard];

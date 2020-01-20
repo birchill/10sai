@@ -6,7 +6,6 @@ import { beforeNotesScreenChange } from '../notes/sagas';
 import { DataStore } from '../store/DataStore';
 import { AppState } from '../reducer';
 import { ReviewState } from './reducer';
-import { GetCardsOptions } from '../store/CardStore';
 import { AvailableCards, Card } from '../model';
 
 // Which cards to use when we update the heap.
@@ -20,11 +19,10 @@ import { AvailableCards, Card } from '../model';
 // This mostly works but it won't work if we don't address all failed cards in
 // a review (e.g. we cancel a review while there are still failed cards) and
 // then we refresh a review.
-// XXX Convert this to a TS enum of some type
-const CardsToSelect = {
-  IncludeFailed: Symbol('IncludeFailed'),
-  SkipFailed: Symbol('SkipFailed'),
-};
+const enum CardsToSelect {
+  IncludeFailed,
+  SkipFailed,
+}
 
 export function* updateHeap(
   dataStore: DataStore,
@@ -60,7 +58,7 @@ export function* updateHeap(
 function* getCardsForHeap(
   dataStore: DataStore,
   reviewInfo: ReviewState,
-  cardsToSelect: symbol
+  cardsToSelect: CardsToSelect
 ) {
   let freeSlots = Math.max(
     0,
@@ -82,20 +80,19 @@ function* getCardsForHeap(
   );
   let cards: Card[] = [];
   if (newCardSlots) {
-    const options: GetCardsOptions = { type: 'new', limit: newCardSlots };
-    cards = yield call([dataStore, 'getCards'], options);
+    cards = yield call([dataStore, 'getNewCards'], { limit: newCardSlots });
     freeSlots -= cards.length;
   }
 
   // Now fill up the overdue slots
   if (freeSlots) {
-    const options: GetCardsOptions = { type: 'overdue', limit: freeSlots };
-    // If we are updating the heap mid-review then avoid getting failed cards
-    // since they might already be in our failed heaps.
-    if (cardsToSelect === CardsToSelect.SkipFailed) {
-      options.skipFailedCards = true;
-    }
-    cards.push(...(yield call([dataStore, 'getCards'], options)));
+    const options = {
+      limit: freeSlots,
+      // If we are updating the heap mid-review then avoid getting failed cards
+      // since they might already be in our failed heaps.
+      skipFailedCards: cardsToSelect === CardsToSelect.SkipFailed,
+    };
+    cards.push(...(yield call([dataStore, 'getOverdueCards'], options)));
   }
 
   return cards;

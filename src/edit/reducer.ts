@@ -154,7 +154,7 @@ export function edit(state = initialState, action: Action): EditState {
       if (process.env.NODE_ENV === 'development') {
         console.assert(
           !Object.keys(action.card).includes('progress') &&
-            !Object.keys(action.card).includes('reviewed'),
+            !Object.keys(action.card).includes('due'),
           'Should not be passing review fields as part of editing a card'
         );
       }

@@ -18,7 +18,8 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 describe('sagas:review updateHeap', () => {
   const dataStore = ({
-    getCards: () => {},
+    getOverdueCards: () => {},
+    getNewCards: () => {},
     putReview: () => {},
   } as unknown) as DataStore;
 
@@ -28,13 +29,12 @@ describe('sagas:review updateHeap', () => {
   ): EffectProviders => {
     return {
       call(effect: CallEffectDescriptor<any>, next: () => Object) {
-        if (effect.fn === dataStore.getCards) {
-          const type = effect.args[0] ? effect.args[0].type : '';
-          if (type === 'new') {
-            return newCards;
-          } else if (type === 'overdue') {
-            return overdueCards;
-          }
+        if (effect.fn === dataStore.getNewCards) {
+          return newCards;
+        }
+
+        if (effect.fn === dataStore.getOverdueCards) {
+          return overdueCards;
         }
 
         return next();
@@ -51,8 +51,11 @@ describe('sagas:review updateHeap', () => {
     return expectSaga(updateHeapSaga, dataStore, action)
       .provide(getDataStoreProvider(newCards, overdueCards))
       .withState(reducer(undefined, action))
-      .call([dataStore, 'getCards'], { limit: 2, type: 'new' })
-      .call([dataStore, 'getCards'], { limit: 1, type: 'overdue' })
+      .call([dataStore, 'getNewCards'], { limit: 2 })
+      .call([dataStore, 'getOverdueCards'], {
+        limit: 1,
+        skipFailedCards: false,
+      })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: allCards } })
       .run();
   });
@@ -62,23 +65,26 @@ describe('sagas:review updateHeap', () => {
     const action = Actions.newReview(3, 2);
 
     return expectSaga(updateHeapSaga, dataStore, action)
-      .provide([[matchers.call.fn(dataStore.getCards), newCards]])
+      .provide([[matchers.call.fn(dataStore.getNewCards), newCards]])
       .withState(reducer(undefined, action))
-      .call([dataStore, 'getCards'], { limit: 2, type: 'new' })
+      .call([dataStore, 'getNewCards'], { limit: 2 })
       .not.call.fn(dataStore.getCards)
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();
   });
 
-  it('requests more cards if the are not enough new cards', async () => {
+  it('requests more cards if there are not enough new cards', async () => {
     const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
     const action = Actions.newReview(2, 3);
 
     return expectSaga(updateHeapSaga, dataStore, action)
       .provide(getDataStoreProvider([], overdueCards))
       .withState(reducer(undefined, action))
-      .call([dataStore, 'getCards'], { limit: 2, type: 'new' })
-      .call([dataStore, 'getCards'], { limit: 3, type: 'overdue' })
+      .call([dataStore, 'getNewCards'], { limit: 2 })
+      .call([dataStore, 'getOverdueCards'], {
+        limit: 3,
+        skipFailedCards: false,
+      })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: overdueCards } })
       .run();
   });
@@ -97,10 +103,9 @@ describe('sagas:review updateHeap', () => {
     return expectSaga(updateHeapSaga, dataStore, action)
       .provide(getDataStoreProvider(newCards, overdueCards))
       .withState(state)
-      .call([dataStore, 'getCards'], { limit: 1, type: 'new' })
-      .call([dataStore, 'getCards'], {
+      .call([dataStore, 'getNewCards'], { limit: 1 })
+      .call([dataStore, 'getOverdueCards'], {
         limit: 2,
-        type: 'overdue',
         skipFailedCards: true,
       })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: allCards } })
@@ -117,8 +122,8 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, dataStore, action)
       .withState(state)
-      .not.call.fn(dataStore.getCards)
-      .not.call.fn(dataStore.getCards)
+      .not.call.fn(dataStore.getNewCards)
+      .not.call.fn(dataStore.getOverdueCards)
       .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
       .run();
   });
@@ -132,8 +137,8 @@ describe('sagas:review updateHeap', () => {
 
     return expectSaga(updateHeapSaga, dataStore, action)
       .withState(state)
-      .not.call.fn(dataStore.getCards)
-      .not.call.fn(dataStore.getCards)
+      .not.call.fn(dataStore.getNewCards)
+      .not.call.fn(dataStore.getOverdueCards)
       .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
       .run();
   });
@@ -149,9 +154,8 @@ describe('sagas:review updateHeap', () => {
     return expectSaga(updateHeapSaga, dataStore, action)
       .provide(getDataStoreProvider([], overdueCards))
       .withState(state)
-      .call([dataStore, 'getCards'], {
+      .call([dataStore, 'getOverdueCards'], {
         limit: 1,
-        type: 'overdue',
         skipFailedCards: true,
       })
       .put.like({ action: { type: 'REVIEW_LOADED', cards: overdueCards } })
@@ -180,9 +184,9 @@ describe('sagas:review updateHeap', () => {
     const newCards = ['New card 3'];
 
     return expectSaga(updateHeapSaga, dataStore, action)
-      .provide([[matchers.call.fn(dataStore.getCards), newCards]])
+      .provide([[matchers.call.fn(dataStore.getNewCards), newCards]])
       .withState(state)
-      .call([dataStore, 'getCards'], { limit: 1, type: 'new' })
+      .call([dataStore, 'getNewCards'], { limit: 1 })
       .not.call.fn(dataStore.getCards)
       .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();
@@ -197,8 +201,8 @@ describe('sagas:review updateHeap', () => {
     return expectSaga(updateHeapSaga, dataStore, action)
       .provide(getDataStoreProvider(newCards, overdueCards))
       .withState(initialState)
-      .call.fn(dataStore.getCards)
-      .call.fn(dataStore.getCards)
+      .call.fn(dataStore.getNewCards)
+      .call.fn(dataStore.getOverdueCards)
       .call([dataStore, 'putReview'], {
         reviewTime: initialState.review.reviewTime,
         maxCards: 3,
@@ -233,9 +237,7 @@ describe('sagas:review updateProgress', () => {
         back: `Answer ${i + 1}`,
         progress: {
           level: newCard ? 0 : 1,
-          reviewed: newCard
-            ? null
-            : new Date(reviewTime.getTime() - 3 * MS_PER_DAY),
+          due: newCard ? null : new Date(reviewTime.getTime() - 2 * MS_PER_DAY),
         },
       };
     }
@@ -288,7 +290,10 @@ describe('sagas:review updateProgress', () => {
         id: cardToUpdate!.id,
         progress: {
           level: cardToUpdate!.progress.level,
-          reviewed: state.review.reviewTime,
+          due: new Date(
+            state.review.reviewTime.getTime() +
+              cardToUpdate!.progress.level * MS_PER_DAY
+          ),
         },
       })
       .run();
@@ -308,7 +313,7 @@ describe('sagas:review updateProgress', () => {
       .withState(state)
       .call([dataStore, 'putCard'], {
         id: cardToUpdate!.id,
-        progress: { level: 0, reviewed: state.review.reviewTime },
+        progress: { level: 0, due: state.review.reviewTime },
       })
       .run();
   });
@@ -332,7 +337,10 @@ describe('sagas:review updateProgress', () => {
         id: cardToUpdate!.id,
         progress: {
           level: cardToUpdate!.progress.level,
-          reviewed: state.review.reviewTime,
+          due: new Date(
+            state.review.reviewTime.getTime() +
+              cardToUpdate!.progress.level * MS_PER_DAY
+          ),
         },
       })
       .run();
@@ -361,7 +369,7 @@ describe('sagas:review updateProgress', () => {
       .withState(state)
       .call([dataStore, 'putCard'], {
         id: cardToUpdate!.id,
-        progress: { level: 0, reviewed: state.review.reviewTime },
+        progress: { level: 0, due: state.review.reviewTime },
       })
       .run();
   });
@@ -411,7 +419,8 @@ describe('sagas:review updateProgress', () => {
 describe('sagas:review loadReview', () => {
   const dataStore = ({
     reviewTime: new Date(),
-    getCards: () => {},
+    getNewCards: () => {},
+    getOverdueCards: () => {},
     getCardsById: () => {},
   } as unknown) as DataStore;
 
@@ -432,22 +441,27 @@ describe('sagas:review loadReview', () => {
           return result;
         }
 
-        if (effect.fn === dataStore.getCards) {
+        if (
+          effect.fn === dataStore.getNewCards ||
+          effect.fn === dataStore.getOverdueCards
+        ) {
           expect(effect.args.length).toBeGreaterThanOrEqual(1);
           expect(effect.args[0].limit).toBeDefined();
           expect(typeof effect.args[0].limit).toBe('number');
 
-          const { limit, type } = effect.args[0];
-
+          const { limit } = effect.args[0];
           const result = [];
-          for (let i = 0; i < limit; i++) {
-            if (type === 'new') {
+
+          if (effect.fn === dataStore.getNewCards) {
+            for (let i = 0; i < limit; i++) {
               result.push({
                 id: `new-${i}`,
                 front: `New question ${i + 1}`,
                 back: `New answer ${i + 1}`,
               });
-            } else {
+            }
+          } else {
+            for (let i = 0; i < limit; i++) {
               result.push({
                 id: i,
                 front: `Question ${i + 1}`,
@@ -455,6 +469,7 @@ describe('sagas:review loadReview', () => {
               });
             }
           }
+
           return result;
         }
 
