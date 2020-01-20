@@ -4,12 +4,7 @@ import EventEmitter from 'event-emitter';
 
 import { AvailableCards, Card, Note, Review } from '../model';
 import { DatabaseWithName } from './utils';
-import {
-  CardStore,
-  GetCardsOptions,
-  CARD_PREFIX,
-  PROGRESS_PREFIX,
-} from './CardStore';
+import { CardStore, CARD_PREFIX, PROGRESS_PREFIX } from './CardStore';
 import { NoteStore, NOTE_PREFIX } from './NoteStore';
 import { ReviewStore, REVIEW_ID } from './ReviewStore';
 import { Settings, SettingsStore, SETTING_PREFIX } from './SettingsStore';
@@ -103,7 +98,7 @@ export class DataStore {
 
     this.initDone = this.db
       .info()
-      .then(() => this.cardStore.updateViews(this.reviewTime))
+      .then(() => this.cardStore.updateViews())
       .then(() => this.scheduleViewCleanup());
   }
 
@@ -114,14 +109,28 @@ export class DataStore {
   deleteCard(id: string) {
     return this.cardStore.deleteCard(id);
   }
-  getCards(options?: GetCardsOptions): Promise<Card[]> {
-    return this.cardStore.getCards(options);
+  getCards(): Promise<Card[]> {
+    return this.cardStore.getCards();
   }
   getCardsById(ids: string[]): Promise<Card[]> {
     return this.cardStore.getCardsById(ids);
   }
+  getOverdueCards(
+    options: {
+      limit?: number;
+      skipFailedCards?: boolean;
+    } = {}
+  ): Promise<Card[]> {
+    return this.cardStore.getOverdueCards({
+      ...options,
+      reviewTime: this.reviewTime,
+    });
+  }
+  getNewCards(options: { limit?: number } = {}): Promise<Card[]> {
+    return this.cardStore.getNewCards(options);
+  }
   getAvailableCards(): Promise<AvailableCards> {
-    return this.cardStore.getAvailableCards();
+    return this.cardStore.getAvailableCards({ reviewTime: this.reviewTime });
   }
   putCard(card: Partial<Card>): Promise<Card> {
     return this.cardStore.putCard(card);
@@ -207,14 +216,7 @@ export class DataStore {
   }
 
   async setReviewTime(reviewTime: Date) {
-    if (reviewTime.getTime() === this.reviewTime.getTime()) {
-      return;
-    }
-
     this.reviewTime = reviewTime;
-    return this.initDone
-      .then(() => this.cardStore.updateReviewTime(reviewTime))
-      .then(() => this.scheduleViewCleanup());
   }
 
   // Sets a server for synchronizing with and begins live synchonization.
@@ -551,6 +553,7 @@ export class DataStore {
 
   async destroy(): Promise<void> {
     await this.initDone;
+    await this.cardStore.destroy();
     await this.settingsStore.destroy();
 
     if (!this.db) {

@@ -36,7 +36,7 @@ export function generateCards(
       back: `Answer ${i + 1}`,
       progress: {
         level: newCard ? 0 : 1,
-        reviewed: newCard ? null : new Date(reviewTime - 3 * MS_PER_DAY),
+        due: newCard ? null : new Date(reviewTime - 2 * MS_PER_DAY),
       },
     };
   }
@@ -57,7 +57,7 @@ export function generateCard(id: string): Card {
     modified: Date.now(),
     progress: {
       level: 1,
-      reviewed: new Date(Date.now()),
+      due: new Date(Date.now() + 1 * MS_PER_DAY),
     },
   };
 }
