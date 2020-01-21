@@ -106,6 +106,7 @@ interface LazyPromise {
 
 interface ViewPromises {
   cards: LazyPromise;
+  review: LazyPromise;
   keywords: LazyPromise;
   tags: LazyPromise;
 }
@@ -120,7 +121,6 @@ export class CardStore {
   // Promises we use to wait on when we *first* create the different types of
   // views.
   viewPromises: ViewPromises;
-  dueIndexReady: Promise<PouchDB.Find.CreateIndexResponse<{}>>;
   prefetchViews: boolean;
   returnedCards: {
     [id: string]: { cardRev: string; progressRev: string | null };
@@ -141,21 +141,15 @@ export class CardStore {
 
     this.viewPromises = {
       cards: getLazyPromise(),
+      review: getLazyPromise(),
       keywords: getLazyPromise(),
       tags: getLazyPromise(),
     };
-
-    this.dueIndexReady = this.db.createIndex({
-      index: {
-        fields: ['_id', 'due'],
-        name: 'due',
-        ddoc: 'progress_by_due_date',
-      },
-    });
   }
 
   async destroy() {
-    return this.dueIndexReady;
+    // Wait for the due index to finish being created or else tests will fail
+    return this.viewPromises.review.promise;
   }
 
   async getCards() {
@@ -201,7 +195,7 @@ export class CardStore {
     limit?: number;
     skipFailedCards?: boolean;
   }): Promise<Card[]> {
-    await this.dueIndexReady;
+    await this.viewPromises.review.promise;
 
     // Get all overdue progress records
     const findResult = (await this.db.find({
@@ -238,7 +232,7 @@ export class CardStore {
   }
 
   async getNewCards({ limit }: { limit?: number } = {}): Promise<Card[]> {
-    await this.dueIndexReady;
+    await this.viewPromises.review.promise;
 
     // Get all overdue progress records
     const findResult = (await this.db.find({
@@ -304,7 +298,7 @@ export class CardStore {
   }: {
     reviewTime: Date;
   }): Promise<AvailableCards> {
-    await this.dueIndexReady;
+    await this.viewPromises.review.promise;
 
     const overdueResult = await this.db.find({
       selector: overdueCardSelector(reviewTime),
@@ -612,6 +606,21 @@ export class CardStore {
         this.viewPromises.cards.resolve();
       }
     });
+
+    this.db
+      .createIndex({
+        index: {
+          fields: ['_id', 'due'],
+          name: 'due',
+          ddoc: 'progress_by_due_date',
+        },
+      })
+      .then(() => {
+        if (!this.viewPromises.review.resolved) {
+          this.viewPromises.review.resolved = true;
+          this.viewPromises.review.resolve();
+        }
+      });
 
     this.updateKeywordsView().then(() => {
       if (!this.viewPromises.keywords.resolved) {
