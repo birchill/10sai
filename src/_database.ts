@@ -1,5 +1,5 @@
 import { DataStore } from './store/DataStore';
-import { CARD_PREFIX } from './store/CardStore';
+import { PROGRESS_PREFIX } from './store/CardStore';
 import { stripFields } from './utils/type-helpers';
 
 const dataStore = new DataStore();
@@ -204,32 +204,36 @@ function watchForMigrate() {
   });
 }
 
-interface OldCardContent {
-  question: string;
-  answer: string;
+interface OldProgressContent {
+  level: number;
+  reviewed: number | null;
 }
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 async function migrate() {
-  const cards = await dataStore.db!.allDocs<OldCardContent>({
+  const progressDocs = await dataStore.db!.allDocs<OldProgressContent>({
     include_docs: true,
-    startkey: CARD_PREFIX,
-    endkey: CARD_PREFIX + '\ufff0',
+    startkey: PROGRESS_PREFIX,
+    endkey: PROGRESS_PREFIX + '\ufff0',
   });
 
   const migration = [];
 
-  for (const card of cards.rows) {
-    if (card.doc && (card.doc.question || card.doc.answer)) {
+  for (const progress of progressDocs.rows) {
+    if (progress.doc && typeof progress.doc.reviewed !== 'undefined') {
       migration.push({
-        ...stripFields(card.doc, ['question', 'answer']),
-        front: card.doc.question,
-        back: card.doc.answer,
+        ...stripFields(progress.doc, ['reviewed']),
+        due: progress.doc.reviewed
+          ? progress.doc.reviewed + progress.doc.level * MS_PER_DAY
+          : 0,
       });
     }
   }
 
   try {
     await dataStore.db!.bulkDocs(migration);
+    console.info('Migration completed successfully.');
   } catch (e) {
     console.error(e);
   }
