@@ -487,7 +487,25 @@ describe('CardStore progress reporting', () => {
     });
   });
 
-  // XXX Test limiting new cards
+  it('applies a limit to the number of new cards returned', async () => {
+    const waitASec = () =>
+      new Promise(resolve => {
+        setTimeout(resolve, 1);
+      });
+    const cards = new Array(3);
+    for (let i = 0; i < cards.length; i++) {
+      cards[i] = await subject.putCard({
+        front: `Question ${i + 1}`,
+        back: `Answer ${i + 1}`,
+      });
+      await waitASec();
+    }
+
+    const result = await subject.getNewCards({ limit: 2 });
+    expect(result).toHaveLength(2);
+    expect(result[0].front).toBe('Question 1');
+    expect(result[1].front).toBe('Question 2');
+  });
 
   it('drops deleted cards from the new card count', async () => {
     const card = await subject.putCard({
