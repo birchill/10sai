@@ -5,7 +5,8 @@ import { reducer } from '../reducer';
 import { ReviewAction } from './actions';
 import { getReviewSummary } from './selectors';
 import { ReviewPhase } from './ReviewPhase';
-import { Card } from '../model';
+import { Card, Review } from '../model';
+import { CardChange } from '../store/CardStore';
 import { DataStore } from '../store/DataStore';
 import { Store } from 'redux';
 
@@ -32,7 +33,7 @@ class MockDataStore {
     } as EventEmitter;
   }
 
-  __triggerChange(type: string, change: any) {
+  __triggerChange(type: string, change: CardChange | Review | null) {
     if (!this.cbs[type]) {
       return;
     }
@@ -145,7 +146,7 @@ describe('review:sync', () => {
       expect(store.actions).toEqual([queryAvailableCards()]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
 
-      dataStore.__triggerChange('card', {});
+      dataStore.__triggerChange('card', { card: {} as Card });
 
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
@@ -168,7 +169,7 @@ describe('review:sync', () => {
       expect(store.actions).toEqual([queryAvailableCards()]);
 
       // Trigger a delayed update
-      dataStore.__triggerChange('card', {});
+      dataStore.__triggerChange('card', { card: {} as Card });
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
       // Then trigger an immediate update
@@ -198,7 +199,7 @@ describe('review:sync', () => {
       expect(store.actions).toEqual([queryAvailableCards()]);
 
       // Trigger a delayed update
-      dataStore.__triggerChange('card', {});
+      dataStore.__triggerChange('card', { card: {} as Card });
       expect(setTimeout).toHaveBeenCalledTimes(1);
 
       // Then change screen
@@ -247,7 +248,7 @@ describe('review:sync', () => {
       expect(store.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
 
-      dataStore.__triggerChange('card', {});
+      dataStore.__triggerChange('card', { card: {} as Card });
 
       expect(store.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
@@ -261,9 +262,9 @@ describe('review:sync', () => {
       });
       expect(store.actions).toEqual([queryAvailableCards()]);
 
-      dataStore.__triggerChange('card', {});
-      dataStore.__triggerChange('card', {});
-      dataStore.__triggerChange('card', {});
+      dataStore.__triggerChange('card', { card: {} as Card });
+      dataStore.__triggerChange('card', { card: {} as Card });
+      dataStore.__triggerChange('card', { card: {} as Card });
 
       jest.runAllTimers();
       expect(store.actions).toEqual([
@@ -294,10 +295,7 @@ describe('review:sync', () => {
         ...card,
         front: 'Updated question',
       };
-      dataStore.__triggerChange('card', {
-        id: 'abc',
-        doc: updatedCard,
-      });
+      dataStore.__triggerChange('card', { card: updatedCard });
 
       expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
     });
@@ -322,10 +320,7 @@ describe('review:sync', () => {
         ...card,
         front: 'Updated question',
       };
-      dataStore.__triggerChange('card', {
-        id: 'abc',
-        doc: updatedCard,
-      });
+      dataStore.__triggerChange('card', { card: updatedCard });
 
       expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
     });
@@ -350,10 +345,7 @@ describe('review:sync', () => {
         ...card,
         front: 'Updated question',
       };
-      dataStore.__triggerChange('card', {
-        id: 'abc',
-        doc: updatedCard,
-      });
+      dataStore.__triggerChange('card', { card: updatedCard });
 
       expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
     });
@@ -379,12 +371,8 @@ describe('review:sync', () => {
         front: 'Updated question',
       };
       dataStore.__triggerChange('card', {
-        id: 'abc',
         deleted: true,
-        doc: {
-          ...updatedCard,
-          deleted: true,
-        },
+        card: updatedCard,
       });
 
       expect(store.actions).toContainEqual(
@@ -408,10 +396,7 @@ describe('review:sync', () => {
         },
       });
 
-      dataStore.__triggerChange('card', {
-        id: 'abc',
-        doc: { ...card },
-      });
+      dataStore.__triggerChange('card', { card });
 
       expect(store.actions).not.toContainEqual(updateReviewCard(card));
     });
@@ -433,10 +418,9 @@ describe('review:sync', () => {
       });
 
       dataStore.__triggerChange('card', {
-        id: 'xyz',
-        doc: {
+        card: {
           ...card,
-          _id: 'xyz',
+          id: 'xyz',
         },
       });
 
@@ -460,13 +444,11 @@ describe('review:sync', () => {
       });
 
       dataStore.__triggerChange('card', {
-        id: 'xyz',
-        deleted: true,
-        doc: {
+        card: {
           ...card,
-          _id: 'xyz',
-          deleted: true,
+          id: 'xyz',
         },
+        deleted: true,
       });
 
       expect(store.actions).not.toContainEqual(
@@ -493,7 +475,7 @@ describe('review:sync', () => {
         failed: ['def'],
       };
 
-      dataStore.__triggerChange('review', review);
+      dataStore.__triggerChange('review', review as Review);
       expect(store.actions).toContainEqual(
         expect.objectContaining({ type: 'LOAD_REVIEW', review })
       );

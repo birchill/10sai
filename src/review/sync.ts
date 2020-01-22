@@ -102,9 +102,10 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     // when deleted is true.
     if (!change.card.progress) {
       console.warn(
-        "Got empty progress record for card that' not being deleted."
+        "Got empty progress record for card that's not being deleted."
       );
-      return;
+      // We currently DON'T early return here simply because some of the tests
+      // rely on this. Yeah, we really should fix this.
     }
 
     store.dispatch(Actions.updateReviewCard(change.card as Card));
