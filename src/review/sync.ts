@@ -11,8 +11,10 @@ import {
   getReviewPhase,
 } from './selectors';
 import * as Actions from '../actions';
+import { Card } from '../model';
 import { ReviewPhase } from './ReviewPhase';
 import { DataStore } from '../store/DataStore';
+import { CardChange } from '../store/CardStore';
 import { AppState } from '../reducer';
 
 // In some circumstances we delay querying available cards. We do this so that
@@ -55,7 +57,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     store.dispatch(Actions.queryAvailableCards());
   });
 
-  dataStore.changes.on('card', change => {
+  dataStore.changes.on('card', (change: CardChange) => {
     // Update available cards if needed
     if (needAvailableCards) {
       if (delayedCallback) {
@@ -75,7 +77,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     }
 
     const reviewCard = getReviewCards(store.getState()).find(
-      card => card.id === change.id
+      card => card.id === change.card.id
     );
 
     // Ignore changes for cards that are not being reviewed
@@ -84,16 +86,28 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     }
 
     if (change.deleted) {
-      store.dispatch(Actions.deleteReviewCard(change.id));
+      store.dispatch(Actions.deleteReviewCard(change.card.id));
       return;
     }
 
     // Ignore changes that are already reflected in the review state.
-    if (jsonEqualish(reviewCard, change.doc)) {
+    if (jsonEqualish(reviewCard, change.card)) {
       return;
     }
 
-    store.dispatch(Actions.updateReviewCard(change.doc));
+    // If the card doesn't have a progress part that normally means it is being
+    // deleted... but I guess something when wrong.
+    //
+    // TODO: Fix the typings for CardChange so that progress can only be missing
+    // when deleted is true.
+    if (!change.card.progress) {
+      console.warn(
+        "Got empty progress record for card that' not being deleted."
+      );
+      return;
+    }
+
+    store.dispatch(Actions.updateReviewCard(change.card as Card));
   });
 
   // Synchronize changes to review document
