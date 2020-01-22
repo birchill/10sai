@@ -91,6 +91,10 @@ const newCardSelector: PouchDB.Find.Selector = {
   _id: { $gt: 'progress-', $lt: 'progress-\ufff0' },
   due: { $eq: 0 },
 };
+const overdueOrNewCardSelector = (reviewTime: Date): PouchDB.Find.Selector => ({
+  _id: { $gt: 'progress-', $lt: 'progress-\ufff0' },
+  due: { $lte: reviewTime.getTime() },
+});
 
 interface CardStoreOptions {
   prefetchViews?: boolean;
@@ -300,18 +304,15 @@ export class CardStore {
   }): Promise<AvailableCards> {
     await this.viewPromises.review.promise;
 
-    const overdueResult = await this.db.find({
-      selector: overdueCardSelector(reviewTime),
+    const findResult = (await this.db.find({
+      selector: overdueOrNewCardSelector(reviewTime),
       use_index: ['progress_by_due_date', 'due'],
-    });
-    const newResult = await this.db.find({
-      selector: newCardSelector,
-      use_index: ['progress_by_due_date', 'due'],
-    });
+    })) as PouchDB.Find.FindResponse<ProgressContent>;
 
+    const newCards = findResult.docs.filter(doc => doc.due === 0).length;
     return {
-      newCards: newResult.docs.length,
-      overdueCards: overdueResult.docs.length,
+      newCards,
+      overdueCards: findResult.docs.length - newCards,
     };
   }
 
