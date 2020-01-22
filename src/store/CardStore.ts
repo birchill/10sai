@@ -611,7 +611,7 @@ export class CardStore {
     this.db
       .createIndex({
         index: {
-          fields: ['_id', 'due'],
+          fields: ['due'],
           name: 'due',
           ddoc: 'progress_by_due_date',
         },
