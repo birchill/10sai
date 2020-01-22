@@ -11,7 +11,7 @@ import {
   getReviewPhase,
 } from './selectors';
 import * as Actions from '../actions';
-import { Card } from '../model';
+import { Card, Review } from '../model';
 import { ReviewPhase } from './ReviewPhase';
 import { DataStore } from '../store/DataStore';
 import { CardChange } from '../store/CardStore';
@@ -112,7 +112,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
   });
 
   // Synchronize changes to review document
-  dataStore.changes.on('review', review => {
+  dataStore.changes.on('review', (review: Review | null) => {
     const currentState = getReviewSummary(store.getState());
     const currentPhase = getReviewPhase(store.getState());
 
