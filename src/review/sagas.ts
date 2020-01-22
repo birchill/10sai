@@ -174,13 +174,12 @@ export function* loadReview(
     [dataStore, 'getCardsById'],
     action.review.history
   );
+
   // We could do this by looking into historyCards but this action is so rare
   // it's not worth optimizing.
   const failedCards = yield call(
     [dataStore, 'getCardsById'],
-    // The checked for a missing 'failed' queue here is just a temporary measure
-    // as part of updating the format of review documents.
-    action.review.failed ?? []
+    action.review.failed
   );
 
   // Update review time if necessary (and before we query for overdue cards)
