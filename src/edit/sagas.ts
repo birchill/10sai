@@ -21,6 +21,7 @@ import {
 import { AppState } from '../reducer';
 import { getActiveRecord, isDirty, hasDataToSave } from './selectors';
 import * as Actions from '../actions';
+import { CardChange } from '../store/CardStore';
 import { DataStore, StoreError } from '../store/DataStore';
 import { Card } from '../model';
 
@@ -234,9 +235,9 @@ function* saveBeforeScreenChange(formId: number) {
 }
 
 export function syncEditChanges(dataStore: DataStore, store: Store<AppState>) {
-  dataStore.changes.on('card', change => {
+  dataStore.changes.on('card', (change: CardChange) => {
     const cardBeingEdited = getActiveRecord(store.getState()).card;
-    if (cardBeingEdited && cardBeingEdited.id === change.id) {
+    if (cardBeingEdited && cardBeingEdited.id === change.card.id) {
       store.dispatch({ type: 'SYNC_EDIT_CARD', change });
     }
   });
