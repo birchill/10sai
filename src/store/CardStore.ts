@@ -22,6 +22,9 @@ export interface CardContent {
 export interface ProgressContent {
   level: number;
   due: number;
+  // This is duplicated from CardContent so we get all overdue and new cards
+  // without having to query the corresponding card.
+  created: number;
 }
 
 export type CardDoc = PouchDB.Core.Document<CardContent>;
@@ -71,6 +74,8 @@ const parseProgress = (
 ): Progress => ({
   ...stripFields(progress as ExistingProgressDoc, ['_id', '_rev']),
   due: progress.due ? new Date(progress.due) : null,
+  // As with cards, we *don't* bother parsing the 'created' field into a Date
+  // object.
 });
 
 const mergeDocs = (
@@ -259,6 +264,25 @@ export class CardStore {
     }
 
     return cards;
+
+    /*
+     * Once we have finished migrating progress records we should use the
+     * following instead:
+     * ...
+    // Sort by creation date in ascending order
+    findResult.docs.sort((a, b) => a.created - b.created);
+
+    // Truncate range as needed
+    if (
+      typeof limit !== 'undefined' &&
+      limit >= 0 &&
+      limit < findResult.docs.length
+    ) {
+      findResult.docs.splice(limit);
+    }
+
+    return this.getCardsFromProgressDocs(findResult.docs);
+    */
   }
 
   private async getCardsFromProgressDocs(
@@ -354,6 +378,7 @@ export class CardStore {
         card.progress && card.progress.due instanceof Date
           ? card.progress.due.getTime()
           : 0,
+      created: now,
     };
 
     return (async function tryPutNewCard(
