@@ -251,24 +251,6 @@ export class CardStore {
       use_index: ['progress_by_due_date', 'due'],
     })) as PouchDB.Find.FindResponse<ProgressContent>;
 
-    // Marry them up with corresponding cards (we do this first because we want
-    // to sort and limit based on creation date but that is stored in the card).
-    const cards = await this.getCardsFromProgressDocs(findResult.docs);
-
-    // Sort by creation date in ascending order
-    cards.sort((a, b) => a.created - b.created);
-
-    // Truncate range as needed
-    if (typeof limit !== 'undefined' && limit >= 0 && limit < cards.length) {
-      cards.splice(limit);
-    }
-
-    return cards;
-
-    /*
-     * Once we have finished migrating progress records we should use the
-     * following instead:
-     * ...
     // Sort by creation date in ascending order
     findResult.docs.sort((a, b) => a.created - b.created);
 
@@ -282,12 +264,15 @@ export class CardStore {
     }
 
     return this.getCardsFromProgressDocs(findResult.docs);
-    */
   }
 
   private async getCardsFromProgressDocs(
     progressDocs: Array<ExistingProgressDoc>
   ): Promise<Array<Card>> {
+    if (!progressDocs.length) {
+      return [];
+    }
+
     const keys = progressDocs.map(doc => doc._id.replace('progress-', 'card-'));
     const cards = await this.db.allDocs<CardContent>({
       include_docs: true,
