@@ -11,7 +11,7 @@ import {
   getReviewPhase,
 } from './selectors';
 import * as Actions from '../actions';
-import { Card, Review } from '../model';
+import { Review } from '../model';
 import { ReviewPhase } from './ReviewPhase';
 import { DataStore } from '../store/DataStore';
 import { CardChange } from '../store/CardStore';
@@ -95,20 +95,7 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
       return;
     }
 
-    // If the card doesn't have a progress part that normally means it is being
-    // deleted... but I guess something when wrong.
-    //
-    // TODO: Fix the typings for CardChange so that progress can only be missing
-    // when deleted is true.
-    if (!change.card.progress) {
-      console.warn(
-        "Got empty progress record for card that's not being deleted."
-      );
-      // We currently DON'T early return here simply because some of the tests
-      // rely on this. Yeah, we really should fix this.
-    }
-
-    store.dispatch(Actions.updateReviewCard(change.card as Card));
+    store.dispatch(Actions.updateReviewCard(change.card));
   });
 
   // Synchronize changes to review document

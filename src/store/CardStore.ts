@@ -36,10 +36,12 @@ type ExistingProgressDocWithChanges = PouchDB.Core.ExistingDocument<
   ProgressContent & PouchDB.Core.ChangesMeta
 >;
 
-export interface CardChange {
-  card: MakeOptional<Card, 'progress'>;
-  deleted?: boolean;
-}
+export type CardChange =
+  | { card: Card; deleted?: false }
+  | {
+      card: MakeOptional<Card, 'progress'>;
+      deleted: true;
+    };
 
 export const CARD_PREFIX = 'card-';
 export const PROGRESS_PREFIX = 'progress-';
@@ -752,13 +754,11 @@ export class CardStore {
         cardRev: change.doc._rev,
         progressRev: progress && progress._rev ? progress._rev : null,
       };
-      const result: CardChange = {
-        card: progress
-          ? mergeDocs(change.doc, progress)
-          : parseCard(change.doc),
-      };
-      if (change.deleted) {
-        result.deleted = true;
+      let result: CardChange;
+      if (change.deleted || !progress) {
+        result = { card: parseCard(change.doc), deleted: true };
+      } else {
+        result = { card: mergeDocs(change.doc, progress) };
       }
       emit('card', result);
     } else if (isProgressChangeDoc(change.doc)) {

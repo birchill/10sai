@@ -62,12 +62,12 @@ export class CardList {
         if (change.deleted) {
           cards.splice(index, 1);
         } else {
-          cards[index] = change.card as Card;
+          cards[index] = change.card;
         }
         this.cards = cards;
         this.notifyListeners();
       } else if (!change.deleted) {
-        cards.splice(index, 0, change.card as Card);
+        cards.splice(index, 0, change.card);
         this.cards = cards;
         this.notifyListeners();
       }
