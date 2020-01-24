@@ -506,20 +506,21 @@ export class CardStore {
 
       if (
         update &&
-        update.due &&
-        update.due instanceof Date &&
-        progress!.due !== update.due.getTime()
+        typeof update.due !== 'undefined' &&
+        ((update.due instanceof Date &&
+          progress.due !== update.due.getTime()) ||
+          (update.due === null && progress.due !== 0))
       ) {
-        progress!.due = update.due.getTime();
+        progress.due = update.due === null ? 0 : update.due.getTime();
         hasChange = true;
       }
 
       if (
         update &&
         typeof update.level === 'number' &&
-        progress!.level !== update.level
+        progress.level !== update.level
       ) {
-        progress!.level = update.level;
+        progress.level = update.level;
         hasChange = true;
       }
 

@@ -154,8 +154,11 @@ export class AvailableCardWatcher {
       isOverdue &&
       newOverdueness !== existingOverdueness
     ) {
+      // Update the overdueness in the map, but don't call listeners unless the
+      // _order_ of overdue cards has changed.
+      const prevOverdueCards = new Map(this.overdueCards);
       this.overdueCards.set(change.card.id, newOverdueness);
-      changed = true;
+      changed = !areOverdueCardMapsEqual(prevOverdueCards, this.overdueCards);
     }
 
     if (changed) {
@@ -277,16 +280,9 @@ export class AvailableCardWatcher {
               ])
           );
 
-          const serializeOverdueCards = (map: Map<string, number>): string =>
-            JSON.stringify(
-              [...map.entries()]
-                .sort((a, b) => b[1] - a[1])
-                .map(([id, _]) => id)
-            );
           if (
             JSON.stringify(prevNewCards) !== JSON.stringify(this.newCards) ||
-            serializeOverdueCards(prevOverdueCards) !==
-              serializeOverdueCards(this.overdueCards)
+            !areOverdueCardMapsEqual(prevOverdueCards, this.overdueCards)
           ) {
             this.notifyListeners();
           }
@@ -327,4 +323,15 @@ export class AvailableCardWatcher {
       .map(([id, progress]) => id);
     return result;
   }
+}
+
+function areOverdueCardMapsEqual(
+  a: Map<string, number>,
+  b: Map<string, number>
+): boolean {
+  const serializeOverdueCards = (map: Map<string, number>): string =>
+    JSON.stringify(
+      [...map.entries()].sort((a, b) => b[1] - a[1]).map(([id, _]) => id)
+    );
+  return serializeOverdueCards(a) === serializeOverdueCards(b);
 }
