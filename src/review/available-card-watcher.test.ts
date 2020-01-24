@@ -90,21 +90,21 @@ describe('AvailableCardWatcher', () => {
   }
 
   it('returns new cards in oldest first order', async () => {
-    const cardsAdded = await addNewCards(3);
+    const addedCards = await addNewCards(3);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
     const newCards = await subject.getNewCards(10);
 
-    expect(newCards).toEqual(cardsAdded.map(card => card.id));
+    expect(newCards).toEqual(addedCards.map(card => card.id));
   });
 
   it('returns only the specified number of new cards', async () => {
-    const cardsAdded = await addNewCards(8);
+    const addedCards = await addNewCards(8);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
     const newCards = await subject.getNewCards(5);
 
-    expect(newCards).toEqual(cardsAdded.slice(0, 5).map(card => card.id));
+    expect(newCards).toEqual(addedCards.slice(0, 5).map(card => card.id));
   });
 
   it('returns overdue cards in order of most to least overdue', async () => {
@@ -118,9 +118,9 @@ describe('AvailableCardWatcher', () => {
       relativeTime(-100), // #1
       relativeTime(0.1),
     ];
-    const cardsAdded: Array<Card> = [];
+    const addedCards: Array<Card> = [];
     for (let i = 0; i < dueTimes.length; i++) {
-      cardsAdded.push(
+      addedCards.push(
         await dataStore.putCard({
           front: 'Front',
           back: 'Back',
@@ -136,41 +136,37 @@ describe('AvailableCardWatcher', () => {
 
     const overdueCards = await subject.getOverdueCards(10);
     expect(overdueCards).toEqual([
-      cardsAdded[6].id,
-      cardsAdded[3].id,
-      cardsAdded[0].id,
-      cardsAdded[5].id,
-      cardsAdded[1].id,
+      addedCards[6].id,
+      addedCards[3].id,
+      addedCards[0].id,
+      addedCards[5].id,
+      addedCards[1].id,
     ]);
   });
 
   it('returns only the specified number of overdue cards cards', async () => {
-    const numCards = 10;
-    const cardsAdded: Array<Card> = [];
+    const addedCards = await addNewCards(10);
     const due = new Date(reviewTime.getTime());
-    for (let i = 0; i < numCards; i++) {
+    for (const card of addedCards) {
       // Make each card one more day overdue
       due.setTime(due.getTime() - MS_PER_DAY);
-      cardsAdded.push(
-        await dataStore.putCard({
-          front: 'Front',
-          back: 'Back',
-          progress: {
-            level: 5,
-            due,
-          },
-        })
-      );
+      await dataStore.putCard({
+        ...card,
+        progress: {
+          level: 5,
+          due,
+        },
+      });
     }
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
     const overdueCards = await subject.getOverdueCards(4);
     expect(overdueCards).toEqual([
-      cardsAdded[9].id,
-      cardsAdded[8].id,
-      cardsAdded[7].id,
-      cardsAdded[6].id,
+      addedCards[9].id,
+      addedCards[8].id,
+      addedCards[7].id,
+      addedCards[6].id,
     ]);
   });
 
