@@ -6,6 +6,7 @@ import {
   cancelIdleCallback,
   requestIdleCallback,
 } from '../utils/request-idle-callback';
+import { findIdInArray } from '../utils/search-id-array';
 
 // A wrapper around a DataStore that watches the set of new and overdue cards
 // so that we can quickly populate new reviews, update existing reviews, and
@@ -108,17 +109,71 @@ export class AvailableCardWatcher {
   }
 
   private handleChange(change: CardChange) {
-    // XXX
-    // Is it a new card?
-    //   Is it no longer new / deleted?
-    //   --> Remove from new queue
-    //   Is it now overdue? (but not deleted)
-    //   --> Add to overdueCards if so.
-    // Is it an overdue card?
-    //   Is it no longer overdue / deleted?
-    //   --> Remove from the overdue set
-    //   Is it now new? (but not deleted)
-    //   --> Add to new queue in the sorted position
+    let changed = false;
+
+    // Is it an existing new card?
+    const [isInNewCardQueue, newCardIndex] = findIdInArray(
+      change.card.id,
+      this.newCards
+    );
+    const isNewCard = !change.deleted && change.card.progress.due === null;
+    if (isInNewCardQueue) {
+      if (isNewCard) {
+        return;
+      }
+      // Remove from new card queue
+      this.newCards.splice(newCardIndex, 1);
+      changed = true;
+    } else if (isNewCard) {
+      // Add to new card queue
+      this.newCards.splice(newCardIndex, 0, change.card.id);
+      changed = true;
+    }
+
+    // Is it an existing overdue card?
+    const existingOverdueness = this.overdueCards.get(change.card.id);
+    const wasOverdue = typeof existingOverdueness !== 'undefined';
+    // Calculate an overdueness score that will be negative if the card is not
+    // overdue.
+    const isOverdue =
+      !change.deleted &&
+      change.card.progress.due !== null &&
+      change.card.progress.due <= this.reviewTime;
+    const newOverdueness = isOverdue
+      ? getOverdueness(change.card.progress!, this.reviewTime.getTime())
+      : -1;
+
+    if (!wasOverdue && isOverdue) {
+      this.overdueCards.set(change.card.id, newOverdueness);
+      changed = true;
+    } else if (wasOverdue && !isOverdue) {
+      this.overdueCards.delete(change.card.id);
+      changed = true;
+    } else if (
+      wasOverdue &&
+      isOverdue &&
+      newOverdueness !== existingOverdueness
+    ) {
+      this.overdueCards.set(change.card.id, newOverdueness);
+      changed = true;
+    }
+
+    if (changed) {
+      this.notifyListeners();
+    }
+  }
+
+  private notifyListeners() {
+    const availableCards: AvailableCards = {
+      newCards: this.newCards.length,
+      overdueCards: this.overdueCards.size,
+    };
+
+    // Copy listeners first in case one of the listeners mutates the array
+    const listeners = this.listeners.slice();
+    for (const listener of listeners) {
+      listener(availableCards);
+    }
   }
 
   private triggerInitialQuery() {
@@ -222,7 +277,6 @@ export class AvailableCardWatcher {
               ])
           );
 
-          // XXX Probably factor this out somewhere
           const serializeOverdueCards = (map: Map<string, number>): string =>
             JSON.stringify(
               [...map.entries()]
@@ -234,14 +288,7 @@ export class AvailableCardWatcher {
             serializeOverdueCards(prevOverdueCards) !==
               serializeOverdueCards(this.overdueCards)
           ) {
-            const availableCards: AvailableCards = {
-              newCards: this.newCards.length,
-              overdueCards: this.overdueCards.size,
-            };
-            const listeners = this.listeners.slice();
-            for (const listener of listeners) {
-              listener(availableCards);
-            }
+            this.notifyListeners();
           }
 
           resolve();

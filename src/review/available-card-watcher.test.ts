@@ -185,7 +185,7 @@ describe('AvailableCardWatcher', () => {
 
     // The above will trigger the query to run, but the query is async so we
     // need to wait a few cycles for it to finish.
-    await waitForEvents(15);
+    await waitForEvents(20);
 
     expect(subject.isLoading()).toStrictEqual(false);
   });
@@ -242,7 +242,7 @@ describe('AvailableCardWatcher', () => {
     // Trigger initial query
     timer.runAllTimers();
     timer.restore();
-    await waitForEvents(15);
+    await waitForEvents(20);
 
     const callsA = await finishedA;
     expect(callsA).toEqual([{ newCards: 3, overdueCards: 0 }]);
@@ -251,7 +251,41 @@ describe('AvailableCardWatcher', () => {
     expect(callsB).toEqual([{ newCards: 3, overdueCards: 0 }]);
   });
 
-  // XXX Calls multiple listeners
+  it('notifies listeners when there is a new card', async () => {
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+    await subject.getNewCards(0);
+
+    const [callback, finished] = waitForCalls(1);
+    subject.addListener(callback);
+
+    const card = await dataStore.putCard({
+      front: 'Front',
+      back: 'Back',
+    });
+
+    const calls = await finished;
+    expect(calls).toEqual([{ newCards: 1, overdueCards: 0 }]);
+    expect(subject.isLoading()).toStrictEqual(false);
+    expect(await subject.getNewCards(10)).toStrictEqual([card.id]);
+  });
+
+  it('notifies listeners of all the new cards', async () => {
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+    await subject.getNewCards(0);
+
+    const [callback, finished] = waitForCalls(5);
+    subject.addListener(callback);
+
+    const addedCards = await addNewCards(5);
+
+    const calls = await finished;
+    expect(calls).toHaveLength(5);
+    expect(calls[4]).toEqual({ newCards: 5, overdueCards: 0 });
+    expect(await subject.getNewCards(10)).toStrictEqual(
+      addedCards.map(card => card.id)
+    );
+  });
+
   // XXX Allows unregistering listeners
   //
   // XXX Notifies listeners when there is a new new card
