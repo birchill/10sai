@@ -35,25 +35,28 @@ const enum QueryState {
   Error,
 }
 
+export type AvailableCardsCallback = (availableCards: AvailableCards) => void;
+
 export class AvailableCardWatcher {
   private dataStore: DataStore;
   private reviewTime: Date;
 
   // New cards sorted by ID (which corresponds to creation order).
-  private newCards: Array<string>;
+  private newCards: Array<string> = [];
 
   // Overdue cards along with their overdueness.
   //
   // We don't sort these since although they will ultimately be sorted by
   // overdueness but that value can change (so we can't use it as a lookup key).
   // Instead we use a Map to accommodate quick updates when syncing.
-  private overdueCards: Map<string, number>;
+  private overdueCards: Map<string, number> = new Map();
 
-  private initialQueryState: QueryState;
+  private initialQueryState: QueryState = QueryState.Waiting;
   private queryPromise: Promise<void> | undefined;
-  private idleQueryHandle: number | null;
-  private timeoutQueryHandle: number | null;
-  // XXX Listeners
+  private idleQueryHandle: number | null = null;
+  private timeoutQueryHandle: number | null = null;
+
+  private listeners: Array<AvailableCardsCallback> = [];
 
   constructor({
     dataStore,
@@ -65,13 +68,9 @@ export class AvailableCardWatcher {
     this.dataStore = dataStore;
     this.reviewTime = reviewTime;
 
-    this.newCards = [];
-    this.overdueCards = new Map();
-
     this.handleChange = this.handleChange.bind(this);
     this.dataStore.changes.on('card', this.handleChange);
 
-    this.idleQueryHandle = null;
     this.triggerInitialQuery();
     // XXX Also trigger subsequent update to accommodate stale indices
     // (Do this inside triggerInitialQuery?)
@@ -79,9 +78,33 @@ export class AvailableCardWatcher {
 
   disconnect() {
     this.dataStore.changes.off('card', this.handleChange);
-    // XXX Cancel any idle callback
-    // XXX Cancel any timeout callback
-    // XXX Drop listeners to be sure
+
+    if (this.idleQueryHandle !== null) {
+      cancelIdleCallback(this.idleQueryHandle);
+      this.idleQueryHandle = null;
+    }
+
+    if (this.timeoutQueryHandle !== null) {
+      clearTimeout(this.timeoutQueryHandle);
+      this.timeoutQueryHandle = null;
+    }
+
+    this.listeners = [];
+  }
+
+  addListener(callback: AvailableCardsCallback) {
+    if (this.listeners.indexOf(callback) !== -1) {
+      return;
+    }
+    this.listeners.push(callback);
+  }
+
+  removeListener(callback: AvailableCardsCallback) {
+    const index = this.listeners.indexOf(callback);
+    if (index === -1) {
+      return;
+    }
+    this.listeners.splice(index, 1);
   }
 
   private handleChange(change: CardChange) {
@@ -184,10 +207,12 @@ export class AvailableCardWatcher {
       this.dataStore
         .getAvailableCards2({ reviewTime: this.reviewTime })
         .then(availableCards => {
+          const prevNewCards = this.newCards;
           this.newCards = availableCards
             .filter(([id, progress]) => progress.due === null)
             .map(([id, progress]) => id);
 
+          const prevOverdueCards = this.overdueCards;
           this.overdueCards = new Map(
             availableCards
               .filter(([id, progress]) => progress.due !== null)
@@ -197,7 +222,27 @@ export class AvailableCardWatcher {
               ])
           );
 
-          // XXX This needs to trigger listeners if something changed.
+          // XXX Probably factor this out somewhere
+          const serializeOverdueCards = (map: Map<string, number>): string =>
+            JSON.stringify(
+              [...map.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .map(([id, _]) => id)
+            );
+          if (
+            JSON.stringify(prevNewCards) !== JSON.stringify(this.newCards) ||
+            serializeOverdueCards(prevOverdueCards) !==
+              serializeOverdueCards(this.overdueCards)
+          ) {
+            const availableCards: AvailableCards = {
+              newCards: this.newCards.length,
+              overdueCards: this.overdueCards.size,
+            };
+            const listeners = this.listeners.slice();
+            for (const listener of listeners) {
+              listener(availableCards);
+            }
+          }
 
           resolve();
         })

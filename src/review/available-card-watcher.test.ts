@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 import { ensureMocksReset, timer } from '@shopify/jest-dom-mocks';
 
 import { AvailableCardWatcher } from './available-card-watcher';
-import { Card } from '../model';
+import { AvailableCards, Card } from '../model';
 import { DataStore } from '../store/DataStore';
 import { waitForEvents } from '../utils/testing';
 
@@ -201,8 +201,72 @@ describe('AvailableCardWatcher', () => {
     expect(subject.isLoading()).toStrictEqual(false);
   });
 
-  // XXX Calls all listeners with initial result
-  //  -- Try registering before and after initial query
+  // Helper to produce:
+  //
+  // - a callback to pass to the AvailableCardWatcher addListener method
+  // - a Promise that will resolve after the callback has been called |num|
+  //   times
+  //
+  const waitForCalls = (
+    num: number
+  ): [
+    (availableCards: AvailableCards) => void,
+    Promise<Array<AvailableCards>>
+  ] => {
+    const calls: Array<AvailableCards> = [];
+
+    let resolver: (calls: Array<AvailableCards>) => void;
+    const promise = new Promise<Array<AvailableCards>>(resolve => {
+      resolver = resolve;
+    });
+
+    let recordedChanges = 0;
+    const callback = (availableCards: AvailableCards) => {
+      calls.push(availableCards);
+      if (++recordedChanges === num) {
+        resolver(calls);
+      }
+      if (recordedChanges > num) {
+        throw `Got ${recordedChanges} calls, but only expected ${num}`;
+      }
+    };
+
+    if (num === 0) {
+      resolver!([]);
+    }
+
+    return [callback, promise];
+  };
+
+  it('calls all listeners with the initial result', async () => {
+    // XXX Factor out a helper for this
+    const numCardsToAdd = 3;
+    const cardsAdded: Array<Card> = [];
+    for (let i = 0; i < numCardsToAdd; i++) {
+      cardsAdded.push(
+        await dataStore.putCard({
+          front: 'Front',
+          back: 'Back',
+        })
+      );
+    }
+
+    timer.mock();
+
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+
+    const [callback, finished] = waitForCalls(1);
+    subject.addListener(callback);
+
+    // Trigger initial query
+    timer.runAllTimers();
+    timer.restore();
+    await waitForEvents(15);
+
+    const calls = await finished;
+    expect(calls).toEqual([{ newCards: 3, overdueCards: 0 }]);
+  });
+
   // XXX Allows unregistering listeners
   //
   // XXX Notifies listeners when there is a new new card
