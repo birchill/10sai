@@ -686,9 +686,6 @@ describe('AvailableCardWatcher', () => {
     expect(calls).toEqual([{ newCards: 0, overdueCards: 5 }]);
   });
 
-  // XXX Make sure we trigger a subsequent update after the initial one...
-  // although we might decide not to test it.
-  //
   // XXX Go back and drop the limits on the getNewCards and getOverdueCard
   // functions. It doesn't seem to save us anything really (but we might still
   // want to copy the array returned by getNewCards just to be safe).

@@ -12,14 +12,6 @@ import { findIdInArray } from '../utils/search-id-array';
 // so that we can quickly populate new reviews, update existing reviews, and
 // provide status about how many cards are available to review.
 
-// XXX We should also use this class to:
-//
-// - Pre-emptively fetch the available cards on load so that we're not waiting
-//   for it.
-// - Re-run the initial query at some point shortly after since it seems like
-//   sometimes the index can get stale.
-// - Re-run the query whenever the review time is updated.
-//
 // XXX This should also mean we drop the review time from the DataStore and also
 // drop the getOverdueCards / getNewCards / getAvailableCards methods from
 // CardStore/DataStore and leave just a version of getAvailableCards that
@@ -73,8 +65,7 @@ export class AvailableCardWatcher {
     this.dataStore.changes.on('card', this.handleChange);
 
     this.triggerInitialQuery();
-    // XXX Also trigger subsequent update to accommodate stale indices
-    // (Do this inside triggerInitialQuery?)
+    this.triggerDelayedUpdate();
   }
 
   disconnect() {
@@ -206,6 +197,27 @@ export class AvailableCardWatcher {
       },
       { timeout: 5000 }
     );
+  }
+
+  private triggerDelayedUpdate() {
+    // For some reason we seem to hit a case where the index can be stale even
+    // several seconds after the app has loaded. I've no idea how PouchDB
+    // schedules the updates to the index (people assert that the index is
+    // always up-to-date unless you use 'stale: ok' but that doesn't apply to
+    // MangoDB queries which clearly do appear to be out-of-date sometimes).
+    //
+    // So, the best we can do is simply scheduled another delayed update and
+    // hope it picks something up.
+    //
+    // This might not be necessary once we switch to the indexeddb adapter.
+    // We'll see.
+    if (this.timeoutQueryHandle !== null) {
+      return;
+    }
+
+    // We set the timeout for the initial query to be 5s so we should wait at
+    // least 5s. However, 10s seems to long, so let's go with 8s.
+    this.timeoutQueryHandle = self.setTimeout(() => this.runQuery(), 8000);
   }
 
   private async makeSureDataIsReady() {
