@@ -338,6 +338,25 @@ export class CardStore {
     };
   }
 
+  async getAvailableCards2({
+    reviewTime,
+  }: {
+    reviewTime: Date;
+  }): Promise<Array<[string, Progress]>> {
+    await this.viewPromises.review.promise;
+
+    const findResult = (await this.db.find({
+      selector: overdueOrNewCardSelector(reviewTime),
+      use_index: ['progress_by_due_date', 'due'],
+    })) as PouchDB.Find.FindResponse<ProgressContent>;
+
+    const result: Array<[string, Progress]> = findResult.docs.map(doc => [
+      stripProgressPrefix(doc._id),
+      parseProgress(doc),
+    ]);
+    return result;
+  }
+
   async putCard(card: Partial<Card>): Promise<Card> {
     if (!card.id) {
       return this._putNewCard(card);
