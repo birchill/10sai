@@ -78,39 +78,32 @@ describe('AvailableCardWatcher', () => {
     expect(availableCards).toEqual({ newCards: 1, overdueCards: 2 });
   });
 
-  it('returns new cards in oldest first order', async () => {
-    const numCardsToAdd = 3;
-    const cardsAdded: Array<Card> = [];
-    for (let i = 0; i < numCardsToAdd; i++) {
-      cardsAdded.push(
-        await dataStore.putCard({
-          front: 'Front',
-          back: 'Back',
-        })
-      );
+  async function addNewCards(num: number): Promise<Array<Card>> {
+    const cards = new Array(num);
+    for (let i = 0; i < cards.length; i++) {
+      cards[i] = await dataStore.putCard({
+        front: `Question ${i + 1}`,
+        back: `Answer ${i + 1}`,
+      });
     }
+    return cards;
+  }
 
+  it('returns new cards in oldest first order', async () => {
+    const cardsAdded = await addNewCards(3);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
     const newCards = await subject.getNewCards(10);
+
     expect(newCards).toEqual(cardsAdded.map(card => card.id));
   });
 
   it('returns only the specified number of new cards', async () => {
-    const numCardsToAdd = 8;
-    const cardsAdded: Array<Card> = [];
-    for (let i = 0; i < numCardsToAdd; i++) {
-      cardsAdded.push(
-        await dataStore.putCard({
-          front: 'Front',
-          back: 'Back',
-        })
-      );
-    }
-
+    const cardsAdded = await addNewCards(8);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
     const newCards = await subject.getNewCards(5);
+
     expect(newCards).toEqual(cardsAdded.slice(0, 5).map(card => card.id));
   });
 
@@ -239,34 +232,30 @@ describe('AvailableCardWatcher', () => {
   };
 
   it('calls all listeners with the initial result', async () => {
-    // XXX Factor out a helper for this
-    const numCardsToAdd = 3;
-    const cardsAdded: Array<Card> = [];
-    for (let i = 0; i < numCardsToAdd; i++) {
-      cardsAdded.push(
-        await dataStore.putCard({
-          front: 'Front',
-          back: 'Back',
-        })
-      );
-    }
+    await addNewCards(3);
 
     timer.mock();
-
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
-    const [callback, finished] = waitForCalls(1);
-    subject.addListener(callback);
+    const [callbackA, finishedA] = waitForCalls(1);
+    subject.addListener(callbackA);
+
+    const [callbackB, finishedB] = waitForCalls(1);
+    subject.addListener(callbackB);
 
     // Trigger initial query
     timer.runAllTimers();
     timer.restore();
     await waitForEvents(15);
 
-    const calls = await finished;
-    expect(calls).toEqual([{ newCards: 3, overdueCards: 0 }]);
+    const callsA = await finishedA;
+    expect(callsA).toEqual([{ newCards: 3, overdueCards: 0 }]);
+
+    const callsB = await finishedB;
+    expect(callsB).toEqual([{ newCards: 3, overdueCards: 0 }]);
   });
 
+  // XXX Calls multiple listeners
   // XXX Allows unregistering listeners
   //
   // XXX Notifies listeners when there is a new new card
