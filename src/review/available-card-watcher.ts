@@ -265,6 +265,14 @@ export class AvailableCardWatcher {
       this.dataStore
         .getAvailableCards2({ reviewTime: this.reviewTime })
         .then(availableCards => {
+          // If the review time was changed while the query was running, abort.
+          if (this.reviewTime.getTime() !== reviewTimeAsNumber) {
+            const abortError = new Error('Query aborted');
+            abortError.name = 'AbortError';
+            reject(abortError);
+            return;
+          }
+
           const prevNewCards = this.newCards;
           this.newCards = availableCards
             .filter(([id, progress]) => progress.due === null)
@@ -294,9 +302,20 @@ export class AvailableCardWatcher {
     return this.queryPromise;
   }
 
-  // XXX Method for updating the review time
-  //   -- Needs to cancel idle callback
-  //   -- Needs to cancel timeout callback
+  setReviewTime(reviewTime: Date) {
+    this.reviewTime = reviewTime;
+
+    // Cancel existing idle callback
+    if (this.idleQueryHandle !== null) {
+      cancelIdleCallback(this.idleQueryHandle);
+      this.idleQueryHandle = null;
+    }
+
+    // No need to cancel any setTimeout call since triggerInitialQuery does that
+    // for us.
+
+    this.triggerInitialQuery();
+  }
 
   isLoading(): boolean {
     return this.initialQueryState !== QueryState.Ok;

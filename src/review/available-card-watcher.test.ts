@@ -626,10 +626,68 @@ describe('AvailableCardWatcher', () => {
     expect(calls).toHaveLength(0);
   });
 
-  // XXX Allows unregistering listeners
-  //
-  // XXX Allows setting the review time
-  //   -- Calls listeners
+  it('allows unregistering listeners', async () => {
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+    await subject.getNewCards(10);
+
+    const [callback, finished] = waitForCalls(3);
+    subject.addListener(callback);
+
+    await addNewCards(3);
+
+    // Wait for the initial set of callbacks to be called
+    await waitForEvents(10);
+
+    subject.removeListener(callback);
+
+    await addNewCards(2);
+
+    const calls = await finished;
+    expect(calls).toHaveLength(3);
+  });
+
+  it('allows updating the review time', async () => {
+    const dueTimes = [
+      relativeTime(-3),
+      relativeTime(-2),
+      relativeTime(-1),
+      relativeTime(0),
+      relativeTime(1),
+      relativeTime(2),
+    ];
+    const addedCards: Array<Card> = [];
+    for (let i = 0; i < dueTimes.length; i++) {
+      addedCards.push(
+        await dataStore.putCard({
+          front: 'Front',
+          back: 'Back',
+          progress: {
+            level: 5,
+            due: dueTimes[i],
+          },
+        })
+      );
+    }
+
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+    let overdueCards = await subject.getOverdueCards(10);
+    expect(overdueCards).toEqual(addedCards.slice(0, 4).map(card => card.id));
+
+    const [callback, finished] = waitForCalls(1);
+    subject.addListener(callback);
+
+    // Move the review time 1.5 days forward such that one more card should now
+    // become overdue.
+    subject.setReviewTime(relativeTime(1.5));
+    overdueCards = await subject.getOverdueCards(10);
+    expect(overdueCards).toEqual(addedCards.slice(0, 5).map(card => card.id));
+
+    const calls = await finished;
+    expect(calls).toEqual([{ newCards: 0, overdueCards: 5 }]);
+  });
+
+  // XXX Make sure we trigger a subsequent update after the initial one...
+  // although we might decide not to test it.
   //
   // XXX Go back and drop the limits on the getNewCards and getOverdueCard
   // functions. It doesn't seem to save us anything really (but we might still
