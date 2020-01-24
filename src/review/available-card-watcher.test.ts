@@ -205,8 +205,10 @@ describe('AvailableCardWatcher', () => {
     const calls: Array<AvailableCards> = [];
 
     let resolver: (calls: Array<AvailableCards>) => void;
-    const promise = new Promise<Array<AvailableCards>>(resolve => {
+    let rejecter: (err: any) => void;
+    const promise = new Promise<Array<AvailableCards>>((resolve, reject) => {
       resolver = resolve;
+      rejecter = reject;
     });
 
     let recordedChanges = 0;
@@ -216,7 +218,13 @@ describe('AvailableCardWatcher', () => {
         resolver(calls);
       }
       if (recordedChanges > num) {
-        throw `Got ${recordedChanges} calls, but only expected ${num}`;
+        const err = new Error(
+          `Got ${recordedChanges} calls, but only expected ${num}`
+        );
+        // Reject the promise and throw so that one way or another the test
+        // framework hears about it.
+        rejecter(err);
+        throw err;
       }
     };
 
@@ -266,7 +274,7 @@ describe('AvailableCardWatcher', () => {
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 1, overdueCards: 0 }]);
     expect(subject.isLoading()).toStrictEqual(false);
-    expect(await subject.getNewCards(10)).toStrictEqual([card.id]);
+    expect(await subject.getNewCards(10)).toEqual([card.id]);
   });
 
   it('notifies listeners of all the new cards', async () => {
@@ -281,16 +289,86 @@ describe('AvailableCardWatcher', () => {
     const calls = await finished;
     expect(calls).toHaveLength(5);
     expect(calls[4]).toEqual({ newCards: 5, overdueCards: 0 });
-    expect(await subject.getNewCards(10)).toStrictEqual(
+    expect(await subject.getNewCards(10)).toEqual(
       addedCards.map(card => card.id)
     );
   });
 
-  // XXX Allows unregistering listeners
-  //
-  // XXX Notifies listeners when there is a new new card
-  // XXX Notifies listeners when a new card is no longer new
-  // XXX Notifies listeners when a new card becomes overdue
+  it('notifies listeners when a card is no longer new', async () => {
+    const addedCards = await addNewCards(3);
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+
+    await subject.getNewCards(10);
+
+    const [callback, finished] = waitForCalls(1);
+    subject.addListener(callback);
+
+    // Make the second card no longer new (nor overdue)
+    await dataStore.putCard({
+      ...addedCards[1],
+      progress: { level: 10, due: relativeTime(5) },
+    });
+
+    const calls = await finished;
+    expect(calls).toEqual([{ newCards: 2, overdueCards: 0 }]);
+    expect(await subject.getNewCards(10)).toEqual([
+      addedCards[0].id,
+      addedCards[2].id,
+    ]);
+  });
+
+  it('notifies listeners when a new card is now overdue', async () => {
+    const addedCards = await addNewCards(3);
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+
+    await subject.getNewCards(10);
+
+    const [callback, finished] = waitForCalls(2);
+    subject.addListener(callback);
+
+    // Make the first and third cards overdue
+    await dataStore.putCard({
+      ...addedCards[0],
+      progress: { level: 10, due: relativeTime(-5) },
+    });
+    await dataStore.putCard({
+      ...addedCards[2],
+      progress: { level: 3, due: relativeTime(-5) },
+    });
+
+    const calls = await finished;
+    expect(calls).toEqual([
+      { newCards: 2, overdueCards: 1 },
+      { newCards: 1, overdueCards: 2 },
+    ]);
+    expect(await subject.getNewCards(10)).toEqual([addedCards[1].id]);
+    expect(await subject.getOverdueCards(10)).toEqual([
+      addedCards[2].id,
+      addedCards[0].id,
+    ]);
+  });
+
+  it('does NOT notify listeners the content of a new card changes', async () => {
+    const addedCards = await addNewCards(3);
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+    await subject.getNewCards(10);
+
+    const [callback, finished] = waitForCalls(0);
+    subject.addListener(callback);
+
+    await dataStore.putCard({
+      ...addedCards[1],
+      front: 'Updated front',
+    });
+
+    // Wait a moment so that if we _do_ get a callback, when we wait on
+    // `finished` below it will reject.
+    await waitForEvents(10);
+
+    const calls = await finished;
+    expect(calls).toHaveLength(0);
+  });
+
   // XXX Does NOT notify listeners when the content of a new card changes
   //
   // XXX Notifies listeners when there is a new overdue card
@@ -298,6 +376,11 @@ describe('AvailableCardWatcher', () => {
   // XXX Notifies listeners when an overdue card becomes new
   // XXX Notifies listeners when an overdue card becomes more or less overdue
   // XXX Does NOT notify listeners when the content of an overdue card changes
+  //
+  // XXX Does NOT notify listeners when a card is added that is neither new nor
+  // overdue
+  //
+  // XXX Allows unregistering listeners
   //
   // XXX Allows setting the review time
   //   -- Calls listeners

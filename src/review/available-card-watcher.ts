@@ -298,7 +298,6 @@ export class AvailableCardWatcher {
     return this.queryPromise;
   }
 
-  // XXX Methods for registering / unregistering listeners
   // XXX Method for updating the review time
   //   -- Needs to cancel idle callback
   //   -- Needs to cancel timeout callback
