@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.8.3",
+    "@shopify/jest-dom-mocks": "^2.8.8",
     "@storybook/addon-actions": "^5.3.7",
     "@storybook/addon-notes": "^5.3.7",
     "@storybook/react": "^5.3.7",

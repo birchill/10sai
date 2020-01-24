@@ -1,8 +1,10 @@
 import PouchDB from 'pouchdb';
+import { ensureMocksReset, timer } from '@shopify/jest-dom-mocks';
 
 import { AvailableCardWatcher } from './available-card-watcher';
 import { Card } from '../model';
 import { DataStore } from '../store/DataStore';
+import { waitForEvents } from '../utils/testing';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
@@ -14,6 +16,7 @@ describe('AvailableCardWatcher', () => {
   let relativeTime: (diffInDays: number) => Date;
 
   beforeEach(() => {
+    ensureMocksReset();
     // Pre-fetching views seems to be a real bottle-neck when running tests
     dataStore = new DataStore({
       pouch: { adapter: 'memory' },
@@ -178,8 +181,25 @@ describe('AvailableCardWatcher', () => {
     ]);
   });
 
-  // XXX Automatically triggers a query
-  //  -- This should test the isLoading flag
+  it('automatically triggers a query', async () => {
+    timer.mock();
+
+    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
+    expect(subject.isLoading()).toStrictEqual(true);
+
+    // You might think we'd want to mock requestIdleCallback here but actually
+    // when running under node (which we do when we run these tests) we polyfill
+    // requestIdleCallback with setTimeout so we actually want to mock timers
+    // here.
+    timer.runAllTimers();
+    timer.restore();
+
+    // The above will trigger the query to run, but the query is async so we
+    // need to wait a few cycles for it to finish.
+    await waitForEvents(15);
+
+    expect(subject.isLoading()).toStrictEqual(false);
+  });
 
   // XXX Calls all listeners with initial result
   //  -- Try registering before and after initial query
