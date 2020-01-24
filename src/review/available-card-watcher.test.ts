@@ -68,10 +68,10 @@ describe('AvailableCardWatcher', () => {
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
-    const newCards = await subject.getNewCards(10);
+    const newCards = await subject.getNewCards();
     expect(newCards).toEqual([card3.id]);
 
-    const overdueCards = await subject.getOverdueCards(10);
+    const overdueCards = await subject.getOverdueCards();
     expect(overdueCards).toEqual([card4.id, card1.id]);
 
     const availableCards = await subject.getNumAvailableCards();
@@ -93,18 +93,9 @@ describe('AvailableCardWatcher', () => {
     const addedCards = await addNewCards(3);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
-    const newCards = await subject.getNewCards(10);
+    const newCards = await subject.getNewCards();
 
     expect(newCards).toEqual(addedCards.map(card => card.id));
-  });
-
-  it('returns only the specified number of new cards', async () => {
-    const addedCards = await addNewCards(8);
-    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-
-    const newCards = await subject.getNewCards(5);
-
-    expect(newCards).toEqual(addedCards.slice(0, 5).map(card => card.id));
   });
 
   it('returns overdue cards in order of most to least overdue', async () => {
@@ -134,39 +125,13 @@ describe('AvailableCardWatcher', () => {
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
-    const overdueCards = await subject.getOverdueCards(10);
+    const overdueCards = await subject.getOverdueCards();
     expect(overdueCards).toEqual([
       addedCards[6].id,
       addedCards[3].id,
       addedCards[0].id,
       addedCards[5].id,
       addedCards[1].id,
-    ]);
-  });
-
-  it('returns only the specified number of overdue cards cards', async () => {
-    const addedCards = await addNewCards(10);
-    const due = new Date(reviewTime.getTime());
-    for (const card of addedCards) {
-      // Make each card one more day overdue
-      due.setTime(due.getTime() - MS_PER_DAY);
-      await dataStore.putCard({
-        ...card,
-        progress: {
-          level: 5,
-          due,
-        },
-      });
-    }
-
-    const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-
-    const overdueCards = await subject.getOverdueCards(4);
-    expect(overdueCards).toEqual([
-      addedCards[9].id,
-      addedCards[8].id,
-      addedCards[7].id,
-      addedCards[6].id,
     ]);
   });
 
@@ -261,7 +226,7 @@ describe('AvailableCardWatcher', () => {
 
   it('notifies listeners when there is a new card', async () => {
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(0);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -274,12 +239,12 @@ describe('AvailableCardWatcher', () => {
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 1, overdueCards: 0 }]);
     expect(subject.isLoading()).toStrictEqual(false);
-    expect(await subject.getNewCards(10)).toEqual([card.id]);
+    expect(await subject.getNewCards()).toEqual([card.id]);
   });
 
   it('notifies listeners of all the new cards', async () => {
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(0);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(5);
     subject.addListener(callback);
@@ -289,7 +254,7 @@ describe('AvailableCardWatcher', () => {
     const calls = await finished;
     expect(calls).toHaveLength(5);
     expect(calls[4]).toEqual({ newCards: 5, overdueCards: 0 });
-    expect(await subject.getNewCards(10)).toEqual(
+    expect(await subject.getNewCards()).toEqual(
       addedCards.map(card => card.id)
     );
   });
@@ -298,7 +263,7 @@ describe('AvailableCardWatcher', () => {
     const addedCards = await addNewCards(3);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
-    await subject.getNewCards(10);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -311,7 +276,7 @@ describe('AvailableCardWatcher', () => {
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 2, overdueCards: 0 }]);
-    expect(await subject.getNewCards(10)).toEqual([
+    expect(await subject.getNewCards()).toEqual([
       addedCards[0].id,
       addedCards[2].id,
     ]);
@@ -321,7 +286,7 @@ describe('AvailableCardWatcher', () => {
     const addedCards = await addNewCards(3);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
-    await subject.getNewCards(10);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -330,7 +295,7 @@ describe('AvailableCardWatcher', () => {
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 2, overdueCards: 0 }]);
-    expect(await subject.getNewCards(10)).toEqual([
+    expect(await subject.getNewCards()).toEqual([
       addedCards[0].id,
       addedCards[2].id,
     ]);
@@ -340,7 +305,7 @@ describe('AvailableCardWatcher', () => {
     const addedCards = await addNewCards(3);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
 
-    await subject.getNewCards(10);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(2);
     subject.addListener(callback);
@@ -360,8 +325,8 @@ describe('AvailableCardWatcher', () => {
       { newCards: 2, overdueCards: 1 },
       { newCards: 1, overdueCards: 2 },
     ]);
-    expect(await subject.getNewCards(10)).toEqual([addedCards[1].id]);
-    expect(await subject.getOverdueCards(10)).toEqual([
+    expect(await subject.getNewCards()).toEqual([addedCards[1].id]);
+    expect(await subject.getOverdueCards()).toEqual([
       addedCards[2].id,
       addedCards[0].id,
     ]);
@@ -370,7 +335,7 @@ describe('AvailableCardWatcher', () => {
   it('does NOT notify listeners when the content of a new card changes', async () => {
     const addedCards = await addNewCards(3);
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(10);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(0);
     subject.addListener(callback);
@@ -390,7 +355,7 @@ describe('AvailableCardWatcher', () => {
 
   it('notifies listeners when there is a new overdue card', async () => {
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(0);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -406,7 +371,7 @@ describe('AvailableCardWatcher', () => {
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 0, overdueCards: 1 }]);
-    expect(await subject.getOverdueCards(10)).toEqual([card.id]);
+    expect(await subject.getOverdueCards()).toEqual([card.id]);
   });
 
   it('notifies listeners when there is a card is no longer overdue', async () => {
@@ -420,7 +385,7 @@ describe('AvailableCardWatcher', () => {
     });
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(0);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -435,7 +400,7 @@ describe('AvailableCardWatcher', () => {
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 0, overdueCards: 0 }]);
-    expect(await subject.getOverdueCards(10)).toEqual([]);
+    expect(await subject.getOverdueCards()).toEqual([]);
   });
 
   it('notifies listeners when an overdue card is deleted', async () => {
@@ -451,7 +416,7 @@ describe('AvailableCardWatcher', () => {
     }
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(10);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -460,7 +425,7 @@ describe('AvailableCardWatcher', () => {
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 0, overdueCards: 2 }]);
-    expect(await subject.getOverdueCards(10)).toEqual([
+    expect(await subject.getOverdueCards()).toEqual([
       addedCards[0].id,
       addedCards[2].id,
     ]);
@@ -477,7 +442,7 @@ describe('AvailableCardWatcher', () => {
     });
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(0);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -492,8 +457,8 @@ describe('AvailableCardWatcher', () => {
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 1, overdueCards: 0 }]);
-    expect(await subject.getOverdueCards(10)).toEqual([]);
-    expect(await subject.getNewCards(10)).toEqual([card.id]);
+    expect(await subject.getOverdueCards()).toEqual([]);
+    expect(await subject.getNewCards()).toEqual([card.id]);
   });
 
   it('notifies listeners when an overdue card changes its overdueness', async () => {
@@ -515,7 +480,7 @@ describe('AvailableCardWatcher', () => {
     });
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    expect(await subject.getOverdueCards(10)).toEqual([cardA.id, cardB.id]);
+    expect(await subject.getOverdueCards()).toEqual([cardA.id, cardB.id]);
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -530,7 +495,7 @@ describe('AvailableCardWatcher', () => {
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 0, overdueCards: 2 }]);
-    expect(await subject.getOverdueCards(10)).toEqual([cardB.id, cardA.id]);
+    expect(await subject.getOverdueCards()).toEqual([cardB.id, cardA.id]);
   });
 
   it('does NOT notify listeners when the overdueness changes in an insignificant way', async () => {
@@ -552,7 +517,7 @@ describe('AvailableCardWatcher', () => {
     });
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    expect(await subject.getOverdueCards(10)).toEqual([cardA.id, cardB.id]);
+    expect(await subject.getOverdueCards()).toEqual([cardA.id, cardB.id]);
 
     const [callback, finished] = waitForCalls(0);
     subject.addListener(callback);
@@ -584,7 +549,7 @@ describe('AvailableCardWatcher', () => {
     });
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(10);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(0);
     subject.addListener(callback);
@@ -604,7 +569,7 @@ describe('AvailableCardWatcher', () => {
 
   it('does NOT notify listeners when a card is added that is neither new nor overdue', async () => {
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(10);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(0);
     subject.addListener(callback);
@@ -628,7 +593,7 @@ describe('AvailableCardWatcher', () => {
 
   it('allows unregistering listeners', async () => {
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    await subject.getNewCards(10);
+    await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(3);
     subject.addListener(callback);
@@ -670,7 +635,7 @@ describe('AvailableCardWatcher', () => {
     }
 
     const subject = new AvailableCardWatcher({ dataStore, reviewTime });
-    let overdueCards = await subject.getOverdueCards(10);
+    let overdueCards = await subject.getOverdueCards();
     expect(overdueCards).toEqual(addedCards.slice(0, 4).map(card => card.id));
 
     const [callback, finished] = waitForCalls(1);
@@ -679,14 +644,10 @@ describe('AvailableCardWatcher', () => {
     // Move the review time 1.5 days forward such that one more card should now
     // become overdue.
     subject.setReviewTime(relativeTime(1.5));
-    overdueCards = await subject.getOverdueCards(10);
+    overdueCards = await subject.getOverdueCards();
     expect(overdueCards).toEqual(addedCards.slice(0, 5).map(card => card.id));
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 0, overdueCards: 5 }]);
   });
-
-  // XXX Go back and drop the limits on the getNewCards and getOverdueCard
-  // functions. It doesn't seem to save us anything really (but we might still
-  // want to copy the array returned by getNewCards just to be safe).
 });

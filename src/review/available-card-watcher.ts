@@ -341,16 +341,15 @@ export class AvailableCardWatcher {
     };
   }
 
-  async getNewCards(limit: number): Promise<Array<string>> {
+  async getNewCards(): Promise<ReadonlyArray<string>> {
     await this.makeSureDataIsReady();
-    return this.newCards.slice(0, limit);
+    return this.newCards.slice();
   }
 
-  async getOverdueCards(limit: number): Promise<Array<string>> {
+  async getOverdueCards(): Promise<Array<string>> {
     await this.makeSureDataIsReady();
     const result = [...this.overdueCards.entries()]
       .sort((a, b) => b[1] - a[1])
-      .slice(0, limit)
       .map(([id, _]) => id);
     return result;
   }
