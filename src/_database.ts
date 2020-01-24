@@ -1,5 +1,5 @@
 import { DataStore } from './store/DataStore';
-import { PROGRESS_PREFIX, CardContent } from './store/CardStore';
+import { PROGRESS_PREFIX } from './store/CardStore';
 
 const dataStore = new DataStore();
 
@@ -206,6 +206,7 @@ function watchForMigrate() {
 interface OldProgressContent {
   level: number;
   due: number;
+  created?: number;
 }
 
 async function migrate() {
@@ -215,53 +216,19 @@ async function migrate() {
     endkey: PROGRESS_PREFIX + '\ufff0',
   });
 
-  const keys = progressDocs.rows
-    .filter(row => !!row.doc)
-    .map(row => row.doc!._id.replace('progress-', 'card-'));
-  const cards = await dataStore.db!.allDocs<CardContent>({
-    include_docs: true,
-    keys,
-  });
-
-  if (cards.rows.length !== progressDocs.rows.length) {
-    throw new Error('Got mismatched number of card records');
-  }
-
   const migration = [];
-
-  for (let i = 0; i < cards.rows.length; i++) {
-    const cardDoc = cards.rows[i].doc;
-    const progressDoc = progressDocs.rows[i].doc;
-    if (!cardDoc || !progressDoc) {
-      continue;
-    }
-    if (typeof cardDoc.created === 'undefined') {
-      console.info(`Filling in created with ${cardDoc.modified}`);
-      cardDoc.created = cardDoc.modified;
-      migration.push(cardDoc);
-    } else if (typeof cardDoc.created === 'string') {
-      console.info(
-        `Replacing ${cardDoc.created} with ${new Date(
-          cardDoc.created
-        ).getTime()}`
-      );
-      cardDoc.created = new Date(cardDoc.created).getTime();
-      migration.push(cardDoc);
-    } else if (typeof cardDoc.created !== 'number' || !cardDoc.created) {
-      console.error('Got odd card');
-      console.error(cardDoc);
-    }
-    if (typeof (progressDoc as any).created !== 'number') {
-      migration.push({
-        ...progressDoc,
-        created: cardDoc.created,
-      });
+  for (const progress of progressDocs.rows) {
+    if (progress.doc && typeof progress.doc.created === 'number') {
+      delete progress.doc.created;
+      migration.push(progress.doc);
     }
   }
 
   try {
     await dataStore.db!.bulkDocs(migration);
-    console.info('Migration completed successfully.');
+    console.info(
+      `Migration completed successfully. ${migration.length} document(s) updated.`
+    );
   } catch (e) {
     console.error(e);
   }
