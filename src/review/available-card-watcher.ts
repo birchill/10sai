@@ -275,13 +275,13 @@ export class AvailableCardWatcher {
 
           const prevNewCards = this.newCards;
           this.newCards = availableCards
-            .filter(([id, progress]) => progress.due === null)
-            .map(([id, progress]) => id);
+            .filter(([_, progress]) => progress.due === null)
+            .map(([id, _]) => id);
 
           const prevOverdueCards = this.overdueCards;
           this.overdueCards = new Map(
             availableCards
-              .filter(([id, progress]) => progress.due !== null)
+              .filter(([_, progress]) => progress.due !== null)
               .map(([id, progress]) => [
                 id,
                 getOverdueness(progress, reviewTimeAsNumber),
@@ -339,7 +339,7 @@ export class AvailableCardWatcher {
     const result = [...this.overdueCards.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit)
-      .map(([id, progress]) => id);
+      .map(([id, _]) => id);
     return result;
   }
 }
