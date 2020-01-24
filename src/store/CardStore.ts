@@ -1,3 +1,5 @@
+import { collate } from 'pouchdb-collate';
+
 import * as views from './views';
 import { AvailableCards, Card, Progress } from '../model';
 import {
@@ -22,9 +24,6 @@ export interface CardContent {
 export interface ProgressContent {
   level: number;
   due: number;
-  // This is duplicated from CardContent so we get all overdue and new cards
-  // without having to query the corresponding card.
-  created: number;
 }
 
 export type CardDoc = PouchDB.Core.Document<CardContent>;
@@ -74,8 +73,6 @@ const parseProgress = (
 ): Progress => ({
   ...stripFields(progress as ExistingProgressDoc, ['_id', '_rev']),
   due: progress.due ? new Date(progress.due) : null,
-  // As with cards, we *don't* bother parsing the 'created' field into a Date
-  // object.
 });
 
 const mergeDocs = (
@@ -251,8 +248,22 @@ export class CardStore {
       use_index: ['progress_by_due_date', 'due'],
     })) as PouchDB.Find.FindResponse<ProgressContent>;
 
-    // Sort by creation date in ascending order
-    findResult.docs.sort((a, b) => a.created - b.created);
+    // Check the records are sorted by ID (which should make creation order)
+    if (process.env.NODE_ENV === 'development') {
+      for (let i = 0; i < findResult.docs.length - 1; i++) {
+        const a = findResult.docs[i];
+        const b = findResult.docs[i + 1];
+        if (collate(a._id, b._id) > 0) {
+          // If we end up failing the following assertion, it probably means we
+          // need to do:
+          //
+          //   findResult.docs.sort((a, b) => collate(a._id, b._id));
+          console.error(
+            `Progress records are not sorted. ${b._id} appears before ${a._id}`
+          );
+        }
+      }
+    }
 
     // Truncate range as needed
     if (
@@ -363,7 +374,6 @@ export class CardStore {
         card.progress && card.progress.due instanceof Date
           ? card.progress.due.getTime()
           : 0,
-      created: now,
     };
 
     return (async function tryPutNewCard(
