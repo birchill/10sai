@@ -274,7 +274,7 @@ describe('sagas:review updateProgress', () => {
     );
   };
 
-  it('stores the updated review time of a passed card', async () => {
+  it('stores the updated due time of a passed card', async () => {
     let state = reducer(undefined, Actions.newReview(2, 3));
 
     const cards = getCards(0, 3, state.review.reviewTime);
@@ -284,16 +284,19 @@ describe('sagas:review updateProgress', () => {
     const action = Actions.passCard();
     state = reducer(state, action);
 
+    const due = new Date(
+      state.review.reviewTime.getTime() +
+        cardToUpdate!.progress.level * MS_PER_DAY
+    );
+    due.setMinutes(0, 0, 0);
+
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
         id: cardToUpdate!.id,
         progress: {
           level: cardToUpdate!.progress.level,
-          due: new Date(
-            state.review.reviewTime.getTime() +
-              cardToUpdate!.progress.level * MS_PER_DAY
-          ),
+          due,
         },
       })
       .run();
@@ -309,11 +312,14 @@ describe('sagas:review updateProgress', () => {
     const action = Actions.failCard();
     state = reducer(state, action);
 
+    const due = new Date(state.review.reviewTime);
+    due.setMinutes(0, 0, 0);
+
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
         id: cardToUpdate!.id,
-        progress: { level: 0, due: state.review.reviewTime },
+        progress: { level: 0, due },
       })
       .run();
   });
@@ -331,16 +337,19 @@ describe('sagas:review updateProgress', () => {
     expect(state.review.currentCard).toBe(null);
     expect(cardInHistory(cardToUpdate!, state)).toBe(true);
 
+    const due = new Date(
+      state.review.reviewTime.getTime() +
+        cardToUpdate!.progress.level * MS_PER_DAY
+    );
+    due.setMinutes(0, 0, 0);
+
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
         id: cardToUpdate!.id,
         progress: {
           level: cardToUpdate!.progress.level,
-          due: new Date(
-            state.review.reviewTime.getTime() +
-              cardToUpdate!.progress.level * MS_PER_DAY
-          ),
+          due,
         },
       })
       .run();
@@ -365,11 +374,14 @@ describe('sagas:review updateProgress', () => {
     expect(state.review.currentCard).toEqual(cardToUpdate);
     expect(cardInHistory(cardToUpdate!, state)).toBe(false);
 
+    const due = new Date(state.review.reviewTime);
+    due.setMinutes(0, 0, 0);
+
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
         id: cardToUpdate!.id,
-        progress: { level: 0, due: state.review.reviewTime },
+        progress: { level: 0, due },
       })
       .run();
   });

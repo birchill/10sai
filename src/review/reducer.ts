@@ -239,9 +239,13 @@ export function review(
         // New / reset card: Review in 12 hours' time
         updatedCard.progress.level = 0.5 * jitter;
       }
-      updatedCard.progress.due = new Date(
+
+      // Calculate the due date rounded down to the previous hour.
+      const dueDate = new Date(
         state.reviewTime.getTime() + updatedCard.progress.level * MS_PER_DAY
       );
+      dueDate.setMinutes(0, 0, 0);
+      updatedCard.progress.due = dueDate;
 
       // Add to end of history
       const history = state.history.slice();
@@ -302,7 +306,9 @@ export function review(
 
       // Update the failed card
       updatedCard.progress.level = 0;
-      updatedCard.progress.due = state.reviewTime;
+      const dueDate = new Date(state.reviewTime);
+      dueDate.setMinutes(0, 0, 0);
+      updatedCard.progress.due = dueDate;
 
       // Add to the end of history
       const history = state.history.slice();

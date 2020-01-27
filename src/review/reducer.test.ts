@@ -400,7 +400,9 @@ describe('reducer:review', () => {
     updatedState = subject(updatedState, Actions.failCard());
 
     expect(updatedState.failed[0].progress.level).toBe(0);
-    expect(updatedState.failed[0].progress.due).toBe(reviewTime);
+    const due = new Date(reviewTime);
+    due.setMinutes(0, 0, 0);
+    expect(updatedState.failed[0].progress.due).toStrictEqual(due);
   });
 
   it('should NOT update the completed count on FAIL_CARD', () => {
