@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import { ReviewPhase } from '../review/ReviewPhase';
+import { ReviewPhase } from '../review/review-phase';
 import * as Actions from '../actions';
 import { AppState } from '../reducer';
 

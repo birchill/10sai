@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 
 import { getScreen } from '../route/selectors';
-import { ReviewPhase } from './ReviewPhase';
+import { ReviewPhase } from './review-phase';
 import { AppState } from '../reducer';
 import { Card, Review } from '../model';
 

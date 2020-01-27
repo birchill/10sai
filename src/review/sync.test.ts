@@ -4,7 +4,7 @@ import { ReviewState } from './reducer';
 import { reducer } from '../reducer';
 import { ReviewAction } from './actions';
 import { getReviewSummary } from './selectors';
-import { ReviewPhase } from './ReviewPhase';
+import { ReviewPhase } from './review-phase';
 import { Card, Review } from '../model';
 import { CardChange } from '../store/CardStore';
 import { DataStore } from '../store/DataStore';

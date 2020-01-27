@@ -12,7 +12,7 @@ import {
 } from './selectors';
 import * as Actions from '../actions';
 import { Review } from '../model';
-import { ReviewPhase } from './ReviewPhase';
+import { ReviewPhase } from './review-phase';
 import { DataStore } from '../store/DataStore';
 import { CardChange } from '../store/CardStore';
 import { AppState } from '../reducer';

@@ -1,4 +1,4 @@
-import { ReviewPhase } from './ReviewPhase';
+import { ReviewPhase } from './review-phase';
 import { Action } from '../actions';
 import { AvailableCards, Card } from '../model';
 import { notes as notesReducer, NoteState } from '../notes/reducer';

@@ -1,7 +1,7 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import * as Actions from '../actions';
 import { getReviewSummary } from './selectors';
-import { ReviewPhase } from './ReviewPhase';
+import { ReviewPhase } from './review-phase';
 import { beforeNotesScreenChange } from '../notes/sagas';
 import { DataStore } from '../store/DataStore';
 import { AppState } from '../reducer';

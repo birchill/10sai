@@ -1,5 +1,5 @@
 import { review as subject, ReviewState } from './reducer';
-import { ReviewPhase } from './ReviewPhase';
+import { ReviewPhase } from './review-phase';
 import * as Actions from '../actions';
 import { getReviewSummary } from './selectors';
 import { generateCards } from '../utils/testing';

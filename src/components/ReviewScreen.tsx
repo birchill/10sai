@@ -1,7 +1,7 @@
 import * as React from 'react';
 import DocumentTitle from 'react-document-title';
 
-import { ReviewPhase } from '../review/ReviewPhase';
+import { ReviewPhase } from '../review/review-phase';
 
 import { Link } from './Link';
 import { LoadingIndicator } from './LoadingIndicator';
