@@ -1,5 +1,4 @@
 import PouchDB from 'pouchdb';
-import { ensureMocksReset, timer } from '@shopify/jest-dom-mocks';
 
 import { AvailableCardWatcher } from './available-card-watcher';
 import { AvailableCards, Card } from '../model';
@@ -14,7 +13,6 @@ describe('AvailableCardWatcher', () => {
   initialReviewTime.setMinutes(0, 0, 0);
 
   beforeEach(() => {
-    ensureMocksReset();
     // Pre-fetching views seems to be a real bottle-neck when running tests
     dataStore = new DataStore({
       pouch: { adapter: 'memory' },
@@ -136,7 +134,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('automatically triggers a query', async () => {
-    timer.mock();
+    jest.useFakeTimers();
 
     const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     expect(subject.isLoading()).toStrictEqual(true);
@@ -155,14 +153,8 @@ describe('AvailableCardWatcher', () => {
     //
     // Instead, we just want to advance timers enough to let the polyfill-ed
     // requestIdleCallback run.
-    //
-    // Note that @shoplify/jest-dom's mock timers is simply a wrapper around
-    // Jest's, and runTimersToTime in Jest has been renamed to
-    // advanceTimersByTime. That's to say, it takes an _offset_, not an absolute
-    // time. The documentation for @shoplify/jest-dom is really poor in this
-    // area and I wasted about 30min on this.
-    timer.runTimersToTime(10 * 1000);
-    timer.restore();
+    jest.advanceTimersByTime(10 * 1000);
+    jest.useRealTimers();
 
     // The above will trigger the query to run, but the query is async so we
     // need to wait a few cycles for it to finish.
@@ -219,7 +211,7 @@ describe('AvailableCardWatcher', () => {
   it('calls all listeners with the initial result', async () => {
     await addNewCards(3);
 
-    timer.mock();
+    jest.useFakeTimers();
     const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     const [callbackA, finishedA] = waitForCalls(1);
@@ -229,8 +221,8 @@ describe('AvailableCardWatcher', () => {
     subject.addListener(callbackB);
 
     // Trigger initial query
-    timer.runTimersToTime(10 * 1000);
-    timer.restore();
+    jest.advanceTimersByTime(10 * 1000);
+    jest.useRealTimers();
     await waitForEvents(20);
 
     const callsA = await finishedA;
@@ -628,8 +620,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('updates the review time each hour', async () => {
-    // TODO: Switch to just using jest's timers
-    timer.mock();
+    jest.useFakeTimers();
 
     const dueTimes = [
       relativeTime(-3),
@@ -664,7 +655,7 @@ describe('AvailableCardWatcher', () => {
     // more card becomes overdue.
     const originalReviewTime = subject.getReviewTime();
     jest.runOnlyPendingTimers();
-    timer.restore();
+    jest.useRealTimers();
 
     // The review time should be updated by one hour.
     const updatedReviewTime = subject.getReviewTime();
