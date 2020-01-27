@@ -12,13 +12,8 @@ import { findIdInArray } from '../utils/search-id-array';
 // so that we can quickly populate new reviews, update existing reviews, and
 // provide status about how many cards are available to review.
 
-// XXX This should also mean we drop the review time from the DataStore and also
-// drop the getOverdueCards / getNewCards / getAvailableCards methods from
-// CardStore/DataStore and leave just a version of getAvailableCards that
-// returhs a list of IDs + progress information.
-
 const enum QueryState {
-  // Waiting to run the query for the current reviewTime
+  // Waiting to run the query
   Waiting,
   // Actually running the query
   Updating,
@@ -53,19 +48,44 @@ export class AvailableCardWatcher {
 
   constructor({
     dataStore,
-    reviewTime,
+    initialReviewTime,
   }: {
     dataStore: DataStore;
-    reviewTime: Date;
+    initialReviewTime?: Date;
   }) {
     this.dataStore = dataStore;
-    this.reviewTime = reviewTime;
+
+    // Round the review time down to the past hour. This just makes debugging
+    // simpler and it shouldn't make a difference to the result since due
+    // times should be rounded to the nearest hour anyway.
+    //
+    // However, if we are _just_ about to tick over to the next hour, then we
+    // want to avoid a situation where by the time the query finishes the hour
+    // has changed since that could introduce an awkward situation where we mark
+    // a card as failed that has a due date in the future (and hence is not
+    // treated as overdue). So we round up if we're only a few seconds away.
+    //
+    // To avoid needing to reproduce this logic when testing, however, we
+    // provide an optional parameter to force the initialReviewTime to some
+    // known value.
+    if (initialReviewTime) {
+      this.reviewTime = new Date(initialReviewTime);
+    } else {
+      const reviewTime = new Date();
+      if (reviewTime.getMinutes() >= 59 && reviewTime.getSeconds() >= 45) {
+        reviewTime.setHours(reviewTime.getHours() + 1, 0, 0, 0);
+      } else {
+        reviewTime.setMinutes(0, 0, 0);
+      }
+      this.reviewTime = reviewTime;
+    }
 
     this.handleChange = this.handleChange.bind(this);
     this.dataStore.changes.on('card', this.handleChange);
 
-    this.triggerInitialQuery();
-    this.triggerDelayedUpdate();
+    this.scheduleInitialQuery();
+    this.scheduleDelayedUpdate();
+    this.scheduleReviewTimeUpdate();
   }
 
   disconnect() {
@@ -170,7 +190,7 @@ export class AvailableCardWatcher {
     }
   }
 
-  private triggerInitialQuery() {
+  private scheduleInitialQuery() {
     if (this.idleQueryHandle !== null) {
       return;
     }
@@ -199,7 +219,7 @@ export class AvailableCardWatcher {
     );
   }
 
-  private triggerDelayedUpdate() {
+  private scheduleDelayedUpdate() {
     // For some reason we seem to hit a case where the index can be stale even
     // several seconds after the app has loaded. I've no idea how PouchDB
     // schedules the updates to the index (people assert that the index is
@@ -209,15 +229,18 @@ export class AvailableCardWatcher {
     // So, the best we can do is simply scheduled another delayed update and
     // hope it picks something up.
     //
-    // This might not be necessary once we switch to the indexeddb adapter.
-    // We'll see.
+    // This might not be necessary once we switch to the indexeddb adapter,
+    // we'll see.
     if (this.timeoutQueryHandle !== null) {
       return;
     }
 
     // We set the timeout for the initial query to be 5s so we should wait at
-    // least 5s. However, 10s seems to long, so let's go with 8s.
-    this.timeoutQueryHandle = self.setTimeout(() => this.runQuery(), 8000);
+    // least 5s.
+    this.timeoutQueryHandle = self.setTimeout(() => {
+      this.timeoutQueryHandle = null;
+      this.runQuery();
+    }, 10000);
   }
 
   private async makeSureDataIsReady() {
@@ -269,6 +292,14 @@ export class AvailableCardWatcher {
   }
 
   private runQuery(): Promise<void> {
+    // Ignore any rejections from the existing promise.
+    if (this.queryPromise) {
+      const existingPromise = this.queryPromise;
+      existingPromise.catch(() => {
+        /* Ignore */
+      });
+    }
+
     // This does NOT update the initial query state since this can be run
     // subsequent to the initial query and we don't need to block on those
     // subsequent updates.
@@ -314,19 +345,42 @@ export class AvailableCardWatcher {
     return this.queryPromise;
   }
 
-  setReviewTime(reviewTime: Date) {
+  private scheduleReviewTimeUpdate() {
+    // We re-run the whole query every hour since review times are rounded to
+    // the nearest hour.
+    const newReviewTime = new Date(this.reviewTime);
+    // TODO: Switch to just using jest's timers
+    newReviewTime.setHours(this.reviewTime.getHours() + 1, 0, 0, 0);
+
+    const delay = newReviewTime.getTime() - Date.now();
+    if (delay <= 0) {
+      console.error(`Got expected delay for updating review time: ${delay}`);
+      return;
+    }
+
+    self.setTimeout(() => {
+      this.setReviewTime(newReviewTime);
+      this.scheduleReviewTimeUpdate();
+    }, delay);
+  }
+
+  private setReviewTime(reviewTime: Date) {
     this.reviewTime = reviewTime;
 
-    // Cancel existing idle callback
+    // Cancel any existing idle callback
     if (this.idleQueryHandle !== null) {
       cancelIdleCallback(this.idleQueryHandle);
       this.idleQueryHandle = null;
     }
 
-    // No need to cancel any setTimeout call since triggerInitialQuery does that
-    // for us.
+    // No need to cancel any setTimeout call since scheduleInitialQuery does
+    // that for us.
 
-    this.triggerInitialQuery();
+    this.scheduleInitialQuery();
+  }
+
+  getReviewTime(): Date {
+    return this.reviewTime;
   }
 
   isLoading(): boolean {
