@@ -222,7 +222,7 @@ export function review(
         // Account for the fact that we might have reviewed this early, or
         // late.
         const reviewedIntervalInDays =
-          (state.reviewTime.getTime() - updatedCard.progress.due.getTime()) /
+          (action.reviewTime.getTime() - updatedCard.progress.due.getTime()) /
             MS_PER_DAY +
           updatedCard.progress.level;
         const nextIntervalInDays = reviewedIntervalInDays * 2 * jitter;
@@ -242,7 +242,7 @@ export function review(
 
       // Calculate the due date rounded down to the previous hour.
       const dueDate = new Date(
-        state.reviewTime.getTime() + updatedCard.progress.level * MS_PER_DAY
+        action.reviewTime.getTime() + updatedCard.progress.level * MS_PER_DAY
       );
       dueDate.setMinutes(0, 0, 0);
       updatedCard.progress.due = dueDate;
@@ -306,7 +306,7 @@ export function review(
 
       // Update the failed card
       updatedCard.progress.level = 0;
-      const dueDate = new Date(state.reviewTime);
+      const dueDate = new Date(action.reviewTime);
       dueDate.setMinutes(0, 0, 0);
       updatedCard.progress.due = dueDate;
 

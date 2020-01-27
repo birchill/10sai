@@ -285,8 +285,7 @@ describe('sagas:review updateProgress', () => {
     state = reducer(state, action);
 
     const due = new Date(
-      state.review.reviewTime.getTime() +
-        cardToUpdate!.progress.level * MS_PER_DAY
+      action.reviewTime.getTime() + cardToUpdate!.progress.level * MS_PER_DAY
     );
     due.setMinutes(0, 0, 0);
 
@@ -312,7 +311,7 @@ describe('sagas:review updateProgress', () => {
     const action = Actions.failCard();
     state = reducer(state, action);
 
-    const due = new Date(state.review.reviewTime);
+    const due = new Date(action.reviewTime);
     due.setMinutes(0, 0, 0);
 
     return expectSaga(updateProgressSaga, dataStore, action)
@@ -338,8 +337,7 @@ describe('sagas:review updateProgress', () => {
     expect(cardInHistory(cardToUpdate!, state)).toBe(true);
 
     const due = new Date(
-      state.review.reviewTime.getTime() +
-        cardToUpdate!.progress.level * MS_PER_DAY
+      action.reviewTime.getTime() + cardToUpdate!.progress.level * MS_PER_DAY
     );
     due.setMinutes(0, 0, 0);
 
@@ -374,7 +372,7 @@ describe('sagas:review updateProgress', () => {
     expect(state.review.currentCard).toEqual(cardToUpdate);
     expect(cardInHistory(cardToUpdate!, state)).toBe(false);
 
-    const due = new Date(state.review.reviewTime);
+    const due = new Date(action.reviewTime);
     due.setMinutes(0, 0, 0);
 
     return expectSaga(updateProgressSaga, dataStore, action)

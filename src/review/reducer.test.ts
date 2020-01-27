@@ -279,13 +279,14 @@ describe('reducer:review', () => {
     cards[0].progress.due = new Date(reviewTime.getTime() - 6 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
-    updatedState = subject(updatedState, Actions.passCard());
+    const passAction = Actions.passCard();
+    updatedState = subject(updatedState, passAction);
 
     // It was 10 days since the card was last reviewed, so the next
     // review time should be in roughly ~20 days time
     expect(updatedState.history[0].progress.due).toBeInDateRange(
-      new Date(reviewTime.getTime() + 16 * MS_PER_DAY),
-      new Date(reviewTime.getTime() + 24 * MS_PER_DAY)
+      new Date(passAction.reviewTime.getTime() + 16 * MS_PER_DAY),
+      new Date(passAction.reviewTime.getTime() + 24 * MS_PER_DAY)
     );
   });
 
@@ -397,10 +398,11 @@ describe('reducer:review', () => {
     cards[0].progress.due = new Date(reviewTime.getTime() - 2 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
-    updatedState = subject(updatedState, Actions.failCard());
+    const failAction = Actions.failCard();
+    updatedState = subject(updatedState, failAction);
 
     expect(updatedState.failed[0].progress.level).toBe(0);
-    const due = new Date(reviewTime);
+    const due = new Date(failAction.reviewTime);
     due.setMinutes(0, 0, 0);
     expect(updatedState.failed[0].progress.due).toStrictEqual(due);
   });

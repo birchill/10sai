@@ -86,6 +86,7 @@ export type ShowAnswerAction = ReturnType<typeof showAnswer>;
 export function failCard() {
   return {
     type: <const>'FAIL_CARD',
+    reviewTime: new Date(),
     // Weight towards zero
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
@@ -96,6 +97,7 @@ export type FailCardAction = ReturnType<typeof failCard>;
 export function passCard() {
   return {
     type: <const>'PASS_CARD',
+    reviewTime: new Date(),
     // Weight towards zero
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
     levelSeed: Math.random(),
