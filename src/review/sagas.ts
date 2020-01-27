@@ -1,5 +1,6 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import * as Actions from '../actions';
+import { AvailableCardWatcher } from './available-card-watcher';
 import { getReviewSummary } from './selectors';
 import { ReviewPhase } from './review-phase';
 import { beforeNotesScreenChange } from '../notes/sagas';
@@ -156,11 +157,14 @@ export function* updateReviewTime(
   yield call([dataStore, 'setReviewTime'], action.reviewTime);
 }
 
-export function* queryAvailableCards(dataStore: DataStore, action: never) {
+export function* queryAvailableCards(
+  availableCardWatcher: AvailableCardWatcher,
+  action: never
+) {
   // TODO: Error handling
   const availableCards: AvailableCards = yield call([
-    dataStore,
-    'getAvailableCards',
+    availableCardWatcher,
+    'getNumAvailableCards',
   ]);
   yield put(Actions.updateAvailableCards(availableCards));
 }
@@ -210,7 +214,13 @@ export function* loadReview(
   );
 }
 
-export function* reviewSagas(dataStore: DataStore) {
+export function* reviewSagas({
+  dataStore,
+  availableCardWatcher,
+}: {
+  dataStore: DataStore;
+  availableCardWatcher: AvailableCardWatcher;
+}) {
   yield* [
     takeEvery(
       ['NEW_REVIEW', 'SET_REVIEW_LIMITS', 'SET_REVIEW_TIME'],
@@ -219,7 +229,11 @@ export function* reviewSagas(dataStore: DataStore) {
     ),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, dataStore),
-    takeLatest(['QUERY_AVAILABLE_CARDS'], queryAvailableCards, dataStore),
+    takeLatest(
+      ['QUERY_AVAILABLE_CARDS'],
+      queryAvailableCards,
+      availableCardWatcher
+    ),
     takeLatest(['LOAD_REVIEW'], loadReview, dataStore),
   ];
 }

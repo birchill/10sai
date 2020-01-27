@@ -16,6 +16,7 @@ import { routeSagas } from './route/sagas';
 import { syncSagas } from './sync/sagas';
 
 import { sync as reviewSync } from './review/sync';
+import { AvailableCardWatcher } from './review/available-card-watcher';
 
 import { DataStore } from './store/DataStore';
 import { SettingChange, Settings } from './store/SettingsStore';
@@ -69,6 +70,7 @@ const dataStore = new DataStore({ reviewTime: getReviewTime() });
 
 syncEditChanges(dataStore, store);
 reviewSync(dataStore, store);
+const availableCardWatcher = new AvailableCardWatcher({ dataStore });
 
 const dispatchSettingUpdates = (settings: Settings) => {
   for (const key in settings) {
@@ -95,7 +97,7 @@ sagaMiddleware.run(function* allSagas() {
   yield all([
     editSagas(dataStore),
     noteSagas(dataStore),
-    reviewSagas(dataStore),
+    reviewSagas({ dataStore, availableCardWatcher }),
     syncSagas(dataStore, store.dispatch.bind(store)),
     routeSagas(),
   ]);
