@@ -1,97 +1,52 @@
 import { AvailableCards, Card, Review } from '../model';
 
-export type ReviewAction =
-  | NewReviewAction
-  | SetReviewLimitAction
-  | SetReviewTimeAction
-  | LoadReviewAction
-  | ReviewLoadedAction
-  | ShowAnswerAction
-  | FailCardAction
-  | PassCardAction
-  | FinishUpdateProgressAction
-  | QueryAvailableCardsAction
-  | UpdateAvailableCardsAction
-  | UpdateReviewCardAction
-  | DeleteReviewCardAction
-  | CancelReviewAction;
-
-export interface NewReviewAction {
-  type: 'NEW_REVIEW';
-  maxCards: number;
-  maxNewCards: number;
-}
-
-export function newReview(
-  maxNewCards: number,
-  maxCards: number
-): NewReviewAction {
+export function newReview(maxNewCards: number, maxCards: number) {
   return {
-    type: 'NEW_REVIEW',
+    type: <const>'NEW_REVIEW',
     maxCards,
     maxNewCards,
   };
 }
 
-export interface SetReviewLimitAction {
-  type: 'SET_REVIEW_LIMIT';
-  maxCards: number;
-  maxNewCards: number;
-}
+export type NewReviewAction = ReturnType<typeof newReview>;
 
-export function setReviewLimit(
-  maxNewCards: number,
-  maxCards: number
-): SetReviewLimitAction {
+export function setReviewLimit(maxNewCards: number, maxCards: number) {
   return {
-    type: 'SET_REVIEW_LIMIT',
+    type: <const>'SET_REVIEW_LIMIT',
     maxCards,
     maxNewCards,
   };
 }
 
-export interface SetReviewTimeAction {
-  type: 'SET_REVIEW_TIME';
-  reviewTime: Date;
-}
+export type SetReviewLimitAction = ReturnType<typeof setReviewLimit>;
 
-export function setReviewTime(reviewTime: Date): SetReviewTimeAction {
+export function setReviewTime(reviewTime: Date) {
   return {
-    type: 'SET_REVIEW_TIME',
+    type: <const>'SET_REVIEW_TIME',
     reviewTime,
   };
 }
 
-export interface LoadReviewAction {
-  type: 'LOAD_REVIEW';
-  review: Review;
-  initialReview?: boolean;
-}
+export type SetReviewTimeAction = ReturnType<typeof setReviewTime>;
 
-export function loadReview(review: Review): LoadReviewAction {
+export function loadReview(review: Review) {
   return {
-    type: 'LOAD_REVIEW',
+    type: <const>'LOAD_REVIEW',
     review,
   };
 }
 
 export function loadInitialReview(review: Review): LoadReviewAction {
   return {
-    type: 'LOAD_REVIEW',
+    type: <const>'LOAD_REVIEW',
     review,
     initialReview: true,
   };
 }
 
-export interface ReviewLoadedAction {
-  type: 'REVIEW_LOADED';
-  cards: Card[];
-  history?: Card[];
-  failed?: Card[];
-  initialReview: boolean;
-  currentCardSeed: number;
-  nextCardSeed: number;
-}
+export type LoadReviewAction = ReturnType<typeof loadReview> & {
+  initialReview?: boolean;
+};
 
 // How much to weight seeds towards zero.
 const WEIGHT_FACTOR = 1.4;
@@ -101,9 +56,9 @@ export function reviewLoaded(
   history?: Card[],
   failed?: Card[],
   initialReview: boolean = false
-): ReviewLoadedAction {
+) {
   return {
-    type: 'REVIEW_LOADED',
+    type: <const>'REVIEW_LOADED',
     cards,
     history,
     failed,
@@ -120,109 +75,104 @@ export function reviewLoaded(
   };
 }
 
-export interface ShowAnswerAction {
-  type: 'SHOW_ANSWER';
+export type ReviewLoadedAction = ReturnType<typeof reviewLoaded>;
+
+export function showAnswer() {
+  return { type: <const>'SHOW_ANSWER' };
 }
 
-export function showAnswer(): ShowAnswerAction {
-  return { type: 'SHOW_ANSWER' };
-}
+export type ShowAnswerAction = ReturnType<typeof showAnswer>;
 
-export interface FailCardAction {
-  type: 'FAIL_CARD';
-  nextCardSeed: number;
-}
-
-export function failCard(): FailCardAction {
+export function failCard() {
   return {
-    type: 'FAIL_CARD',
+    type: <const>'FAIL_CARD',
     // Weight towards zero
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
 }
 
-export interface PassCardAction {
-  type: 'PASS_CARD';
-  nextCardSeed: number;
-  levelSeed: number;
-}
+export type FailCardAction = ReturnType<typeof failCard>;
 
-export function passCard(): PassCardAction {
+export function passCard() {
   return {
-    type: 'PASS_CARD',
+    type: <const>'PASS_CARD',
     // Weight towards zero
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
     levelSeed: Math.random(),
   };
 }
 
-export interface FinishUpdateProgressAction {
-  type: 'FINISH_UPDATE_PROGRESS';
-}
+export type PassCardAction = ReturnType<typeof passCard>;
 
-export function finishUpdateProgress(): FinishUpdateProgressAction {
+export function finishUpdateProgress() {
   return {
-    type: 'FINISH_UPDATE_PROGRESS',
+    type: <const>'FINISH_UPDATE_PROGRESS',
   };
 }
 
-export interface QueryAvailableCardsAction {
-  type: 'QUERY_AVAILABLE_CARDS';
-}
+export type FinishUpdateProgressAction = ReturnType<
+  typeof finishUpdateProgress
+>;
 
-export function queryAvailableCards(): QueryAvailableCardsAction {
+export function queryAvailableCards() {
   return {
-    type: 'QUERY_AVAILABLE_CARDS',
+    type: <const>'QUERY_AVAILABLE_CARDS',
   };
 }
 
-export interface UpdateAvailableCardsAction {
-  type: 'UPDATE_AVAILABLE_CARDS';
-  availableCards: AvailableCards;
-}
+export type QueryAvailableCardsAction = ReturnType<typeof queryAvailableCards>;
 
-export function updateAvailableCards(
-  availableCards: AvailableCards
-): UpdateAvailableCardsAction {
+export function updateAvailableCards(availableCards: AvailableCards) {
   return {
-    type: 'UPDATE_AVAILABLE_CARDS',
+    type: <const>'UPDATE_AVAILABLE_CARDS',
     availableCards,
   };
 }
 
-export interface UpdateReviewCardAction {
-  type: 'UPDATE_REVIEW_CARD';
-  card: Card;
-}
+export type UpdateAvailableCardsAction = ReturnType<
+  typeof updateAvailableCards
+>;
 
-export function updateReviewCard(card: Card): UpdateReviewCardAction {
+export function updateReviewCard(card: Card) {
   return {
-    type: 'UPDATE_REVIEW_CARD',
+    type: <const>'UPDATE_REVIEW_CARD',
     card,
   };
 }
 
-export interface DeleteReviewCardAction {
-  type: 'DELETE_REVIEW_CARD';
-  id: string;
-  nextCardSeed: number;
-}
+export type UpdateReviewCardAction = ReturnType<typeof updateReviewCard>;
 
-export function deleteReviewCard(id: string): DeleteReviewCardAction {
+export function deleteReviewCard(id: string) {
   return {
-    type: 'DELETE_REVIEW_CARD',
+    type: <const>'DELETE_REVIEW_CARD',
     id,
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
 }
 
-export interface CancelReviewAction {
-  type: 'CANCEL_REVIEW';
+export type DeleteReviewCardAction = ReturnType<typeof deleteReviewCard>;
+
+export function cancelReview() {
+  return { type: <const>'CANCEL_REVIEW' };
 }
 
-export function cancelReview(): CancelReviewAction {
-  return { type: 'CANCEL_REVIEW' };
-}
+export type CancelReviewAction = ReturnType<typeof cancelReview>;
+
+export type ReviewAction =
+  | NewReviewAction
+  | SetReviewLimitAction
+  | SetReviewTimeAction
+  | LoadReviewAction
+  | ReviewLoadedAction
+  | ShowAnswerAction
+  | FailCardAction
+  | PassCardAction
+  | FinishUpdateProgressAction
+  | QueryAvailableCardsAction
+  | UpdateAvailableCardsAction
+  | UpdateReviewCardAction
+  | DeleteReviewCardAction
+  | CancelReviewAction;
 
 // TODO: failUpdateProgress
 // TODO: failLoadReview (rename reviewLoaded to finishLoadReview?)
