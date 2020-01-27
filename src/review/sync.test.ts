@@ -1,5 +1,6 @@
 import { sync as subject } from './sync';
 import { queryAvailableCards, updateReviewCard } from './actions';
+import { AvailableCardWatcher } from './available-card-watcher';
 import { ReviewState } from './reducer';
 import { reducer } from '../reducer';
 import { ReviewAction } from './actions';
@@ -98,12 +99,22 @@ jest.mock('../route/selectors', () => ({
 }));
 
 describe('review:sync', () => {
-  let dataStore: MockDataStore;
-  let store: MockStore;
+  let mockDataStore: MockDataStore;
+  let dataStore: DataStore;
+
+  let mockStore: MockStore;
+  let store: Store;
+
+  let availableCardWatcher: AvailableCardWatcher;
 
   beforeEach(() => {
-    dataStore = new MockDataStore();
-    store = new MockStore();
+    mockDataStore = new MockDataStore();
+    dataStore = (mockDataStore as unknown) as DataStore;
+
+    mockStore = new MockStore();
+    store = (mockStore as unknown) as Store;
+
+    availableCardWatcher = new AvailableCardWatcher({ dataStore });
 
     // I couldn't work out how to get jest.MockImplementation to work for
     // this and ultimately I figured it's not worth the time.
@@ -113,19 +124,18 @@ describe('review:sync', () => {
 
   describe('available cards', () => {
     it('triggers an update immediately when cards are needed and there are none', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
+      subject({ dataStore, store, availableCardWatcher });
+      mockStore.__update({
         screen: 'review',
         review: initialState.review,
       });
 
-      expect(store.actions).toEqual([queryAvailableCards()]);
-      expect(setTimeout).toHaveBeenCalledTimes(0);
+      expect(mockStore.actions).toEqual([queryAvailableCards()]);
     });
 
     it('triggers an update immediately when cards are newly-needed due to a state change, even if there are some', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
+      subject({ dataStore, store, availableCardWatcher });
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -133,87 +143,12 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toEqual([queryAvailableCards()]);
-      expect(setTimeout).toHaveBeenCalledTimes(0);
-    });
-
-    it('triggers a delayed update when a card is added', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
-        screen: 'review',
-        review: initialState.review,
-      });
-      expect(store.actions).toEqual([queryAvailableCards()]);
-      expect(setTimeout).toHaveBeenCalledTimes(0);
-
-      dataStore.__triggerChange('card', { card: {} as Card });
-
-      expect(setTimeout).toHaveBeenCalledTimes(1);
-
-      jest.runAllTimers();
-      expect(store.actions).toEqual([
-        queryAvailableCards(),
-        queryAvailableCards(),
-      ]);
-    });
-
-    it('cancels a delayed update when cards are needed immediately', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
-        screen: 'review',
-        review: {
-          ...initialState.review,
-          availableCards: { newCards: 2, overdueCards: 3 },
-        },
-      });
-      expect(store.actions).toEqual([queryAvailableCards()]);
-
-      // Trigger a delayed update
-      dataStore.__triggerChange('card', { card: {} as Card });
-      expect(setTimeout).toHaveBeenCalledTimes(1);
-
-      // Then trigger an immediate update
-      store.__update({
-        screen: 'review',
-        review: {
-          ...initialState.review,
-          availableCards: undefined,
-        },
-      });
-      expect(clearTimeout).toHaveBeenCalledTimes(1);
-      expect(store.actions).toEqual([
-        queryAvailableCards(),
-        queryAvailableCards(),
-      ]);
-    });
-
-    it('cancels a delayed update when cards are no longer needed', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
-        screen: 'review',
-        review: {
-          ...initialState.review,
-          availableCards: { newCards: 2, overdueCards: 3 },
-        },
-      });
-      expect(store.actions).toEqual([queryAvailableCards()]);
-
-      // Trigger a delayed update
-      dataStore.__triggerChange('card', { card: {} as Card });
-      expect(setTimeout).toHaveBeenCalledTimes(1);
-
-      // Then change screen
-      store.__update({
-        screen: 'home',
-        review: initialState.review,
-      });
-      expect(clearTimeout).toHaveBeenCalledTimes(1);
-      expect(store.actions).toEqual([queryAvailableCards()]);
+      expect(mockStore.actions).toEqual([queryAvailableCards()]);
     });
 
     it('does NOT trigger an update when cards are already being loaded', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
+      subject({ dataStore, store, availableCardWatcher });
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -221,13 +156,12 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toEqual([]);
-      expect(setTimeout).toHaveBeenCalledTimes(0);
+      expect(mockStore.actions).toEqual([]);
     });
 
     it('does NOT trigger an update when the progress is being saved', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
+      subject({ dataStore, store, availableCardWatcher });
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -235,55 +169,39 @@ describe('review:sync', () => {
         },
       });
 
-      expect(store.actions).toEqual([]);
-      expect(setTimeout).toHaveBeenCalledTimes(0);
+      expect(mockStore.actions).toEqual([]);
     });
 
     it('does NOT trigger an update when a card is added when not in an appropriate state', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
+      subject({ dataStore, store, availableCardWatcher });
+      mockStore.__update({
         screen: 'home',
         review: initialState.review,
       });
-      expect(store.actions).toEqual([]);
+      expect(mockStore.actions).toEqual([]);
       expect(setTimeout).toHaveBeenCalledTimes(0);
 
-      dataStore.__triggerChange('card', { card: {} as Card });
-
-      expect(store.actions).toEqual([]);
-      expect(setTimeout).toHaveBeenCalledTimes(0);
-    });
-
-    it('batches updates from multiple card changes', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
-        screen: 'review',
-        review: initialState.review,
+      mockDataStore.__triggerChange('card', {
+        card: { progress: { due: new Date() } } as Card,
       });
-      expect(store.actions).toEqual([queryAvailableCards()]);
 
-      dataStore.__triggerChange('card', { card: {} as Card });
-      dataStore.__triggerChange('card', { card: {} as Card });
-      dataStore.__triggerChange('card', { card: {} as Card });
-
-      jest.runAllTimers();
-      expect(store.actions).toEqual([
-        queryAvailableCards(),
-        queryAvailableCards(),
-      ]);
+      expect(mockStore.actions).toEqual([]);
     });
   });
 
   describe('review cards', () => {
     it('triggers an update when the current card is updated', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
       const card: Card = {
         id: 'abc',
         front: 'Question',
         back: 'Answer',
+        progress: {
+          due: new Date(),
+        },
       } as Card;
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -295,20 +213,23 @@ describe('review:sync', () => {
         ...card,
         front: 'Updated question',
       };
-      dataStore.__triggerChange('card', { card: updatedCard });
+      mockDataStore.__triggerChange('card', { card: updatedCard });
 
-      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
+      expect(mockStore.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
     it('triggers an update when an unreviewed card is updated', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
       const card = {
         id: 'abc',
         front: 'Question',
         back: 'Answer',
+        progress: {
+          due: new Date(),
+        },
       } as Card;
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -320,20 +241,23 @@ describe('review:sync', () => {
         ...card,
         front: 'Updated question',
       };
-      dataStore.__triggerChange('card', { card: updatedCard });
+      mockDataStore.__triggerChange('card', { card: updatedCard });
 
-      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
+      expect(mockStore.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
     it('triggers an update when a failed card is updated', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
       const card = {
         id: 'abc',
         front: 'Question',
         back: 'Answer',
+        progress: {
+          due: new Date(),
+        },
       } as Card;
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -345,20 +269,23 @@ describe('review:sync', () => {
         ...card,
         front: 'Updated question',
       };
-      dataStore.__triggerChange('card', { card: updatedCard });
+      mockDataStore.__triggerChange('card', { card: updatedCard });
 
-      expect(store.actions).toContainEqual(updateReviewCard(updatedCard));
+      expect(mockStore.actions).toContainEqual(updateReviewCard(updatedCard));
     });
 
     it('triggers an update when the current card is deleted', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
       const card = {
         id: 'abc',
         front: 'Question',
         back: 'Answer',
+        progress: {
+          due: new Date(),
+        },
       } as Card;
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -370,25 +297,28 @@ describe('review:sync', () => {
         ...card,
         front: 'Updated question',
       };
-      dataStore.__triggerChange('card', {
+      mockDataStore.__triggerChange('card', {
         deleted: true,
         card: updatedCard,
       });
 
-      expect(store.actions).toContainEqual(
+      expect(mockStore.actions).toContainEqual(
         expect.objectContaining({ type: 'DELETE_REVIEW_CARD', id: 'abc' })
       );
     });
 
     it('does NOT trigger an update when there is no change to the card', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
       const card = {
         id: 'abc',
         front: 'Question',
         back: 'Answer',
+        progress: {
+          due: new Date(),
+        },
       } as Card;
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -396,20 +326,23 @@ describe('review:sync', () => {
         },
       });
 
-      dataStore.__triggerChange('card', { card });
+      mockDataStore.__triggerChange('card', { card });
 
-      expect(store.actions).not.toContainEqual(updateReviewCard(card));
+      expect(mockStore.actions).not.toContainEqual(updateReviewCard(card));
     });
 
     it('does NOT trigger an update when an unrelated card is updated', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
       const card = {
         id: 'abc',
         front: 'Question',
         back: 'Answer',
+        progress: {
+          due: new Date(),
+        },
       } as Card;
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -417,25 +350,28 @@ describe('review:sync', () => {
         },
       });
 
-      dataStore.__triggerChange('card', {
+      mockDataStore.__triggerChange('card', {
         card: {
           ...card,
           id: 'xyz',
         },
       });
 
-      expect(store.actions).not.toContainEqual(updateReviewCard(card));
+      expect(mockStore.actions).not.toContainEqual(updateReviewCard(card));
     });
 
     it('does NOT trigger an update when an unrelated card is deleted', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
       const card = {
         id: 'abc',
         front: 'Question',
         back: 'Answer',
+        progress: {
+          due: new Date(),
+        },
       } as Card;
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -443,7 +379,7 @@ describe('review:sync', () => {
         },
       });
 
-      dataStore.__triggerChange('card', {
+      mockDataStore.__triggerChange('card', {
         card: {
           ...card,
           id: 'xyz',
@@ -451,7 +387,7 @@ describe('review:sync', () => {
         deleted: true,
       });
 
-      expect(store.actions).not.toContainEqual(
+      expect(mockStore.actions).not.toContainEqual(
         expect.objectContaining({ type: 'DELETE_REVIEW_CARD', id: 'xyz' })
       );
     });
@@ -459,9 +395,9 @@ describe('review:sync', () => {
 
   describe('review state', () => {
     it('triggers a sync when the review has changed', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: initialState.review,
       });
@@ -475,30 +411,30 @@ describe('review:sync', () => {
         failed: ['def'],
       };
 
-      dataStore.__triggerChange('review', review as Review);
-      expect(store.actions).toContainEqual(
+      mockDataStore.__triggerChange('review', review as Review);
+      expect(mockStore.actions).toContainEqual(
         expect.objectContaining({ type: 'LOAD_REVIEW', review })
       );
     });
 
     it('does NOT trigger a sync when nothing has changed', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
+      subject({ dataStore, store, availableCardWatcher });
 
-      store.__update({
+      mockStore.__update({
         screen: 'review',
         review: initialState.review,
       });
       const reviewSummary = getReviewSummary(initialState);
 
-      dataStore.__triggerChange('review', reviewSummary);
-      expect(store.actions).not.toContainEqual(
+      mockDataStore.__triggerChange('review', reviewSummary);
+      expect(mockStore.actions).not.toContainEqual(
         expect.objectContaining({ type: 'LOAD_REVIEW', review: reviewSummary })
       );
     });
 
     it('cancels the review when the review is deleted', () => {
-      subject((dataStore as unknown) as DataStore, (store as unknown) as Store);
-      store.__update({
+      subject({ dataStore, store, availableCardWatcher });
+      mockStore.__update({
         screen: 'review',
         review: {
           ...initialState.review,
@@ -506,9 +442,9 @@ describe('review:sync', () => {
         },
       });
 
-      dataStore.__triggerChange('review', null);
+      mockDataStore.__triggerChange('review', null);
 
-      expect(store.actions).toContainEqual(
+      expect(mockStore.actions).toContainEqual(
         expect.objectContaining({ type: 'CANCEL_REVIEW' })
       );
     });

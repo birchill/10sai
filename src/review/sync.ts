@@ -10,24 +10,24 @@ import {
   getSavingProgress,
   getReviewPhase,
 } from './selectors';
+import { AvailableCardWatcher } from './available-card-watcher';
 import * as Actions from '../actions';
-import { Review } from '../model';
+import { AvailableCards, Review } from '../model';
 import { ReviewPhase } from './review-phase';
 import { DataStore } from '../store/DataStore';
 import { CardChange } from '../store/CardStore';
 import { AppState } from '../reducer';
 
-// In some circumstances we delay querying available cards. We do this so that
-// changes that occur in rapid succession are batched, but also because when
-// cards are, for example, deleted remotely and replicated, it takes some time
-// in between when PouchDB reports the change and when it updates views that
-// reference them. I'm not sure what exactly is the process here but 3s seems to
-// be enough, normally, for views to be updated.
-const QUERY_AVAILABLE_CARDS_DELAY = 3000;
-
-export function sync(dataStore: DataStore, store: Store<AppState>) {
+export function sync({
+  dataStore,
+  store,
+  availableCardWatcher,
+}: {
+  dataStore: DataStore;
+  store: Store<AppState>;
+  availableCardWatcher: AvailableCardWatcher;
+}) {
   let needAvailableCards: boolean;
-  let delayedCallback: number | undefined;
 
   store.subscribe(() => {
     const state = store.getState();
@@ -43,11 +43,6 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
       return;
     }
 
-    if (delayedCallback) {
-      clearTimeout(delayedCallback);
-      delayedCallback = undefined;
-    }
-
     needAvailableCards = newNeedAvailableCards;
 
     if (!needAvailableCards) {
@@ -57,25 +52,13 @@ export function sync(dataStore: DataStore, store: Store<AppState>) {
     store.dispatch(Actions.queryAvailableCards());
   });
 
-  dataStore.changes.on('card', (change: CardChange) => {
-    // Update available cards if needed
+  availableCardWatcher.addListener((availableCards: AvailableCards) => {
     if (needAvailableCards) {
-      if (delayedCallback) {
-        clearTimeout(delayedCallback);
-      }
-
-      // We could try to be more clever and ignore changes that are to the
-      // content of cards (i.e. not additions/removals or changes to progress)
-      // but in future we anticipate having review criteria that depend on the
-      // content of cards so for now its simplest just to re-query cards when
-      // anything changes. Since we debounce and delay these updates, and only
-      // do them when we're looking at the review screen it should be fine.
-      delayedCallback = window.setTimeout(() => {
-        store.dispatch(Actions.queryAvailableCards());
-        delayedCallback = undefined;
-      }, QUERY_AVAILABLE_CARDS_DELAY);
+      store.dispatch(Actions.updateAvailableCards(availableCards));
     }
+  });
 
+  dataStore.changes.on('card', (change: CardChange) => {
     const reviewCard = getReviewCards(store.getState()).find(
       card => card.id === change.card.id
     );

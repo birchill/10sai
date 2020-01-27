@@ -67,10 +67,10 @@ const getReviewTime = (): Date => {
 };
 
 const dataStore = new DataStore({ reviewTime: getReviewTime() });
+const availableCardWatcher = new AvailableCardWatcher({ dataStore });
 
 syncEditChanges(dataStore, store);
-reviewSync(dataStore, store);
-const availableCardWatcher = new AvailableCardWatcher({ dataStore });
+reviewSync({ dataStore, store, availableCardWatcher });
 
 const dispatchSettingUpdates = (settings: Settings) => {
   for (const key in settings) {
