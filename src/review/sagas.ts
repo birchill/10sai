@@ -7,7 +7,7 @@ import { beforeNotesScreenChange } from '../notes/sagas';
 import { DataStore } from '../store/DataStore';
 import { AppState } from '../reducer';
 import { ReviewState } from './reducer';
-import { AvailableCards, Card } from '../model';
+import { Card } from '../model';
 
 // Which cards to use when we update the heap.
 //
@@ -157,18 +157,6 @@ export function* updateReviewTime(
   yield call([dataStore, 'setReviewTime'], action.reviewTime);
 }
 
-export function* queryAvailableCards(
-  availableCardWatcher: AvailableCardWatcher,
-  action: never
-) {
-  // TODO: Error handling
-  const availableCards: AvailableCards = yield call([
-    availableCardWatcher,
-    'getNumAvailableCards',
-  ]);
-  yield put(Actions.updateAvailableCards(availableCards));
-}
-
 export function* loadReview(
   dataStore: DataStore,
   action: Actions.LoadReviewAction
@@ -229,11 +217,6 @@ export function* reviewSagas({
     ),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, dataStore),
-    takeLatest(
-      ['QUERY_AVAILABLE_CARDS'],
-      queryAvailableCards,
-      availableCardWatcher
-    ),
     takeLatest(['LOAD_REVIEW'], loadReview, dataStore),
   ];
 }

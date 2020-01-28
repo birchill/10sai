@@ -42,8 +42,6 @@ export const getNeedAvailableCards = (state: AppState) =>
 
 export const getAvailableCards = (state: AppState) =>
   state.review.availableCards;
-export const getLoadingAvailableCards = (state: AppState) =>
-  state.review.loadingAvailableCards;
 export const getSavingProgress = (state: AppState) =>
   state.review.savingProgress;
 

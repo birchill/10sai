@@ -3,7 +3,6 @@ import { Store } from 'redux';
 
 import {
   getAvailableCards,
-  getLoadingAvailableCards,
   getNeedAvailableCards,
   getReviewCards,
   getReviewSummary,
@@ -28,11 +27,12 @@ export function sync({
   availableCardWatcher: AvailableCardWatcher;
 }) {
   let needAvailableCards: boolean;
+  let fetchingAvailableCards: boolean = false;
 
   store.subscribe(() => {
     const state = store.getState();
 
-    if (getLoadingAvailableCards(state) || getSavingProgress(state)) {
+    if (fetchingAvailableCards || getSavingProgress(state)) {
       return;
     }
 
@@ -49,7 +49,15 @@ export function sync({
       return;
     }
 
-    store.dispatch(Actions.queryAvailableCards());
+    fetchingAvailableCards = true;
+    availableCardWatcher
+      .getNumAvailableCards()
+      .then(availableCards => {
+        store.dispatch(Actions.updateAvailableCards(availableCards));
+      })
+      .finally(() => {
+        fetchingAvailableCards = false;
+      });
   });
 
   availableCardWatcher.addListener((availableCards: AvailableCards) => {

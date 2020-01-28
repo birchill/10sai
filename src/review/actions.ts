@@ -116,14 +116,6 @@ export type FinishUpdateProgressAction = ReturnType<
   typeof finishUpdateProgress
 >;
 
-export function queryAvailableCards() {
-  return {
-    type: <const>'QUERY_AVAILABLE_CARDS',
-  };
-}
-
-export type QueryAvailableCardsAction = ReturnType<typeof queryAvailableCards>;
-
 export function updateAvailableCards(availableCards: AvailableCards) {
   return {
     type: <const>'UPDATE_AVAILABLE_CARDS',
@@ -170,7 +162,6 @@ export type ReviewAction =
   | FailCardAction
   | PassCardAction
   | FinishUpdateProgressAction
-  | QueryAvailableCardsAction
   | UpdateAvailableCardsAction
   | UpdateReviewCardAction
   | DeleteReviewCardAction

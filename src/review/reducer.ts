@@ -63,9 +63,6 @@ export interface ReviewState {
   // should wait.
   savingProgress: boolean;
 
-  // True if we are currently refreshing the set of available cards.
-  loadingAvailableCards: boolean;
-
   // Notes relevant to the current card
   notes: Array<NoteState>;
 }
@@ -84,7 +81,6 @@ const initialState: ReviewState = {
   nextCard: null,
   availableCards: undefined,
   savingProgress: false,
-  loadingAvailableCards: false,
   notes: [],
 };
 
@@ -345,29 +341,10 @@ export function review(
       };
     }
 
-    case 'QUERY_AVAILABLE_CARDS': {
-      return {
-        ...state,
-        loadingAvailableCards: true,
-      };
-    }
-
     case 'UPDATE_AVAILABLE_CARDS': {
-      // If we're mid-review and we get a stray update to the available cards
-      // we should be careful to clear availableCards so that when we actually
-      // need them, we immediately fetch them.
-      if (![ReviewPhase.Idle, ReviewPhase.Complete].includes(state.phase)) {
-        return {
-          ...state,
-          availableCards: undefined,
-          loadingAvailableCards: false,
-        };
-      }
-
       return {
         ...state,
         availableCards: action.availableCards,
-        loadingAvailableCards: false,
       };
     }
 

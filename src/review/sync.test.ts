@@ -1,5 +1,5 @@
 import { sync as subject } from './sync';
-import { queryAvailableCards, updateReviewCard } from './actions';
+import { updateReviewCard } from './actions';
 import { AvailableCardWatcher } from './available-card-watcher';
 import { ReviewState } from './reducer';
 import { reducer } from '../reducer';
@@ -46,6 +46,10 @@ class MockDataStore {
 
   async getReview() {
     return null;
+  }
+
+  async getAvailableCards2(options: { reviewTime: Date }): Promise<Array<any>> {
+    return [];
   }
 }
 
@@ -124,16 +128,20 @@ describe('review:sync', () => {
 
   describe('available cards', () => {
     it('triggers an update immediately when cards are needed and there are none', () => {
+      const spy = jest.spyOn(availableCardWatcher, 'getNumAvailableCards');
+
       subject({ dataStore, store, availableCardWatcher });
       mockStore.__update({
         screen: 'review',
         review: initialState.review,
       });
 
-      expect(mockStore.actions).toEqual([queryAvailableCards()]);
+      expect(spy).toHaveBeenCalled();
     });
 
     it('triggers an update immediately when cards are newly-needed due to a state change, even if there are some', () => {
+      const spy = jest.spyOn(availableCardWatcher, 'getNumAvailableCards');
+
       subject({ dataStore, store, availableCardWatcher });
       mockStore.__update({
         screen: 'review',
@@ -143,23 +151,12 @@ describe('review:sync', () => {
         },
       });
 
-      expect(mockStore.actions).toEqual([queryAvailableCards()]);
-    });
-
-    it('does NOT trigger an update when cards are already being loaded', () => {
-      subject({ dataStore, store, availableCardWatcher });
-      mockStore.__update({
-        screen: 'review',
-        review: {
-          ...initialState.review,
-          loadingAvailableCards: true,
-        },
-      });
-
-      expect(mockStore.actions).toEqual([]);
+      expect(spy).toHaveBeenCalled();
     });
 
     it('does NOT trigger an update when the progress is being saved', () => {
+      const spy = jest.spyOn(availableCardWatcher, 'getNumAvailableCards');
+
       subject({ dataStore, store, availableCardWatcher });
       mockStore.__update({
         screen: 'review',
@@ -169,22 +166,24 @@ describe('review:sync', () => {
         },
       });
 
-      expect(mockStore.actions).toEqual([]);
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('does NOT trigger an update when a card is added when not in an appropriate state', () => {
+      const spy = jest.spyOn(availableCardWatcher, 'getNumAvailableCards');
+
       subject({ dataStore, store, availableCardWatcher });
       mockStore.__update({
         screen: 'home',
         review: initialState.review,
       });
-      expect(mockStore.actions).toEqual([]);
-      expect(setTimeout).toHaveBeenCalledTimes(0);
+      expect(spy).not.toHaveBeenCalled();
 
       mockDataStore.__triggerChange('card', {
         card: { progress: { due: new Date() } } as Card,
       });
 
+      expect(spy).not.toHaveBeenCalled();
       expect(mockStore.actions).toEqual([]);
     });
   });
