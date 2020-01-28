@@ -148,13 +148,6 @@ export function* updateProgress(
   }
 }
 
-export function* updateReviewTime(
-  dataStore: DataStore,
-  action: Actions.SetReviewTimeAction
-) {
-  yield call([dataStore, 'setReviewTime'], action.reviewTime);
-}
-
 export function* loadReview(
   dataStore: DataStore,
   availableCardWatcher: AvailableCardWatcher,
@@ -172,15 +165,6 @@ export function* loadReview(
     [dataStore, 'getCardsById'],
     action.review.failed
   );
-
-  // Update review time if necessary (and before we query for overdue cards)
-  if (
-    action.review.reviewTime &&
-    action.review.reviewTime instanceof Date &&
-    action.review.reviewTime.getTime() !== dataStore.reviewTime.getTime()
-  ) {
-    yield call([dataStore, 'setReviewTime'], action.review.reviewTime);
-  }
 
   // Fetch and update reviewInfo so that getCardsForHeap knows how many slots it
   // needs to fill.
@@ -216,7 +200,6 @@ export function* reviewSagas({
       availableCardWatcher
     ),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
-    takeEvery(['SET_REVIEW_TIME'], updateReviewTime, dataStore),
     takeLatest(['LOAD_REVIEW'], loadReview, dataStore, availableCardWatcher),
   ];
 }

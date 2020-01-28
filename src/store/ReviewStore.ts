@@ -2,7 +2,6 @@ import { Review } from '../model';
 import { stripFields } from '../utils/type-helpers';
 
 export interface ReviewContent {
-  reviewTime: number;
   maxCards: number;
   maxNewCards: number;
   completed: number;
@@ -36,7 +35,6 @@ const parseReview = (
       '_attachments',
       'finished',
     ]),
-    reviewTime: new Date(review.reviewTime),
   };
 
   return result;
@@ -76,7 +74,6 @@ export class ReviewStore {
     const reviewToPut: PouchDB.Core.Document<ReviewContent> = {
       ...review,
       _id: REVIEW_ID,
-      reviewTime: review.reviewTime.getTime(),
       finished: false,
     };
 
@@ -136,10 +133,6 @@ export class ReviewStore {
     };
 
     await this.db.resolveConflicts(result, (a, b) => {
-      if (a.reviewTime !== b.reviewTime) {
-        return a.reviewTime > b.reviewTime ? a : b;
-      }
-
       return completeness(a) >= completeness(b) ? a : b;
     });
   }

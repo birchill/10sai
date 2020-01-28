@@ -15,23 +15,14 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 function newReview(
   maxNewCards: number,
   maxCards: number
-): [ReviewState, Card[], Date, AppState] {
+): [ReviewState, Card[], AppState] {
   const initialState = reducer(
     undefined,
     Actions.newReview(maxNewCards, maxCards)
   );
-  const cards = generateCards(
-    maxNewCards,
-    maxCards,
-    initialState.review.reviewTime.getTime()
-  );
+  const cards = generateCards(maxNewCards, maxCards);
 
-  return [
-    initialState.review,
-    cards,
-    initialState.review.reviewTime,
-    initialState,
-  ];
+  return [initialState.review, cards, initialState];
 }
 
 // Wrappers for action creators that also set the random seed values
@@ -75,30 +66,13 @@ describe('reducer:review', () => {
   });
 
   it('should go to the loading state on SET_REVIEW_LIMIT', () => {
-    const [initialState, , reviewTime] = newReview(1, 3);
+    const [initialState] = newReview(1, 3);
 
     const updatedState = subject(initialState, Actions.setReviewLimit(2, 10));
 
     expect(updatedState.phase).toBe(ReviewPhase.Loading);
     expect(updatedState.maxNewCards).toBe(2);
     expect(updatedState.maxCards).toBe(10);
-    expect(updatedState.reviewTime).toBe(reviewTime);
-  });
-
-  it('should update the review time on SET_REVIEW_TIME', () => {
-    const [initialState, , initialReviewTime] = newReview(1, 3);
-    const newReviewTime = new Date(
-      initialReviewTime.getTime() + 1 * MS_PER_DAY
-    );
-
-    const updatedState = subject(
-      initialState,
-      Actions.setReviewTime(newReviewTime)
-    );
-
-    expect(updatedState.maxNewCards).toBe(1);
-    expect(updatedState.maxCards).toBe(3);
-    expect(updatedState.reviewTime).toBe(newReviewTime);
   });
 
   it('should update the heap on REVIEW_LOADED', () => {
@@ -236,9 +210,9 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
-    const [initialState, cards, reviewTime] = newReview(0, 1);
+    const [initialState, cards] = newReview(0, 1);
     cards[0].progress.level = 3; // 3 day span
-    cards[0].progress.due = new Date(reviewTime.getTime() - 2 * MS_PER_DAY);
+    cards[0].progress.due = new Date(Date.now() - 2 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, Actions.passCard());
@@ -249,9 +223,9 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level for an existing card on PASS_CARD (before due date)', () => {
-    const [initialState, cards, reviewTime] = newReview(0, 1);
+    const [initialState, cards] = newReview(0, 1);
     cards[0].progress.level = 3; // 3 day span
-    cards[0].progress.due = new Date(reviewTime.getTime() + 1 * MS_PER_DAY);
+    cards[0].progress.due = new Date(Date.now() + 1 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
     updatedState = subject(updatedState, Actions.passCard());
@@ -274,9 +248,9 @@ describe('reducer:review', () => {
   });
 
   it('should update the due time on PASS_CARD', () => {
-    const [initialState, cards, reviewTime] = newReview(0, 1);
+    const [initialState, cards] = newReview(0, 1);
     cards[0].progress.level = 4;
-    cards[0].progress.due = new Date(reviewTime.getTime() - 6 * MS_PER_DAY);
+    cards[0].progress.due = new Date(Date.now() - 6 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
     const passAction = Actions.passCard();
@@ -393,9 +367,9 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level and due time on FAIL_CARD', () => {
-    const [initialState, cards, reviewTime] = newReview(0, 1);
+    const [initialState, cards] = newReview(0, 1);
     cards[0].progress.level = 3;
-    cards[0].progress.due = new Date(reviewTime.getTime() - 2 * MS_PER_DAY);
+    cards[0].progress.due = new Date(Date.now() - 2 * MS_PER_DAY);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));
 
     const failAction = Actions.failCard();
@@ -588,7 +562,7 @@ describe('reducer:review', () => {
   });
 
   it('should integrate changes to the review state on LOAD_REVIEW', () => {
-    const [initialState, cards, , fullInitialState] = newReview(1, 3);
+    const [initialState, cards, fullInitialState] = newReview(1, 3);
     let updatedState = subject(initialState, reviewLoaded(cards, 0, 0));
 
     const reviewSummary = getReviewSummary({

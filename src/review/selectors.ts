@@ -64,7 +64,6 @@ const newCardsCompleted = (state: AppState) =>
   (state.review.currentCard && !state.review.currentCard.progress.due ? 1 : 0);
 
 export const getReviewSummary = (state: AppState): Review => ({
-  reviewTime: state.review.reviewTime,
   maxCards: state.review.maxCards,
   maxNewCards: state.review.maxNewCards,
   completed: state.review.completed,

@@ -10,9 +10,6 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 export interface ReviewState {
   phase: ReviewPhase;
 
-  // The time to use to update cards and calculating their next level etc.
-  reviewTime: Date;
-
   // The maximum number of unique cards that will be presented to the user in
   // this review. The actual number presented may be less if there are
   // insufficient new and overdue cards.
@@ -69,7 +66,6 @@ export interface ReviewState {
 
 const initialState: ReviewState = {
   phase: ReviewPhase.Idle,
-  reviewTime: new Date(),
   maxCards: 0,
   maxNewCards: 0,
   completed: 0,
@@ -104,7 +100,6 @@ export function review(
       return {
         ...initialState,
         phase: ReviewPhase.Loading,
-        reviewTime: state.reviewTime,
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
         availableCards: undefined,
@@ -117,13 +112,6 @@ export function review(
         phase: ReviewPhase.Loading,
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
-      };
-    }
-
-    case 'SET_REVIEW_TIME': {
-      return {
-        ...state,
-        reviewTime: action.reviewTime,
       };
     }
 

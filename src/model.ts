@@ -26,7 +26,6 @@ export interface Progress {
  * An in-progress review.
  */
 export interface Review {
-  reviewTime: Date;
   maxCards: number;
   maxNewCards: number;
   completed: number;

@@ -20,15 +20,6 @@ export function setReviewLimit(maxNewCards: number, maxCards: number) {
 
 export type SetReviewLimitAction = ReturnType<typeof setReviewLimit>;
 
-export function setReviewTime(reviewTime: Date) {
-  return {
-    type: <const>'SET_REVIEW_TIME',
-    reviewTime,
-  };
-}
-
-export type SetReviewTimeAction = ReturnType<typeof setReviewTime>;
-
 export function loadReview(review: Review) {
   return {
     type: <const>'LOAD_REVIEW',
@@ -155,7 +146,6 @@ export type CancelReviewAction = ReturnType<typeof cancelReview>;
 export type ReviewAction =
   | NewReviewAction
   | SetReviewLimitAction
-  | SetReviewTimeAction
   | LoadReviewAction
   | ReviewLoadedAction
   | ShowAnswerAction

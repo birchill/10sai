@@ -35,8 +35,7 @@ describe('CardStore progress reporting', () => {
       prefetchViews: false,
     });
     subject = dataStore.cardStore;
-    relativeTime = diffInDays =>
-      new Date(dataStore.reviewTime.getTime() + diffInDays * MS_PER_DAY);
+    relativeTime = diffInDays => new Date(Date.now() + diffInDays * MS_PER_DAY);
   });
 
   afterEach(() => dataStore.destroy());
@@ -151,34 +150,36 @@ describe('CardStore progress reporting', () => {
       back: 'Answer',
     });
 
+    const due = relativeTime(0);
     const updatedCard = await subject.putCard({
       id: newCard.id,
       front: 'Updated question',
-      progress: { level: 1, due: relativeTime(0) },
+      progress: { level: 1, due },
     });
     expect(updatedCard.front).toBe('Updated question');
     expect(updatedCard.progress.level).toBe(1);
-    expect(updatedCard.progress.due).toEqual(relativeTime(0));
+    expect(updatedCard.progress.due).toEqual(due);
     expect(updatedCard.modified).not.toEqual(newCard.modified);
 
     const fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.front).toBe('Updated question');
     expect(fetchedCard.progress.level).toBe(1);
-    expect(fetchedCard.progress.due).toEqual(relativeTime(0));
+    expect(fetchedCard.progress.due).toEqual(due);
     expect(fetchedCard.modified).not.toEqual(newCard.modified);
   });
 
   it('allows setting the card contents and progress simultaneously', async () => {
+    const due = relativeTime(-2);
     const newCard = await subject.putCard({
       front: 'Question',
       back: 'Answer',
-      progress: { level: 1, due: relativeTime(-2) },
+      progress: { level: 1, due },
     });
     expect(newCard.progress.level).toBe(1);
 
     const fetchedCard = await subject.getCard(newCard.id);
     expect(fetchedCard.progress.level).toBe(1);
-    expect(fetchedCard.progress.due).toEqual(relativeTime(-2));
+    expect(fetchedCard.progress.due).toEqual(due);
   });
 
   it('reports changes to the progress', async () => {
@@ -189,15 +190,16 @@ describe('CardStore progress reporting', () => {
     );
 
     const card = await subject.putCard({ front: 'Q1', back: 'A1' });
+    const due = relativeTime(-3);
     await subject.putCard({
       id: card.id,
-      progress: { level: 1, due: relativeTime(-3) },
+      progress: { level: 1, due },
     });
 
     const changes = await changesPromise;
 
     expect(changes[1].card.progress!.level).toBe(1);
-    expect(changes[1].card.progress!.due).toEqual(relativeTime(-3));
+    expect(changes[1].card.progress!.due).toEqual(due);
     expect(changes[1].card.front).toBe('Q1');
   });
 

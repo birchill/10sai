@@ -24,7 +24,6 @@ interface ExtendedDatabaseConfiguration
 
 interface StoreOptions {
   pouch?: ExtendedDatabaseConfiguration;
-  reviewTime?: Date;
   prefetchViews?: boolean;
 }
 
@@ -68,7 +67,6 @@ export class DataStore {
   reviewStore: ReviewStore;
   settingsStore: SettingsStore;
 
-  reviewTime: Date;
   initDone: Promise<void>;
   changesEmitter?: EventEmitter.Emitter;
   remoteDb?: PouchDB.Database;
@@ -83,9 +81,6 @@ export class DataStore {
     // FIXME: Use the storage API instead
     // pouchOptions.storage = 'persistent';
     this.db = new PouchDB('cards', pouchOptions);
-
-    this.reviewTime =
-      options && options.reviewTime ? options.reviewTime : new Date();
 
     this.cardStore = new CardStore(this.db, {
       prefetchViews: options && options.prefetchViews,
@@ -201,10 +196,6 @@ export class DataStore {
     });
 
     return this.changesEmitter;
-  }
-
-  async setReviewTime(reviewTime: Date) {
-    this.reviewTime = reviewTime;
   }
 
   // Sets a server for synchronizing with and begins live synchonization.

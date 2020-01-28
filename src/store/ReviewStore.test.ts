@@ -40,7 +40,6 @@ describe('ReviewStore', () => {
     newCardsCompleted: 0,
     history: ['abc', 'def'],
     failed: ['def'],
-    reviewTime: new Date(),
   };
 
   beforeEach(() => {
@@ -103,7 +102,6 @@ describe('ReviewStore', () => {
       _id: 'review-default',
       completed: 2,
       finished: false,
-      reviewTime: typicalReview.reviewTime.getTime(),
     });
 
     // Wait a moment for the different stores to update their sequence stores.
