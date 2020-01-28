@@ -306,7 +306,7 @@ export class AvailableCardWatcher {
     this.queryPromise = new Promise((resolve, reject) => {
       const reviewTimeAsNumber = this.reviewTime.getTime();
       this.dataStore
-        .getAvailableCards2({ reviewTime: this.reviewTime })
+        .getAvailableCards({ reviewTime: this.reviewTime })
         .then(availableCards => {
           // If the review time was changed while the query was running, abort.
           if (this.reviewTime.getTime() !== reviewTimeAsNumber) {

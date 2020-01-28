@@ -48,7 +48,7 @@ class MockDataStore {
     return null;
   }
 
-  async getAvailableCards2(options: { reviewTime: Date }): Promise<Array<any>> {
+  async getAvailableCards(options: { reviewTime: Date }): Promise<Array<any>> {
     return [];
   }
 }

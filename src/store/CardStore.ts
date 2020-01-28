@@ -1,7 +1,5 @@
-import { collate } from 'pouchdb-collate';
-
 import * as views from './views';
-import { AvailableCards, Card, Progress } from '../model';
+import { Card, Progress } from '../model';
 import {
   DeepPartial,
   MakeOptional,
@@ -87,14 +85,6 @@ const mergeDocs = (
   return result;
 };
 
-const overdueCardSelector = (reviewTime: Date): PouchDB.Find.Selector => ({
-  _id: { $gt: 'progress-', $lt: 'progress-\ufff0' },
-  due: { $gt: 0, $lte: reviewTime.getTime() },
-});
-const newCardSelector: PouchDB.Find.Selector = {
-  _id: { $gt: 'progress-', $lt: 'progress-\ufff0' },
-  due: { $eq: 0 },
-};
 const overdueOrNewCardSelector = (reviewTime: Date): PouchDB.Find.Selector => ({
   _id: { $gt: 'progress-', $lt: 'progress-\ufff0' },
   due: { $lte: reviewTime.getTime() },
@@ -194,151 +184,7 @@ export class CardStore {
       }));
   }
 
-  async getOverdueCards({
-    reviewTime,
-    limit,
-    skipFailedCards = false,
-  }: {
-    reviewTime: Date;
-    limit?: number;
-    skipFailedCards?: boolean;
-  }): Promise<Card[]> {
-    await this.viewPromises.review.promise;
-
-    // Get all overdue progress records
-    const findResult = (await this.db.find({
-      selector: overdueCardSelector(reviewTime),
-      use_index: ['progress_by_due_date', 'due'],
-    })) as PouchDB.Find.FindResponse<ProgressContent>;
-
-    // Sort by overdueness in descending order
-    const reviewTimeAsNumber = reviewTime.getTime();
-    const progressByOverdueness: Array<[number, ExistingProgressDoc]> = [];
-    for (const doc of findResult.docs) {
-      if (skipFailedCards && doc.level === 0 && doc.due !== 0) {
-        continue;
-      }
-      progressByOverdueness.push([
-        getOverdueness(doc, reviewTimeAsNumber),
-        doc,
-      ]);
-    }
-    progressByOverdueness.sort((a, b) => b[0] - a[0]);
-
-    // Truncate range as needed
-    if (
-      typeof limit !== 'undefined' &&
-      limit >= 0 &&
-      limit < progressByOverdueness.length
-    ) {
-      progressByOverdueness.splice(limit);
-    }
-
-    // Merge into Card objects
-    const progressDocs = progressByOverdueness.map(([_, doc]) => doc);
-    return this.getCardsFromProgressDocs(progressDocs);
-  }
-
-  async getNewCards({ limit }: { limit?: number } = {}): Promise<Card[]> {
-    await this.viewPromises.review.promise;
-
-    // Get all overdue progress records
-    const findResult = (await this.db.find({
-      selector: newCardSelector,
-      use_index: ['progress_by_due_date', 'due'],
-    })) as PouchDB.Find.FindResponse<ProgressContent>;
-
-    // Check the records are sorted by ID (which should make creation order)
-    if (process.env.NODE_ENV === 'development') {
-      for (let i = 0; i < findResult.docs.length - 1; i++) {
-        const a = findResult.docs[i];
-        const b = findResult.docs[i + 1];
-        if (collate(a._id, b._id) > 0) {
-          // If we end up failing the following assertion, it probably means we
-          // need to do:
-          //
-          //   findResult.docs.sort((a, b) => collate(a._id, b._id));
-          console.error(
-            `Progress records are not sorted. ${b._id} appears before ${a._id}`
-          );
-        }
-      }
-    }
-
-    // Truncate range as needed
-    if (
-      typeof limit !== 'undefined' &&
-      limit >= 0 &&
-      limit < findResult.docs.length
-    ) {
-      findResult.docs.splice(limit);
-    }
-
-    return this.getCardsFromProgressDocs(findResult.docs);
-  }
-
-  private async getCardsFromProgressDocs(
-    progressDocs: Array<ExistingProgressDoc>
-  ): Promise<Array<Card>> {
-    if (!progressDocs.length) {
-      return [];
-    }
-
-    const keys = progressDocs.map(doc => doc._id.replace('progress-', 'card-'));
-    const cards = await this.db.allDocs<CardContent>({
-      include_docs: true,
-      keys,
-    });
-
-    if (cards.rows.length !== progressDocs.length) {
-      throw new Error('Got mismatched number of card records');
-    }
-
-    const result: Array<Card> = [];
-    for (let i = 0; i < cards.rows.length; i++) {
-      const cardDoc = cards.rows[i];
-      if (!cardDoc.doc || (cardDoc as any).error) {
-        console.warn(
-          `Got missing card for progress record ${progressDocs[i]._id}`
-        );
-        continue;
-      }
-      if (cardDoc.value.deleted) {
-        console.warn(
-          `Got deleted card for progress record ${progressDocs[i]._id}`
-        );
-        continue;
-      }
-
-      result.push({
-        ...parseCard(cardDoc.doc),
-        progress: parseProgress(progressDocs[i]),
-      });
-    }
-
-    return result;
-  }
-
   async getAvailableCards({
-    reviewTime,
-  }: {
-    reviewTime: Date;
-  }): Promise<AvailableCards> {
-    await this.viewPromises.review.promise;
-
-    const findResult = (await this.db.find({
-      selector: overdueOrNewCardSelector(reviewTime),
-      use_index: ['progress_by_due_date', 'due'],
-    })) as PouchDB.Find.FindResponse<ProgressContent>;
-
-    const newCards = findResult.docs.filter(doc => doc.due === 0).length;
-    return {
-      newCards,
-      overdueCards: findResult.docs.length - newCards,
-    };
-  }
-
-  async getAvailableCards2({
     reviewTime,
   }: {
     reviewTime: Date;
@@ -950,23 +796,4 @@ function normalizeCardForDB<T extends CardContent | CardDoc>(
   }
 
   return normalized;
-}
-
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-// We add a small exponential factor when calculating the overdue score of
-// cards. This is to prevent high-level but very overdue cards from being
-// starved by low-level overdue cards.
-//
-// The value below is chosen so that a card of level 365 that is half a year
-// overdue will have a very slightly higher overdueness than a level 1 card that
-// is one day overdue.
-const EXP_FACTOR = 0.00225;
-
-function getOverdueness(doc: ProgressContent, reviewTimeAsNumber: number) {
-  const daysOverdue = (reviewTimeAsNumber - doc.due) / MS_PER_DAY;
-  const linearComponent = daysOverdue / doc.level;
-  const expComponent = Math.exp(EXP_FACTOR * daysOverdue) - 1;
-
-  return linearComponent + expComponent;
 }

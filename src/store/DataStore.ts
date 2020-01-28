@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find';
 import EventEmitter from 'event-emitter';
 
-import { AvailableCards, Card, Note, Progress, Review } from '../model';
+import { Card, Note, Progress, Review } from '../model';
 import { DatabaseWithName } from './utils';
 import { CardStore, CARD_PREFIX, PROGRESS_PREFIX } from './CardStore';
 import { NoteStore, NOTE_PREFIX } from './NoteStore';
@@ -115,27 +115,10 @@ export class DataStore {
   getCardsById(ids: string[]): Promise<Card[]> {
     return this.cardStore.getCardsById(ids);
   }
-  getOverdueCards(
-    options: {
-      limit?: number;
-      skipFailedCards?: boolean;
-    } = {}
-  ): Promise<Card[]> {
-    return this.cardStore.getOverdueCards({
-      ...options,
-      reviewTime: this.reviewTime,
-    });
-  }
-  getNewCards(options: { limit?: number } = {}): Promise<Card[]> {
-    return this.cardStore.getNewCards(options);
-  }
-  getAvailableCards(): Promise<AvailableCards> {
-    return this.cardStore.getAvailableCards({ reviewTime: this.reviewTime });
-  }
-  getAvailableCards2(options: {
+  getAvailableCards(options: {
     reviewTime: Date;
   }): Promise<Array<[string, Progress]>> {
-    return this.cardStore.getAvailableCards2(options);
+    return this.cardStore.getAvailableCards(options);
   }
   putCard(card: Partial<Card>): Promise<Card> {
     return this.cardStore.putCard(card);
