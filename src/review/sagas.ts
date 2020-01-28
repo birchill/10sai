@@ -9,44 +9,19 @@ import { AppState } from '../reducer';
 import { ReviewState } from './reducer';
 import { Card } from '../model';
 
-// Which cards to use when we update the heap.
-//
-// When we're updating in the middle of a review, we don't want to fetch cards
-// that are already in one of our failed lists. However, we haven't yet
-// implemented the logic to fetch a fixed number of cards but excluding certain
-// IDs. We should, but as a kind of hack for now, we just pass a flag to the
-// DataStore to tell it not to return any cards whose level is zero.
-//
-// This mostly works but it won't work if we don't address all failed cards in
-// a review (e.g. we cancel a review while there are still failed cards) and
-// then we refresh a review.
-const enum CardsToSelect {
-  IncludeFailed,
-  SkipFailed,
-}
-
 export function* updateHeap(
   dataStore: DataStore,
-  action:
-    | Actions.NewReviewAction
-    | Actions.SetReviewLimitAction
-    | Actions.SetReviewTimeAction
+  availableCardWatcher: AvailableCardWatcher
 ): Generator<any, void, any> {
   const reviewInfo = yield select((state: AppState) =>
     state ? state.review : {}
   );
 
-  // Don't update if we're idle. This can happen if we catch a SET_REVIEW_TIME
-  // action.
-  if (reviewInfo.phase === ReviewPhase.Idle) {
-    return;
-  }
-
-  const cardsToSelect =
-    action.type === 'SET_REVIEW_LIMIT' || action.type === 'SET_REVIEW_TIME'
-      ? CardsToSelect.SkipFailed
-      : CardsToSelect.IncludeFailed;
-  const cards = yield* getCardsForHeap(dataStore, reviewInfo, cardsToSelect);
+  const cards = yield* getCardsForHeap({
+    dataStore,
+    availableCardWatcher,
+    reviewInfo,
+  });
   yield put(Actions.reviewLoaded(cards));
 
   try {
@@ -56,11 +31,15 @@ export function* updateHeap(
   }
 }
 
-function* getCardsForHeap(
-  dataStore: DataStore,
-  reviewInfo: ReviewState,
-  cardsToSelect: CardsToSelect
-) {
+function* getCardsForHeap({
+  dataStore,
+  availableCardWatcher,
+  reviewInfo,
+}: {
+  dataStore: DataStore;
+  availableCardWatcher: AvailableCardWatcher;
+  reviewInfo: ReviewState;
+}) {
   let freeSlots = Math.max(
     0,
     reviewInfo.maxCards -
@@ -74,6 +53,13 @@ function* getCardsForHeap(
 
   // TODO: Error handling for the below
 
+  // Make up a set of IDs we have already seen (or are seeing) so we don't
+  // re-add them to the heap.
+  const idsToSkip = new Set([...reviewInfo.history.map(card => card.id)]);
+  if (reviewInfo.currentCard) {
+    idsToSkip.add(reviewInfo.currentCard.id);
+  }
+
   // First fill up with the maximum number of new cards
   const newCardSlots = Math.max(
     Math.min(reviewInfo.maxNewCards - reviewInfo.newCardsInPlay, freeSlots),
@@ -81,19 +67,31 @@ function* getCardsForHeap(
   );
   let cards: Card[] = [];
   if (newCardSlots) {
-    cards = yield call([dataStore, 'getNewCards'], { limit: newCardSlots });
-    freeSlots -= cards.length;
+    let newIds: Array<string> = yield call([
+      availableCardWatcher,
+      'getNewCards',
+    ]);
+    newIds = newIds.filter(id => !idsToSkip.has(id));
+    newIds.splice(newCardSlots);
+
+    if (newIds.length) {
+      cards = yield call([dataStore, 'getCardsById'], newIds);
+      freeSlots -= cards.length;
+    }
   }
 
   // Now fill up the overdue slots
   if (freeSlots) {
-    const options = {
-      limit: freeSlots,
-      // If we are updating the heap mid-review then avoid getting failed cards
-      // since they might already be in our failed heaps.
-      skipFailedCards: cardsToSelect === CardsToSelect.SkipFailed,
-    };
-    cards.push(...(yield call([dataStore, 'getOverdueCards'], options)));
+    let overdueIds: Array<string> = yield call([
+      availableCardWatcher,
+      'getOverdueCards',
+    ]);
+    overdueIds = overdueIds.filter(id => !idsToSkip.has(id));
+    overdueIds.splice(freeSlots);
+
+    if (overdueIds.length) {
+      cards.push(...(yield call([dataStore, 'getCardsById'], overdueIds)));
+    }
   }
 
   return cards;
@@ -159,6 +157,7 @@ export function* updateReviewTime(
 
 export function* loadReview(
   dataStore: DataStore,
+  availableCardWatcher: AvailableCardWatcher,
   action: Actions.LoadReviewAction
 ): Generator<any, void, any> {
   // Load cards from history
@@ -191,11 +190,11 @@ export function* loadReview(
   reviewInfo.history = history;
   reviewInfo.failedCards = failedCards;
 
-  const heap = yield* getCardsForHeap(
+  const heap = yield* getCardsForHeap({
     dataStore,
+    availableCardWatcher,
     reviewInfo,
-    CardsToSelect.SkipFailed
-  );
+  });
 
   yield put(
     Actions.reviewLoaded(heap, history, failedCards, !!action.initialReview)
@@ -211,13 +210,14 @@ export function* reviewSagas({
 }) {
   yield* [
     takeEvery(
-      ['NEW_REVIEW', 'SET_REVIEW_LIMITS', 'SET_REVIEW_TIME'],
+      ['NEW_REVIEW', 'SET_REVIEW_LIMITS'],
       updateHeap,
-      dataStore
+      dataStore,
+      availableCardWatcher
     ),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
     takeEvery(['SET_REVIEW_TIME'], updateReviewTime, dataStore),
-    takeLatest(['LOAD_REVIEW'], loadReview, dataStore),
+    takeLatest(['LOAD_REVIEW'], loadReview, dataStore, availableCardWatcher),
   ];
 }
 
