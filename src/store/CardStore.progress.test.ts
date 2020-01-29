@@ -1,8 +1,8 @@
 import PouchDB from 'pouchdb';
 
 import { DataStore } from './DataStore';
-import { CardStore, CardChange } from './CardStore';
-import { waitForChangeEvents } from './test-utils';
+import { CardStore, CardChange, ProgressContent } from './CardStore';
+import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
@@ -283,5 +283,51 @@ describe('CardStore progress reporting', () => {
     await subject.deleteCard(card.id);
 
     expect(await subject.hasProgressDocument(card.id)).toBe(false);
+  });
+
+  it('resolves conflicts by choosing the more recent progress record', async () => {
+    // Create a new card locally that will have a calculated review date of
+    // one day ago.
+    const oneDaysTime = relativeTime(1);
+    oneDaysTime.setMinutes(0, 0, 0); // <-- Our typical Date normalization
+    const localCard = await subject.putCard({
+      front: 'Question',
+      back: 'Answer',
+      progress: { level: 2, due: oneDaysTime },
+    });
+    const progressId = `progress-${localCard.id}`;
+
+    // Create a new progress record on the remote that has a calculated review
+    // time of about 2 hours ago.
+    const justUnderThreeDaysAgo = relativeTime(3);
+    justUnderThreeDaysAgo.setHours(
+      justUnderThreeDaysAgo.getHours() - 2,
+      0,
+      0,
+      0
+    );
+    const testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
+    await testRemote.put({
+      _id: progressId,
+      level: 3,
+      due: justUnderThreeDaysAgo.getTime(),
+    });
+
+    // Wait a moment for the different stores to update their sequence stores.
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Now connect the two...
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
+    await waitForIdle();
+
+    // Check that the conflict is gone...
+    const result = await testRemote.get<ProgressContent>(progressId, {
+      conflicts: true,
+    });
+    expect(result._conflicts).toBeUndefined();
+    // ... and that we chose the right progress
+    expect(result.level).toBe(3);
+
+    await testRemote.destroy();
   });
 });

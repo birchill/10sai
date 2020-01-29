@@ -455,6 +455,9 @@ export class DataStore {
 
   async onSyncChange(docs: PouchDB.Core.ExistingDocument<{}>[]) {
     for (const doc of docs) {
+      await this.cardStore.onSyncChange(
+        <PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>>doc
+      );
       await this.noteStore.onSyncChange(
         <PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>>doc
       );

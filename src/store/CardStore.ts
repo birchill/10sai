@@ -90,6 +90,24 @@ const overdueOrNewCardSelector = (reviewTime: Date): PouchDB.Find.Selector => ({
   due: { $lte: reviewTime.getTime() },
 });
 
+const isCardChangeDoc = (
+  changeDoc:
+    | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+    | undefined
+): changeDoc is ExistingCardDocWithChanges => {
+  return changeDoc && changeDoc._id.startsWith(CARD_PREFIX);
+};
+
+const isProgressChangeDoc = (
+  changeDoc:
+    | PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
+    | undefined
+): changeDoc is ExistingProgressDocWithChanges => {
+  return changeDoc && changeDoc._id.startsWith(PROGRESS_PREFIX);
+};
+
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 interface CardStoreOptions {
   prefetchViews?: boolean;
 }
@@ -563,18 +581,6 @@ export class CardStore {
       return;
     }
 
-    const isCardChangeDoc = (
-      changeDoc: PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
-    ): changeDoc is ExistingCardDocWithChanges => {
-      return changeDoc && changeDoc._id.startsWith(CARD_PREFIX);
-    };
-
-    const isProgressChangeDoc = (
-      changeDoc: PouchDB.Core.ExistingDocument<any & PouchDB.Core.ChangesMeta>
-    ): changeDoc is ExistingProgressDocWithChanges => {
-      return changeDoc && changeDoc._id.startsWith(PROGRESS_PREFIX);
-    };
-
     // When a new card is added we'll get a change callback for both the card
     // document and the progress document but, since we lookup the other half
     // before calling the callback, we'd end up calling the callback with the
@@ -676,6 +682,34 @@ export class CardStore {
     }
 
     return undefined;
+  }
+
+  async onSyncChange(
+    doc: PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
+  ) {
+    if (!isProgressChangeDoc(doc)) {
+      return;
+    }
+
+    if (doc._deleted) {
+      return;
+    }
+
+    // Check for conflicts to resolve.
+    const result = await this.db.get<ProgressContent>(doc._id, {
+      conflicts: true,
+    });
+    if (!result._conflicts) {
+      return;
+    }
+
+    await this.db.resolveConflicts(result, (a, b) => {
+      const roughReviewTime = (doc: ProgressContent): number => {
+        return doc.due - doc.level * MS_PER_DAY;
+      };
+
+      return roughReviewTime(a) >= roughReviewTime(b) ? a : b;
+    });
   }
 
   // Maintenance functions
