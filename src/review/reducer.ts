@@ -201,7 +201,7 @@ export function review(
       //
       // Add random jitter to add to the newly calculated level so that cards
       // added or reviewed together get spread out somewhat.
-      const jitter = action.levelSeed * 0.2 + 0.9;
+      const jitter = action.levelSeed * 0.4 + 0.8;
       if (updatedCard.progress.level && updatedCard.progress.due) {
         // Account for the fact that we might have reviewed this early, or
         // late.
