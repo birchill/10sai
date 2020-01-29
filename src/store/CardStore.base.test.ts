@@ -464,4 +464,41 @@ describe('CardStore', () => {
     const changes = await changesPromise;
     expect(changes[1].card.front).toBe('Updated question');
   });
+
+  it('resolves conflicts by choosing the more recently modified card', async () => {
+    // Create a new card locally
+    const localCard = await subject.putCard({
+      front: 'Local',
+      back: 'Answer',
+    });
+    const cardId = `card-${localCard.id}`;
+
+    // Create a new card record on the remote that has an older modified
+    // time.
+    const testRemote = new PouchDB('cards_remote', { adapter: 'memory' });
+    await testRemote.put({
+      _id: cardId,
+      front: 'Remote',
+      back: 'Answer',
+      created: localCard.created,
+      modified: localCard.created - 10 * 1000,
+    });
+
+    // Wait a moment for the different stores to update their sequence stores.
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Now connect the two...
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
+    await waitForIdle();
+
+    // Check that the conflict is gone...
+    const result = await testRemote.get<CardContent>(cardId, {
+      conflicts: true,
+    });
+    expect(result._conflicts).toBeUndefined();
+    // ... and that we chose the right card
+    expect(result.front).toBe('Local');
+
+    await testRemote.destroy();
+  });
 });

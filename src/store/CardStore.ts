@@ -687,7 +687,7 @@ export class CardStore {
   async onSyncChange(
     doc: PouchDB.Core.ExistingDocument<{} & PouchDB.Core.ChangesMeta>
   ) {
-    if (!isProgressChangeDoc(doc)) {
+    if (!isCardChangeDoc(doc) && !isProgressChangeDoc(doc)) {
       return;
     }
 
@@ -696,20 +696,32 @@ export class CardStore {
     }
 
     // Check for conflicts to resolve.
-    const result = await this.db.get<ProgressContent>(doc._id, {
+    const result = await this.db.get<ProgressContent | CardContent>(doc._id, {
       conflicts: true,
     });
     if (!result._conflicts) {
       return;
     }
 
-    await this.db.resolveConflicts(result, (a, b) => {
-      const roughReviewTime = (doc: ProgressContent): number => {
-        return doc.due - doc.level * MS_PER_DAY;
-      };
+    if (isCardChangeDoc(doc)) {
+      await this.db.resolveConflicts<CardContent>(
+        result as CardDoc & PouchDB.Core.GetMeta,
+        (a, b) => {
+          return a.modified >= b.modified ? a : b;
+        }
+      );
+    } else {
+      await this.db.resolveConflicts(
+        result as ProgressDoc & PouchDB.Core.GetMeta,
+        (a, b) => {
+          const roughReviewTime = (doc: ProgressContent): number => {
+            return doc.due - doc.level * MS_PER_DAY;
+          };
 
-      return roughReviewTime(a) >= roughReviewTime(b) ? a : b;
-    });
+          return roughReviewTime(a) >= roughReviewTime(b) ? a : b;
+        }
+      );
+    }
   }
 
   // Maintenance functions

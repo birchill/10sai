@@ -224,7 +224,7 @@ export class NoteStore {
         return a;
       }
 
-      return a.modified >= b.created ? a : b;
+      return a.modified >= b.modified ? a : b;
     });
   }
 
