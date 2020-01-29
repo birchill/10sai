@@ -9,6 +9,7 @@ export interface ReviewContent {
   history: string[];
   failed: string[];
   finished: boolean;
+  modified: number;
 }
 
 type ReviewDoc = PouchDB.Core.Document<ReviewContent>;
@@ -34,6 +35,7 @@ const parseReview = (
       '_revisions',
       '_attachments',
       'finished',
+      'modified',
     ]),
   };
 
@@ -75,6 +77,7 @@ export class ReviewStore {
       ...review,
       _id: REVIEW_ID,
       finished: false,
+      modified: Date.now(),
     };
 
     await this.db.upsert<ReviewContent>(REVIEW_ID, () => reviewToPut);
@@ -90,7 +93,7 @@ export class ReviewStore {
       // chose to represent `{} | Core.Document<Content>` as
       // `Partial<Core.Document<Content>>`. We have already dealt with the empty
       // object case above so this is safe.
-      return { ...(doc as ReviewDoc), finished: true };
+      return { ...(doc as ReviewDoc), finished: true, modified: Date.now() };
     });
   }
 
@@ -128,12 +131,28 @@ export class ReviewStore {
       return;
     }
 
-    const completeness = (review: ReviewContent) => {
-      return review.completed - review.failed.length;
-    };
-
     await this.db.resolveConflicts(result, (a, b) => {
-      return completeness(a) >= completeness(b) ? a : b;
+      // If either review is finished, use the other.
+      // If both are finished it doesn't really matter which we use.
+      if (b.finished) {
+        return a;
+      }
+
+      if (a.finished) {
+        return b;
+      }
+
+      // If either review has yet to make any progress, use the other.
+      if (!b.completed && !!a.completed) {
+        return a;
+      }
+
+      if (!a.completed && !!b.completed) {
+        return b;
+      }
+
+      // Otherwise, just use the most recently touched one.
+      return a.modified >= b.modified ? a : b;
     });
   }
 }

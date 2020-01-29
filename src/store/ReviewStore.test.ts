@@ -92,16 +92,21 @@ describe('ReviewStore', () => {
     expect(gotReview).toBeNull();
   });
 
-  it('resolves conflicts by choosing the furthest review progress', async () => {
+  it('resolves conflicts by choosing the in-progress review', async () => {
     // Create a new review locally.
     await subject.putReview(typicalReview);
+    // Finish it
+    await subject.finishReview();
 
-    // Create a new review on the remote with a greater completed value.
+    // Create a new review on the remote that is _not_ finished
     await testRemote.put({
       ...typicalReview,
+      maxCards: 4,
       _id: 'review-default',
-      completed: 2,
       finished: false,
+      // Deliberately make the modified date a little _older_ so we know we're
+      // testing the finished-ness.
+      modified: Date.now() - 10 * 1000,
     });
 
     // Wait a moment for the different stores to update their sequence stores.
@@ -122,7 +127,36 @@ describe('ReviewStore', () => {
     });
     expect(result._conflicts).toBeUndefined();
     // ... and that we chose the right review
-    expect(result.completed).toBe(2);
+    expect(result.maxCards).toBe(4);
+  });
+
+  it('resolves conflicts by choosing the more recently modified review', async () => {
+    // Create a new review locally.
+    await subject.putReview(typicalReview);
+
+    // Create a new review on the remote that has a _less_ recent modified date.
+    await testRemote.put({
+      ...typicalReview,
+      maxCards: 4,
+      _id: 'review-default',
+      finished: false,
+      modified: Date.now() - 100 * 1000,
+    });
+
+    // Wait a moment for the different stores to update their sequence stores.
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Now connect the two...
+    const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
+    await waitForIdle();
+
+    // Check that the conflict is gone...
+    const result = await testRemote.get<ReviewContent>('review-default', {
+      conflicts: true,
+    });
+    expect(result._conflicts).toBeUndefined();
+    // ... and that we chose the right review
+    expect(result.maxCards).toBe(typicalReview.maxCards);
   });
 
   it('reports new review docs', async () => {
