@@ -264,6 +264,24 @@ describe('reducer:review', () => {
     );
   });
 
+  it('should use the confidence factor to update the card level and due time on PASS_CARD', () => {
+    const [initialState, cards] = newReview(0, 1);
+    cards[0].progress.level = 4;
+    cards[0].progress.due = new Date(Date.now() - 6 * MS_PER_DAY);
+    let updatedState = subject(initialState, Actions.reviewLoaded(cards));
+
+    const passAction = Actions.passCard({ confidence: 0.5 });
+    updatedState = subject(updatedState, passAction);
+
+    // It was 10 days since the card was last reviewed, but we have a confidence
+    // of only 50% which means we should review again in roughly 10 days.
+    expect(updatedState.history[0].progress.level).toBeInRange(8, 12);
+    expect(updatedState.history[0].progress.due).toBeInDateRange(
+      new Date(passAction.reviewTime.getTime() + 8 * MS_PER_DAY),
+      new Date(passAction.reviewTime.getTime() + 12 * MS_PER_DAY)
+    );
+  });
+
   it('should update the complete count on PASS_CARD', () => {
     const [initialState, cards] = newReview(2, 2);
     let updatedState = subject(initialState, Actions.reviewLoaded(cards));

@@ -85,10 +85,11 @@ export function failCard() {
 
 export type FailCardAction = ReturnType<typeof failCard>;
 
-export function passCard() {
+export function passCard({ confidence = 1 }: { confidence?: number } = {}) {
   return {
     type: <const>'PASS_CARD',
     reviewTime: new Date(),
+    confidence,
     // Weight towards zero
     nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
     levelSeed: Math.random(),

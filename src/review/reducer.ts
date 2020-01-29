@@ -209,19 +209,13 @@ export function review(
           (action.reviewTime.getTime() - updatedCard.progress.due.getTime()) /
             MS_PER_DAY +
           updatedCard.progress.level;
-        const nextIntervalInDays = reviewedIntervalInDays * 2 * jitter;
+        const nextIntervalInDays =
+          reviewedIntervalInDays * 2 * action.confidence * jitter;
 
-        // Currently we don't want to go backwards in level.
-        //
-        // (This will need to change once we introduce variable marking.)
-        updatedCard.progress.level = Math.max(
-          nextIntervalInDays,
-          updatedCard.progress.level,
-          0.5
-        );
+        updatedCard.progress.level = Math.max(nextIntervalInDays, 0.5);
       } else {
         // New / reset card: Review in 12 hours' time
-        updatedCard.progress.level = 0.5 * jitter;
+        updatedCard.progress.level = 0.5 * action.confidence * jitter;
       }
 
       // Calculate the due date rounded down to the previous hour.
