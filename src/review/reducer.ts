@@ -218,6 +218,10 @@ export function review(
         updatedCard.progress.level = 0.5 * action.confidence * jitter;
       }
 
+      // Round level to make the stored representation a little more compact
+      updatedCard.progress.level =
+        Math.round(updatedCard.progress.level * 1000) / 1000;
+
       // Calculate the due date rounded down to the previous hour.
       const dueDate = new Date(
         action.reviewTime.getTime() + updatedCard.progress.level * MS_PER_DAY
