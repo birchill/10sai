@@ -11,7 +11,7 @@ interface Props {
   className?: string;
   showBack?: boolean;
   onShowBack: () => void;
-  onPassCard: () => void;
+  onPassCard: (options: { confidence: number }) => void;
   onFailCard: () => void;
   onEditCard: (id: string) => void;
   previousCard: Card;
@@ -32,6 +32,7 @@ export class ReviewPanel extends React.Component<Props> {
     this.failButtonRef = React.createRef<HTMLButtonElement>();
     this.cardsRef = React.createRef<HTMLDivElement>();
 
+    this.handleClickPass = this.handleClickPass.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
   }
 
@@ -67,6 +68,10 @@ export class ReviewPanel extends React.Component<Props> {
     }
   }
 
+  handleClickPass(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    this.props.onPassCard({ confidence: 1 });
+  }
+
   // We use keyup simply so that if the user holds down Enter too long they
   // don't end up passing all the cards accidentally.
   //
@@ -94,10 +99,20 @@ export class ReviewPanel extends React.Component<Props> {
         case 'x':
         case '1':
           this.props.onFailCard();
+          break;
+
+        case '2':
+          this.props.onPassCard({ confidence: 0.5 });
+          break;
 
         case '3':
         case 'Enter':
-          this.props.onPassCard();
+          this.props.onPassCard({ confidence: 1 });
+          break;
+
+        case '4':
+          this.props.onPassCard({ confidence: 2 });
+          break;
 
         default:
           // Don't call preventDefault
@@ -197,7 +212,7 @@ export class ReviewPanel extends React.Component<Props> {
           className="pass"
           aria-label="Correct"
           tabIndex={this.props.showBack ? 0 : -1}
-          onClick={this.props.onPassCard}
+          onClick={this.handleClickPass}
         >
           <span className="buttonface">
             <svg className="icon" viewBox="0 0 100 100">

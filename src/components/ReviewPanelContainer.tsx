@@ -24,8 +24,8 @@ const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   onShowBack: () => {
     dispatch(Actions.showAnswer());
   },
-  onPassCard: () => {
-    dispatch(Actions.passCard());
+  onPassCard: ({ confidence }: { confidence: number }) => {
+    dispatch(Actions.passCard({ confidence }));
   },
   onFailCard: () => {
     dispatch(Actions.failCard());
