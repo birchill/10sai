@@ -81,6 +81,7 @@
     > .fail,
     > .pass {
       background: transparent;
+      -webkit-tap-highlight-color: transparent;
       position: fixed;
 
       --hit-region-width: 8rem;
