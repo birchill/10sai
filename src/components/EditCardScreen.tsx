@@ -13,7 +13,6 @@ import { EditScreenContext } from '../notes/actions';
 import { getKeywordVariants } from '../text/keywords';
 import { toPlainText } from '../text/rich-text';
 import { stripRuby } from '../text/ruby';
-import { Return } from '../utils/type-helpers';
 
 import { EditCardToolbar } from './EditCardToolbar';
 import { EditCardForm, EditCardFormInterface } from './EditCardForm';
@@ -187,8 +186,8 @@ const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
 });
 
 export const EditCardScreen = connect<
-  Return<typeof mapStateToProps>,
-  Return<typeof mapDispatchToProps>,
+  ReturnType<typeof mapStateToProps>,
+  ReturnType<typeof mapDispatchToProps>,
   Props,
   AppState
 >(

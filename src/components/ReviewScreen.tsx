@@ -6,7 +6,7 @@ import { ReviewPhase } from '../review/review-phase';
 import { Link } from './Link';
 import { LoadingIndicator } from './LoadingIndicator';
 import { ReviewPanelContainer } from './ReviewPanelContainer';
-import { ReviewPanel } from './ReviewPanel';
+import { ReviewPanelInterface } from './ReviewPanel';
 import { TricolorProgress } from './TricolorProgress';
 
 interface ReviewProps {
@@ -61,14 +61,14 @@ const ReviewButton = React.forwardRef<HTMLButtonElement, ReviewProps>(
 const pluralCards = (num: number) => (num === 1 ? 'card' : 'cards');
 
 export class ReviewScreen extends React.PureComponent<Props> {
-  reviewPanelRef: React.RefObject<ReviewPanel>;
+  reviewPanelRef: React.RefObject<ReviewPanelInterface>;
   reviewButtonRef: React.RefObject<HTMLButtonElement>;
   containerRef: React.RefObject<HTMLDivElement>;
 
   constructor(props: Props) {
     super(props);
 
-    this.reviewPanelRef = React.createRef<ReviewPanel>();
+    this.reviewPanelRef = React.createRef<ReviewPanelInterface>();
     this.reviewButtonRef = React.createRef<HTMLButtonElement>();
     this.containerRef = React.createRef<HTMLDivElement>();
   }
@@ -285,7 +285,13 @@ export class ReviewScreen extends React.PureComponent<Props> {
     //
     // See: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/35661
     const refAttribute: any = { ref: this.reviewPanelRef };
-    return <ReviewPanelContainer className="content" {...refAttribute} />;
+    return (
+      <ReviewPanelContainer
+        active={this.props.active}
+        className="content"
+        {...refAttribute}
+      />
+    );
   }
 
   renderProgressBar(): React.ReactNode | null {

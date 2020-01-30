@@ -7,6 +7,10 @@ import { AppState } from '../reducer';
 
 import { ReviewPanel } from './ReviewPanel';
 
+interface Props {
+  active: boolean;
+}
+
 const mapStateToProps = (state: AppState) => {
   const { history } = state.review;
   const previousCard = history.length ? history[history.length - 1] : undefined;
@@ -35,9 +39,9 @@ const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   },
 });
 
-export const ReviewPanelContainer = connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  null,
-  { forwardRef: true }
-)(ReviewPanel);
+export const ReviewPanelContainer = connect<
+  ReturnType<typeof mapStateToProps>,
+  ReturnType<typeof mapDispatchToProps>,
+  Props,
+  AppState
+>(mapStateToProps, mapDispatchToProps, null, { forwardRef: true })(ReviewPanel);
