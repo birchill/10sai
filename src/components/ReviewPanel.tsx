@@ -205,7 +205,7 @@ export class ReviewPanel extends React.Component<Props> {
                 height="100"
                 href="#thumbsup"
                 fill="currentcolor"
-                transform="rotate(180 50 50) translate(0 -15)"
+                transform="rotate(180 50 50) translate(0 -10)"
               />
             </svg>
           </span>
