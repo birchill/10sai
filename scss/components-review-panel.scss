@@ -85,19 +85,19 @@
 
       --hit-region-width: 8rem;
       --hit-region-height: 9rem;
-      --buttonface-diameter: 7rem;
+      --buttonface-radius: 7rem;
 
       @media screen and (max-width: 600px) {
         --hit-region-width: 7rem;
         --hit-region-height: 8rem;
-        --buttonface-diameter: 6rem;
+        --buttonface-radius: 6rem;
       }
 
       width: var(--hit-region-width);
       max-width: 33%;
       height: var(--hit-region-height);
 
-      top: calc(100% - var(--hit-region-height));
+      top: calc(50% - var(--hit-region-height));
 
       border: none;
       border-radius: 0px;
@@ -108,20 +108,21 @@
 
       > .buttonface {
         display: inline-block;
-        width: calc(2 * var(--buttonface-diameter));
-        height: calc(2 * var(--buttonface-diameter));
-        border-radius: var(--buttonface-diameter);
+        width: calc(2 * var(--buttonface-radius));
+        height: calc(2 * var(--buttonface-radius));
+        border-radius: var(--buttonface-radius);
         color: white;
         font-weight: bold;
         font-size: 1rem;
         transition: transform 0.15s;
 
-        margin-top: calc(var(--hit-region-height) - var(--buttonface-diameter));
+        margin-top: calc(var(--hit-region-height) - var(--buttonface-radius));
 
         > .icon {
-          width: calc(var(--buttonface-diameter) / 2.5);
-          height: calc(var(--buttonface-diameter) / 2.5);
-          margin-top: calc(var(--buttonface-diameter) / 3);
+          width: calc(var(--buttonface-radius) * 0.8);
+
+          height: calc(var(--buttonface-radius) * 1.6);
+          margin-top: calc(var(--buttonface-radius) * 0.2);
         }
       }
 
@@ -133,16 +134,17 @@
       left: 0;
 
       > .buttonface {
-        transform: translateX(calc(-1 * var(--buttonface-diameter)));
+        transform: translateX(calc(-1 * var(--buttonface-radius)));
         background: $red-6;
 
         > .icon {
-          margin-left: calc(var(--buttonface-diameter) * 0.7);
+          margin-left: calc(var(--buttonface-radius) * 0.85);
+          color: $red-9;
         }
       }
       &:focus > .buttonface,
       &:hover > .buttonface {
-        transform: translateX(calc(-1 * var(--buttonface-diameter))) scale(1.2);
+        transform: translateX(calc(-1 * var(--buttonface-radius))) scale(1.2);
       }
     }
     > .pass {
@@ -150,18 +152,19 @@
 
       > .buttonface {
         transform: translateX(
-          calc(var(--hit-region-width) - var(--buttonface-diameter))
+          calc(var(--hit-region-width) - var(--buttonface-radius))
         );
         background: $green-6;
 
-        > svg {
-          margin-left: calc(var(--buttonface-diameter) * -0.7);
+        > .icon {
+          margin-left: calc(var(--buttonface-radius) * -0.85);
+          color: $green-9;
         }
       }
       &:focus > .buttonface,
       &:hover > .buttonface {
         transform: translateX(
-            calc(var(--hit-region-width) - var(--buttonface-diameter))
+            calc(var(--hit-region-width) - var(--buttonface-radius))
           )
           scale(1.2);
       }

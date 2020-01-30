@@ -199,14 +199,13 @@ export class ReviewPanel extends React.Component<Props> {
         >
           <span className="buttonface">
             <svg className="icon" viewBox="0 0 100 100">
-              <circle cx="15" cy="10" r="10" fill="white" />
-              <circle cx="85" cy="10" r="10" fill="white" />
-              <path
-                d="M5 95a45 45 0 0 1 90 0"
-                stroke="white"
-                strokeWidth="10"
-                strokeLinecap="round"
-                fill="none"
+              <title>Fail</title>
+              <use
+                width="100"
+                height="100"
+                href="#thumbsup"
+                fill="currentcolor"
+                transform="rotate(180 50 50) translate(0 -15)"
               />
             </svg>
           </span>
@@ -220,14 +219,12 @@ export class ReviewPanel extends React.Component<Props> {
         >
           <span className="buttonface">
             <svg className="icon" viewBox="0 0 100 100">
-              <circle cx="15" cy="10" r="10" fill="white" />
-              <circle cx="85" cy="10" r="10" fill="white" />
-              <path
-                d="M5 50a45 45 0 0 0 90 0"
-                stroke="white"
-                strokeWidth="10"
-                strokeLinecap="round"
-                fill="none"
+              <title>Pass</title>
+              <use
+                width="100"
+                height="100"
+                href="#thumbsup"
+                fill="currentcolor"
               />
             </svg>
           </span>
