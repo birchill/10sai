@@ -88,9 +88,9 @@
       --buttonface-radius: 7rem;
 
       @media screen and (max-width: 600px) {
-        --hit-region-width: 7rem;
-        --hit-region-height: 8rem;
-        --buttonface-radius: 6rem;
+        --hit-region-width: 6rem;
+        --hit-region-height: 7rem;
+        --buttonface-radius: 5rem;
       }
 
       width: var(--hit-region-width);
@@ -101,7 +101,7 @@
 
       border: none;
       border-radius: 0px;
-      opacity: 0.75;
+      opacity: 0.5;
       padding: 0;
 
       text-align: center;
