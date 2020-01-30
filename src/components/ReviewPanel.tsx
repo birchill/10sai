@@ -153,12 +153,11 @@ export class ReviewPanel extends React.Component<Props> {
 
     const currentCard = (
       <div
-        className="cardwrapper"
+        className="cardwrapper current"
         key={getUniqueKey(this.props.currentCard.id)}
+        onClick={this.props.onShowBack}
       >
         <ReviewCard
-          className="current"
-          onShowBack={this.props.onShowBack}
           showBack={this.props.showBack}
           {...this.props.currentCard}
         />
@@ -168,8 +167,11 @@ export class ReviewPanel extends React.Component<Props> {
     let nextCard;
     if (this.props.nextCard) {
       nextCard = (
-        <div className="cardwrapper" key={getUniqueKey(this.props.nextCard.id)}>
-          <ReviewCard className="next" {...this.props.nextCard} />
+        <div
+          className="cardwrapper next"
+          key={getUniqueKey(this.props.nextCard.id)}
+        >
+          <ReviewCard {...this.props.nextCard} />
         </div>
       );
     }
@@ -178,14 +180,10 @@ export class ReviewPanel extends React.Component<Props> {
     if (this.props.previousCard) {
       previousCard = (
         <div
-          className="cardwrapper"
+          className="cardwrapper previous"
           key={getUniqueKey(this.props.previousCard.id)}
         >
-          <ReviewCard
-            className="previous"
-            showBack
-            {...this.props.previousCard}
-          />
+          <ReviewCard showBack {...this.props.previousCard} />
         </div>
       );
     }

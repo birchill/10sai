@@ -21,30 +21,31 @@
         max-width: 700px;
         box-sizing: border-box;
         transition: transform 0.2s;
-        // This is super odd, but without this the cardwrapper ends up stealing
-        // the clicks destined for the review-card.
-        //
-        // Then again, maybe that's ok and we should be handling the clicks
-        // there anyway so that we respond to clicks in the dead space?
-        z-index: 1;
       }
       // This is what makes it square
-      > .review-card:after {
+      > .review-card::after {
         content: "";
         display: block;
         padding-bottom: 100%;
       }
-      > .previous {
-        transform: translate(calc(-100vw - 2em));
+      &.previous {
+        pointer-events: none;
+        > .review-card {
+          transform: translate(calc(-100vw - 2em));
+        }
       }
-      > .next {
-        transform: translate(calc(100vw + 2em));
+      &.next {
+        pointer-events: none;
+        > .review-card {
+          transform: translate(calc(100vw + 2em));
+        }
       }
     }
   }
 
   > .notes {
     width: 80%;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 1rem;

@@ -8,7 +8,6 @@ interface Props {
   back: string;
   showBack?: boolean | null;
   className?: string | null;
-  onShowBack?: () => void;
 }
 
 export const ReviewCard: React.FC<Props> = (props: Props) => {
@@ -21,7 +20,7 @@ export const ReviewCard: React.FC<Props> = (props: Props) => {
   }
 
   return (
-    <div className={className} onClick={props.onShowBack}>
+    <div className={className}>
       <div className="front">
         <TextRegion className="frontregion">
           <FormattedText text={props.front} key={props.front} />
