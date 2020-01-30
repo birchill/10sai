@@ -43,7 +43,23 @@
     }
   }
 
-  > .notes {
+  > .notes-header {
+    display: flex;
+    align-items: center;
+
+    > .line {
+      flex: 1;
+      border-top: 1px solid $neutral-7;
+    }
+
+    > .title {
+      padding-left: 1em;
+      padding-right: 1em;
+      color: $neutral-6;
+    }
+  }
+
+  > .notes, > .notes-header {
     width: 80%;
     max-width: 800px;
     margin-left: auto;

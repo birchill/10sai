@@ -243,15 +243,22 @@ export class ReviewPanel extends React.Component<Props> {
           {nextCard}
         </div>
         {this.props.showBack ? (
-          <DynamicNoteList
-            noteListContext={{
-              screen: 'review',
-            }}
-            notes={this.props.notes}
-            keywords={this.props.currentCard.keywords}
-            priority="reading"
-            className="notes"
-          />
+          <>
+            <div className="notes-header">
+              <span className="line" />
+              <span className="title">Notes</span>
+              <span className="line" />
+            </div>
+            <DynamicNoteList
+              noteListContext={{
+                screen: 'review',
+              }}
+              notes={this.props.notes}
+              keywords={this.props.currentCard.keywords}
+              priority="reading"
+              className="notes"
+            />
+          </>
         ) : null}
         {answerButtons}
       </div>
