@@ -9,8 +9,8 @@
   }
 
   > .form {
-    margin: 1rem;
-    margin-bottom: 0;
+    max-width: 800px;
+    margin: 1rem auto 0;
   }
 
   > .savestate {
@@ -25,6 +25,7 @@
 
   > .notes {
     width: 80%;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 1rem;
