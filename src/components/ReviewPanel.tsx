@@ -152,35 +152,41 @@ export class ReviewPanel extends React.Component<Props> {
     };
 
     const currentCard = (
-      <ReviewCard
+      <div
+        className="cardwrapper"
         key={getUniqueKey(this.props.currentCard.id)}
-        className="current"
-        onShowBack={this.props.onShowBack}
-        showBack={this.props.showBack}
-        {...this.props.currentCard}
-      />
+      >
+        <ReviewCard
+          className="current"
+          onShowBack={this.props.onShowBack}
+          showBack={this.props.showBack}
+          {...this.props.currentCard}
+        />
+      </div>
     );
 
     let nextCard;
     if (this.props.nextCard) {
       nextCard = (
-        <ReviewCard
-          key={getUniqueKey(this.props.nextCard.id)}
-          className="next"
-          {...this.props.nextCard}
-        />
+        <div className="cardwrapper" key={getUniqueKey(this.props.nextCard.id)}>
+          <ReviewCard className="next" {...this.props.nextCard} />
+        </div>
       );
     }
 
     let previousCard;
     if (this.props.previousCard) {
       previousCard = (
-        <ReviewCard
+        <div
+          className="cardwrapper"
           key={getUniqueKey(this.props.previousCard.id)}
-          className="previous"
-          showBack
-          {...this.props.previousCard}
-        />
+        >
+          <ReviewCard
+            className="previous"
+            showBack
+            {...this.props.previousCard}
+          />
+        </div>
       );
     }
 
@@ -234,26 +240,24 @@ export class ReviewPanel extends React.Component<Props> {
     return (
       <div className={`review-panel ${this.props.className || ''}`}>
         <div className="cards" ref={this.cardsRef} tabIndex={0}>
-          <div className="cardwrapper">
-            {previousCard}
-            {currentCard}
-            {nextCard}
-          </div>
-          {this.props.showBack ? (
-            <>
-              <hr className="note-divider divider" />
-              <DynamicNoteList
-                noteListContext={{
-                  screen: 'review',
-                }}
-                notes={this.props.notes}
-                keywords={this.props.currentCard.keywords}
-                priority="reading"
-                className="notes"
-              />
-            </>
-          ) : null}
+          {previousCard}
+          {currentCard}
+          {nextCard}
         </div>
+        {this.props.showBack ? (
+          <>
+            <hr className="note-divider divider" />
+            <DynamicNoteList
+              noteListContext={{
+                screen: 'review',
+              }}
+              notes={this.props.notes}
+              keywords={this.props.currentCard.keywords}
+              priority="reading"
+              className="notes"
+            />
+          </>
+        ) : null}
         {answerButtons}
       </div>
     );
