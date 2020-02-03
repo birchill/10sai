@@ -363,19 +363,18 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       }
 
       if (passDragState.stage !== ButtonDragStage.Idle) {
-        // XXX Drop this before landing
         console.error('Got pointer down while we are dragging?');
         return;
       }
 
-      // Update to dragging state after 1s
+      // Update to dragging state after a moment
       const origin = { x: evt.clientX, y: evt.clientY };
       const timeout = self.setTimeout(() => {
         setPassDragState({ stage: ButtonDragStage.Dragging, origin });
         setTooltip(
           getReviewIntervalString({ card: props.currentCard, confidence: 1 })
         );
-      }, 1000);
+      }, 600);
 
       setPassDragState({ stage: ButtonDragStage.PreDrag, origin, timeout });
     },
