@@ -47,6 +47,12 @@ type ButtonDragState =
     }
   | { stage: ButtonDragStage.Dragging; origin: ButtonDragOrigin };
 
+type PanelDimensions = {
+  width: number;
+  height: number;
+  buttonFaceRadius: number;
+};
+
 export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   const cardsRef = React.useRef<HTMLDivElement>(null);
 
@@ -129,11 +135,14 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     props.onPassCard,
   ]);
 
+  const nextConfidence = React.useRef<number>(1);
+
   const onClickPass = React.useCallback(
     (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      props.onPassCard({ confidence: 1 });
+      props.onPassCard({ confidence: nextConfidence.current });
+      nextConfidence.current = 1;
     },
-    [props.onPassCard]
+    [props.onPassCard, nextConfidence.current]
   );
 
   // Review interval tooltip
@@ -141,11 +150,9 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
 
   // Store various panel dimensions needed for the drag effect
   const reviewPanelRef = React.useRef<HTMLDivElement>(null);
-  const [panelDimensions, setPanelDimensions] = React.useState<{
-    width: number;
-    height: number;
-    buttonFaceRadius: number;
-  }>({ width: 0, height: 0, buttonFaceRadius: 0 });
+  const [panelDimensions, setPanelDimensions] = React.useState<PanelDimensions>(
+    { width: 0, height: 0, buttonFaceRadius: 0 }
+  );
   const resizeCallback = React.useCallback(() => {
     if (reviewPanelRef.current) {
       const buttonFace = reviewPanelRef.current.querySelector(
@@ -190,17 +197,40 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     setPassDragState({ stage: ButtonDragStage.Idle });
   }, [passButtonRef.current]);
 
+  const getDragMeasures = ({
+    evt,
+    dragOrigin,
+    panelDimensions,
+  }: {
+    evt: PointerEvent;
+    dragOrigin: ButtonDragOrigin;
+    panelDimensions: PanelDimensions;
+  }): {
+    xDistance: number;
+    yDistance: number;
+    yPortion: number;
+    confidence: number;
+  } => {
+    const xDistance = evt.clientX - dragOrigin.x;
+    const yDistance = evt.clientY - dragOrigin.y;
+    const yRange = panelDimensions.height || 100;
+    const yPortion = Math.min(Math.max((yDistance * 2) / yRange, -1), 1);
+    const confidence = Math.pow(8, -yPortion);
+
+    return { xDistance, yDistance, yPortion, confidence };
+  };
+
   const onPassPointerMove = React.useCallback(
     (evt: PointerEvent) => {
       if (passDragState.stage === ButtonDragStage.Idle) {
         return;
       }
 
-      const xDistance = evt.clientX - passDragState.origin.x;
-      const yDistance = evt.clientY - passDragState.origin.y;
-      const yRange = panelDimensions.height || 100;
-      const yPortion = Math.min(Math.max((yDistance * 2) / yRange, -1), 1);
-      const confidence = Math.pow(8, -yPortion);
+      const { xDistance, yDistance, yPortion, confidence } = getDragMeasures({
+        evt,
+        dragOrigin: passDragState.origin,
+        panelDimensions,
+      });
 
       // If we are in the pre-dragging stage and the distance from the origin is
       // more than a few pixels, set the state to dragging.
@@ -296,11 +326,23 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         self.clearTimeout(passDragState.timeout);
       }
 
+      if (passDragState.stage === ButtonDragStage.Dragging) {
+        const { confidence } = getDragMeasures({
+          evt,
+          dragOrigin: passDragState.origin,
+          panelDimensions,
+        });
+        nextConfidence.current = confidence;
+      }
+
       cancelDrag();
-      // XXX Actually handle the clicking behavior here?
-      //   -- If we are pre-drag, use a confidence of 1.
     },
-    [passDragState.stage, cancelDrag]
+    [
+      passDragState.stage,
+      (passDragState as any).origin,
+      panelDimensions,
+      cancelDrag,
+    ]
   );
 
   React.useEffect(() => {
