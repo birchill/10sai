@@ -25,6 +25,26 @@ export interface ReviewPanelInterface {
   focus: () => void;
 }
 
+const enum ButtonDragStage {
+  Idle,
+  PreDrag,
+  Dragging,
+}
+
+type ButtonDragOrigin = {
+  x: number;
+  y: number;
+};
+
+type ButtonDragState =
+  | { stage: ButtonDragStage.Idle }
+  | {
+      stage: ButtonDragStage.PreDrag;
+      origin: ButtonDragOrigin;
+      timeout: number;
+    }
+  | { stage: ButtonDragStage.Dragging; origin: ButtonDragOrigin };
+
 export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   const cardsRef = React.useRef<HTMLDivElement>(null);
 
@@ -114,6 +134,181 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     [props.onPassCard]
   );
 
+  const reviewPanelRef = React.useRef<HTMLDivElement>(null);
+  const [panelDimensions, setPanelDimensions] = React.useState<{
+    height: number;
+    buttonFaceRadius: number;
+  }>({ height: 0, buttonFaceRadius: 0 });
+  const resizeCallback = React.useCallback(() => {
+    if (reviewPanelRef.current) {
+      const buttonFace = reviewPanelRef.current.querySelector(
+        '.buttonface'
+      ) as HTMLSpanElement;
+      setPanelDimensions({
+        height: reviewPanelRef.current.getBoundingClientRect().height,
+        buttonFaceRadius: parseFloat(getComputedStyle(buttonFace).width) / 2,
+      });
+    }
+  }, [reviewPanelRef.current]);
+  React.useLayoutEffect(() => {
+    resizeCallback();
+    window.addEventListener('resize', resizeCallback);
+    return () => {
+      window.removeEventListener('resize', resizeCallback);
+    };
+  }, [resizeCallback]);
+
+  const passButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  const [passDragState, setPassDragState] = React.useState<ButtonDragState>({
+    stage: ButtonDragStage.Idle,
+  });
+
+  const onPassPointerMove = React.useCallback(
+    (evt: PointerEvent) => {
+      if (passDragState.stage === ButtonDragStage.Idle) {
+        return;
+      }
+
+      const xDistance = evt.clientX - passDragState.origin.x;
+      const yDistance = evt.clientY - passDragState.origin.y;
+
+      // If we are in the pre-dragging stage and the distance from the origin is
+      // more than a few pixels, set the state to dragging.
+      if (passDragState.stage === ButtonDragStage.PreDrag) {
+        if (Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)) > 30) {
+          clearTimeout(passDragState.timeout);
+          setPassDragState({
+            stage: ButtonDragStage.Dragging,
+            origin: passDragState.origin,
+          });
+        }
+        return;
+      }
+
+      if (!passButtonRef.current || !reviewPanelRef.current) {
+        return;
+      }
+
+      // Get the vertical range (do this before touching style to avoid
+      // unnecessary flushes).
+      const yRange = panelDimensions.height;
+
+      passButtonRef.current.style.transform = `translate(${xDistance}px, ${yDistance}px)`;
+      // Don't animate the dragging since Gecko seems to flicker when we do this
+      passButtonRef.current.style.transitionProperty = 'none';
+
+      // Make the color go red / blue based on the vertical position
+      const yPortion = (yDistance * 2) / yRange;
+      let hueRotateAngle;
+      if (yPortion > 0) {
+        hueRotateAngle = -yPortion * 120;
+      } else {
+        hueRotateAngle = -yPortion * 100;
+      }
+      passButtonRef.current.style.filter = `hue-rotate(${Math.round(
+        hueRotateAngle
+      )}deg)`;
+
+      // Rotate or enlarge the icon accordingly
+      const icon = passButtonRef.current.querySelector('.icon') as SVGElement;
+      if (yPortion > 0) {
+        icon.style.transform = `rotate(${180 * yPortion}deg)`;
+      } else {
+        icon.style.transform = `scale(${-2 * yPortion + 1})`;
+      }
+
+      // If we are dragging away from the left edge, move the thumb towards the
+      // middle of the circle.
+      if (xDistance < 0) {
+        const marginLeft = Math.round(
+          Math.min(-0.85 * panelDimensions.buttonFaceRadius - xDistance, 0)
+        );
+        icon.style.marginLeft = `${marginLeft}px`;
+      } else {
+        icon.style.marginLeft = '';
+      }
+
+      // XXX If we are dragging then
+      // -- calculate vertical distance from origin and use it to:
+      //    -- update the time overlay
+      // -- calculate horizontal distance and use it to update:
+      //    -- the opacity (further left = more transparent)
+      //    -- If we cross the 1/3 point or so, update to Cancel state (so we can
+      //       ignore the action in the click handler
+    },
+    [passDragState.stage, (passDragState as any).origin, panelDimensions.height]
+  );
+
+  const onPassPointerUp = React.useCallback(
+    (evt: PointerEvent) => {
+      if (passDragState.stage === ButtonDragStage.PreDrag) {
+        self.clearTimeout(passDragState.timeout);
+      }
+
+      if (passButtonRef.current) {
+        passButtonRef.current.style.transform = '';
+        passButtonRef.current.style.filter = '';
+        passButtonRef.current.style.opacity = '';
+        // Animate the reversing
+        passButtonRef.current.style.transition = 'all 0.4s';
+
+        // Revert the icon state too
+        const icon = passButtonRef.current.querySelector('.icon') as SVGElement;
+        icon.style.transform = '';
+        icon.style.marginLeft = '';
+        passButtonRef.current.style.transition = 'all 0.4s';
+      }
+
+      setPassDragState({ stage: ButtonDragStage.Idle });
+      // XXX Actually handle the clicking behavior here?
+      //   -- If we are pre-drag, use a confidence of 1.
+      // XXX Clear timer
+      // XXX Hide overlay
+    },
+    [passDragState.stage]
+  );
+
+  React.useEffect(() => {
+    if (passDragState.stage !== ButtonDragStage.Idle) {
+      window.addEventListener('pointerup', onPassPointerUp);
+      window.addEventListener('pointermove', onPassPointerMove);
+    }
+    return () => {
+      window.removeEventListener('pointerup', onPassPointerUp);
+      window.removeEventListener('pointermove', onPassPointerMove);
+    };
+  }, [passDragState.stage, onPassPointerUp, onPassPointerMove]);
+
+  const onPassPointerDown = React.useCallback(
+    (evt: React.PointerEvent<HTMLButtonElement>) => {
+      if (evt.button !== 0) {
+        return;
+      }
+
+      if (passDragState.stage !== ButtonDragStage.Idle) {
+        // XXX Drop this before landing
+        console.error('Got pointer down while we are dragging?');
+        return;
+      }
+
+      // Update to dragging state after 1s
+      const timeout = self.setTimeout(() => {
+        setPassDragState({
+          stage: ButtonDragStage.Dragging,
+          origin: { x: evt.clientX, y: evt.clientY },
+        });
+      }, 1000);
+
+      setPassDragState({
+        stage: ButtonDragStage.PreDrag,
+        origin: { x: evt.clientX, y: evt.clientY },
+        timeout,
+      });
+    },
+    [passDragState.stage]
+  );
+
   // There is one case where both the previous card and the next card might be
   // the same card (if the current card and previous card are the same we
   // remove the current card from the history). In that case we still need
@@ -192,7 +387,9 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         className="pass"
         aria-label="Correct"
         tabIndex={props.showBack ? 0 : -1}
+        ref={passButtonRef}
         onClick={onClickPass}
+        onPointerDown={onPassPointerDown}
       >
         <span className="buttonface">
           <svg className="icon" viewBox="0 0 100 100">
@@ -210,7 +407,10 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   );
 
   return (
-    <div className={`review-panel ${props.className || ''}`}>
+    <div
+      className={`review-panel ${props.className || ''}`}
+      ref={reviewPanelRef}
+    >
       <div className="cards" ref={cardsRef} tabIndex={0}>
         {previousCard}
         {currentCard}

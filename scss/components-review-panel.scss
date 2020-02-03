@@ -24,7 +24,7 @@
       }
       // This is what makes it square
       > .review-card::after {
-        content: "";
+        content: '';
         display: block;
         padding-bottom: 100%;
       }
@@ -59,7 +59,8 @@
     }
   }
 
-  > .notes, > .notes-header {
+  > .notes,
+  > .notes-header {
     width: 80%;
     max-width: 800px;
     margin-left: auto;
@@ -85,12 +86,12 @@
       position: fixed;
 
       --hit-region-width: 8rem;
-      --hit-region-height: 9rem;
+      --hit-region-height: 18rem;
       --buttonface-radius: 7rem;
 
       @media screen and (max-width: 600px) {
         --hit-region-width: 6rem;
-        --hit-region-height: 7rem;
+        --hit-region-height: 14rem;
         --buttonface-radius: 5rem;
       }
 
@@ -98,7 +99,7 @@
       max-width: 33%;
       height: var(--hit-region-height);
 
-      top: calc(50% - var(--hit-region-height));
+      top: calc(50% - var(--hit-region-height) / 2);
 
       border: none;
       border-radius: 0px;
@@ -109,6 +110,9 @@
 
       > .buttonface {
         display: inline-block;
+        // The button dragging code relies on this width being equal to twice
+        // --buttonface-radius so if we change this we'll need to update that
+        // code too.
         width: calc(2 * var(--buttonface-radius));
         height: calc(2 * var(--buttonface-radius));
         border-radius: var(--buttonface-radius);
@@ -117,7 +121,9 @@
         font-size: 1rem;
         transition: transform 0.15s;
 
-        margin-top: calc(var(--hit-region-height) - var(--buttonface-radius));
+        margin-top: calc(
+          var(--hit-region-height) - var(--buttonface-radius) * 2
+        );
 
         > .icon {
           width: calc(var(--buttonface-radius) * 0.8);
@@ -139,6 +145,8 @@
         background: $red-6;
 
         > .icon {
+          // This calculation is reproduced in the button dragging code so we
+          // should be careful to keep it in sync.
           margin-left: calc(var(--buttonface-radius) * 0.85);
           color: $red-9;
         }
