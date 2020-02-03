@@ -142,16 +142,19 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   // Store various panel dimensions needed for the drag effect
   const reviewPanelRef = React.useRef<HTMLDivElement>(null);
   const [panelDimensions, setPanelDimensions] = React.useState<{
+    width: number;
     height: number;
     buttonFaceRadius: number;
-  }>({ height: 0, buttonFaceRadius: 0 });
+  }>({ width: 0, height: 0, buttonFaceRadius: 0 });
   const resizeCallback = React.useCallback(() => {
     if (reviewPanelRef.current) {
       const buttonFace = reviewPanelRef.current.querySelector(
         '.buttonface'
       ) as HTMLSpanElement;
+      const { width, height } = reviewPanelRef.current.getBoundingClientRect();
       setPanelDimensions({
-        height: reviewPanelRef.current.getBoundingClientRect().height,
+        width,
+        height,
         buttonFaceRadius: parseFloat(getComputedStyle(buttonFace).width) / 2,
       });
     }
@@ -169,6 +172,23 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   const [passDragState, setPassDragState] = React.useState<ButtonDragState>({
     stage: ButtonDragStage.Idle,
   });
+
+  const cancelDrag = React.useCallback(() => {
+    if (passButtonRef.current) {
+      passButtonRef.current.style.transform = '';
+      passButtonRef.current.style.filter = '';
+      // Animate the reversing
+      passButtonRef.current.style.transition = 'all 0.4s';
+
+      // Revert the icon state too
+      const icon = passButtonRef.current.querySelector('.icon') as SVGElement;
+      icon.style.transform = '';
+      icon.style.marginLeft = '';
+      icon.style.transition = 'all 0.4s';
+    }
+
+    setPassDragState({ stage: ButtonDragStage.Idle });
+  }, [passButtonRef.current]);
 
   const onPassPointerMove = React.useCallback(
     (evt: PointerEvent) => {
@@ -195,6 +215,12 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
             getReviewIntervalString({ card: props.currentCard, confidence })
           );
         }
+        return;
+      }
+
+      // If we are more than half way across the screen, cancel the action.
+      if (xDistance < -panelDimensions.width / 2) {
+        cancelDrag();
         return;
       }
 
@@ -229,6 +255,8 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       } else {
         icon.style.transform = `scale(${-2 * yPortion + 1})`;
       }
+      // Likewise, don't transition this either
+      icon.style.transitionProperty = 'none';
 
       // If we are dragging away from the left edge, move the thumb towards the
       // middle of the circle.
@@ -241,17 +269,24 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         icon.style.marginLeft = '';
       }
 
-      // XXX If we are dragging then
-      // -- calculate horizontal distance and use it to update:
-      //    -- the opacity (further left = more transparent)
-      //    -- If we cross the 1/3 point or so, update to Cancel state (so we can
-      //       ignore the action in the click handler
+      // If we are approaching the middle, fade the icon so we know it's about
+      // to cancel.
+      const quarterWidth = panelDimensions.width / 4;
+      if (xDistance < -quarterWidth) {
+        const fadeAmount = Math.min(
+          (-xDistance - quarterWidth) / quarterWidth,
+          1
+        );
+        const opacity = Math.round(100 * (1 - fadeAmount));
+        passButtonRef.current.style.filter += ` opacity(${opacity}%)`;
+      }
     },
     [
       passDragState.stage,
       (passDragState as any).origin,
       panelDimensions.height,
       props.currentCard,
+      cancelDrag,
     ]
   );
 
@@ -261,26 +296,11 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         self.clearTimeout(passDragState.timeout);
       }
 
-      if (passButtonRef.current) {
-        passButtonRef.current.style.transform = '';
-        passButtonRef.current.style.filter = '';
-        passButtonRef.current.style.opacity = '';
-        // Animate the reversing
-        passButtonRef.current.style.transition = 'all 0.4s';
-
-        // Revert the icon state too
-        const icon = passButtonRef.current.querySelector('.icon') as SVGElement;
-        icon.style.transform = '';
-        icon.style.marginLeft = '';
-        passButtonRef.current.style.transition = 'all 0.4s';
-      }
-
-      setPassDragState({ stage: ButtonDragStage.Idle });
+      cancelDrag();
       // XXX Actually handle the clicking behavior here?
       //   -- If we are pre-drag, use a confidence of 1.
-      // XXX Hide overlay
     },
-    [passDragState.stage]
+    [passDragState.stage, cancelDrag]
   );
 
   React.useEffect(() => {
