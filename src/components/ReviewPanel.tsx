@@ -3,9 +3,11 @@ import * as React from 'react';
 import { hasNoModifiers, isTextBox } from '../utils/keyboard';
 
 import { DynamicNoteList } from './DynamicNoteList';
+import { OverlayTooltip } from './OverlayTooltip';
 import { ReviewCard } from './ReviewCard';
 import { Card } from '../model';
 import { NoteState } from '../notes/reducer';
+import { getReviewInterval } from '../review/utils';
 
 interface Props {
   active: boolean;
@@ -134,6 +136,10 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     [props.onPassCard]
   );
 
+  // Review interval tooltip
+  const [tooltip, setTooltip] = React.useState<string>('');
+
+  // Store various panel dimensions needed for the drag effect
   const reviewPanelRef = React.useRef<HTMLDivElement>(null);
   const [panelDimensions, setPanelDimensions] = React.useState<{
     height: number;
@@ -158,8 +164,8 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     };
   }, [resizeCallback]);
 
+  // Dragging effect for the pass button
   const passButtonRef = React.useRef<HTMLButtonElement>(null);
-
   const [passDragState, setPassDragState] = React.useState<ButtonDragState>({
     stage: ButtonDragStage.Idle,
   });
@@ -172,6 +178,9 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
 
       const xDistance = evt.clientX - passDragState.origin.x;
       const yDistance = evt.clientY - passDragState.origin.y;
+      const yRange = panelDimensions.height || 100;
+      const yPortion = Math.min(Math.max((yDistance * 2) / yRange, -1), 1);
+      const confidence = Math.pow(8, -yPortion);
 
       // If we are in the pre-dragging stage and the distance from the origin is
       // more than a few pixels, set the state to dragging.
@@ -182,24 +191,27 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
             stage: ButtonDragStage.Dragging,
             origin: passDragState.origin,
           });
+          setTooltip(
+            getReviewIntervalString({ card: props.currentCard, confidence })
+          );
         }
         return;
       }
 
+      // Dragging state, update the tooltip.
+      setTooltip(
+        getReviewIntervalString({ card: props.currentCard, confidence })
+      );
+
       if (!passButtonRef.current || !reviewPanelRef.current) {
         return;
       }
-
-      // Get the vertical range (do this before touching style to avoid
-      // unnecessary flushes).
-      const yRange = panelDimensions.height;
 
       passButtonRef.current.style.transform = `translate(${xDistance}px, ${yDistance}px)`;
       // Don't animate the dragging since Gecko seems to flicker when we do this
       passButtonRef.current.style.transitionProperty = 'none';
 
       // Make the color go red / blue based on the vertical position
-      const yPortion = (yDistance * 2) / yRange;
       let hueRotateAngle;
       if (yPortion > 0) {
         hueRotateAngle = -yPortion * 120;
@@ -230,14 +242,17 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       }
 
       // XXX If we are dragging then
-      // -- calculate vertical distance from origin and use it to:
-      //    -- update the time overlay
       // -- calculate horizontal distance and use it to update:
       //    -- the opacity (further left = more transparent)
       //    -- If we cross the 1/3 point or so, update to Cancel state (so we can
       //       ignore the action in the click handler
     },
-    [passDragState.stage, (passDragState as any).origin, panelDimensions.height]
+    [
+      passDragState.stage,
+      (passDragState as any).origin,
+      panelDimensions.height,
+      props.currentCard,
+    ]
   );
 
   const onPassPointerUp = React.useCallback(
@@ -263,7 +278,6 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       setPassDragState({ stage: ButtonDragStage.Idle });
       // XXX Actually handle the clicking behavior here?
       //   -- If we are pre-drag, use a confidence of 1.
-      // XXX Clear timer
       // XXX Hide overlay
     },
     [passDragState.stage]
@@ -293,18 +307,15 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       }
 
       // Update to dragging state after 1s
+      const origin = { x: evt.clientX, y: evt.clientY };
       const timeout = self.setTimeout(() => {
-        setPassDragState({
-          stage: ButtonDragStage.Dragging,
-          origin: { x: evt.clientX, y: evt.clientY },
-        });
+        setPassDragState({ stage: ButtonDragStage.Dragging, origin });
+        setTooltip(
+          getReviewIntervalString({ card: props.currentCard, confidence: 1 })
+        );
       }, 1000);
 
-      setPassDragState({
-        stage: ButtonDragStage.PreDrag,
-        origin: { x: evt.clientX, y: evt.clientY },
-        timeout,
-      });
+      setPassDragState({ stage: ButtonDragStage.PreDrag, origin, timeout });
     },
     [passDragState.stage]
   );
@@ -435,9 +446,32 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         </>
       ) : null}
       {answerButtons}
+      <OverlayTooltip
+        hidden={passDragState.stage !== ButtonDragStage.Dragging}
+        text={tooltip}
+      />
     </div>
   );
 };
+
+function getReviewIntervalString({
+  card,
+  confidence,
+}: {
+  card: Card;
+  confidence: number;
+}): string {
+  const reviewInterval = getReviewInterval({
+    card,
+    confidence,
+    reviewTime: new Date(),
+  });
+  if (reviewInterval < 2) {
+    return `Next review in ${Math.round(reviewInterval * 24)} hours`;
+  } else {
+    return `Next review in ${Math.round(reviewInterval)} days`;
+  }
+}
 
 export const ReviewPanel = React.forwardRef<ReviewPanelInterface, Props>(
   ReviewPanelImpl

@@ -1,4 +1,5 @@
 import { ReviewPhase } from './review-phase';
+import { getReviewInterval } from './utils';
 import { Action } from '../actions';
 import { AvailableCards, Card } from '../model';
 import { notes as notesReducer, NoteState } from '../notes/reducer';
@@ -202,21 +203,12 @@ export function review(
       // Add random jitter to add to the newly calculated level so that cards
       // added or reviewed together get spread out somewhat.
       const jitter = action.levelSeed * 0.4 + 0.8;
-      if (updatedCard.progress.level && updatedCard.progress.due) {
-        // Account for the fact that we might have reviewed this early, or
-        // late.
-        const reviewedIntervalInDays =
-          (action.reviewTime.getTime() - updatedCard.progress.due.getTime()) /
-            MS_PER_DAY +
-          updatedCard.progress.level;
-        const nextIntervalInDays =
-          reviewedIntervalInDays * 2 * action.confidence * jitter;
-
-        updatedCard.progress.level = Math.max(nextIntervalInDays, 0.5);
-      } else {
-        // New / reset card: Review in 12 hours' time
-        updatedCard.progress.level = 0.5 * action.confidence * jitter;
-      }
+      updatedCard.progress.level = getReviewInterval({
+        card: updatedCard,
+        confidence: action.confidence,
+        reviewTime: action.reviewTime,
+        jitter,
+      });
 
       // Round level to make the stored representation a little more compact
       updatedCard.progress.level =

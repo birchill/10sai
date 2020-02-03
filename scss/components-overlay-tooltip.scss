@@ -1,0 +1,29 @@
+.overlay-tooltip {
+  position: fixed;
+  bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  pointer-events: none;
+
+  display: flex;
+  justify-content: center;
+
+  .text {
+    background: transparentize($neutral-4, 0.7);
+    padding: 0.5rem 2rem;
+    border-radius: 2rem;
+
+    color: white;
+    font-size: 1rem;
+  }
+
+  transition: opacity 0.1s;
+
+  &[hidden] {
+    // Override UA style
+    display: flex;
+
+    opacity: 0;
+    transition: opacity 0.8s;
+  }
+}
