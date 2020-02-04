@@ -135,41 +135,6 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     props.onPassCard,
   ]);
 
-  // We allow the pass button to be dragged around to vary the confidence level.
-  // When the user releases it, we'll get a pointerup event and _sometimes_
-  // a click event. The click event tends to be fired on desktop platforms but
-  // not on mobile, although sometimes it is fired on mobile.
-  //
-  // We can't ignore the click event entirely, however, since it will be fired
-  // when the user activates the pass button via the keyboard (pressing space
-  // while it is focussed) or when we press the button without dragging it
-  // (since we mostly ignore the event in that case).
-  //
-  // So we have a situation where we need to handle either case but NOT call
-  // `onPassCard` twice when both events are fired.
-  //
-  // We originally tried to do that by setting an "ignoreClick" flag and
-  // clearing it when we next showed the front of a card, but it turns out that
-  // we would actually get the following sequence:
-  //
-  //   - Call onPassCard
-  //   - Set ignoreClick = true
-  //   - Re-render and reset ignoreClick and re-bind the onClick handler
-  //   --> THEN the click event handler would fire (with ignoreClick = false).
-  //
-  // So instead we simply rely on the fact that there will be a re-render BEFORE
-  // we wun the click event handler so we can just check inside that handler if
-  // we're showing the front of the card or not (and ignore the event if we
-  // are).
-  const onClickPass = React.useCallback(
-    (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      if (props.showBack) {
-        props.onPassCard({ confidence: 1 });
-      }
-    },
-    [props.onPassCard, props.showBack]
-  );
-
   // Review interval tooltip
   const [tooltip, setTooltip] = React.useState<string>('');
 
@@ -339,6 +304,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     [
       passDragState.stage,
       (passDragState as any).origin,
+      (passDragState as any).timeout,
       panelDimensions.height,
       props.currentCard,
       cancelDrag,
@@ -402,6 +368,10 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         return;
       }
 
+      if (!props.showBack) {
+        return;
+      }
+
       if (passDragState.stage !== ButtonDragStage.Idle) {
         console.error('Got pointer down while we are dragging?');
         return;
@@ -418,7 +388,51 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
 
       setPassDragState({ stage: ButtonDragStage.PreDrag, origin, timeout });
     },
-    [passDragState.stage]
+    [passDragState.stage, props.showBack, props.currentCard]
+  );
+
+  // We allow the pass button to be dragged around to vary the confidence level.
+  // When the user releases it, we'll get a pointerup event and _sometimes_
+  // a click event. The click event tends to be fired on desktop platforms but
+  // not on mobile, although sometimes it is fired on mobile.
+  //
+  // We can't ignore the click event entirely, however, since it will be fired
+  // when the user activates the pass button via the keyboard (pressing space
+  // while it is focussed) or when we press the button without dragging it
+  // (since we mostly ignore the event in that case).
+  //
+  // So we have a situation where we need to handle either case but NOT call
+  // `onPassCard` twice when both events are fired.
+  //
+  // We originally tried to do that by setting an "ignoreClick" flag and
+  // clearing it when we next showed the front of a card, but it turns out that
+  // we would actually get the following sequence:
+  //
+  //   - Call onPassCard
+  //   - Set ignoreClick = true
+  //   - Re-render and reset ignoreClick and re-bind the onClick handler
+  //   --> THEN the click event handler would fire (with ignoreClick = false).
+  //
+  // So instead we simply rely on the fact that there will be a re-render BEFORE
+  // we wun the click event handler so we can just check inside that handler if
+  // we're showing the front of the card or not (and ignore the event if we
+  // are).
+  const onClickPass = React.useCallback(
+    (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      // Make sure we reset any dragging state in case we fail to get
+      // a pointerup event.
+      if (passDragState.stage === ButtonDragStage.PreDrag) {
+        self.clearTimeout(passDragState.timeout);
+      }
+      if (passDragState.stage !== ButtonDragStage.Idle) {
+        cancelDrag();
+      }
+
+      if (props.showBack) {
+        props.onPassCard({ confidence: 1 });
+      }
+    },
+    [passDragState.stage, cancelDrag, props.onPassCard, props.showBack]
   );
 
   // There is one case where both the previous card and the next card might be
