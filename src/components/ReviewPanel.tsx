@@ -364,6 +364,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     },
     [
       passDragState.stage,
+      (passDragState as any).timeout,
       (passDragState as any).origin,
       panelDimensions,
       props.onPassCard,
@@ -371,14 +372,27 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     ]
   );
 
+  const onPassPointerCancel = React.useCallback(
+    (evt: PointerEvent) => {
+      if (passDragState.stage === ButtonDragStage.PreDrag) {
+        self.clearTimeout(passDragState.timeout);
+      }
+
+      cancelDrag();
+    },
+    [passDragState.stage, (passDragState as any).timeout, cancelDrag]
+  );
+
   React.useEffect(() => {
     if (passDragState.stage !== ButtonDragStage.Idle) {
       window.addEventListener('pointerup', onPassPointerUp);
       window.addEventListener('pointermove', onPassPointerMove);
+      window.addEventListener('pointercancel', onPassPointerCancel);
     }
     return () => {
       window.removeEventListener('pointerup', onPassPointerUp);
       window.removeEventListener('pointermove', onPassPointerMove);
+      window.removeEventListener('pointercancel', onPassPointerCancel);
     };
   }, [passDragState.stage, onPassPointerUp, onPassPointerMove]);
 
