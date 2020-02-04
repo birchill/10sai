@@ -83,6 +83,7 @@
     > .pass {
       background: transparent;
       -webkit-tap-highlight-color: transparent;
+      touch-action: none;
       outline: none;
       position: fixed;
 

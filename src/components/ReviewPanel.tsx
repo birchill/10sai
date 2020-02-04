@@ -135,14 +135,39 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     props.onPassCard,
   ]);
 
-  const nextConfidence = React.useRef<number>(1);
-
+  // We allow the pass button to be dragged around to vary the confidence level.
+  // When the user releases it, we'll get a pointerup event and _sometimes_
+  // a click event. The click event tends to be fired on desktop platforms but
+  // not on mobile, although sometimes it is fired on mobile.
+  //
+  // We can't ignore the click event entirely, however, since it will be fired
+  // when the user activates the pass button via the keyboard (pressing space
+  // while it is focussed) or when we press the button without dragging it
+  // (since we mostly ignore the event in that case).
+  //
+  // So we have a situation where we need to handle either case but NOT call
+  // `onPassCard` twice when both events are fired.
+  //
+  // We originally tried to do that by setting an "ignoreClick" flag and
+  // clearing it when we next showed the front of a card, but it turns out that
+  // we would actually get the following sequence:
+  //
+  //   - Call onPassCard
+  //   - Set ignoreClick = true
+  //   - Re-render and reset ignoreClick and re-bind the onClick handler
+  //   --> THEN the click event handler would fire (with ignoreClick = false).
+  //
+  // So instead we simply rely on the fact that there will be a re-render BEFORE
+  // we wun the click event handler so we can just check inside that handler if
+  // we're showing the front of the card or not (and ignore the event if we
+  // are).
   const onClickPass = React.useCallback(
     (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      props.onPassCard({ confidence: nextConfidence.current });
-      nextConfidence.current = 1;
+      if (props.showBack) {
+        props.onPassCard({ confidence: 1 });
+      }
     },
-    [props.onPassCard, nextConfidence.current]
+    [props.onPassCard, props.showBack]
   );
 
   // Review interval tooltip
@@ -332,7 +357,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
           dragOrigin: passDragState.origin,
           panelDimensions,
         });
-        nextConfidence.current = confidence;
+        props.onPassCard({ confidence });
       }
 
       cancelDrag();
@@ -341,6 +366,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       passDragState.stage,
       (passDragState as any).origin,
       panelDimensions,
+      props.onPassCard,
       cancelDrag,
     ]
   );
@@ -407,7 +433,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     <div
       className="cardwrapper current"
       key={getUniqueKey(props.currentCard.id)}
-      onClick={props.onShowBack}
+      onClick={props.showBack ? undefined : props.onShowBack}
     >
       <ReviewCard showBack={props.showBack} {...props.currentCard} />
     </div>
