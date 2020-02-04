@@ -219,11 +219,12 @@ const EditCardFormImpl: React.FC<Props> = (props, ref) => {
           </TagSuggestionProvider>
         </div>
       </form>
-      <SaveStatus
-        className="savestate"
-        saveState={props.saveState}
-        saveError={props.saveError ? props.saveError.message : undefined}
-      />
+      <div className="savestate">
+        <SaveStatus
+          saveState={props.saveState}
+          saveError={props.saveError ? props.saveError.message : undefined}
+        />
+      </div>
     </>
   );
 };
