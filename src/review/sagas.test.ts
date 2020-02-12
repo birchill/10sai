@@ -156,6 +156,157 @@ describe('sagas:review newReview', () => {
   });
 });
 
+describe('sagas:review loadReviewCards', () => {
+  const dataStore = ({
+    getCardsById: () => {},
+    putReview: () => {},
+  } as unknown) as DataStore;
+
+  const availableCardWatcher = ({
+    getNewCards: () => {},
+    getOverdueCards: () => {},
+  } as unknown) as AvailableCardWatcher;
+
+  const getCardProvider = (cards: Array<Partial<Card>>): EffectProviders => {
+    return {
+      call(effect, next) {
+        if (effect.fn === dataStore.getCardsById) {
+          const ids = effect.args[0];
+          const result = [];
+          for (const id of ids) {
+            const card = cards.find(card => card.id === id);
+            if (card) {
+              result.push(card);
+            } else if (id.startsWith('new-')) {
+              const newId = parseInt(id.substr('new-'.length), 10);
+              result.push({
+                id: `new-${newId}`,
+                front: `New question ${newId + 1}`,
+                back: `New answer ${newId + 1}`,
+              });
+            } else if (!isNaN(id)) {
+              const thisId = parseInt(id, 10);
+              result.push({
+                id,
+                front: `Question ${thisId + 1}`,
+                back: `Answer ${thisId + 1}`,
+              });
+            }
+          }
+          return result;
+        }
+
+        if (
+          effect.fn === availableCardWatcher.getNewCards ||
+          effect.fn === availableCardWatcher.getOverdueCards
+        ) {
+          const result = [];
+
+          if (effect.fn === availableCardWatcher.getNewCards) {
+            for (let i = 0; i < 5; i++) {
+              result.push(`new-${i}`);
+            }
+          } else {
+            for (let i = 0; i < 5; i++) {
+              result.push(String(i));
+            }
+          }
+
+          return result;
+        }
+
+        return next();
+      },
+    };
+  };
+
+  it('fills in the cards when the review is synced', async () => {
+    let state = reducer(undefined, { type: 'none' } as any);
+
+    const cards: Array<Partial<Card>> = [
+      { id: 'a', front: 'Question A', back: 'Answer A' },
+      { id: 'b', front: 'Question B', back: 'Answer B' },
+      { id: 'c', front: 'Question C', back: 'Answer C' },
+      { id: 'd', front: 'Question D', back: 'Answer D' },
+    ];
+
+    const later = new Date(Date.now() + 2 * MS_PER_DAY);
+    const action = Actions.loadReviewCards({
+      review: {
+        maxCards: 6,
+        maxNewCards: 2,
+        history: [
+          { id: 'a', status: ReviewCardStatus.Passed },
+          {
+            id: 'b',
+            status: ReviewCardStatus.Failed,
+            previousProgress: { level: 2, due: later },
+          },
+          {
+            id: 'c',
+            status: ReviewCardStatus.Passed,
+            previousProgress: { level: 2, due: later },
+          },
+          {
+            id: 'd',
+            status: ReviewCardStatus.Failed,
+            previousProgress: { level: 2, due: later },
+          },
+        ],
+      },
+    });
+    state = reducer(state, action);
+
+    return expectSaga(
+      loadReviewCardsSaga,
+      dataStore,
+      availableCardWatcher,
+      action
+    )
+      .provide(getCardProvider(cards))
+      .withState(state)
+      .put.like({
+        action: {
+          type: 'REVIEW_CARDS_LOADED',
+          history: [
+            {
+              card: { id: 'a', front: 'Question A', back: 'Answer A' },
+              state: 'passed',
+            },
+            {
+              card: { id: 'b', front: 'Question B', back: 'Answer B' },
+              state: 'failed',
+              previousProgress: { level: 2, due: later },
+            },
+            {
+              card: { id: 'c', front: 'Question C', back: 'Answer C' },
+              state: 'passed',
+              previousProgress: { level: 2, due: later },
+            },
+            {
+              card: { id: 'd', front: 'Question D', back: 'Answer D' },
+              state: 'failed',
+              previousProgress: { level: 2, due: later },
+            },
+          ],
+          unreviewed: [
+            {
+              id: 'new-0',
+              front: 'New question 1',
+              back: 'New answer 1',
+            },
+            {
+              id: '0',
+              front: 'Question 1',
+              back: 'Answer 1',
+            },
+          ],
+        },
+      })
+      .run();
+  });
+});
+
 describe('sagas:review updateProgress', () => {
   const dataStore = ({
     putCard: (card: Partial<Card>) => card,
@@ -366,157 +517,6 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'finishReview'])
-      .run();
-  });
-});
-
-describe('sagas:review loadReview', () => {
-  const dataStore = ({
-    getCardsById: () => {},
-    putReview: () => {},
-  } as unknown) as DataStore;
-
-  const availableCardWatcher = ({
-    getNewCards: () => {},
-    getOverdueCards: () => {},
-  } as unknown) as AvailableCardWatcher;
-
-  const getCardProvider = (cards: Array<Partial<Card>>): EffectProviders => {
-    return {
-      call(effect, next) {
-        if (effect.fn === dataStore.getCardsById) {
-          const ids = effect.args[0];
-          const result = [];
-          for (const id of ids) {
-            const card = cards.find(card => card.id === id);
-            if (card) {
-              result.push(card);
-            } else if (id.startsWith('new-')) {
-              const newId = parseInt(id.substr('new-'.length), 10);
-              result.push({
-                id: `new-${newId}`,
-                front: `New question ${newId + 1}`,
-                back: `New answer ${newId + 1}`,
-              });
-            } else if (!isNaN(id)) {
-              const thisId = parseInt(id, 10);
-              result.push({
-                id,
-                front: `Question ${thisId + 1}`,
-                back: `Answer ${thisId + 1}`,
-              });
-            }
-          }
-          return result;
-        }
-
-        if (
-          effect.fn === availableCardWatcher.getNewCards ||
-          effect.fn === availableCardWatcher.getOverdueCards
-        ) {
-          const result = [];
-
-          if (effect.fn === availableCardWatcher.getNewCards) {
-            for (let i = 0; i < 5; i++) {
-              result.push(`new-${i}`);
-            }
-          } else {
-            for (let i = 0; i < 5; i++) {
-              result.push(String(i));
-            }
-          }
-
-          return result;
-        }
-
-        return next();
-      },
-    };
-  };
-
-  it('fills in the cards when the review is synced', async () => {
-    let state = reducer(undefined, { type: 'none' } as any);
-
-    const cards: Array<Partial<Card>> = [
-      { id: 'a', front: 'Question A', back: 'Answer A' },
-      { id: 'b', front: 'Question B', back: 'Answer B' },
-      { id: 'c', front: 'Question C', back: 'Answer C' },
-      { id: 'd', front: 'Question D', back: 'Answer D' },
-    ];
-
-    const later = new Date(Date.now() + 2 * MS_PER_DAY);
-    const action = Actions.loadReviewCards({
-      review: {
-        maxCards: 6,
-        maxNewCards: 2,
-        history: [
-          { id: 'a', status: ReviewCardStatus.Passed },
-          {
-            id: 'b',
-            status: ReviewCardStatus.Failed,
-            previousProgress: { level: 2, due: later },
-          },
-          {
-            id: 'c',
-            status: ReviewCardStatus.Passed,
-            previousProgress: { level: 2, due: later },
-          },
-          {
-            id: 'd',
-            status: ReviewCardStatus.Failed,
-            previousProgress: { level: 2, due: later },
-          },
-        ],
-      },
-    });
-    state = reducer(state, action);
-
-    return expectSaga(
-      loadReviewCardsSaga,
-      dataStore,
-      availableCardWatcher,
-      action
-    )
-      .provide(getCardProvider(cards))
-      .withState(state)
-      .put.like({
-        action: {
-          type: 'REVIEW_CARDS_LOADED',
-          history: [
-            {
-              card: { id: 'a', front: 'Question A', back: 'Answer A' },
-              state: 'passed',
-            },
-            {
-              card: { id: 'b', front: 'Question B', back: 'Answer B' },
-              state: 'failed',
-              previousProgress: { level: 2, due: later },
-            },
-            {
-              card: { id: 'c', front: 'Question C', back: 'Answer C' },
-              state: 'passed',
-              previousProgress: { level: 2, due: later },
-            },
-            {
-              card: { id: 'd', front: 'Question D', back: 'Answer D' },
-              state: 'failed',
-              previousProgress: { level: 2, due: later },
-            },
-          ],
-          unreviewed: [
-            {
-              id: 'new-0',
-              front: 'New question 1',
-              back: 'New answer 1',
-            },
-            {
-              id: '0',
-              front: 'Question 1',
-              back: 'Answer 1',
-            },
-          ],
-        },
-      })
       .run();
   });
 });
