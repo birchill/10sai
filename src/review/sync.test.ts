@@ -6,7 +6,7 @@ import { reducer } from '../reducer';
 import { ReviewAction } from './actions';
 import { getReviewSummary } from './selectors';
 import { ReviewPhase } from './review-phase';
-import { Card, Review } from '../model';
+import { Card, Review, ReviewCardStatus } from '../model';
 import { CardChange } from '../store/CardStore';
 import { DataStore } from '../store/DataStore';
 import { Store } from 'redux';
@@ -204,7 +204,8 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          currentCard: card,
+          queue: [{ card, state: 'front' }],
+          position: 0,
         },
       });
 
@@ -214,63 +215,9 @@ describe('review:sync', () => {
       };
       mockDataStore.__triggerChange('card', { card: updatedCard });
 
-      expect(mockStore.actions).toContainEqual(updateReviewCard(updatedCard));
-    });
-
-    it('triggers an update when an unreviewed card is updated', () => {
-      subject({ dataStore, store, availableCardWatcher });
-
-      const card = {
-        id: 'abc',
-        front: 'Question',
-        back: 'Answer',
-        progress: {
-          due: new Date(),
-        },
-      } as Card;
-      mockStore.__update({
-        screen: 'review',
-        review: {
-          ...initialState.review,
-          heap: [card],
-        },
-      });
-
-      const updatedCard = {
-        ...card,
-        front: 'Updated question',
-      };
-      mockDataStore.__triggerChange('card', { card: updatedCard });
-
-      expect(mockStore.actions).toContainEqual(updateReviewCard(updatedCard));
-    });
-
-    it('triggers an update when a failed card is updated', () => {
-      subject({ dataStore, store, availableCardWatcher });
-
-      const card = {
-        id: 'abc',
-        front: 'Question',
-        back: 'Answer',
-        progress: {
-          due: new Date(),
-        },
-      } as Card;
-      mockStore.__update({
-        screen: 'review',
-        review: {
-          ...initialState.review,
-          failed: [card],
-        },
-      });
-
-      const updatedCard = {
-        ...card,
-        front: 'Updated question',
-      };
-      mockDataStore.__triggerChange('card', { card: updatedCard });
-
-      expect(mockStore.actions).toContainEqual(updateReviewCard(updatedCard));
+      expect(mockStore.actions).toContainEqual(
+        updateReviewCard({ card: updatedCard })
+      );
     });
 
     it('triggers an update when the current card is deleted', () => {
@@ -288,7 +235,8 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          currentCard: card,
+          queue: [{ card, state: 'front' }],
+          position: 0,
         },
       });
 
@@ -321,13 +269,14 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          currentCard: card,
+          queue: [{ card, state: 'front' }],
+          position: 0,
         },
       });
 
       mockDataStore.__triggerChange('card', { card });
 
-      expect(mockStore.actions).not.toContainEqual(updateReviewCard(card));
+      expect(mockStore.actions).not.toContainEqual(updateReviewCard({ card }));
     });
 
     it('does NOT trigger an update when an unrelated card is updated', () => {
@@ -345,7 +294,8 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          currentCard: card,
+          queue: [{ card, state: 'front' }],
+          position: 0,
         },
       });
 
@@ -356,7 +306,7 @@ describe('review:sync', () => {
         },
       });
 
-      expect(mockStore.actions).not.toContainEqual(updateReviewCard(card));
+      expect(mockStore.actions).not.toContainEqual(updateReviewCard({ card }));
     });
 
     it('does NOT trigger an update when an unrelated card is deleted', () => {
@@ -374,7 +324,8 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          currentCard: card,
+          queue: [{ card, state: 'front' }],
+          position: 0,
         },
       });
 
@@ -404,15 +355,15 @@ describe('review:sync', () => {
       const review = {
         maxCards: 3,
         maxNewCards: 2,
-        completed: 1,
-        newCardsCompleted: 0,
-        history: ['abc', 'def'],
-        failed: ['def'],
+        history: [
+          { id: 'abc', status: ReviewCardStatus.Passed },
+          { id: 'def', status: ReviewCardStatus.Failed },
+        ],
       };
 
       mockDataStore.__triggerChange('review', review as Review);
       expect(mockStore.actions).toContainEqual(
-        expect.objectContaining({ type: 'LOAD_REVIEW', review })
+        expect.objectContaining({ type: 'LOAD_REVIEW_CARDS', review })
       );
     });
 
@@ -427,7 +378,10 @@ describe('review:sync', () => {
 
       mockDataStore.__triggerChange('review', reviewSummary);
       expect(mockStore.actions).not.toContainEqual(
-        expect.objectContaining({ type: 'LOAD_REVIEW', review: reviewSummary })
+        expect.objectContaining({
+          type: 'LOAD_REVIEW_CARDS',
+          review: reviewSummary,
+        })
       );
     });
 
