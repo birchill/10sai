@@ -87,11 +87,7 @@ export function sync({
     }
 
     if (change.deleted) {
-      // XXX Find replacement card
-      let replacement: Card | undefined;
-      store.dispatch(
-        Actions.deleteReviewCard({ id: change.card.id, replacement })
-      );
+      store.dispatch(Actions.deleteReviewCard({ id: change.card.id }));
       return;
     }
 

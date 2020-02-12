@@ -657,28 +657,7 @@ describe('reducer:review', () => {
     expect((updatedState.queue[2].card as Card).front).toBe('Question 1');
   });
 
-  it('should replace an unreviewed card on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 4 });
-    let updatedState = subject(
-      initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards.slice(0, 3) })
-    );
-
-    // Delete the second card
-    updatedState = subject(
-      updatedState,
-      Actions.deleteReviewCard({
-        id: cards[1].id,
-        replacement: cards[3],
-      })
-    );
-
-    // Check it is replaced
-    expect(updatedState.queue.length).toBe(3);
-    expect(updatedState.queue[1].card.id).toBe(cards[3].id);
-  });
-
-  it('should drop an unreviewed card on DELETE_REVIEW_CARD when there is no replacement', () => {
+  it('should drop an unreviewed card on DELETE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
     let updatedState = subject(
       initialState,
@@ -711,11 +690,7 @@ describe('reducer:review', () => {
     // Then delete it
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({
-        id: cards[0].id,
-        // We provide a replacement so we can check it is NOT used
-        replacement: cards[3],
-      })
+      Actions.deleteReviewCard({ id: cards[0].id })
     );
 
     // Check it is dropped
@@ -725,7 +700,7 @@ describe('reducer:review', () => {
     ]);
   });
 
-  it('should replace a failed card on DELETE_REVIEW_CARD', () => {
+  it('should drop a failed card on DELETE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 4 });
     let updatedState = subject(
       initialState,
@@ -742,18 +717,15 @@ describe('reducer:review', () => {
     // Then delete it
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({
-        id: cards[0].id,
-        replacement: cards[3],
-      })
+      Actions.deleteReviewCard({ id: cards[0].id })
     );
 
     // We should drop the failed version and replace the unreviewed version.
     expect(updatedState.queue.map(item => item.card.id)).toEqual([
       cards[1].id,
-      cards[3].id,
       cards[2].id,
     ]);
+    expect(updatedState.position).toBe(0);
     expect(updatedState.queue[1].state).toBe('front');
   });
 
@@ -772,18 +744,17 @@ describe('reducer:review', () => {
       updatedState,
       Actions.deleteReviewCard({
         id: cards[0].id,
-        replacement: cards[3],
       })
     );
 
-    // Check the replacement is not added
+    // Check it is dropped
     expect(updatedState.queue.map(item => item.card.id)).toEqual([
       cards[1].id,
       cards[2].id,
     ]);
   });
 
-  it('should replace a skipped card on DELETE_REVIEW_CARD', () => {
+  it('should drop a skipped card on DELETE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 4 });
 
     // Set up a queue with a skipped card.
@@ -807,16 +778,12 @@ describe('reducer:review', () => {
     // Delete the skipped card
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({
-        id: cards[0].id,
-        replacement: cards[3],
-      })
+      Actions.deleteReviewCard({ id: cards[0].id })
     );
 
-    // We should drop the skipped version and replace the unreviewed version.
+    // We should drop the skipped version and the unreviewed version.
     expect(updatedState.queue.map(item => item.card.id)).toEqual([
       cards[1].id,
-      cards[3].id,
       cards[2].id,
     ]);
   });
