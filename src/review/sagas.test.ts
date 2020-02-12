@@ -10,7 +10,7 @@ import { MS_PER_DAY } from '../utils/constants';
 
 import { AvailableCardWatcher } from './available-card-watcher';
 import {
-  loadReviewCards as loadReviewCardsSaga,
+  loadReview as loadReviewSaga,
   newReview as newReviewSaga,
   updateProgress as updateProgressSaga,
 } from './sagas';
@@ -156,7 +156,7 @@ describe('sagas:review newReview', () => {
   });
 });
 
-describe('sagas:review loadReviewCards', () => {
+describe('sagas:review loadReview', () => {
   const dataStore = ({
     getCardsById: () => {},
     putReview: () => {},
@@ -231,7 +231,7 @@ describe('sagas:review loadReviewCards', () => {
     ];
 
     const later = new Date(Date.now() + 2 * MS_PER_DAY);
-    const action = Actions.loadReviewCards({
+    const action = Actions.loadReview({
       review: {
         maxCards: 6,
         maxNewCards: 2,
@@ -257,12 +257,7 @@ describe('sagas:review loadReviewCards', () => {
     });
     state = reducer(state, action);
 
-    return expectSaga(
-      loadReviewCardsSaga,
-      dataStore,
-      availableCardWatcher,
-      action
-    )
+    return expectSaga(loadReviewSaga, dataStore, availableCardWatcher, action)
       .provide(getCardProvider(cards))
       .withState(state)
       .put.like({
@@ -271,21 +266,21 @@ describe('sagas:review loadReviewCards', () => {
           history: [
             {
               card: { id: 'a', front: 'Question A', back: 'Answer A' },
-              state: 'passed',
+              status: 'passed',
             },
             {
               card: { id: 'b', front: 'Question B', back: 'Answer B' },
-              state: 'failed',
+              status: 'failed',
               previousProgress: { level: 2, due: later },
             },
             {
               card: { id: 'c', front: 'Question C', back: 'Answer C' },
-              state: 'passed',
+              status: 'passed',
               previousProgress: { level: 2, due: later },
             },
             {
               card: { id: 'd', front: 'Question D', back: 'Answer D' },
-              state: 'failed',
+              status: 'failed',
               previousProgress: { level: 2, due: later },
             },
           ],

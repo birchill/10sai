@@ -22,18 +22,18 @@ export function newReview({
 
 export type NewReviewAction = ReturnType<typeof newReview>;
 
-export function loadReviewCards({ review }: { review: Review }) {
+export function loadReview({ review }: { review: Review }) {
   return {
-    type: <const>'LOAD_REVIEW_CARDS',
+    type: <const>'LOAD_REVIEW',
     review,
   };
 }
 
-export type LoadReviewCardsAction = ReturnType<typeof loadReviewCards>;
+export type LoadReviewCardsAction = ReturnType<typeof loadReview>;
 
 export type ReviewedCard = {
   card: Card | CardPlaceholder;
-  state: 'passed' | 'failed';
+  status: 'passed' | 'failed';
   previousProgress?: Progress;
 };
 

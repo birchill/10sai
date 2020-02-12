@@ -118,14 +118,14 @@ export function sync({
     }
 
     if (!jsonEqualish(currentState, review)) {
-      store.dispatch(Actions.loadReviewCards({ review }));
+      store.dispatch(Actions.loadReview({ review }));
     }
   });
 
   // Do initial sync
   dataStore.getReview().then(review => {
     if (review) {
-      store.dispatch(Actions.loadReviewCards({ review }));
+      store.dispatch(Actions.loadReview({ review }));
     }
   });
 }

@@ -30,7 +30,7 @@ function newReview({
 function makeFailedQueuedCard(card: Card) {
   return {
     card: { ...card, progress: { level: 0, due: new Date() } },
-    state: <const>'failed',
+    status: <const>'failed',
     previousProgress: card.progress.due === null ? undefined : card.progress,
   };
 }
@@ -38,7 +38,7 @@ function makeFailedQueuedCard(card: Card) {
 function makeFailedQueuedCardPlaceholder(card: Card) {
   return {
     card: { id: card.id, status: <const>'missing' },
-    state: <const>'failed',
+    status: <const>'failed',
     previousProgress: card.progress.due === null ? undefined : card.progress,
   };
 }
@@ -64,7 +64,7 @@ describe('reducer:review', () => {
     );
 
     expect(updatedState.queue).toEqual(
-      cards.map(card => ({ card, state: 'front' }))
+      cards.map(card => ({ card, status: 'front' }))
     );
     expect(updatedState.position).toBe(0);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
@@ -75,7 +75,7 @@ describe('reducer:review', () => {
 
     // Let the history have one new card and one failed existing card.
     const history = [
-      { card: cards[0], state: <const>'passed' },
+      { card: cards[0], status: <const>'passed' },
       makeFailedQueuedCard(cards[2]),
     ];
     const unreviewed = [cards[1], cards[3], cards[4]];
@@ -86,12 +86,12 @@ describe('reducer:review', () => {
     );
 
     expect(updatedState.queue).toEqual([
-      { card: cards[0], state: 'passed' },
+      { card: cards[0], status: 'passed' },
       history[1],
-      { card: cards[1], state: 'front' },
-      { card: cards[3], state: 'front' },
-      { card: history[1].card, state: 'front' },
-      { card: cards[4], state: 'front' },
+      { card: cards[1], status: 'front' },
+      { card: cards[3], status: 'front' },
+      { card: history[1].card, status: 'front' },
+      { card: cards[4], status: 'front' },
     ]);
     expect(updatedState.position).toBe(2);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
@@ -108,7 +108,7 @@ describe('reducer:review', () => {
 
     expect(updatedState.queue).toEqual([
       history[0],
-      { card: history[0].card, state: 'front' },
+      { card: history[0].card, status: 'front' },
     ]);
     expect(updatedState.position).toBe(1);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
@@ -125,7 +125,7 @@ describe('reducer:review', () => {
 
     expect(updatedState.queue).toEqual([
       history[0],
-      { card: history[0].card, state: 'front' },
+      { card: history[0].card, status: 'front' },
     ]);
     expect(updatedState.position).toBe(1);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
@@ -133,7 +133,7 @@ describe('reducer:review', () => {
 
   it('should update the queue on REVIEW_CARDS_LOADED for a review with a single passed card', () => {
     const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
-    const history = [{ card: cards[0], state: <const>'passed' }];
+    const history = [{ card: cards[0], status: <const>'passed' }];
 
     const updatedState = subject(
       initialState,
@@ -148,9 +148,9 @@ describe('reducer:review', () => {
   it('should update the queue on REVIEW_CARDS_LOADED for a review with all passed cards', () => {
     const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 3 });
     const history = [
-      { card: cards[0], state: <const>'passed' },
-      { card: cards[1], state: <const>'passed' },
-      { card: cards[2], state: <const>'passed' },
+      { card: cards[0], status: <const>'passed' },
+      { card: cards[1], status: <const>'passed' },
+      { card: cards[2], status: <const>'passed' },
     ];
 
     const updatedState = subject(
@@ -198,9 +198,9 @@ describe('reducer:review', () => {
       //
       // However, if this test ever starts failing because of the order of these
       // cards we should not hesitate to update this test.
-      { card: history[1].card, state: 'front' },
-      { card: history[2].card, state: 'front' },
-      { card: history[0].card, state: 'front' },
+      { card: history[1].card, status: 'front' },
+      { card: history[2].card, status: 'front' },
+      { card: history[0].card, status: 'front' },
     ]);
     expect(updatedState.position).toBe(3);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
@@ -210,10 +210,10 @@ describe('reducer:review', () => {
     const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 5 });
     const history = [
       makeFailedQueuedCard(cards[0]),
-      { card: cards[1], state: <const>'passed' },
-      { card: cards[2], state: <const>'passed' },
-      { card: cards[3], state: <const>'passed' },
-      { card: cards[4], state: <const>'passed' },
+      { card: cards[1], status: <const>'passed' },
+      { card: cards[2], status: <const>'passed' },
+      { card: cards[3], status: <const>'passed' },
+      { card: cards[4], status: <const>'passed' },
     ];
 
     const updatedState = subject(
@@ -230,7 +230,7 @@ describe('reducer:review', () => {
       history[2],
       history[3],
       history[4],
-      { card: history[0].card, state: 'front' },
+      { card: history[0].card, status: 'front' },
     ]);
     expect(updatedState.position).toBe(5);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
@@ -246,7 +246,7 @@ describe('reducer:review', () => {
     updatedState = subject(updatedState, Actions.showAnswer());
 
     expect(updatedState.phase).toBe(ReviewPhase.Back);
-    expect(updatedState.queue[0].state).toBe('back');
+    expect(updatedState.queue[0].status).toBe('back');
   });
 
   it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
@@ -269,7 +269,7 @@ describe('reducer:review', () => {
             level: expect.toBeInRange(8, 12),
           }),
         }),
-        state: 'passed',
+        status: 'passed',
         previousProgress: cards[0].progress,
       })
     );
@@ -360,8 +360,8 @@ describe('reducer:review', () => {
 
     const history = [
       makeFailedQueuedCard(cards[0]),
-      { card: cards[1], state: <const>'passed' },
-      { card: cards[2], state: <const>'passed' },
+      { card: cards[1], status: <const>'passed' },
+      { card: cards[2], status: <const>'passed' },
     ];
     let updatedState = subject(
       initialState,
@@ -380,11 +380,11 @@ describe('reducer:review', () => {
 
     // Check the original failure is no longer in the queue
     expect(updatedState.queue).toEqual([
-      { card: cards[1], state: 'passed' },
-      { card: cards[2], state: 'passed' },
+      { card: cards[1], status: 'passed' },
+      { card: cards[2], status: 'passed' },
       {
         card: expect.objectContaining({ id: cards[0].id }),
-        state: 'passed',
+        status: 'passed',
         previousProgress: history[0].card.progress,
       },
     ]);
@@ -398,8 +398,8 @@ describe('reducer:review', () => {
 
     const history = [
       makeFailedQueuedCard(cards[0]),
-      { card: cards[1], state: <const>'passed' },
-      { card: cards[2], state: <const>'passed' },
+      { card: cards[1], status: <const>'passed' },
+      { card: cards[2], status: <const>'passed' },
     ];
     let updatedState = subject(
       initialState,
@@ -426,10 +426,10 @@ describe('reducer:review', () => {
             level: expect.toBeInRange(0.4, 0.6),
           }),
         },
-        state: 'passed',
+        status: 'passed',
       },
-      { card: cards[1], state: 'passed' },
-      { card: cards[2], state: 'passed' },
+      { card: cards[1], status: 'passed' },
+      { card: cards[2], status: 'passed' },
     ]);
     expect(updatedState.position).toBe(1);
     expect(updatedState.phase).toBe(ReviewPhase.Back);
@@ -472,7 +472,7 @@ describe('reducer:review', () => {
     ]);
 
     const repeatedCard = updatedState.queue[2];
-    expect(repeatedCard.state).toEqual('front');
+    expect(repeatedCard.status).toEqual('front');
 
     // We should store the previous progress on the failed version, but not on
     // the repeated version.
@@ -523,12 +523,12 @@ describe('reducer:review', () => {
     // the repeated version.
     const failedCard = updatedState.queue[0];
     expect(failedCard.card.id).toEqual('card1');
-    expect(failedCard.state).toEqual('failed');
+    expect(failedCard.status).toEqual('failed');
     expect(failedCard.previousProgress).toEqual(cards[0].progress);
 
     const repeatedCard = updatedState.queue[2];
     expect(repeatedCard.card.id).toEqual('card1');
-    expect(repeatedCard.state).toEqual('front');
+    expect(repeatedCard.status).toEqual('front');
     expect(repeatedCard.previousProgress).toBeUndefined();
   });
 
@@ -546,12 +546,12 @@ describe('reducer:review', () => {
     // the repeated version.
     const failedCard = updatedState.queue[0];
     expect(failedCard.card.id).toEqual('card1');
-    expect(failedCard.state).toEqual('failed');
+    expect(failedCard.status).toEqual('failed');
     expect(failedCard.previousProgress).toBeUndefined();
 
     const repeatedCard = updatedState.queue[2];
     expect(repeatedCard.card.id).toEqual('card1');
-    expect(repeatedCard.state).toEqual('front');
+    expect(repeatedCard.status).toEqual('front');
     expect(repeatedCard.previousProgress).toBeUndefined();
   });
 
@@ -726,7 +726,7 @@ describe('reducer:review', () => {
       cards[2].id,
     ]);
     expect(updatedState.position).toBe(0);
-    expect(updatedState.queue[1].state).toBe('front');
+    expect(updatedState.queue[1].status).toBe('front');
   });
 
   it('should drop a failed card placeholder on DELETE_REVIEW_CARD', () => {
@@ -759,19 +759,20 @@ describe('reducer:review', () => {
 
     // Set up a queue with a skipped card.
     //
-    // We don't have a skip action yet to so use the passed state and the tweak
+    // We don't have a skip action yet to so use the passed status and the tweak
     // it later.
-    const history = [{ card: cards[0], state: <const>'passed' }];
+    const history = [{ card: cards[0], status: <const>'passed' }];
     let updatedState = subject(
       initialState,
       Actions.reviewCardsLoaded({ history, unreviewed: cards.slice(1, 3) })
     );
 
-    // Add the unreviewed card, update their states, then set the skipped flag.
+    // Add the unreviewed card, update their statuses, then set the skipped
+    // flag.
     const updatedQueue = updatedState.queue.slice();
     updatedQueue.splice(2, 0, { ...updatedQueue[0] });
-    updatedQueue[0].state = 'front';
-    updatedQueue[2].state = 'front';
+    updatedQueue[0].status = 'front';
+    updatedQueue[2].status = 'front';
     updatedQueue[0].skipped = true;
     updatedState.queue = updatedQueue;
 
@@ -790,7 +791,7 @@ describe('reducer:review', () => {
 
   it('should update the phase when the current card is removed on DELETE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
-    const history = [{ card: cards[0], state: <const>'passed' }];
+    const history = [{ card: cards[0], status: <const>'passed' }];
     let updatedState = subject(
       initialState,
       Actions.reviewCardsLoaded({ history, unreviewed: cards.slice(1, 3) })
@@ -812,8 +813,8 @@ describe('reducer:review', () => {
   it('should go to the completed phase when the last card is removed on DELETE_REVIEW_CARD', () => {
     const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
     const history = [
-      { card: cards[0], state: <const>'passed' },
-      { card: cards[1], state: <const>'passed' },
+      { card: cards[0], status: <const>'passed' },
+      { card: cards[1], status: <const>'passed' },
     ];
     let updatedState = subject(
       initialState,
@@ -845,7 +846,7 @@ describe('reducer:review', () => {
     expect(updatedState.position).toBe(0);
   });
 
-  it('should integrate changes to the review state on LOAD_REVIEW_CARDS', () => {
+  it('should integrate changes to the review state on LOAD_REVIEW', () => {
     const [initialState, cards] = newReview({
       maxNewCards: 1,
       maxCards: 3,
@@ -857,7 +858,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(
       updatedState,
-      Actions.loadReviewCards({
+      Actions.loadReview({
         review: { maxNewCards: 10, maxCards: 20, history: [] },
       })
     );
