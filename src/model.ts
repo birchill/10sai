@@ -37,15 +37,10 @@ export function isCardPlaceholder(
 }
 
 /**
- * An in-progress review.
+ * A representation of a review containing just the information that should be
+ * stored and synchronized.
  */
-export const enum ReviewCardStatus {
-  Passed,
-  Failed,
-}
-
-// XXX Rename to ReviewSummary
-export interface Review {
+export interface ReviewSummary {
   maxCards: number;
   maxNewCards: number;
   history: Array<{
@@ -53,6 +48,11 @@ export interface Review {
     status: ReviewCardStatus;
     previousProgress?: Progress;
   }>;
+}
+
+export const enum ReviewCardStatus {
+  Passed,
+  Failed,
 }
 
 /**

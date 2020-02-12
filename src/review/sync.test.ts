@@ -1,15 +1,16 @@
-import { sync as subject } from './sync';
-import { updateReviewCard } from './actions';
-import { AvailableCardWatcher } from './available-card-watcher';
-import { ReviewState } from './reducer';
+import { Store } from 'redux';
+
+import { Card, ReviewCardStatus, ReviewSummary } from '../model';
 import { reducer } from '../reducer';
-import { ReviewAction } from './actions';
-import { getReviewSummary } from './selectors';
-import { ReviewPhase } from './review-phase';
-import { Card, Review, ReviewCardStatus } from '../model';
 import { CardChange } from '../store/CardStore';
 import { DataStore } from '../store/DataStore';
-import { Store } from 'redux';
+
+import { ReviewAction, updateReviewCard } from './actions';
+import { AvailableCardWatcher } from './available-card-watcher';
+import { ReviewState } from './reducer';
+import { ReviewPhase } from './review-phase';
+import { getReviewSummary } from './selectors';
+import { sync as subject } from './sync';
 
 jest.useFakeTimers();
 
@@ -34,7 +35,7 @@ class MockDataStore {
     } as EventEmitter;
   }
 
-  __triggerChange(type: string, change: CardChange | Review | null) {
+  __triggerChange(type: string, change: CardChange | ReviewSummary | null) {
     if (!this.cbs[type]) {
       return;
     }
@@ -361,7 +362,7 @@ describe('review:sync', () => {
         ],
       };
 
-      mockDataStore.__triggerChange('review', review as Review);
+      mockDataStore.__triggerChange('review', review as ReviewSummary);
       expect(mockStore.actions).toContainEqual(
         expect.objectContaining({ type: 'LOAD_REVIEW', review })
       );

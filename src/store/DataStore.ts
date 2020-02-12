@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find';
 import EventEmitter from 'event-emitter';
 
-import { Card, CardPlaceholder, Note, Progress, Review } from '../model';
+import { Card, CardPlaceholder, Note, Progress, ReviewSummary } from '../model';
 import { DatabaseWithName } from './utils';
 import { CardStore, CARD_PREFIX, PROGRESS_PREFIX } from './CardStore';
 import { NoteStore, NOTE_PREFIX } from './NoteStore';
@@ -140,10 +140,10 @@ export class DataStore {
   }
 
   // Review API
-  getReview(): Promise<Review | null> {
+  getReview(): Promise<ReviewSummary | null> {
     return this.reviewStore.getReview();
   }
-  putReview(review: Review): Promise<void> {
+  putReview(review: ReviewSummary): Promise<void> {
     return this.reviewStore.putReview(review);
   }
   finishReview(): Promise<void> {

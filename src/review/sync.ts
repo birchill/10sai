@@ -7,7 +7,7 @@ import {
   Card,
   CardPlaceholder,
   isCardPlaceholder,
-  Review,
+  ReviewSummary,
 } from '../model';
 import { AppState } from '../reducer';
 import { CardChange } from '../store/CardStore';
@@ -102,7 +102,7 @@ export function sync({
   });
 
   // Synchronize changes to review document
-  dataStore.changes.on('review', (review: Review | null) => {
+  dataStore.changes.on('review', (review: ReviewSummary | null) => {
     const currentState = getReviewSummary(store.getState());
     const currentPhase = getReviewPhase(store.getState());
 

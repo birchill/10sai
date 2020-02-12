@@ -1,4 +1,4 @@
-import { Review, ReviewCardStatus } from '../model';
+import { ReviewCardStatus, ReviewSummary } from '../model';
 import { AppState } from '../reducer';
 import { getScreen } from '../route/selectors';
 
@@ -47,11 +47,11 @@ export const getReviewState = (state: AppState) => (state ? state.review : {});
 
 const getHistorySummary = (
   queue: ReadonlyArray<QueuedCard>
-): Review['history'] => {
+): ReviewSummary['history'] => {
   return queue
     .filter(item => item.status === 'passed' || item.status === 'failed')
     .map(item => {
-      const result: Review['history'][0] = {
+      const result: ReviewSummary['history'][0] = {
         id: item.card.id,
         status:
           item.status === 'passed'
@@ -65,7 +65,7 @@ const getHistorySummary = (
     });
 };
 
-export const getReviewSummary = (state: AppState): Review => ({
+export const getReviewSummary = (state: AppState): ReviewSummary => ({
   maxCards: state.review.maxCards,
   maxNewCards: state.review.maxNewCards,
   history: getHistorySummary(state.review.queue),
