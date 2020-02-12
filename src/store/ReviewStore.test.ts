@@ -1,8 +1,9 @@
 import PouchDB from 'pouchdb';
 
+import { Review, ReviewCardStatus } from '../model';
+
 import { DataStore } from './DataStore';
 import { ReviewContent, ReviewStore } from './ReviewStore';
-import { Review } from '../model';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -36,10 +37,10 @@ describe('ReviewStore', () => {
   const typicalReview: Review = {
     maxCards: 3,
     maxNewCards: 2,
-    completed: 1,
-    newCardsCompleted: 0,
-    history: ['abc', 'def'],
-    failed: ['def'],
+    history: [
+      { id: 'abc', status: ReviewCardStatus.Passed },
+      { id: 'def', status: ReviewCardStatus.Failed },
+    ],
   };
 
   beforeEach(() => {
@@ -74,14 +75,20 @@ describe('ReviewStore', () => {
     await subject.putReview(typicalReview);
     await waitForNumReviewChanges(testRemote, 1);
 
-    await subject.putReview({ ...typicalReview, completed: 2 });
+    await subject.putReview({
+      ...typicalReview,
+      history: [
+        ...typicalReview.history,
+        { ...typicalReview.history[0], id: 'yer' },
+      ],
+    });
     await waitForNumReviewChanges(testRemote, 1);
 
     const review = await testRemote.get<ReviewContent>('review-default');
 
     // We should have updated the one document
     expect(review._rev).toEqual(expect.stringMatching(/^2-/));
-    expect(review.completed).toBe(2);
+    expect(review.history.length).toBe(typicalReview.history.length + 1);
     expect(review.finished).toBe(false);
   });
 
@@ -165,10 +172,10 @@ describe('ReviewStore', () => {
       'review',
       1
     );
-    await subject.putReview({ ...typicalReview, completed: 7 });
+    await subject.putReview({ ...typicalReview, maxCards: 5 });
     const changes = await changesPromise;
     expect(changes[0]).toMatchObject({
-      completed: 7,
+      maxCards: 5,
     });
   });
 

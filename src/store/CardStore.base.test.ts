@@ -1,10 +1,13 @@
 import PouchDB from 'pouchdb';
 
-import { DataStore } from './DataStore';
-import { CardStore, CardContent, CardChange } from './CardStore';
-import { generateUniqueTimestampId } from './utils';
-import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 import '../../jest/customMatchers';
+
+import { Card } from '../model';
+
+import { CardStore, CardContent, CardChange } from './CardStore';
+import { DataStore } from './DataStore';
+import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
+import { generateUniqueTimestampId } from './utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
@@ -61,7 +64,7 @@ describe('CardStore', () => {
     const cards = await subject.getCardsById([card1.id, card3.id, card2.id]);
     expect(cards.map(card => card.id)).toEqual([card1.id, card3.id, card2.id]);
     // Spot check card contents
-    expect(cards[1].back).toBe('Answer 3');
+    expect((cards[1] as Card).back).toBe('Answer 3');
   });
 
   it('does not return non-existent cards', async () => {

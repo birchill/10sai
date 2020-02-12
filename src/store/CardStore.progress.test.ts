@@ -1,7 +1,9 @@
 import PouchDB from 'pouchdb';
 
-import { DataStore } from './DataStore';
+import { Card } from '../model';
+
 import { CardStore, CardChange, ProgressContent } from './CardStore';
+import { DataStore } from './DataStore';
 import { syncWithWaitableRemote, waitForChangeEvents } from './test-utils';
 
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -67,8 +69,8 @@ describe('CardStore progress reporting', () => {
       back: 'Answer 2',
     });
     const cards = await subject.getCardsById([card1.id, card2.id]);
-    expect(cards[0].progress).toMatchObject({ level: 0, due: null });
-    expect(cards[1].progress).toMatchObject({ level: 0, due: null });
+    expect((cards[0] as Card).progress).toMatchObject({ level: 0, due: null });
+    expect((cards[1] as Card).progress).toMatchObject({ level: 0, due: null });
   });
 
   it('returns the progress when reporting added cards', async () => {
