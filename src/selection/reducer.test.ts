@@ -124,18 +124,31 @@ describe('reducer:selection', () => {
   });
 
   it('should update the active card when navigating to the review screen', () => {
-    let state = subject(undefined, Actions.newReview(2, 3));
+    let state = subject(
+      undefined,
+      Actions.newReview({ maxNewCards: 2, maxCards: 3 })
+    );
     const cards = generateCards(2, 3);
-    state = subject(state, Actions.reviewLoaded(cards));
+    state = subject(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
     state = subject(state, Actions.navigate({ url: '/review' }));
 
-    expect(state.selection.activeCardId).toBe(state.review.currentCard!.id);
+    const currentCard = state.review.queue[state.review.position!].card;
+    expect(state.selection.activeCardId).toBe(currentCard.id);
   });
 
   it('should clear the active card when navigating to the home screen', () => {
-    let state = subject(undefined, Actions.newReview(2, 3));
+    let state = subject(
+      undefined,
+      Actions.newReview({ maxNewCards: 2, maxCards: 3 })
+    );
     const cards = generateCards(2, 3);
-    state = subject(state, Actions.reviewLoaded(cards));
+    state = subject(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
     state = subject(state, Actions.navigate({ url: '/review' }));
     state = subject(state, Actions.navigate({ url: '/' }));
 
@@ -144,32 +157,41 @@ describe('reducer:selection', () => {
 
   it('should update the active card when a review is loaded', () => {
     let state = subject(undefined, Actions.navigate({ url: '/review' }));
-    state = subject(state, Actions.newReview(2, 3));
+    state = subject(state, Actions.newReview({ maxNewCards: 2, maxCards: 3 }));
     const cards = generateCards(2, 3);
-    state = subject(state, Actions.reviewLoaded(cards));
+    state = subject(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
 
-    expect(state.selection.activeCardId).toBe(state.review.currentCard!.id);
+    const currentCard = state.review.queue[state.review.position!].card;
+    expect(state.selection.activeCardId).toBe(currentCard.id);
   });
 
   it('should update the active card when the current review card changes', () => {
     let state = subject(undefined, Actions.navigate({ url: '/review' }));
-    state = subject(state, Actions.newReview(2, 3));
+    state = subject(state, Actions.newReview({ maxNewCards: 2, maxCards: 3 }));
     const cards = generateCards(2, 3);
-    state = subject(state, Actions.reviewLoaded(cards));
+    state = subject(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
     state = subject(state, Actions.passCard());
 
-    expect(state.selection.activeCardId).toBe(state.review.currentCard!.id);
+    const currentCard = state.review.queue[state.review.position!].card;
+    expect(state.selection.activeCardId).toBe(currentCard.id);
   });
 
   it('should clear the active card when the current review card is deleted', () => {
     let state = subject(undefined, Actions.navigate({ url: '/review' }));
-    state = subject(state, Actions.newReview(2, 3));
+    state = subject(state, Actions.newReview({ maxNewCards: 2, maxCards: 3 }));
     const cards = generateCards(2, 3);
-    state = subject(state, Actions.reviewLoaded(cards));
     state = subject(
       state,
-      Actions.deleteReviewCard(state.review.currentCard!.id)
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
     );
+    const currentCard = state.review.queue[state.review.position!].card;
+    state = subject(state, Actions.deleteReviewCard({ id: currentCard.id }));
 
     expect(state.selection.activeCardId).toBe(undefined);
   });

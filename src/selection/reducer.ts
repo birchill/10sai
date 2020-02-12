@@ -22,7 +22,7 @@ export interface SelectionState {
 export function selection(state: AppState, action: Action): AppState {
   const { position: reviewPosition, queue: reviewQueue } = state.review;
   const reviewCardId =
-    reviewPosition && reviewPosition < reviewQueue.length
+    typeof reviewPosition !== 'undefined' && reviewPosition < reviewQueue.length
       ? reviewQueue[reviewPosition!].card.id
       : undefined;
   const editCardId = state.edit.forms.active.card.id;
