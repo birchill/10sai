@@ -504,39 +504,14 @@ export function review(
           continue;
         }
 
-        // If we deleted a card we already passed, just drop it from the history
-        // and DON'T add the replacement.
-        //
-        // If we deleted a card we failed or skipped, we should drop the failed
-        // or skipped version, and replace the unreviewed version with the
-        // replacement, if any.
-        if (
-          queuedCard.state === 'passed' ||
-          queuedCard.state === 'failed' ||
-          queuedCard.skipped
-        ) {
-          queue.splice(i, 1);
-          if (i < position!) {
-            position!--;
-          }
+        queue.splice(i, 1);
+        if (i < position!) {
+          position!--;
+        }
 
-          // If we are passed, we're done.
-          if (queuedCard.state === 'passed') {
-            break;
-          }
-        } else if (action.replacement) {
-          const newQueuedCard: QueuedCard = {
-            card: action.replacement,
-            state: 'front',
-          };
-          queue.splice(i, 1, newQueuedCard);
-
-          // We should only ever need to replace one card.
-          break;
-        } else {
-          queue.splice(i, 1);
-
-          // We should only ever need to drop one card.
+        // Unless we have are failed or skipped (in which case there will be
+        // a subsequent duplicate card) we should be done by this point.
+        if (queuedCard.state !== 'failed' && !queuedCard.skipped) {
           break;
         }
       }
