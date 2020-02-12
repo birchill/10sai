@@ -96,7 +96,7 @@ function* getUnreviewedCards({
   return cards;
 }
 
-export function* loadReviewCards(
+export function* loadReview(
   dataStore: DataStore,
   availableCardWatcher: AvailableCardWatcher,
   action: Actions.LoadReviewCardsAction
@@ -123,7 +123,7 @@ export function* loadReviewCards(
 
     const reviewedCard: ReviewedCard = {
       card: historyCards[i],
-      state:
+      status:
         historyItem.status === ReviewCardStatus.Passed ? 'passed' : 'failed',
     };
     if (historyItem.previousProgress) {
@@ -203,12 +203,7 @@ export function* reviewSagas({
 }) {
   yield* [
     takeEvery(['NEW_REVIEW'], newReview, dataStore, availableCardWatcher),
-    takeLatest(
-      ['LOAD_REVIEW_CARDS'],
-      loadReviewCards,
-      dataStore,
-      availableCardWatcher
-    ),
+    takeLatest(['LOAD_REVIEW'], loadReview, dataStore, availableCardWatcher),
     takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
   ];
 }

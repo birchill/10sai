@@ -12,7 +12,7 @@ export const getReviewProgress = (state: AppState) => {
 
   const { queue } = state.review;
   for (const item of queue) {
-    switch (item.state) {
+    switch (item.status) {
       case 'passed':
         completedCards++;
         break;
@@ -49,12 +49,12 @@ const getHistorySummary = (
   queue: ReadonlyArray<QueuedCard>
 ): Review['history'] => {
   return queue
-    .filter(item => item.state === 'passed' || item.state === 'failed')
+    .filter(item => item.status === 'passed' || item.status === 'failed')
     .map(item => {
       const result: Review['history'][0] = {
         id: item.card.id,
         status:
-          item.state === 'passed'
+          item.status === 'passed'
             ? ReviewCardStatus.Passed
             : ReviewCardStatus.Failed,
       };

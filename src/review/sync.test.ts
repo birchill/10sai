@@ -204,7 +204,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          queue: [{ card, state: 'front' }],
+          queue: [{ card, status: 'front' }],
           position: 0,
         },
       });
@@ -235,7 +235,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          queue: [{ card, state: 'front' }],
+          queue: [{ card, status: 'front' }],
           position: 0,
         },
       });
@@ -269,7 +269,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          queue: [{ card, state: 'front' }],
+          queue: [{ card, status: 'front' }],
           position: 0,
         },
       });
@@ -294,7 +294,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          queue: [{ card, state: 'front' }],
+          queue: [{ card, status: 'front' }],
           position: 0,
         },
       });
@@ -324,7 +324,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          queue: [{ card, state: 'front' }],
+          queue: [{ card, status: 'front' }],
           position: 0,
         },
       });
@@ -363,7 +363,7 @@ describe('review:sync', () => {
 
       mockDataStore.__triggerChange('review', review as Review);
       expect(mockStore.actions).toContainEqual(
-        expect.objectContaining({ type: 'LOAD_REVIEW_CARDS', review })
+        expect.objectContaining({ type: 'LOAD_REVIEW', review })
       );
     });
 
@@ -379,7 +379,7 @@ describe('review:sync', () => {
       mockDataStore.__triggerChange('review', reviewSummary);
       expect(mockStore.actions).not.toContainEqual(
         expect.objectContaining({
-          type: 'LOAD_REVIEW_CARDS',
+          type: 'LOAD_REVIEW',
           review: reviewSummary,
         })
       );

@@ -16,7 +16,7 @@ import { getReviewInterval } from './utils';
 export type QueuedCard = {
   card: Card | CardPlaceholder;
   // TODO: Rename this to status
-  state: 'front' | 'back' | 'passed' | 'failed';
+  status: 'front' | 'back' | 'passed' | 'failed';
   // True if the card was skipped. This is a sub-state of 'front' / 'back'
   // and mostly just helps us when counting how many cards we actually have.
   skipped?: boolean;
@@ -124,7 +124,7 @@ export function review(
       for (const card of action.unreviewed) {
         queue.push({
           card,
-          state: 'front',
+          status: 'front',
         });
       }
 
@@ -132,12 +132,12 @@ export function review(
       for (const [i, queuedCard] of action.history.entries()) {
         if (
           isCardPlaceholder(queuedCard.card) ||
-          queuedCard.state !== 'failed'
+          queuedCard.status !== 'failed'
         ) {
           continue;
         }
 
-        const cardDuplicate: QueuedCard = { ...queuedCard, state: 'front' };
+        const cardDuplicate: QueuedCard = { ...queuedCard, status: 'front' };
         delete cardDuplicate.previousProgress;
 
         // The ideal position to place the card is mid-way between the failure
@@ -171,7 +171,7 @@ export function review(
       // Work out what phase we're in...
       const currentCard = queue[position];
       const phase =
-        currentCard.state === 'front' ? ReviewPhase.Front : ReviewPhase.Back;
+        currentCard.status === 'front' ? ReviewPhase.Front : ReviewPhase.Back;
 
       validateQueue(queue);
 
@@ -190,7 +190,7 @@ export function review(
 
       const queuedCard: QueuedCard = {
         ...state.queue[state.position!],
-        state: 'back',
+        status: 'back',
       };
 
       const queue = state.queue.slice();
@@ -216,7 +216,7 @@ export function review(
       const originalQueuedCard = state.queue[state.position!];
       const queuedCard: QueuedCard = {
         ...originalQueuedCard,
-        state: 'passed',
+        status: 'passed',
       };
       delete queuedCard.skipped;
 
@@ -237,7 +237,7 @@ export function review(
         // the remaining cards, we know how many new cards we already have in
         // the queue.
         if (
-          !['passed', 'failed'].includes(originalQueuedCard.state) &&
+          !['passed', 'failed'].includes(originalQueuedCard.status) &&
           queuedCard.card.progress.due !== null
         ) {
           queuedCard.previousProgress = { ...queuedCard.card.progress };
@@ -286,7 +286,7 @@ export function review(
         const current = queue[i];
         if (
           current.card.id === queuedCard.card.id &&
-          current.state !== 'passed'
+          current.status !== 'passed'
         ) {
           queue.splice(i, 1);
           if (i < position) {
@@ -329,7 +329,7 @@ export function review(
       const originalQueuedCard = state.queue[state.position!];
       const queuedCard: QueuedCard = {
         ...originalQueuedCard,
-        state: 'failed',
+        status: 'failed',
       };
       delete queuedCard.skipped;
 
@@ -338,7 +338,7 @@ export function review(
         // As with PASS_CARD, store the original progress information, but only
         // if we're not re-reviewing a card or a new card.
         if (
-          !['passed', 'failed'].includes(originalQueuedCard.state) &&
+          !['passed', 'failed'].includes(originalQueuedCard.status) &&
           queuedCard.card.progress.due !== null
         ) {
           queuedCard.previousProgress = { ...queuedCard.card.progress };
@@ -381,7 +381,7 @@ export function review(
       }
 
       // Add a copy of the card later in the queue.
-      const cardDuplicate: QueuedCard = { ...queuedCard, state: 'front' };
+      const cardDuplicate: QueuedCard = { ...queuedCard, status: 'front' };
       delete cardDuplicate.previousProgress;
 
       const insertPoint =
@@ -454,10 +454,10 @@ export function review(
         if (isCardPlaceholder(queuedCard.card)) {
           // If we this card was skipped or failed we should add a duplicate
           // later to the queue so that we can review it again.
-          if (queuedCard.skipped || queuedCard.state === 'failed') {
+          if (queuedCard.skipped || queuedCard.status === 'failed') {
             const cardDuplicate: QueuedCard = {
               ...updatedQueuedCard,
-              state: 'front',
+              status: 'front',
             };
             delete cardDuplicate.skipped;
 
@@ -511,7 +511,7 @@ export function review(
 
         // Unless we have are failed or skipped (in which case there will be
         // a subsequent duplicate card) we should be done by this point.
-        if (queuedCard.state !== 'failed' && !queuedCard.skipped) {
+        if (queuedCard.status !== 'failed' && !queuedCard.skipped) {
           break;
         }
       }
@@ -522,7 +522,7 @@ export function review(
       if (position! < queue.length && queue.length) {
         const currentQueuedCard = queue[position!];
         phase =
-          currentQueuedCard.state === 'front'
+          currentQueuedCard.status === 'front'
             ? ReviewPhase.Front
             : ReviewPhase.Back;
       } else {
@@ -540,7 +540,7 @@ export function review(
       };
     }
 
-    case 'LOAD_REVIEW_CARDS': {
+    case 'LOAD_REVIEW': {
       return {
         ...state,
         phase: ReviewPhase.Loading,
@@ -587,7 +587,7 @@ function advancePosition({
     position++;
     const nextQueuedCard = queue[position];
     phase =
-      nextQueuedCard.state === 'front' ? ReviewPhase.Front : ReviewPhase.Back;
+      nextQueuedCard.status === 'front' ? ReviewPhase.Front : ReviewPhase.Back;
   } else {
     position = queue.length;
     phase = ReviewPhase.Complete;
@@ -603,9 +603,9 @@ function validateQueue(queue: Array<QueuedCard>) {
 
   for (const queuedCard of queue) {
     let status =
-      queuedCard.state === 'front' || queuedCard.state === 'back'
+      queuedCard.status === 'front' || queuedCard.status === 'back'
         ? 'unreviewed'
-        : queuedCard.state;
+        : queuedCard.status;
     if (queuedCard.skipped) {
       status += '-skipped';
     }
