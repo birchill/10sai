@@ -18,7 +18,7 @@ const mapStateToProps = (state: AppState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   onNewReview: (maxNewCards: number, maxCards: number) => {
-    dispatch(Actions.newReview(maxNewCards, maxCards));
+    dispatch(Actions.newReview({ maxNewCards, maxCards }));
   },
 });
 
