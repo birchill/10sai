@@ -23,15 +23,36 @@ export interface Progress {
 }
 
 /**
+ * A missing card.
+ */
+export type CardPlaceholder = {
+  id: string;
+  status: 'missing';
+};
+
+export function isCardPlaceholder(
+  a: Card | CardPlaceholder
+): a is CardPlaceholder {
+  return (a as CardPlaceholder).status === 'missing';
+}
+
+/**
  * An in-progress review.
  */
+export const enum ReviewCardStatus {
+  Passed,
+  Failed,
+}
+
+// XXX Rename to ReviewSummary
 export interface Review {
   maxCards: number;
   maxNewCards: number;
-  completed: number;
-  newCardsCompleted: number;
-  history: string[];
-  failed: string[];
+  history: Array<{
+    id: string;
+    status: ReviewCardStatus;
+    previousProgress?: Progress;
+  }>;
 }
 
 /**

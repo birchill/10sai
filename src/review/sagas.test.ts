@@ -2,21 +2,20 @@ import { expectSaga } from 'redux-saga-test-plan';
 import { EffectProviders } from 'redux-saga-test-plan/providers';
 import { CallEffectDescriptor } from 'redux-saga/effects';
 
+import * as Actions from '../actions';
+import { Card, ReviewCardStatus } from '../model';
+import { reducer } from '../reducer';
+import { DataStore } from '../store/DataStore';
+import { MS_PER_DAY } from '../utils/constants';
+
+import { AvailableCardWatcher } from './available-card-watcher';
 import {
-  loadReview as loadReviewSaga,
-  updateHeap as updateHeapSaga,
+  loadReviewCards as loadReviewCardsSaga,
+  newReview as newReviewSaga,
   updateProgress as updateProgressSaga,
 } from './sagas';
-import { AvailableCardWatcher } from './available-card-watcher';
-import * as Actions from '../actions';
-import { reducer } from '../reducer';
-import { Card } from '../model';
-import { AppState } from '../reducer';
-import { DataStore } from '../store/DataStore';
 
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-describe('sagas:review updateHeap', () => {
+describe('sagas:review newReview', () => {
   const dataStore = ({
     getCardsById: () => {},
     putReview: () => {},
@@ -74,9 +73,9 @@ describe('sagas:review updateHeap', () => {
     const newCards = ['New card 1', 'New card 2'];
     const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
     const allCards = newCards.concat(overdueCards);
-    const action = Actions.newReview(2, 3);
+    const action = Actions.newReview({ maxNewCards: 2, maxCards: 3 });
 
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
+    return expectSaga(newReviewSaga, dataStore, availableCardWatcher)
       .provide(getCardProvider(newCards, overdueCards))
       .withState(reducer(undefined, action))
       .call.fn(availableCardWatcher.getNewCards)
@@ -84,30 +83,40 @@ describe('sagas:review updateHeap', () => {
       .call.fn(availableCardWatcher.getOverdueCards)
       .call([dataStore, 'getCardsById'], ['overdue-1'])
       .put.like({
-        action: { type: 'REVIEW_LOADED', cards: allCards.slice(0, 3) },
+        action: {
+          type: 'REVIEW_CARDS_LOADED',
+          history: [],
+          unreviewed: allCards.slice(0, 3),
+        },
       })
       .run();
   });
 
   it('does not request more than the maximum number of cards even if the new card limit is greater', async () => {
     const newCards = ['New card 1', 'New card 2'];
-    const action = Actions.newReview(3, 2);
+    const action = Actions.newReview({ maxNewCards: 3, maxCards: 2 });
 
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
+    return expectSaga(newReviewSaga, dataStore, availableCardWatcher)
       .provide(getCardProvider(newCards, []))
       .withState(reducer(undefined, action))
       .call([availableCardWatcher, 'getNewCards'])
       .call([dataStore, 'getCardsById'], ['new-1', 'new-2'])
       .not.call([availableCardWatcher, 'getOverdueCards'])
-      .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
+      .put.like({
+        action: {
+          type: 'REVIEW_CARDS_LOADED',
+          history: [],
+          unreviewed: newCards,
+        },
+      })
       .run();
   });
 
   it('requests more cards if there are not enough new cards', async () => {
     const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
-    const action = Actions.newReview(2, 3);
+    const action = Actions.newReview({ maxNewCards: 2, maxCards: 3 });
 
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
+    return expectSaga(newReviewSaga, dataStore, availableCardWatcher)
       .provide(getCardProvider([], overdueCards))
       .withState(reducer(undefined, action))
       .call([availableCardWatcher, 'getNewCards'])
@@ -117,119 +126,23 @@ describe('sagas:review updateHeap', () => {
         [dataStore, 'getCardsById'],
         ['overdue-1', 'overdue-2', 'overdue-3']
       )
-      .put.like({ action: { type: 'REVIEW_LOADED', cards: overdueCards } })
-      .run();
-  });
-
-  it('respects the limits set for an updated review', async () => {
-    let state = reducer(undefined, Actions.newReview(2, 3));
-    const action = Actions.setReviewLimit(3, 5);
-    state = reducer(state, action);
-    state.review.newCardsInPlay = 2;
-    state.review.completed = 2;
-
-    const newCards = ['New card 3', 'New card 4'];
-    const overdueCards = ['Overdue card 3', 'Overdue card 4', 'Overdue card 5'];
-
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
-      .provide(getCardProvider(newCards, overdueCards))
-      .withState(state)
-      .call([availableCardWatcher, 'getNewCards'])
-      .call([dataStore, 'getCardsById'], ['new-1'])
-      .call([availableCardWatcher, 'getOverdueCards'])
-      .call([dataStore, 'getCardsById'], ['overdue-1', 'overdue-2'])
       .put.like({
         action: {
-          type: 'REVIEW_LOADED',
-          cards: [newCards[0], overdueCards[0], overdueCards[1]],
+          type: 'REVIEW_CARDS_LOADED',
+          history: [],
+          unreviewed: overdueCards,
         },
       })
-      .run();
-  });
-
-  it('respects the overall limit for an updated review', async () => {
-    let state = reducer(undefined, Actions.newReview(2, 3));
-    const action = Actions.setReviewLimit(2, 3);
-    state = reducer(state, action);
-    state.review.newCardsInPlay = 1;
-    state.review.completed = 2;
-    state.review.failed = [{} as Card];
-
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
-      .withState(state)
-      .not.call.fn(availableCardWatcher.getNewCards)
-      .not.call.fn(availableCardWatcher.getOverdueCards)
-      .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
-      .run();
-  });
-
-  it('respects the limits set for an updated review even when there are no slots left', async () => {
-    let state = reducer(undefined, Actions.newReview(2, 3));
-    const action = Actions.setReviewLimit(1, 2);
-    state = reducer(state, action);
-    state.review.newCardsInPlay = 2;
-    state.review.completed = 2;
-
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
-      .withState(state)
-      .not.call.fn(availableCardWatcher.getNewCards)
-      .not.call.fn(availableCardWatcher.getOverdueCards)
-      .put.like({ action: { type: 'REVIEW_LOADED', cards: [] } })
-      .run();
-  });
-
-  it('skips seen cards when updating', async () => {
-    let state = reducer(undefined, Actions.newReview(0, 3));
-    const action = Actions.setReviewLimit(0, 3);
-    state = reducer(state, action);
-    state.review.completed = 2;
-    state.review.history = [
-      { id: 'overdue-1' } as Card,
-      { id: 'overdue-2' } as Card,
-    ];
-
-    const overdueCards = [
-      'Overdue card 1',
-      'Overdue card 2',
-      'Overdue card 3',
-      'Overdue card 4',
-    ];
-
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
-      .provide(getCardProvider([], overdueCards))
-      .withState(state)
-      .call.fn(availableCardWatcher.getOverdueCards)
-      .call([dataStore, 'getCardsById'], ['overdue-3'])
-      .put.like({ action: { type: 'REVIEW_LOADED', cards: [overdueCards[2]] } })
-      .run();
-  });
-
-  it('counts the current card as an occupied slot', async () => {
-    let state = reducer(undefined, Actions.newReview(2, 3));
-    const action = Actions.setReviewLimit(3, 4);
-    state = reducer(state, action);
-    state.review.newCardsInPlay = 2;
-    state.review.completed = 2;
-    state.review.currentCard = { id: 'yer' } as Card;
-
-    const newCards = ['New card 3'];
-
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
-      .provide(getCardProvider(newCards, []))
-      .withState(state)
-      .call.fn(availableCardWatcher.getNewCards)
-      .not.call.fn(availableCardWatcher.getOverdueCards)
-      .put.like({ action: { type: 'REVIEW_LOADED', cards: newCards } })
       .run();
   });
 
   it('saves the review state', async () => {
     const newCards = ['New card 1', 'New card 2'];
     const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
-    const action = Actions.newReview(2, 3);
+    const action = Actions.newReview({ maxNewCards: 2, maxCards: 3 });
     const initialState = reducer(undefined, action);
 
-    return expectSaga(updateHeapSaga, dataStore, availableCardWatcher)
+    return expectSaga(newReviewSaga, dataStore, availableCardWatcher)
       .provide(getCardProvider(newCards, overdueCards))
       .withState(initialState)
       .call.fn(availableCardWatcher.getNewCards)
@@ -237,10 +150,7 @@ describe('sagas:review updateHeap', () => {
       .call([dataStore, 'putReview'], {
         maxCards: 3,
         maxNewCards: 2,
-        completed: 0,
-        newCardsCompleted: 0,
         history: [],
-        failed: [],
       })
       .run();
   });
@@ -274,72 +184,53 @@ describe('sagas:review updateProgress', () => {
     return cards;
   };
 
-  const reviewLoaded = (
-    cards: Array<Card>,
-    currentCardSeed: number,
-    nextCardSeed: number
-  ) => {
-    const action = Actions.reviewLoaded(cards);
-    action.currentCardSeed = currentCardSeed;
-    action.nextCardSeed = nextCardSeed;
-    return action;
-  };
-
-  const passCard = (seed: number) => {
-    const action = Actions.passCard();
-    action.nextCardSeed = seed;
-    return action;
-  };
-
-  const failCard = (seed: number) => {
-    const action = Actions.failCard();
-    action.nextCardSeed = seed;
-    return action;
-  };
-
-  const cardInHistory = (card: Card, state: AppState) => {
-    const { history } = state.review;
-    return history.some(
-      elem => elem.front === card.front && elem.back === card.back
-    );
-  };
-
   it('stores the updated due time of a passed card', async () => {
-    let state = reducer(undefined, Actions.newReview(2, 3));
+    let state = reducer(
+      undefined,
+      Actions.newReview({ maxNewCards: 2, maxCards: 3 })
+    );
 
     const cards = getCards(0, 3, new Date());
-    state = reducer(state, Actions.reviewLoaded(cards));
+    state = reducer(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
 
-    const cardToUpdate = state.review.currentCard;
+    const updatePosition = state.review.position!;
     const action = Actions.passCard();
     state = reducer(state, action);
 
-    const due = new Date(
-      action.reviewTime.getTime() + cardToUpdate!.progress.level * MS_PER_DAY
-    );
-    due.setMinutes(0, 0, 0);
+    const updatedCard = state.review.queue[updatePosition].card as Card;
 
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        id: cardToUpdate!.id,
+        id: updatedCard.id,
         progress: {
-          level: cardToUpdate!.progress.level,
-          due,
+          level: updatedCard.progress.level,
+          due: updatedCard.progress.due,
         },
       })
       .run();
   });
 
   it('stores the updated progress of a failed card', async () => {
-    let state = reducer(undefined, Actions.newReview(1, 3));
+    let state = reducer(
+      undefined,
+      Actions.newReview({ maxNewCards: 1, maxCards: 3 })
+    );
 
     const cards = getCards(0, 3, new Date());
-    state = reducer(state, Actions.reviewLoaded(cards));
+    state = reducer(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
 
-    const cardToUpdate = state.review.currentCard;
+    const updatePosition = state.review.position!;
     const action = Actions.failCard();
     state = reducer(state, action);
+
+    const updatedCard = state.review.queue[updatePosition].card as Card;
 
     const due = new Date(action.reviewTime);
     due.setMinutes(0, 0, 0);
@@ -347,60 +238,63 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        id: cardToUpdate!.id,
+        id: updatedCard.id,
         progress: { level: 0, due },
       })
       .run();
   });
 
   it('stores the updated progress of a passed card when it is the last card', async () => {
-    let state = reducer(undefined, Actions.newReview(2, 3));
+    let state = reducer(
+      undefined,
+      Actions.newReview({ maxNewCards: 2, maxCards: 3 })
+    );
 
     const cards = getCards(0, 1, new Date());
-    state = reducer(state, Actions.reviewLoaded(cards));
+    state = reducer(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
 
-    const cardToUpdate = state.review.currentCard;
+    const updatePosition = state.review.position!;
     const action = Actions.passCard();
     state = reducer(state, action);
-    expect(state.review.nextCard).toBe(null);
-    expect(state.review.currentCard).toBe(null);
-    expect(cardInHistory(cardToUpdate!, state)).toBe(true);
 
-    const due = new Date(
-      action.reviewTime.getTime() + cardToUpdate!.progress.level * MS_PER_DAY
-    );
-    due.setMinutes(0, 0, 0);
+    const updatedCard = state.review.queue[updatePosition].card as Card;
 
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        id: cardToUpdate!.id,
+        id: updatedCard.id,
         progress: {
-          level: cardToUpdate!.progress.level,
-          due,
+          level: updatedCard.progress.level,
+          due: updatedCard.progress.due,
         },
       })
       .run();
   });
 
   it('stores the updated progress of a failed card when it is the last card', async () => {
-    let state = reducer(undefined, Actions.newReview(2, 3));
+    let state = reducer(
+      undefined,
+      Actions.newReview({ maxNewCards: 2, maxCards: 3 })
+    );
 
     const cards = getCards(0, 2, new Date());
-    state = reducer(state, Actions.reviewLoaded(cards));
+    state = reducer(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
 
     // Pass the first card so it is in history
     state = reducer(state, Actions.passCard());
 
     // Now we should have a single card left that we want to fail.
-    // We want to check we update it despite the fact that it won't go into
-    // history yet.
-    const cardToUpdate = state.review.currentCard;
+    const updatePosition = state.review.position!;
     const action = Actions.failCard();
     state = reducer(state, action);
-    expect(state.review.nextCard).toBe(null);
-    expect(state.review.currentCard).toEqual(cardToUpdate);
-    expect(cardInHistory(cardToUpdate!, state)).toBe(false);
+
+    const updatedCard = state.review.queue[updatePosition].card as Card;
 
     const due = new Date(action.reviewTime);
     due.setMinutes(0, 0, 0);
@@ -408,22 +302,28 @@ describe('sagas:review updateProgress', () => {
     return expectSaga(updateProgressSaga, dataStore, action)
       .withState(state)
       .call([dataStore, 'putCard'], {
-        id: cardToUpdate!.id,
+        id: updatedCard.id,
         progress: { level: 0, due },
       })
       .run();
   });
 
   it('stores the updated review when the progress changes', async () => {
-    let state = reducer(undefined, Actions.newReview(2, 3));
+    let state = reducer(
+      undefined,
+      Actions.newReview({ maxNewCards: 2, maxCards: 3 })
+    );
 
     const cards = getCards(1, 3, new Date());
-    state = reducer(state, reviewLoaded(cards, 0, 0));
+    state = reducer(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
 
-    state = reducer(state, passCard(0));
-    state = reducer(state, passCard(0));
+    state = reducer(state, Actions.passCard());
+    state = reducer(state, Actions.passCard());
 
-    const action = failCard(0);
+    const action = Actions.failCard();
     state = reducer(state, action);
 
     return expectSaga(updateProgressSaga, dataStore, action)
@@ -431,21 +331,36 @@ describe('sagas:review updateProgress', () => {
       .call([dataStore, 'putReview'], {
         maxCards: 3,
         maxNewCards: 2,
-        completed: 2,
-        newCardsCompleted: 1,
-        history: [0, 1],
-        failed: [2],
+        history: [
+          { id: cards[0].id, status: ReviewCardStatus.Passed },
+          {
+            id: cards[1].id,
+            status: ReviewCardStatus.Passed,
+            previousProgress: cards[1].progress,
+          },
+          {
+            id: cards[2].id,
+            status: ReviewCardStatus.Failed,
+            previousProgress: cards[2].progress,
+          },
+        ],
       })
       .run();
   });
 
   it('deletes the review when the review is finished', async () => {
-    let state = reducer(undefined, Actions.newReview(1, 1));
+    let state = reducer(
+      undefined,
+      Actions.newReview({ maxNewCards: 1, maxCards: 1 })
+    );
 
     const cards = getCards(1, 1, new Date());
-    state = reducer(state, reviewLoaded(cards, 0, 0));
+    state = reducer(
+      state,
+      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+    );
 
-    const action = passCard(0);
+    const action = Actions.passCard();
     state = reducer(state, action);
 
     return expectSaga(updateProgressSaga, dataStore, action)
@@ -529,23 +444,66 @@ describe('sagas:review loadReview', () => {
       { id: 'd', front: 'Question D', back: 'Answer D' },
     ];
 
-    const action = Actions.loadReview({
-      maxCards: 6,
-      maxNewCards: 2,
-      completed: 2,
-      newCardsCompleted: 1,
-      history: ['a', 'c'],
-      failed: ['b', 'd'],
+    const later = new Date(Date.now() + 2 * MS_PER_DAY);
+    const action = Actions.loadReviewCards({
+      review: {
+        maxCards: 6,
+        maxNewCards: 2,
+        history: [
+          { id: 'a', status: ReviewCardStatus.Passed },
+          {
+            id: 'b',
+            status: ReviewCardStatus.Failed,
+            previousProgress: { level: 2, due: later },
+          },
+          {
+            id: 'c',
+            status: ReviewCardStatus.Passed,
+            previousProgress: { level: 2, due: later },
+          },
+          {
+            id: 'd',
+            status: ReviewCardStatus.Failed,
+            previousProgress: { level: 2, due: later },
+          },
+        ],
+      },
     });
     state = reducer(state, action);
 
-    return expectSaga(loadReviewSaga, dataStore, availableCardWatcher, action)
+    return expectSaga(
+      loadReviewCardsSaga,
+      dataStore,
+      availableCardWatcher,
+      action
+    )
       .provide(getCardProvider(cards))
       .withState(state)
       .put.like({
         action: {
-          type: 'REVIEW_LOADED',
-          cards: [
+          type: 'REVIEW_CARDS_LOADED',
+          history: [
+            {
+              card: { id: 'a', front: 'Question A', back: 'Answer A' },
+              state: 'passed',
+            },
+            {
+              card: { id: 'b', front: 'Question B', back: 'Answer B' },
+              state: 'failed',
+              previousProgress: { level: 2, due: later },
+            },
+            {
+              card: { id: 'c', front: 'Question C', back: 'Answer C' },
+              state: 'passed',
+              previousProgress: { level: 2, due: later },
+            },
+            {
+              card: { id: 'd', front: 'Question D', back: 'Answer D' },
+              state: 'failed',
+              previousProgress: { level: 2, due: later },
+            },
+          ],
+          unreviewed: [
             {
               id: 'new-0',
               front: 'New question 1',
@@ -556,14 +514,6 @@ describe('sagas:review loadReview', () => {
               front: 'Question 1',
               back: 'Answer 1',
             },
-          ],
-          history: [
-            { id: 'a', front: 'Question A', back: 'Answer A' },
-            { id: 'c', front: 'Question C', back: 'Answer C' },
-          ],
-          failed: [
-            { id: 'b', front: 'Question B', back: 'Answer B' },
-            { id: 'd', front: 'Question D', back: 'Answer D' },
           ],
         },
       })

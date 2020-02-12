@@ -20,9 +20,11 @@ export interface SelectionState {
 }
 
 export function selection(state: AppState, action: Action): AppState {
-  const reviewCardId = state.review.currentCard
-    ? state.review.currentCard.id
-    : undefined;
+  const { position: reviewPosition, queue: reviewQueue } = state.review;
+  const reviewCardId =
+    reviewPosition && reviewPosition < reviewQueue.length
+      ? reviewQueue[reviewPosition!].card.id
+      : undefined;
   const editCardId = state.edit.forms.active.card.id;
   const currentScreen =
     state.route && state.route.history && state.route.history.length
@@ -122,7 +124,7 @@ export function selection(state: AppState, action: Action): AppState {
     // We only do this if we are on the review screen however since we could
     // trigger a review load in the background. In that case we'll update the
     // active card when we navigate to the review screen.
-    case 'REVIEW_LOADED':
+    case 'REVIEW_CARDS_LOADED':
       if (
         currentScreen === 'review' &&
         state.selection.activeCardId !== reviewCardId
@@ -145,6 +147,10 @@ export function selection(state: AppState, action: Action): AppState {
         };
       }
       return state;
+
+    // TODO: This also needs to handle the case where we updated the current
+    // card due to sync but hopefully we can get rid of this whole setup before
+    // dealing with that.
 
     // If we deleted the active card (due to sync), clear it
     case 'DELETE_REVIEW_CARD':

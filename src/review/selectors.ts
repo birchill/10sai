@@ -1,11 +1,13 @@
-import { createSelector } from 'reselect';
+// import { createSelector } from 'reselect';
 
-import { getScreen } from '../route/selectors';
-import { ReviewPhase } from './review-phase';
+import { Review, ReviewCardStatus } from '../model';
 import { AppState } from '../reducer';
-import { Card, Review } from '../model';
+import { getScreen } from '../route/selectors';
 
-const getHeapLength = (state: AppState) => state.review.heap.length;
+import { QueuedCard } from './reducer';
+import { ReviewPhase } from './review-phase';
+
+/*
 const getCurrentCard = (state: AppState) => state.review.currentCard;
 const getFailedCards = (state: AppState) => state.review.failed;
 
@@ -31,6 +33,7 @@ export const getReviewProgress = createSelector(
     unreviewedCards,
   })
 );
+*/
 
 export const getReviewPhase = (state: AppState) => state.review.phase;
 
@@ -45,29 +48,30 @@ export const getAvailableCards = (state: AppState) =>
 export const getSavingProgress = (state: AppState) =>
   state.review.savingProgress;
 
-export const getReviewCards = (state: AppState): Card[] => [
-  ...new Set(
-    [
-      ...state.review.heap,
-      ...state.review.failed,
-      ...state.review.history,
-      state.review.currentCard,
-    ].filter(card => !!card) as Card[]
-  ),
-];
+export const getReviewState = (state: AppState) => (state ? state.review : {});
 
-export const getReviewInfo = (state: AppState) => (state ? state.review : {});
-
-const extractId = (card: Card) => card.id;
-const newCardsCompleted = (state: AppState) =>
-  state.review.newCardsInPlay -
-  (state.review.currentCard && !state.review.currentCard.progress.due ? 1 : 0);
+const getHistorySummary = (
+  queue: ReadonlyArray<QueuedCard>
+): Review['history'] => {
+  return queue
+    .filter(item => item.state === 'passed' || item.state === 'failed')
+    .map(item => {
+      const result: Review['history'][0] = {
+        id: item.card.id,
+        status:
+          item.state === 'passed'
+            ? ReviewCardStatus.Passed
+            : ReviewCardStatus.Failed,
+      };
+      if (item.previousProgress) {
+        result.previousProgress = item.previousProgress;
+      }
+      return result;
+    });
+};
 
 export const getReviewSummary = (state: AppState): Review => ({
   maxCards: state.review.maxCards,
   maxNewCards: state.review.maxNewCards,
-  completed: state.review.completed,
-  newCardsCompleted: newCardsCompleted(state),
-  history: state.review.history.map(extractId),
-  failed: state.review.failed.map(extractId),
+  history: getHistorySummary(state.review.queue),
 });

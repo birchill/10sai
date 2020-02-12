@@ -1,5 +1,5 @@
 import * as views from './views';
-import { Card, Progress } from '../model';
+import { Card, CardPlaceholder, Progress } from '../model';
 import {
   DeepPartial,
   MakeOptional,
@@ -185,7 +185,7 @@ export class CardStore {
       }));
   }
 
-  async getCardsById(ids: string[]): Promise<Card[]> {
+  async getCardsById(ids: string[]): Promise<Array<Card | CardPlaceholder>> {
     await this.viewPromises.cards.promise;
 
     const options = {
@@ -196,10 +196,18 @@ export class CardStore {
 
     return result.rows
       .filter(row => row.doc)
-      .map(row => ({
-        ...parseCard(row.doc!),
-        progress: parseProgress(row.value.progress),
-      }));
+      .map(row => {
+        if (row.doc) {
+          return {
+            ...parseCard(row.doc!),
+            progress: parseProgress(row.value.progress),
+          };
+        }
+        return {
+          id: row.id,
+          status: 'missing',
+        };
+      });
   }
 
   async getAvailableCards({

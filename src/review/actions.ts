@@ -1,6 +1,18 @@
-import { AvailableCards, Card, Review } from '../model';
+import {
+  AvailableCards,
+  Card,
+  CardPlaceholder,
+  Review,
+  Progress,
+} from '../model';
 
-export function newReview(maxNewCards: number, maxCards: number) {
+export function newReview({
+  maxNewCards,
+  maxCards,
+}: {
+  maxNewCards: number;
+  maxCards: number;
+}) {
   return {
     type: <const>'NEW_REVIEW',
     maxCards,
@@ -10,63 +22,36 @@ export function newReview(maxNewCards: number, maxCards: number) {
 
 export type NewReviewAction = ReturnType<typeof newReview>;
 
-export function setReviewLimit(maxNewCards: number, maxCards: number) {
+export function loadReviewCards({ review }: { review: Review }) {
   return {
-    type: <const>'SET_REVIEW_LIMIT',
-    maxCards,
-    maxNewCards,
-  };
-}
-
-export type SetReviewLimitAction = ReturnType<typeof setReviewLimit>;
-
-export function loadReview(review: Review) {
-  return {
-    type: <const>'LOAD_REVIEW',
+    type: <const>'LOAD_REVIEW_CARDS',
     review,
   };
 }
 
-export function loadInitialReview(review: Review): LoadReviewAction {
-  return {
-    type: <const>'LOAD_REVIEW',
-    review,
-    initialReview: true,
-  };
-}
+export type LoadReviewCardsAction = ReturnType<typeof loadReviewCards>;
 
-export type LoadReviewAction = ReturnType<typeof loadReview> & {
-  initialReview?: boolean;
+export type ReviewedCard = {
+  card: Card | CardPlaceholder;
+  state: 'passed' | 'failed';
+  previousProgress?: Progress;
 };
 
-// How much to weight seeds towards zero.
-const WEIGHT_FACTOR = 1.4;
-
-export function reviewLoaded(
-  cards: Card[],
-  history?: Card[],
-  failed?: Card[],
-  initialReview: boolean = false
-) {
+export function reviewCardsLoaded({
+  history,
+  unreviewed,
+}: {
+  history: Array<ReviewedCard>;
+  unreviewed: Array<Card>;
+}) {
   return {
-    type: <const>'REVIEW_LOADED',
-    cards,
+    type: <const>'REVIEW_CARDS_LOADED',
     history,
-    failed,
-    initialReview,
-
-    // The way we avoid caring about if these two overlap is that we assign the
-    // current card and then remove it from the corresponding list. That way
-    // nextCard is guaranteed to be different. This also helps with the case
-    // where there is only one card left.
-
-    // Weight towards zero
-    currentCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
-    nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
+    unreviewed,
   };
 }
 
-export type ReviewLoadedAction = ReturnType<typeof reviewLoaded>;
+export type ReviewCardsLoadedAction = ReturnType<typeof reviewCardsLoaded>;
 
 export function showAnswer() {
   return { type: <const>'SHOW_ANSWER' };
@@ -78,8 +63,6 @@ export function failCard() {
   return {
     type: <const>'FAIL_CARD',
     reviewTime: new Date(),
-    // Weight towards zero
-    nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
   };
 }
 
@@ -90,8 +73,6 @@ export function passCard({ confidence = 1 }: { confidence?: number } = {}) {
     type: <const>'PASS_CARD',
     reviewTime: new Date(),
     confidence,
-    // Weight towards zero
-    nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
     levelSeed: Math.random(),
   };
 }
@@ -108,7 +89,11 @@ export type FinishUpdateProgressAction = ReturnType<
   typeof finishUpdateProgress
 >;
 
-export function updateAvailableCards(availableCards: AvailableCards) {
+export function updateAvailableCards({
+  availableCards,
+}: {
+  availableCards: AvailableCards;
+}) {
   return {
     type: <const>'UPDATE_AVAILABLE_CARDS',
     availableCards,
@@ -119,7 +104,7 @@ export type UpdateAvailableCardsAction = ReturnType<
   typeof updateAvailableCards
 >;
 
-export function updateReviewCard(card: Card) {
+export function updateReviewCard({ card }: { card: Card }) {
   return {
     type: <const>'UPDATE_REVIEW_CARD',
     card,
@@ -128,11 +113,17 @@ export function updateReviewCard(card: Card) {
 
 export type UpdateReviewCardAction = ReturnType<typeof updateReviewCard>;
 
-export function deleteReviewCard(id: string) {
+export function deleteReviewCard({
+  id,
+  replacement,
+}: {
+  id: string;
+  replacement?: Card;
+}) {
   return {
     type: <const>'DELETE_REVIEW_CARD',
     id,
-    nextCardSeed: Math.pow(Math.random(), WEIGHT_FACTOR),
+    replacement,
   };
 }
 
@@ -146,9 +137,8 @@ export type CancelReviewAction = ReturnType<typeof cancelReview>;
 
 export type ReviewAction =
   | NewReviewAction
-  | SetReviewLimitAction
-  | LoadReviewAction
-  | ReviewLoadedAction
+  | LoadReviewCardsAction
+  | ReviewCardsLoadedAction
   | ShowAnswerAction
   | FailCardAction
   | PassCardAction

@@ -1,13 +1,16 @@
-import { Review } from '../model';
+import { Review, ReviewCardStatus } from '../model';
 import { stripFields } from '../utils/type-helpers';
+import { ProgressContent } from './CardStore';
 
 export interface ReviewContent {
   maxCards: number;
   maxNewCards: number;
-  completed: number;
-  newCardsCompleted: number;
-  history: string[];
-  failed: string[];
+  history: Array<{
+    id: string;
+    // XXX Do we really want a bool for this? Wouldn't a status value be better?
+    failed?: boolean;
+    previousProgress?: ProgressContent;
+  }>;
   finished: boolean;
   modified: number;
 }
@@ -39,7 +42,53 @@ const parseReview = (
     ]),
   };
 
-  return result;
+  const history: Review['history'] = result.history.map(item => {
+    const parsed: Review['history'][0] = {
+      id: item.id,
+      status: item.failed ? ReviewCardStatus.Failed : ReviewCardStatus.Passed,
+    };
+    if (item.previousProgress) {
+      const { due } = item.previousProgress;
+      parsed.previousProgress = {
+        level: item.previousProgress.level,
+        due: due ? new Date(due) : null,
+      };
+    }
+    return parsed;
+  });
+
+  return { ...result, history };
+};
+
+const toReviewContent = ({
+  review,
+  finished,
+}: {
+  review: Review;
+  finished: boolean;
+}): ReviewContent => {
+  const history: ReviewContent['history'] = review.history.map(item => {
+    const serialized: ReviewContent['history'][0] = {
+      id: item.id,
+      failed: item.status === ReviewCardStatus.Failed,
+    };
+    return serialized;
+  });
+  /*
+  history: Array<{
+    id: string;
+    // XXX Do we really want a bool for this? Wouldn't a status value be better?
+    failed?: boolean;
+    previousProgress?: ProgressContent;
+  }>;
+  */
+
+  return {
+    ...review,
+    history,
+    finished,
+    modified: Date.now(),
+  };
 };
 
 const isReviewChangeDoc = (
@@ -74,10 +123,8 @@ export class ReviewStore {
 
   async putReview(review: Review): Promise<void> {
     const reviewToPut: PouchDB.Core.Document<ReviewContent> = {
-      ...review,
+      ...toReviewContent({ review, finished: false }),
       _id: REVIEW_ID,
-      finished: false,
-      modified: Date.now(),
     };
 
     await this.db.upsert<ReviewContent>(REVIEW_ID, () => reviewToPut);
@@ -143,11 +190,11 @@ export class ReviewStore {
       }
 
       // If either review has yet to make any progress, use the other.
-      if (!b.completed && !!a.completed) {
+      if (!b.history.length && !!a.history.length) {
         return a;
       }
 
-      if (!a.completed && !!b.completed) {
+      if (!a.history.length && !!b.history.length) {
         return b;
       }
 

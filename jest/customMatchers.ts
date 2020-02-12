@@ -3,6 +3,10 @@ declare namespace jest {
     toBeInDateRange: (beginDate: Date, endDate: Date) => CustomMatcherResult;
     toBeInRange: (floor: number, ceiling: number) => CustomMatcherResult;
   }
+  interface Expect {
+    toBeInDateRange: (beginDate: Date, endDate: Date) => CustomMatcherResult;
+    toBeInRange: (floor: number, ceiling: number) => CustomMatcherResult;
+  }
 }
 
 function toBeInDateRange(
