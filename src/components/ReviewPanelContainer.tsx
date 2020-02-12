@@ -1,9 +1,9 @@
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import { ReviewPhase } from '../review/review-phase';
 import * as Actions from '../actions';
 import { AppState } from '../reducer';
+import { ReviewPhase } from '../review/review-phase';
 
 import { ReviewPanel } from './ReviewPanel';
 
@@ -12,14 +12,24 @@ interface Props {
 }
 
 const mapStateToProps = (state: AppState) => {
-  const { history } = state.review;
-  const previousCard = history.length ? history[history.length - 1] : undefined;
+  const { queue, position } = state.review;
+
+  // XXX Do something sort of error thing if the position is out of range, queue
+  // is empty etc.
+
+  // XXX These need to pass on the actual status
+  // --- They should also fail because the types are wrong... ReviewPanel
+  //     doesn't yet take a CardPlaceholder
+  const currentCard = queue[position!].card;
+  const previousCard = position! > 1 ? queue[position! - 1].card : undefined;
+  const nextCard =
+    position! < queue.length - 1 ? queue[position! + 1].card : undefined;
 
   return {
     showBack: state.review.phase === ReviewPhase.Back,
     previousCard,
-    currentCard: state.review.currentCard,
-    nextCard: state.review.nextCard,
+    currentCard,
+    nextCard,
     notes: state.review.notes,
   };
 };

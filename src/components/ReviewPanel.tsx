@@ -17,9 +17,10 @@ interface Props {
   onPassCard: (options: { confidence: number }) => void;
   onFailCard: () => void;
   onEditCard: (id: string) => void;
-  previousCard: Card;
+  // XXX These all need to take a placeholder and a status
+  previousCard?: Card;
   currentCard: Card;
-  nextCard: Card;
+  nextCard?: Card;
   notes: Array<NoteState>;
 }
 
