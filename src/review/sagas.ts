@@ -1,28 +1,35 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
+
 import * as Actions from '../actions';
-import { AvailableCardWatcher } from './available-card-watcher';
-import { getReviewSummary } from './selectors';
-import { ReviewPhase } from './review-phase';
+import {
+  Card,
+  CardPlaceholder,
+  isCardPlaceholder,
+  ReviewCardStatus,
+} from '../model';
 import { beforeNotesScreenChange } from '../notes/sagas';
 import { DataStore } from '../store/DataStore';
-import { AppState } from '../reducer';
-import { ReviewState } from './reducer';
-import { Card } from '../model';
 
-export function* updateHeap(
+import { ReviewedCard } from './actions';
+import { AvailableCardWatcher } from './available-card-watcher';
+import { ReviewPhase } from './review-phase';
+import { getReviewState, getReviewSummary } from './selectors';
+
+export function* newReview(
   dataStore: DataStore,
   availableCardWatcher: AvailableCardWatcher
 ): Generator<any, void, any> {
-  const reviewInfo = yield select((state: AppState) =>
-    state ? state.review : {}
-  );
+  const reviewState = yield select(getReviewState);
 
-  const cards = yield* getCardsForHeap({
+  const unreviewed = yield* getUnreviewedCards({
     dataStore,
     availableCardWatcher,
-    reviewInfo,
+    maxCards: reviewState.maxCards,
+    maxNewCards: reviewState.maxNewCards,
+    existingCardIds: [],
+    existingNewCards: 0,
   });
-  yield put(Actions.reviewLoaded(cards));
+  yield put(Actions.reviewCardsLoaded({ history: [], unreviewed }));
 
   try {
     yield call([dataStore, 'putReview'], yield select(getReviewSummary));
@@ -31,41 +38,33 @@ export function* updateHeap(
   }
 }
 
-function* getCardsForHeap({
+function* getUnreviewedCards({
   dataStore,
   availableCardWatcher,
-  reviewInfo,
+  maxCards,
+  maxNewCards,
+  existingCardIds,
+  existingNewCards,
 }: {
   dataStore: DataStore;
   availableCardWatcher: AvailableCardWatcher;
-  reviewInfo: ReviewState;
-}) {
-  let freeSlots = Math.max(
-    0,
-    reviewInfo.maxCards -
-      reviewInfo.completed -
-      reviewInfo.failed.length -
-      (reviewInfo.currentCard ? 1 : 0)
-  );
-  // Note that we ignore 'nextCard' above since we assume that the reducer that
-  // handles REVIEW_LOADED will update nextCard so we need to include it in the
-  // set of cards we provide.
+  maxCards: number;
+  maxNewCards: number;
+  existingCardIds: ReadonlyArray<string>;
+  existingNewCards: number;
+}): Generator<any, Array<Card>, any> {
+  let freeSlots = Math.max(0, maxCards - existingCardIds.length);
 
   // TODO: Error handling for the below
 
-  // Make up a set of IDs we have already seen (or are seeing) so we don't
-  // re-add them to the heap.
-  const idsToSkip = new Set([...reviewInfo.history.map(card => card.id)]);
-  if (reviewInfo.currentCard) {
-    idsToSkip.add(reviewInfo.currentCard.id);
-  }
+  const idsToSkip = new Set(existingCardIds);
 
   // First fill up with the maximum number of new cards
   const newCardSlots = Math.max(
-    Math.min(reviewInfo.maxNewCards - reviewInfo.newCardsInPlay, freeSlots),
+    Math.min(maxNewCards - existingNewCards, freeSlots),
     0
   );
-  let cards: Card[] = [];
+  let cards: Array<Card> = [];
   if (newCardSlots) {
     let newIds: Array<string> = yield call([
       availableCardWatcher,
@@ -101,29 +100,21 @@ export function* updateProgress(
   dataStore: DataStore,
   action: Actions.PassCardAction | Actions.FailCardAction
 ): Generator<any, void, any> {
-  const reviewInfo: ReviewState = yield select((state: AppState) =>
-    state ? state.review : {}
-  );
+  const reviewState = yield select(getReviewState);
 
-  // Fetch the updated card from the state. Normally this is the last card in
-  // the history, unless we happen to choose the same card twice which should
-  // only happen when it is the last card and we failed it.
-  //
-  // As a result, when we detect that we have the last card if the action was
-  // a failure, then we must assume we failed that last card so we should update
-  // *that* card instead of the last card in the history.
-  const isLastCard = reviewInfo.nextCard === null;
-  let card;
-  if (isLastCard && action.type === 'FAIL_CARD') {
-    card = reviewInfo.currentCard;
-  } else {
-    card = reviewInfo.history[reviewInfo.history.length - 1];
+  if (!reviewState.queue.length || !reviewState.position) {
+    return;
   }
-  console.assert(card, 'Should have a card if we passed or failed one');
+
+  const card = reviewState.queue[reviewState.position - 1].card;
+  if (isCardPlaceholder(card)) {
+    console.warn("Passed/failed a placeholder card? That's odd");
+    return;
+  }
 
   const update: Partial<Card> = {
-    id: card!.id,
-    progress: card!.progress,
+    id: card.id,
+    progress: card.progress,
   };
 
   try {
@@ -138,7 +129,7 @@ export function* updateProgress(
   }
 
   try {
-    if (reviewInfo.phase === ReviewPhase.Complete) {
+    if (reviewState.phase === ReviewPhase.Complete) {
       yield call([dataStore, 'finishReview']);
     } else {
       yield call([dataStore, 'putReview'], yield select(getReviewSummary));
@@ -148,41 +139,59 @@ export function* updateProgress(
   }
 }
 
-export function* loadReview(
+export function* loadReviewCards(
   dataStore: DataStore,
   availableCardWatcher: AvailableCardWatcher,
-  action: Actions.LoadReviewAction
+  action: Actions.LoadReviewCardsAction
 ): Generator<any, void, any> {
   // Load cards from history
-  const history = yield call(
+  const existingCardIds = action.review.history.map(item => item.id);
+  const historyCards: Array<Card | CardPlaceholder> = yield call(
     [dataStore, 'getCardsById'],
-    action.review.history
+    existingCardIds
   );
+  if (existingCardIds.length !== historyCards.length) {
+    throw new Error(
+      `Mismatched sets of history cards and fetched cards ({$existingCardIds.length} vs ${historyCards.length})`
+    );
+  }
 
-  // We could do this by looking into historyCards but this action is so rare
-  // it's not worth optimizing.
-  const failedCards = yield call(
-    [dataStore, 'getCardsById'],
-    action.review.failed
-  );
+  const history: Array<ReviewedCard> = [];
+  for (const [i, historyItem] of action.review.history.entries()) {
+    if (historyItem.id !== historyCards[i].id) {
+      throw new Error(
+        `Mismatched card IDs at position #${i} (${historyItem.id} vs ${historyCards[i].id})`
+      );
+    }
 
-  // Fetch and update reviewInfo so that getCardsForHeap knows how many slots it
-  // needs to fill.
-  const reviewInfo = yield select((state: AppState) =>
-    state ? state.review : {}
-  );
-  reviewInfo.history = history;
-  reviewInfo.failedCards = failedCards;
+    const reviewedCard: ReviewedCard = {
+      card: historyCards[i],
+      state:
+        historyItem.status === ReviewCardStatus.Passed ? 'passed' : 'failed',
+    };
+    if (historyItem.previousProgress) {
+      reviewedCard.previousProgress = historyItem.previousProgress;
+    }
+    history.push(reviewedCard);
+  }
 
-  const heap = yield* getCardsForHeap({
+  const reviewState = yield select(getReviewState);
+  const existingNewCards = action.review.history.filter(
+    item => !item.previousProgress
+  ).length;
+
+  const unreviewed = yield* getUnreviewedCards({
     dataStore,
     availableCardWatcher,
-    reviewInfo,
+    maxCards: reviewState.maxCards,
+    maxNewCards: reviewState.maxNewCards,
+    existingCardIds,
+    existingNewCards,
   });
 
-  yield put(
-    Actions.reviewLoaded(heap, history, failedCards, !!action.initialReview)
-  );
+  // XXX This needs to shuffle the cards appropriately
+
+  yield put(Actions.reviewCardsLoaded({ history, unreviewed }));
 }
 
 export function* reviewSagas({
@@ -193,14 +202,14 @@ export function* reviewSagas({
   availableCardWatcher: AvailableCardWatcher;
 }) {
   yield* [
-    takeEvery(
-      ['NEW_REVIEW', 'SET_REVIEW_LIMITS'],
-      updateHeap,
+    takeEvery(['NEW_REVIEW'], newReview, dataStore, availableCardWatcher),
+    takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
+    takeLatest(
+      ['LOAD_REVIEW_CARDS'],
+      loadReviewCards,
       dataStore,
       availableCardWatcher
     ),
-    takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
-    takeLatest(['LOAD_REVIEW'], loadReview, dataStore, availableCardWatcher),
   ];
 }
 

@@ -1,21 +1,27 @@
 import { jsonEqualish } from '@birchill/json-equalish';
 import { Store } from 'redux';
 
+import * as Actions from '../actions';
+import {
+  AvailableCards,
+  Card,
+  CardPlaceholder,
+  isCardPlaceholder,
+  Review,
+} from '../model';
+import { AppState } from '../reducer';
+import { CardChange } from '../store/CardStore';
+import { DataStore } from '../store/DataStore';
+
+import { AvailableCardWatcher } from './available-card-watcher';
+import { ReviewPhase } from './review-phase';
 import {
   getAvailableCards,
   getNeedAvailableCards,
-  getReviewCards,
   getReviewSummary,
   getSavingProgress,
   getReviewPhase,
 } from './selectors';
-import { AvailableCardWatcher } from './available-card-watcher';
-import * as Actions from '../actions';
-import { AvailableCards, Review } from '../model';
-import { ReviewPhase } from './review-phase';
-import { DataStore } from '../store/DataStore';
-import { CardChange } from '../store/CardStore';
-import { AppState } from '../reducer';
 
 export function sync({
   dataStore,
@@ -53,7 +59,7 @@ export function sync({
     availableCardWatcher
       .getNumAvailableCards()
       .then(availableCards => {
-        store.dispatch(Actions.updateAvailableCards(availableCards));
+        store.dispatch(Actions.updateAvailableCards({ availableCards }));
       })
       .finally(() => {
         fetchingAvailableCards = false;
@@ -62,14 +68,18 @@ export function sync({
 
   availableCardWatcher.addListener((availableCards: AvailableCards) => {
     if (needAvailableCards) {
-      store.dispatch(Actions.updateAvailableCards(availableCards));
+      store.dispatch(Actions.updateAvailableCards({ availableCards }));
     }
   });
 
-  dataStore.changes.on('card', (change: CardChange) => {
-    const reviewCard = getReviewCards(store.getState()).find(
-      card => card.id === change.card.id
-    );
+  dataStore.changes.on('card', async (change: CardChange) => {
+    let reviewCard: Card | CardPlaceholder | undefined;
+    for (const queuedCard of store.getState().review.queue) {
+      if (queuedCard.card.id === change.card.id) {
+        reviewCard = queuedCard.card;
+        break;
+      }
+    }
 
     // Ignore changes for cards that are not being reviewed
     if (!reviewCard) {
@@ -77,16 +87,22 @@ export function sync({
     }
 
     if (change.deleted) {
-      store.dispatch(Actions.deleteReviewCard(change.card.id));
+      // XXX Find replacement card
+      let replacement: Card | undefined;
+      store.dispatch(
+        Actions.deleteReviewCard({ id: change.card.id, replacement })
+      );
       return;
     }
 
-    // Ignore changes that are already reflected in the review state.
-    if (jsonEqualish(reviewCard, change.card)) {
-      return;
+    // If we only had a placeholder or if the contents differ somehow, update
+    // the review card.
+    if (
+      isCardPlaceholder(reviewCard) ||
+      !jsonEqualish(reviewCard, change.card)
+    ) {
+      store.dispatch(Actions.updateReviewCard({ card: change.card }));
     }
-
-    store.dispatch(Actions.updateReviewCard(change.card));
   });
 
   // Synchronize changes to review document
@@ -106,14 +122,14 @@ export function sync({
     }
 
     if (!jsonEqualish(currentState, review)) {
-      store.dispatch(Actions.loadReview(review));
+      store.dispatch(Actions.loadReviewCards({ review }));
     }
   });
 
   // Do initial sync
   dataStore.getReview().then(review => {
     if (review) {
-      store.dispatch(Actions.loadInitialReview(review));
+      store.dispatch(Actions.loadReviewCards({ review }));
     }
   });
 }
