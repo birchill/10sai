@@ -1,5 +1,3 @@
-// import { createSelector } from 'reselect';
-
 import { Review, ReviewCardStatus } from '../model';
 import { AppState } from '../reducer';
 import { getScreen } from '../route/selectors';
@@ -7,33 +5,30 @@ import { getScreen } from '../route/selectors';
 import { QueuedCard } from './reducer';
 import { ReviewPhase } from './review-phase';
 
-/*
-const getCurrentCard = (state: AppState) => state.review.currentCard;
-const getFailedCards = (state: AppState) => state.review.failed;
+export const getReviewProgress = (state: AppState) => {
+  let failedCards = 0;
+  let completedCards = 0;
+  let unreviewedCards = 0;
 
-const getUnreviewedCards = createSelector(
-  [getHeapLength, getCurrentCard, getFailedCards],
-  (heapLength, currentCard, failedCards) => {
-    if (!currentCard) {
-      return 0;
+  const { queue } = state.review;
+  for (const item of queue) {
+    switch (item.state) {
+      case 'passed':
+        completedCards++;
+        break;
+
+      case 'failed':
+        failedCards++;
+        break;
+
+      default:
+        unreviewedCards++;
+        break;
     }
-    const currentCardIsFailedCard = failedCards.indexOf(currentCard) !== -1;
-    return heapLength + (currentCardIsFailedCard ? 0 : 1);
   }
-);
 
-const getFailedCardsLength = (state: AppState) => state.review.failed.length;
-const getCompleted = (state: AppState) => state.review.completed;
-
-export const getReviewProgress = createSelector(
-  [getFailedCardsLength, getCompleted, getUnreviewedCards],
-  (failedCards, completedCards, unreviewedCards) => ({
-    failedCards,
-    completedCards,
-    unreviewedCards,
-  })
-);
-*/
+  return { failedCards, completedCards, unreviewedCards };
+};
 
 export const getReviewPhase = (state: AppState) => state.review.phase;
 

@@ -96,49 +96,6 @@ function* getUnreviewedCards({
   return cards;
 }
 
-export function* updateProgress(
-  dataStore: DataStore,
-  action: Actions.PassCardAction | Actions.FailCardAction
-): Generator<any, void, any> {
-  const reviewState = yield select(getReviewState);
-
-  if (!reviewState.queue.length || !reviewState.position) {
-    return;
-  }
-
-  const card = reviewState.queue[reviewState.position - 1].card;
-  if (isCardPlaceholder(card)) {
-    console.warn("Passed/failed a placeholder card? That's odd");
-    return;
-  }
-
-  const update: Partial<Card> = {
-    id: card.id,
-    progress: card.progress,
-  };
-
-  try {
-    yield call([dataStore, 'putCard'], update);
-    yield put(Actions.finishUpdateProgress());
-  } catch (error) {
-    console.error(`Failed to update progress of card: ${error}`);
-    // TODO: Define the following action
-    // yield put(Actions.failUpdateProgress(error));
-    // For now just pretend it worked:
-    yield put(Actions.finishUpdateProgress());
-  }
-
-  try {
-    if (reviewState.phase === ReviewPhase.Complete) {
-      yield call([dataStore, 'finishReview']);
-    } else {
-      yield call([dataStore, 'putReview'], yield select(getReviewSummary));
-    }
-  } catch (error) {
-    // Do we really care?
-  }
-}
-
 export function* loadReviewCards(
   dataStore: DataStore,
   availableCardWatcher: AvailableCardWatcher,
@@ -194,6 +151,49 @@ export function* loadReviewCards(
   yield put(Actions.reviewCardsLoaded({ history, unreviewed }));
 }
 
+export function* updateProgress(
+  dataStore: DataStore,
+  action: Actions.PassCardAction | Actions.FailCardAction
+): Generator<any, void, any> {
+  const reviewState = yield select(getReviewState);
+
+  if (!reviewState.queue.length || !reviewState.position) {
+    return;
+  }
+
+  const card = reviewState.queue[reviewState.position - 1].card;
+  if (isCardPlaceholder(card)) {
+    console.warn("Passed/failed a placeholder card? That's odd");
+    return;
+  }
+
+  const update: Partial<Card> = {
+    id: card.id,
+    progress: card.progress,
+  };
+
+  try {
+    yield call([dataStore, 'putCard'], update);
+    yield put(Actions.finishUpdateProgress());
+  } catch (error) {
+    console.error(`Failed to update progress of card: ${error}`);
+    // TODO: Define the following action
+    // yield put(Actions.failUpdateProgress(error));
+    // For now just pretend it worked:
+    yield put(Actions.finishUpdateProgress());
+  }
+
+  try {
+    if (reviewState.phase === ReviewPhase.Complete) {
+      yield call([dataStore, 'finishReview']);
+    } else {
+      yield call([dataStore, 'putReview'], yield select(getReviewSummary));
+    }
+  } catch (error) {
+    // Do we really care?
+  }
+}
+
 export function* reviewSagas({
   dataStore,
   availableCardWatcher,
@@ -203,13 +203,13 @@ export function* reviewSagas({
 }) {
   yield* [
     takeEvery(['NEW_REVIEW'], newReview, dataStore, availableCardWatcher),
-    takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
     takeLatest(
       ['LOAD_REVIEW_CARDS'],
       loadReviewCards,
       dataStore,
       availableCardWatcher
     ),
+    takeEvery(['PASS_CARD', 'FAIL_CARD'], updateProgress, dataStore),
   ];
 }
 
