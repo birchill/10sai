@@ -2,7 +2,7 @@ import {
   AvailableCards,
   Card,
   CardPlaceholder,
-  Review,
+  ReviewSummary,
   Progress,
 } from '../model';
 
@@ -22,7 +22,7 @@ export function newReview({
 
 export type NewReviewAction = ReturnType<typeof newReview>;
 
-export function loadReview({ review }: { review: Review }) {
+export function loadReview({ review }: { review: ReviewSummary }) {
   return {
     type: <const>'LOAD_REVIEW',
     review,

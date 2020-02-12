@@ -1,5 +1,6 @@
-import { Review, ReviewCardStatus } from '../model';
+import { ReviewCardStatus, ReviewSummary } from '../model';
 import { stripFields } from '../utils/type-helpers';
+
 import { ProgressContent } from './CardStore';
 
 export interface ReviewContent {
@@ -28,7 +29,7 @@ export const REVIEW_ID = 'review-default';
 
 const parseReview = (
   review: ExistingReviewDoc | ExistingReviewDocWithGetMeta | ReviewDoc
-): Review => {
+): ReviewSummary => {
   const result = {
     ...stripFields(review as ExistingReviewDocWithGetMeta, [
       '_id',
@@ -42,8 +43,8 @@ const parseReview = (
     ]),
   };
 
-  const history: Review['history'] = result.history.map(item => {
-    const parsed: Review['history'][0] = {
+  const history: ReviewSummary['history'] = result.history.map(item => {
+    const parsed: ReviewSummary['history'][0] = {
       id: item.id,
       status: item.failed ? ReviewCardStatus.Failed : ReviewCardStatus.Passed,
     };
@@ -64,7 +65,7 @@ const toReviewContent = ({
   review,
   finished,
 }: {
-  review: Review;
+  review: ReviewSummary;
   finished: boolean;
 }): ReviewContent => {
   const history: ReviewContent['history'] = review.history.map(item => {
@@ -108,7 +109,7 @@ export class ReviewStore {
     this.db = db;
   }
 
-  async getReview(): Promise<Review | null> {
+  async getReview(): Promise<ReviewSummary | null> {
     const review = await this.getReviewDoc();
     return review && !review.finished ? parseReview(review) : null;
   }
@@ -121,7 +122,7 @@ export class ReviewStore {
     }
   }
 
-  async putReview(review: Review): Promise<void> {
+  async putReview(review: ReviewSummary): Promise<void> {
     const reviewToPut: PouchDB.Core.Document<ReviewContent> = {
       ...toReviewContent({ review, finished: false }),
       _id: REVIEW_ID,

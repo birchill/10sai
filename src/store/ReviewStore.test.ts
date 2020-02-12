@@ -1,6 +1,6 @@
 import PouchDB from 'pouchdb';
 
-import { Review, ReviewCardStatus } from '../model';
+import { ReviewCardStatus, ReviewSummary } from '../model';
 
 import { DataStore } from './DataStore';
 import { ReviewContent, ReviewStore } from './ReviewStore';
@@ -34,7 +34,7 @@ describe('ReviewStore', () => {
   let subject: ReviewStore;
   let testRemote: PouchDB.Database;
 
-  const typicalReview: Review = {
+  const typicalReview: ReviewSummary = {
     maxCards: 3,
     maxNewCards: 2,
     history: [
@@ -167,7 +167,7 @@ describe('ReviewStore', () => {
   });
 
   it('reports new review docs', async () => {
-    const changesPromise = waitForChangeEvents<Review | null>(
+    const changesPromise = waitForChangeEvents<ReviewSummary | null>(
       dataStore,
       'review',
       1
@@ -181,7 +181,7 @@ describe('ReviewStore', () => {
 
   it('reports finished review docs', async () => {
     await subject.putReview(typicalReview);
-    const changesPromise = waitForChangeEvents<Review | null>(
+    const changesPromise = waitForChangeEvents<ReviewSummary | null>(
       dataStore,
       'review',
       1
