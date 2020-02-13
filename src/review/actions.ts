@@ -29,7 +29,7 @@ export function loadReview({ review }: { review: ReviewSummary }) {
   };
 }
 
-export type LoadReviewCardsAction = ReturnType<typeof loadReview>;
+export type LoadReviewAction = ReturnType<typeof loadReview>;
 
 export type ReviewedCard = {
   card: Card | CardPlaceholder;
@@ -137,7 +137,7 @@ export type CancelReviewAction = ReturnType<typeof cancelReview>;
 
 export type ReviewAction =
   | NewReviewAction
-  | LoadReviewCardsAction
+  | LoadReviewAction
   | ReviewCardsLoadedAction
   | ShowAnswerAction
   | FailCardAction
