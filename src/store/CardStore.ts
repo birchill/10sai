@@ -210,7 +210,7 @@ export class CardStore {
       ) {
         const placeholder: CardPlaceholder = {
           id: ids[i],
-          status: 'missing',
+          status: progressRow.value?.deleted ? 'deleted' : 'missing',
         };
         result.push(placeholder);
         continue;
@@ -220,7 +220,7 @@ export class CardStore {
       if (!cardRow.doc || (cardRow as any).error || cardRow.value.deleted) {
         const placeholder: CardPlaceholder = {
           id: ids[i],
-          status: 'missing',
+          status: cardRow.value?.deleted ? 'deleted' : 'missing',
         };
         result.push(placeholder);
         continue;

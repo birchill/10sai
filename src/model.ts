@@ -23,17 +23,20 @@ export interface Progress {
 }
 
 /**
- * A missing card.
+ * A missing or deleted card.
  */
 export type CardPlaceholder = {
   id: string;
-  status: 'missing';
+  status: 'missing' | 'deleted';
 };
 
 export function isCardPlaceholder(
   a: Card | CardPlaceholder
 ): a is CardPlaceholder {
-  return (a as CardPlaceholder).status === 'missing';
+  return (
+    (a as CardPlaceholder).status === 'missing' ||
+    (a as CardPlaceholder).status === 'deleted'
+  );
 }
 
 /**
