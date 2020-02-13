@@ -63,7 +63,7 @@ describe('reducer:review', () => {
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     expect(updatedState.queue).toEqual(
@@ -91,6 +91,7 @@ describe('reducer:review', () => {
         history,
         newCards: [newCards[1]],
         overdue: [overdue[1], overdue[2]],
+        seed: -1,
       })
     );
 
@@ -104,6 +105,45 @@ describe('reducer:review', () => {
     ]);
     expect(updatedState.position).toBe(2);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
+  });
+
+  it('should shuffle the new and overdue cards in the queue on REVIEW_CARDS_LOADED', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 6,
+      maxCards: 9,
+    });
+
+    // Let the history have three passed cards
+    const history = [
+      { card: newCards[0], status: <const>'passed' },
+      { card: newCards[1], status: <const>'passed' },
+      { card: newCards[2], status: <const>'passed' },
+    ];
+
+    const updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({
+        history,
+        newCards: newCards.slice(3),
+        overdue,
+        seed: 0.2,
+      })
+    );
+
+    expect(updatedState.queue.map(item => item.card.id)).toEqual([
+      // The first three cards (from history) should not be shuffled
+      'card1',
+      'card2',
+      'card3',
+      // But the following should be shuffled in the following order
+      // (Notice that the new cards are still presented at the front)
+      'card5',
+      'card4',
+      'card6',
+      'card8',
+      'card7',
+      'card9',
+    ]);
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for a review with a single failed card', () => {
@@ -270,7 +310,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     updatedState = subject(updatedState, Actions.showAnswer());
@@ -515,7 +555,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     // Fail the first card
@@ -544,7 +584,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     // Fail the first card, then pass the next one
@@ -576,7 +616,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     // Fail the first card
@@ -602,7 +642,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     // Fail the first (new) card
@@ -628,7 +668,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     // Update the second card
@@ -650,7 +690,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     // Pass the first card
@@ -675,7 +715,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     // Fail the first card
@@ -746,7 +786,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     // Delete the second card
@@ -773,6 +813,7 @@ describe('reducer:review', () => {
         history: [],
         newCards,
         overdue: overdue.slice(0, 3),
+        seed: -1,
       })
     );
 
@@ -803,6 +844,7 @@ describe('reducer:review', () => {
         history: [],
         newCards,
         overdue: overdue.slice(0, 3),
+        seed: -1,
       })
     );
 
@@ -842,6 +884,7 @@ describe('reducer:review', () => {
         history,
         newCards,
         overdue: overdue.slice(1, 3),
+        seed: -1,
       })
     );
 
@@ -877,6 +920,7 @@ describe('reducer:review', () => {
         history,
         newCards,
         overdue: overdue.slice(1, 3),
+        seed: -1,
       })
     );
 
@@ -914,6 +958,7 @@ describe('reducer:review', () => {
         history,
         newCards,
         overdue: overdue.slice(1, 3),
+        seed: -1,
       })
     );
 
@@ -983,7 +1028,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     updatedState = subject(
@@ -1007,7 +1052,7 @@ describe('reducer:review', () => {
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     updatedState = subject(updatedState, Actions.cancelReview());

@@ -9,6 +9,7 @@ import {
 import { notes as notesReducer, NoteState } from '../notes/reducer';
 import { isNoteAction } from '../notes/actions';
 import { MS_PER_DAY } from '../utils/constants';
+import { shuffleWithSeed } from '../utils/seed-shuffle';
 
 import { ReviewPhase } from './review-phase';
 import { getReviewInterval } from './utils';
@@ -121,7 +122,18 @@ export function review(
 
       // Build up the queue
       const queue: Array<QueuedCard> = action.history.slice();
-      for (const card of [...action.newCards, ...action.overdue]) {
+
+      // Sort the new and overdue arrays independently.
+      const shuffledNewCards = shuffleWithSeed(
+        action.newCards.slice(),
+        action.seed
+      );
+      const shuffledOverdueCards = shuffleWithSeed(
+        action.overdue.slice(),
+        action.seed
+      );
+
+      for (const card of [...shuffledNewCards, ...shuffledOverdueCards]) {
         queue.push({
           card,
           status: 'front',
