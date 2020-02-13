@@ -186,28 +186,53 @@ export class CardStore {
   }
 
   async getCardsById(ids: string[]): Promise<Array<Card | CardPlaceholder>> {
-    await this.viewPromises.cards.promise;
-
-    const options = {
+    const progressResult = await this.db.allDocs<ProgressContent>({
       keys: ids.map(id => PROGRESS_PREFIX + id),
       include_docs: true,
-    };
-    const result = await this.db.query<CardContent>('cards', options);
+    });
+    const cardsResult = await this.db.allDocs<CardContent>({
+      keys: ids.map(id => CARD_PREFIX + id),
+      include_docs: true,
+    });
 
-    return result.rows
-      .filter(row => row.doc)
-      .map(row => {
-        if (row.doc) {
-          return {
-            ...parseCard(row.doc!),
-            progress: parseProgress(row.value.progress),
-          };
-        }
-        return {
-          id: row.id,
+    if (progressResult.rows.length !== cardsResult.rows.length) {
+      throw new Error(
+        `Got mismatched number of card records (progress: ${progressResult.rows.length} vs cards: ${cardsResult.rows.length})`
+      );
+    }
+
+    const result: Array<Card | CardPlaceholder> = [];
+    for (const [i, progressRow] of progressResult.rows.entries()) {
+      if (
+        !progressRow.doc ||
+        (progressRow as any).error ||
+        progressRow.value.deleted
+      ) {
+        const placeholder: CardPlaceholder = {
+          id: ids[i],
           status: 'missing',
         };
+        result.push(placeholder);
+        continue;
+      }
+
+      const cardRow = cardsResult.rows[i];
+      if (!cardRow.doc || (cardRow as any).error || cardRow.value.deleted) {
+        const placeholder: CardPlaceholder = {
+          id: ids[i],
+          status: 'missing',
+        };
+        result.push(placeholder);
+        continue;
+      }
+
+      result.push({
+        ...parseCard(cardRow.doc),
+        progress: parseProgress(progressRow.doc),
       });
+    }
+
+    return result;
   }
 
   async getAvailableCards({

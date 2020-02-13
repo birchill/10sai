@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 
 import '../../jest/customMatchers';
 
-import { Card } from '../model';
+import { Card, isCardPlaceholder } from '../model';
 
 import { CardStore, CardContent, CardChange } from './CardStore';
 import { DataStore } from './DataStore';
@@ -76,7 +76,7 @@ describe('CardStore', () => {
     });
   });
 
-  it('does not return non-existent cards when fetching by id', async () => {
+  it('returns placeholders for missing cards when fetching by id', async () => {
     const existingCard = await subject.putCard({
       front: 'Question',
       back: 'Answer',
@@ -86,8 +86,15 @@ describe('CardStore', () => {
       existingCard.id,
       'doily',
     ]);
-    expect(cards).toHaveLength(1);
-    expect(cards.map(card => card.id)).toEqual([existingCard.id]);
+    expect(cards).toHaveLength(3);
+    expect(cards.map(card => card.id)).toEqual([
+      'batman',
+      existingCard.id,
+      'doily',
+    ]);
+    expect(isCardPlaceholder(cards[0])).toBe(true);
+    expect(isCardPlaceholder(cards[1])).toBe(false);
+    expect(isCardPlaceholder(cards[2])).toBe(true);
   });
 
   it('generates unique ascending IDs', () => {
@@ -190,7 +197,7 @@ describe('CardStore', () => {
     });
   });
 
-  it('does not return deleted cards when fetching by id', async () => {
+  it('returns a placeholder for deleted cards when fetching by id', async () => {
     const deletedCard = await subject.putCard({
       front: 'Question (deleted)',
       back: 'Answer (deleted)',
@@ -204,8 +211,9 @@ describe('CardStore', () => {
 
     const cards = await subject.getCardsById([deletedCard.id, existingCard.id]);
 
-    expect(cards).toHaveLength(1);
-    expect(cards[0].id).toBe(existingCard.id);
+    expect(cards).toHaveLength(2);
+    expect(cards[0].id).toBe(deletedCard.id);
+    expect(cards[1].id).toBe(existingCard.id);
   });
 
   it('deletes the specified card', async () => {
