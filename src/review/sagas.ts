@@ -99,7 +99,7 @@ function* getUnreviewedCards({
 export function* loadReview(
   dataStore: DataStore,
   availableCardWatcher: AvailableCardWatcher,
-  action: Actions.LoadReviewCardsAction
+  action: Actions.LoadReviewAction
 ): Generator<any, void, any> {
   // Load cards from history
   const existingCardIds = action.review.history.map(item => item.id);
