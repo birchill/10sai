@@ -1,4 +1,4 @@
-import { ReviewCardStatus, ReviewSummary } from '../model';
+import { ReviewSummary } from '../model';
 import { AppState } from '../reducer';
 import { getScreen } from '../route/selectors';
 
@@ -53,10 +53,7 @@ const getHistorySummary = (
     .map(item => {
       const result: ReviewSummary['history'][0] = {
         id: item.card.id,
-        status:
-          item.status === 'passed'
-            ? ReviewCardStatus.Passed
-            : ReviewCardStatus.Failed,
+        status: item.status as 'passed' | 'failed',
       };
       if (item.previousProgress) {
         result.previousProgress = item.previousProgress;

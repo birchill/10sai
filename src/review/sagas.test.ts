@@ -3,7 +3,7 @@ import { EffectProviders } from 'redux-saga-test-plan/providers';
 import { CallEffectDescriptor } from 'redux-saga/effects';
 
 import * as Actions from '../actions';
-import { Card, ReviewCardStatus } from '../model';
+import { Card } from '../model';
 import { reducer } from '../reducer';
 import { DataStore } from '../store/DataStore';
 import { MS_PER_DAY } from '../utils/constants';
@@ -239,20 +239,20 @@ describe('sagas:review loadReview', () => {
         maxCards: 6,
         maxNewCards: 2,
         history: [
-          { id: 'a', status: ReviewCardStatus.Passed },
+          { id: 'a', status: 'passed' },
           {
             id: 'b',
-            status: ReviewCardStatus.Failed,
+            status: 'failed',
             previousProgress: { level: 2, due: later },
           },
           {
             id: 'c',
-            status: ReviewCardStatus.Passed,
+            status: 'passed',
             previousProgress: { level: 2, due: later },
           },
           {
             id: 'd',
-            status: ReviewCardStatus.Failed,
+            status: 'failed',
             previousProgress: { level: 2, due: later },
           },
         ],
@@ -477,15 +477,15 @@ describe('sagas:review updateProgress', () => {
         maxCards: 3,
         maxNewCards: 2,
         history: [
-          { id: newCards[0].id, status: ReviewCardStatus.Passed },
+          { id: newCards[0].id, status: 'passed' },
           {
             id: overdue[0].id,
-            status: ReviewCardStatus.Passed,
+            status: 'passed',
             previousProgress: overdue[0].progress,
           },
           {
             id: overdue[1].id,
-            status: ReviewCardStatus.Failed,
+            status: 'failed',
             previousProgress: overdue[1].progress,
           },
         ],

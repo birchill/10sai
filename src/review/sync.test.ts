@@ -1,6 +1,6 @@
 import { Store } from 'redux';
 
-import { Card, ReviewCardStatus, ReviewSummary } from '../model';
+import { Card, ReviewSummary } from '../model';
 import { reducer } from '../reducer';
 import { CardChange } from '../store/CardStore';
 import { DataStore } from '../store/DataStore';
@@ -357,8 +357,8 @@ describe('review:sync', () => {
         maxCards: 3,
         maxNewCards: 2,
         history: [
-          { id: 'abc', status: ReviewCardStatus.Passed },
-          { id: 'def', status: ReviewCardStatus.Failed },
+          { id: 'abc', status: 'passed' },
+          { id: 'def', status: 'failed' },
         ],
       };
 

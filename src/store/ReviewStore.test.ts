@@ -1,6 +1,6 @@
 import PouchDB from 'pouchdb';
 
-import { ReviewCardStatus, ReviewSummary } from '../model';
+import { ReviewSummary } from '../model';
 
 import { DataStore } from './DataStore';
 import { ReviewContent, ReviewStore } from './ReviewStore';
@@ -38,8 +38,8 @@ describe('ReviewStore', () => {
     maxCards: 3,
     maxNewCards: 2,
     history: [
-      { id: 'abc', status: ReviewCardStatus.Passed },
-      { id: 'def', status: ReviewCardStatus.Failed },
+      { id: 'abc', status: 'passed' },
+      { id: 'def', status: 'failed' },
     ],
   };
 

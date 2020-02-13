@@ -45,14 +45,9 @@ export interface ReviewSummary {
   maxNewCards: number;
   history: Array<{
     id: string;
-    status: ReviewCardStatus;
+    status: 'passed' | 'failed';
     previousProgress?: Progress;
   }>;
-}
-
-export const enum ReviewCardStatus {
-  Passed,
-  Failed,
 }
 
 /**

@@ -16,7 +16,6 @@ import { getReviewInterval } from './utils';
 
 export type QueuedCard = {
   card: Card | CardPlaceholder;
-  // TODO: Rename this to status
   status: 'front' | 'back' | 'passed' | 'failed';
   // True if the card was skipped. This is a sub-state of 'front' / 'back'
   // and mostly just helps us when counting how many cards we actually have.
