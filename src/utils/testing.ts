@@ -17,30 +17,46 @@ export function waitForEvents(cycles = 1) {
 // Generates a set of cards with increasing IDs / metadata.
 //
 // |maxNewCards| indicates the number of cards with no progress information to
-// generate (but never more than |maxExistingCards|).
-// |maxExistingCards| indicates the total number of cards to generate.
+// generate (but never more than |maxCards|).
+// |maxCards| indicates the total number of cards to generate.
 //
 // Non-new cards will have a review time 3 days before the passed-in
 // |reviewTime|.
-export function generateCards(
-  maxNewCards: number,
-  maxExistingCards: number,
-  reviewTime: number = Date.now()
-) {
-  const cards = new Array(Math.max(maxNewCards, maxExistingCards));
-  for (let i = 0; i < cards.length; i++) {
-    const newCard = i < maxNewCards;
-    cards[i] = {
+export function generateCards({
+  maxNewCards,
+  maxCards,
+  reviewTime = Date.now(),
+}: {
+  maxNewCards: number;
+  maxCards: number;
+  reviewTime?: number;
+}): { newCards: Array<Card>; overdue: Array<Card> } {
+  const totalCards = Math.max(maxNewCards, maxCards, 0);
+
+  const newCards: Array<Card> = [];
+  for (let i = 0; i < maxNewCards; i++) {
+    newCards.push({
+      id: `card${i + 1}`,
+      front: `Question ${i + 1}`,
+      back: `Answer ${i + 1}`,
+      progress: { level: 0, due: null },
+    } as Card);
+  }
+
+  const overdue: Array<Card> = [];
+  for (let i = newCards.length; i < totalCards; i++) {
+    overdue.push({
       id: `card${i + 1}`,
       front: `Question ${i + 1}`,
       back: `Answer ${i + 1}`,
       progress: {
-        level: newCard ? 0 : 1,
-        due: newCard ? null : new Date(reviewTime - 2 * MS_PER_DAY),
+        level: 1,
+        due: new Date(reviewTime - 2 * MS_PER_DAY),
       },
-    };
+    } as Card);
   }
-  return cards;
+
+  return { newCards, overdue };
 }
 
 // Generates a complete Card with id |id| and all other members filled in with

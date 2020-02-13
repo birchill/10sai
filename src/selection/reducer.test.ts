@@ -128,10 +128,13 @@ describe('reducer:selection', () => {
       undefined,
       Actions.newReview({ maxNewCards: 2, maxCards: 3 })
     );
-    const cards = generateCards(2, 3);
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 2,
+      maxCards: 3,
+    });
     state = subject(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
     state = subject(state, Actions.navigate({ url: '/review' }));
 
@@ -144,10 +147,13 @@ describe('reducer:selection', () => {
       undefined,
       Actions.newReview({ maxNewCards: 2, maxCards: 3 })
     );
-    const cards = generateCards(2, 3);
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 2,
+      maxCards: 3,
+    });
     state = subject(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
     state = subject(state, Actions.navigate({ url: '/review' }));
     state = subject(state, Actions.navigate({ url: '/' }));
@@ -158,10 +164,13 @@ describe('reducer:selection', () => {
   it('should update the active card when a review is loaded', () => {
     let state = subject(undefined, Actions.navigate({ url: '/review' }));
     state = subject(state, Actions.newReview({ maxNewCards: 2, maxCards: 3 }));
-    const cards = generateCards(2, 3);
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 2,
+      maxCards: 3,
+    });
     state = subject(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     const currentCard = state.review.queue[state.review.position!].card;
@@ -171,10 +180,13 @@ describe('reducer:selection', () => {
   it('should update the active card when the current review card changes', () => {
     let state = subject(undefined, Actions.navigate({ url: '/review' }));
     state = subject(state, Actions.newReview({ maxNewCards: 2, maxCards: 3 }));
-    const cards = generateCards(2, 3);
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 2,
+      maxCards: 3,
+    });
     state = subject(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
     state = subject(state, Actions.passCard());
 
@@ -185,10 +197,13 @@ describe('reducer:selection', () => {
   it('should clear the active card when the current review card is deleted', () => {
     let state = subject(undefined, Actions.navigate({ url: '/review' }));
     state = subject(state, Actions.newReview({ maxNewCards: 2, maxCards: 3 }));
-    const cards = generateCards(2, 3);
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 2,
+      maxCards: 3,
+    });
     state = subject(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
     const currentCard = state.review.queue[state.review.position!].card;
     state = subject(state, Actions.deleteReviewCard({ id: currentCard.id }));

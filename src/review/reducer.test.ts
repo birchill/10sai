@@ -17,14 +17,14 @@ function newReview({
 }: {
   maxNewCards: number;
   maxCards: number;
-}): [ReviewState, Card[]] {
+}): [ReviewState, Array<Card>, Array<Card>] {
   const initialState = reducer(
     undefined,
     Actions.newReview({ maxNewCards, maxCards })
   );
-  const cards = generateCards(maxNewCards, maxCards);
+  const { newCards, overdue } = generateCards({ maxNewCards, maxCards });
 
-  return [initialState.review, cards];
+  return [initialState.review, newCards, overdue];
 }
 
 function makeFailedQueuedCard(card: Card) {
@@ -56,54 +56,66 @@ describe('reducer:review', () => {
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for a brand new review', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 1,
+      maxCards: 3,
+    });
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     expect(updatedState.queue).toEqual(
-      cards.map(card => ({ card, status: 'front' }))
+      [...newCards, ...overdue].map(card => ({ card, status: 'front' }))
     );
     expect(updatedState.position).toBe(0);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for an in-progress review', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 2, maxCards: 5 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 2,
+      maxCards: 5,
+    });
 
     // Let the history have one new card and one failed existing card.
     const history = [
-      { card: cards[0], status: <const>'passed' },
-      makeFailedQueuedCard(cards[2]),
+      { card: newCards[0], status: <const>'passed' },
+      makeFailedQueuedCard(overdue[0]),
     ];
-    const unreviewed = [cards[1], cards[3], cards[4]];
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed })
+      Actions.reviewCardsLoaded({
+        history,
+        newCards: [newCards[1]],
+        overdue: [overdue[1], overdue[2]],
+      })
     );
 
     expect(updatedState.queue).toEqual([
-      { card: cards[0], status: 'passed' },
+      { card: newCards[0], status: 'passed' },
       history[1],
-      { card: cards[1], status: 'front' },
-      { card: cards[3], status: 'front' },
+      { card: newCards[1], status: 'front' },
+      { card: overdue[1], status: 'front' },
       { card: history[1].card, status: 'front' },
-      { card: cards[4], status: 'front' },
+      { card: overdue[2], status: 'front' },
     ]);
     expect(updatedState.position).toBe(2);
     expect(updatedState.phase).toBe(ReviewPhase.Front);
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for a review with a single failed card', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
-    const history = [makeFailedQueuedCard(cards[0])];
+    const [initialState, , overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
+    const history = [makeFailedQueuedCard(overdue[0])];
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [] })
+      Actions.reviewCardsLoaded({ history, newCards: [], overdue: [] })
     );
 
     expect(updatedState.queue).toEqual([
@@ -115,12 +127,15 @@ describe('reducer:review', () => {
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for a review with a single failed new card', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 1 });
-    const history = [makeFailedQueuedCard(cards[0])];
+    const [initialState, newCards] = newReview({
+      maxNewCards: 1,
+      maxCards: 1,
+    });
+    const history = [makeFailedQueuedCard(newCards[0])];
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [] })
+      Actions.reviewCardsLoaded({ history, newCards: [], overdue: [] })
     );
 
     expect(updatedState.queue).toEqual([
@@ -132,12 +147,15 @@ describe('reducer:review', () => {
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for a review with a single passed card', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
-    const history = [{ card: cards[0], status: <const>'passed' }];
+    const [initialState, , overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
+    const history = [{ card: overdue[0], status: <const>'passed' }];
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [] })
+      Actions.reviewCardsLoaded({ history, newCards: [], overdue: [] })
     );
 
     expect(updatedState.queue).toEqual([history[0]]);
@@ -146,16 +164,19 @@ describe('reducer:review', () => {
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for a review with all passed cards', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 1,
+      maxCards: 3,
+    });
     const history = [
-      { card: cards[0], status: <const>'passed' },
-      { card: cards[1], status: <const>'passed' },
-      { card: cards[2], status: <const>'passed' },
+      { card: newCards[0], status: <const>'passed' },
+      { card: overdue[0], status: <const>'passed' },
+      { card: overdue[1], status: <const>'passed' },
     ];
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [] })
+      Actions.reviewCardsLoaded({ history, newCards: [], overdue: [] })
     );
 
     expect(updatedState.queue).toEqual(history);
@@ -168,7 +189,7 @@ describe('reducer:review', () => {
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: [] })
+      Actions.reviewCardsLoaded({ history: [], newCards: [], overdue: [] })
     );
 
     expect(updatedState.queue).toEqual([]);
@@ -179,12 +200,15 @@ describe('reducer:review', () => {
   it('should update the queue on REVIEW_CARDS_LOADED for a queue where everything failed', () => {
     // The main purpose of this particular test is to check the generated part
     // of the queue is sane.
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 3 });
-    const history = cards.map(makeFailedQueuedCard);
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 1,
+      maxCards: 3,
+    });
+    const history = [...newCards, ...overdue].map(makeFailedQueuedCard);
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [] })
+      Actions.reviewCardsLoaded({ history, newCards: [], overdue: [] })
     );
 
     expect(updatedState.queue).toEqual([
@@ -207,18 +231,21 @@ describe('reducer:review', () => {
   });
 
   it('should ensure repeated cards are added after the current position on REVIEW_CARDS_LOADED', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 5 });
+    const [initialState, , overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 5,
+    });
     const history = [
-      makeFailedQueuedCard(cards[0]),
-      { card: cards[1], status: <const>'passed' },
-      { card: cards[2], status: <const>'passed' },
-      { card: cards[3], status: <const>'passed' },
-      { card: cards[4], status: <const>'passed' },
+      makeFailedQueuedCard(overdue[0]),
+      { card: overdue[1], status: <const>'passed' },
+      { card: overdue[2], status: <const>'passed' },
+      { card: overdue[3], status: <const>'passed' },
+      { card: overdue[4], status: <const>'passed' },
     ];
 
     const updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [] })
+      Actions.reviewCardsLoaded({ history, newCards: [], overdue: [] })
     );
 
     // Normally we would try to place the re-review for the first card at about
@@ -237,10 +264,13 @@ describe('reducer:review', () => {
   });
 
   it('should update the review state on SHOW_ANSWER', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 1,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     updatedState = subject(updatedState, Actions.showAnswer());
@@ -250,12 +280,15 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level for an existing card on PASS_CARD (past due date)', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
-    cards[0].progress.level = 3;
-    cards[0].progress.due = new Date(Date.now() - 2 * MS_PER_DAY);
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
+    overdue[0].progress.level = 3;
+    overdue[0].progress.due = new Date(Date.now() - 2 * MS_PER_DAY);
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     updatedState = subject(updatedState, Actions.passCard());
@@ -270,18 +303,21 @@ describe('reducer:review', () => {
           }),
         }),
         status: 'passed',
-        previousProgress: cards[0].progress,
+        previousProgress: overdue[0].progress,
       })
     );
   });
 
   it('should update the card level for an existing card on PASS_CARD (before due date)', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
-    cards[0].progress.level = 3; // 3 day span
-    cards[0].progress.due = new Date(Date.now() + 1 * MS_PER_DAY);
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
+    overdue[0].progress.level = 3; // 3 day span
+    overdue[0].progress.due = new Date(Date.now() + 1 * MS_PER_DAY);
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     updatedState = subject(updatedState, Actions.passCard());
@@ -295,11 +331,14 @@ describe('reducer:review', () => {
   });
 
   it('should update the card level for a new card on PASS_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 1 });
-    expect(cards[0].progress.level).toBe(0);
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 1,
+      maxCards: 1,
+    });
+    expect(newCards[0].progress.level).toBe(0);
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     updatedState = subject(updatedState, Actions.passCard());
@@ -314,12 +353,15 @@ describe('reducer:review', () => {
   });
 
   it('should update the due time on PASS_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
-    cards[0].progress.level = 4;
-    cards[0].progress.due = new Date(Date.now() - 6 * MS_PER_DAY);
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
+    overdue[0].progress.level = 4;
+    overdue[0].progress.due = new Date(Date.now() - 6 * MS_PER_DAY);
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     const passAction = Actions.passCard();
@@ -334,12 +376,15 @@ describe('reducer:review', () => {
   });
 
   it('should use the confidence factor to update the card level and due time on PASS_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
-    cards[0].progress.level = 4;
-    cards[0].progress.due = new Date(Date.now() - 6 * MS_PER_DAY);
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
+    overdue[0].progress.level = 4;
+    overdue[0].progress.due = new Date(Date.now() - 6 * MS_PER_DAY);
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     const passAction = Actions.passCard({ confidence: 0.5 });
@@ -356,22 +401,25 @@ describe('reducer:review', () => {
   });
 
   it('should drop the failed card from the queue on PASS_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 1,
+      maxCards: 3,
+    });
 
     const history = [
-      makeFailedQueuedCard(cards[0]),
-      { card: cards[1], status: <const>'passed' },
-      { card: cards[2], status: <const>'passed' },
+      makeFailedQueuedCard(newCards[0]),
+      { card: overdue[0], status: <const>'passed' },
+      { card: overdue[1], status: <const>'passed' },
     ];
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [] })
+      Actions.reviewCardsLoaded({ history, newCards: [], overdue: [] })
     );
 
     // The next card should be the failed card
     expect(updatedState.position).toEqual(3);
     expect(updatedState.queue[updatedState.position!].card.id).toEqual(
-      cards[0].id
+      newCards[0].id
     );
     expect(updatedState.phase).toBe(ReviewPhase.Front);
 
@@ -380,10 +428,10 @@ describe('reducer:review', () => {
 
     // Check the original failure is no longer in the queue
     expect(updatedState.queue).toEqual([
-      { card: cards[1], status: 'passed' },
-      { card: cards[2], status: 'passed' },
+      { card: overdue[0], status: 'passed' },
+      { card: overdue[1], status: 'passed' },
       {
-        card: expect.objectContaining({ id: cards[0].id }),
+        card: expect.objectContaining({ id: newCards[0].id }),
         status: 'passed',
         previousProgress: history[0].card.progress,
       },
@@ -394,16 +442,19 @@ describe('reducer:review', () => {
 
   it('should drop a future repeat card from the queue on PASS_CARD', () => {
     // Similar to the last test, but in this case we re-review the failed card.
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 1,
+      maxCards: 3,
+    });
 
     const history = [
-      makeFailedQueuedCard(cards[0]),
-      { card: cards[1], status: <const>'passed' },
-      { card: cards[2], status: <const>'passed' },
+      makeFailedQueuedCard(newCards[0]),
+      { card: overdue[0], status: <const>'passed' },
+      { card: overdue[1], status: <const>'passed' },
     ];
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [] })
+      Actions.reviewCardsLoaded({ history, newCards: [], overdue: [] })
     );
 
     // We should have an extra copy of the failed card at the end of the queue.
@@ -421,27 +472,30 @@ describe('reducer:review', () => {
     expect(updatedState.queue).toEqual([
       {
         card: {
-          ...cards[0],
+          ...newCards[0],
           progress: expect.objectContaining({
             level: expect.toBeInRange(0.4, 0.6),
           }),
         },
         status: 'passed',
       },
-      { card: cards[1], status: 'passed' },
-      { card: cards[2], status: 'passed' },
+      { card: overdue[0], status: 'passed' },
+      { card: overdue[1], status: 'passed' },
     ]);
     expect(updatedState.position).toBe(1);
     expect(updatedState.phase).toBe(ReviewPhase.Back);
   });
 
   it('should update the card level and due time on FAIL_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
-    cards[0].progress.level = 3;
-    cards[0].progress.due = new Date(Date.now() - 2 * MS_PER_DAY);
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
+    overdue[0].progress.level = 3;
+    overdue[0].progress.due = new Date(Date.now() - 2 * MS_PER_DAY);
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     const failAction = Actions.failCard();
@@ -455,10 +509,13 @@ describe('reducer:review', () => {
   });
 
   it('should duplicate the failed card on FAIL_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Fail the first card
@@ -476,15 +533,18 @@ describe('reducer:review', () => {
 
     // We should store the previous progress on the failed version, but not on
     // the repeated version.
-    expect(updatedState.queue[0].previousProgress).toEqual(cards[0].progress);
+    expect(updatedState.queue[0].previousProgress).toEqual(overdue[0].progress);
     expect(repeatedCard.previousProgress).toBeUndefined();
   });
 
   it('should only maintain one failed card on FAIL_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Fail the first card, then pass the next one
@@ -510,10 +570,13 @@ describe('reducer:review', () => {
   });
 
   it('should preserve the old progress on FAIL_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Fail the first card
@@ -524,7 +587,7 @@ describe('reducer:review', () => {
     const failedCard = updatedState.queue[0];
     expect(failedCard.card.id).toEqual('card1');
     expect(failedCard.status).toEqual('failed');
-    expect(failedCard.previousProgress).toEqual(cards[0].progress);
+    expect(failedCard.previousProgress).toEqual(overdue[0].progress);
 
     const repeatedCard = updatedState.queue[2];
     expect(repeatedCard.card.id).toEqual('card1');
@@ -533,10 +596,13 @@ describe('reducer:review', () => {
   });
 
   it('should omit the old progress for a new card on FAIL_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 1, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 1,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Fail the first (new) card
@@ -556,17 +622,20 @@ describe('reducer:review', () => {
   });
 
   it('updates an unreviewed card on UPDATE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Update the second card
     updatedState = subject(
       updatedState,
       Actions.updateReviewCard({
-        card: { ...cards[1], front: 'Updated front' },
+        card: { ...overdue[1], front: 'Updated front' },
       })
     );
 
@@ -575,10 +644,13 @@ describe('reducer:review', () => {
   });
 
   it('updates a passed card on UPDATE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Pass the first card
@@ -588,7 +660,7 @@ describe('reducer:review', () => {
     updatedState = subject(
       updatedState,
       Actions.updateReviewCard({
-        card: { ...cards[0], front: 'Updated front' },
+        card: { ...overdue[0], front: 'Updated front' },
       })
     );
 
@@ -597,24 +669,27 @@ describe('reducer:review', () => {
   });
 
   it('updates a failed card on UPDATE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Fail the first card
     updatedState = subject(updatedState, Actions.failCard());
 
     // Check we have two copies of the card in the positions we expect
-    expect(updatedState.queue[0].card.id).toBe(cards[0].id);
-    expect(updatedState.queue[2].card.id).toBe(cards[0].id);
+    expect(updatedState.queue[0].card.id).toBe(overdue[0].id);
+    expect(updatedState.queue[2].card.id).toBe(overdue[0].id);
 
     // Then update it
     updatedState = subject(
       updatedState,
       Actions.updateReviewCard({
-        card: { ...cards[0], front: 'Updated front' },
+        card: { ...overdue[0], front: 'Updated front' },
       })
     );
 
@@ -626,12 +701,19 @@ describe('reducer:review', () => {
   });
 
   it('updates and replaces a placeholder card on UPDATE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
-    const history = [makeFailedQueuedCardPlaceholder(cards[0])];
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
+    const history = [makeFailedQueuedCardPlaceholder(overdue[0])];
 
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: cards.slice(1) })
+      Actions.reviewCardsLoaded({
+        history,
+        newCards,
+        overdue: overdue.slice(1),
+      })
     );
 
     // Check we DON'T have a repeated version of the card
@@ -640,7 +722,7 @@ describe('reducer:review', () => {
     // Update the review card
     updatedState = subject(
       updatedState,
-      Actions.updateReviewCard({ card: cards[0] })
+      Actions.updateReviewCard({ card: overdue[0] })
     );
 
     // Check the placeholder has been updated and we DO have a repeated version
@@ -650,7 +732,7 @@ describe('reducer:review', () => {
       (updatedState.queue[0].card as CardPlaceholder).status
     ).toBeUndefined();
     expect((updatedState.queue[0].card as Card).front).toBe('Question 1');
-    expect(updatedState.queue[2].card.id).toBe(cards[0].id);
+    expect(updatedState.queue[2].card.id).toBe(overdue[0].id);
     expect(
       (updatedState.queue[2].card as CardPlaceholder).status
     ).toBeUndefined();
@@ -658,30 +740,40 @@ describe('reducer:review', () => {
   });
 
   it('should drop an unreviewed card on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Delete the second card
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({ id: cards[1].id })
+      Actions.deleteReviewCard({ id: overdue[1].id })
     );
 
     // Check it is dropped
     expect(updatedState.queue.map(item => item.card.id)).toEqual([
-      cards[0].id,
-      cards[2].id,
+      overdue[0].id,
+      overdue[2].id,
     ]);
   });
 
   it('should drop a passed card on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 4 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 4,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards.slice(0, 3) })
+      Actions.reviewCardsLoaded({
+        history: [],
+        newCards,
+        overdue: overdue.slice(0, 3),
+      })
     );
 
     // Pass the first card
@@ -690,81 +782,102 @@ describe('reducer:review', () => {
     // Then delete it
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({ id: cards[0].id })
+      Actions.deleteReviewCard({ id: overdue[0].id })
     );
 
     // Check it is dropped
     expect(updatedState.queue.map(item => item.card.id)).toEqual([
-      cards[1].id,
-      cards[2].id,
+      overdue[1].id,
+      overdue[2].id,
     ]);
   });
 
   it('should drop a failed card on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 4 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 4,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards.slice(0, 3) })
+      Actions.reviewCardsLoaded({
+        history: [],
+        newCards,
+        overdue: overdue.slice(0, 3),
+      })
     );
 
     // Fail the first card
     updatedState = subject(updatedState, Actions.failCard());
 
     // Check we have two copies of the card in the positions we expect
-    expect(updatedState.queue[0].card.id).toBe(cards[0].id);
-    expect(updatedState.queue[2].card.id).toBe(cards[0].id);
+    expect(updatedState.queue[0].card.id).toBe(overdue[0].id);
+    expect(updatedState.queue[2].card.id).toBe(overdue[0].id);
 
     // Then delete it
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({ id: cards[0].id })
+      Actions.deleteReviewCard({ id: overdue[0].id })
     );
 
     // We should drop the failed version and replace the unreviewed version.
     expect(updatedState.queue.map(item => item.card.id)).toEqual([
-      cards[1].id,
-      cards[2].id,
+      overdue[1].id,
+      overdue[2].id,
     ]);
     expect(updatedState.position).toBe(0);
     expect(updatedState.queue[1].status).toBe('front');
   });
 
   it('should drop a failed card placeholder on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 4 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 4,
+    });
 
     // Set up queue where we have a failed card placeholder
-    const history = [makeFailedQueuedCardPlaceholder(cards[0])];
+    const history = [makeFailedQueuedCardPlaceholder(overdue[0])];
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: cards.slice(1, 3) })
+      Actions.reviewCardsLoaded({
+        history,
+        newCards,
+        overdue: overdue.slice(1, 3),
+      })
     );
 
     // Then delete the placeholder
     updatedState = subject(
       updatedState,
       Actions.deleteReviewCard({
-        id: cards[0].id,
+        id: overdue[0].id,
       })
     );
 
     // Check it is dropped
     expect(updatedState.queue.map(item => item.card.id)).toEqual([
-      cards[1].id,
-      cards[2].id,
+      overdue[1].id,
+      overdue[2].id,
     ]);
   });
 
   it('should drop a skipped card on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 4 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 4,
+    });
 
     // Set up a queue with a skipped card.
     //
     // We don't have a skip action yet to so use the passed status and the tweak
     // it later.
-    const history = [{ card: cards[0], status: <const>'passed' }];
+    const history = [{ card: overdue[0], status: <const>'passed' }];
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: cards.slice(1, 3) })
+      Actions.reviewCardsLoaded({
+        history,
+        newCards,
+        overdue: overdue.slice(1, 3),
+      })
     );
 
     // Add the unreviewed card, update their statuses, then set the skipped
@@ -779,22 +892,29 @@ describe('reducer:review', () => {
     // Delete the skipped card
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({ id: cards[0].id })
+      Actions.deleteReviewCard({ id: overdue[0].id })
     );
 
     // We should drop the skipped version and the unreviewed version.
     expect(updatedState.queue.map(item => item.card.id)).toEqual([
-      cards[1].id,
-      cards[2].id,
+      overdue[1].id,
+      overdue[2].id,
     ]);
   });
 
   it('should update the phase when the current card is removed on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
-    const history = [{ card: cards[0], status: <const>'passed' }];
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
+    const history = [{ card: overdue[0], status: <const>'passed' }];
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: cards.slice(1, 3) })
+      Actions.reviewCardsLoaded({
+        history,
+        newCards,
+        overdue: overdue.slice(1, 3),
+      })
     );
 
     // Show the back
@@ -804,56 +924,66 @@ describe('reducer:review', () => {
     // Then drop the current card
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({ id: cards[1].id })
+      Actions.deleteReviewCard({ id: overdue[1].id })
     );
     expect(updatedState.phase).toBe(ReviewPhase.Front);
     expect(updatedState.position).toBe(1);
   });
 
   it('should go to the completed phase when the last card is removed on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 3 });
+    const [initialState, , overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     const history = [
-      { card: cards[0], status: <const>'passed' },
-      { card: cards[1], status: <const>'passed' },
+      { card: overdue[0], status: <const>'passed' },
+      { card: overdue[1], status: <const>'passed' },
     ];
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history, unreviewed: [cards[2]] })
+      Actions.reviewCardsLoaded({
+        history,
+        newCards: [],
+        overdue: [overdue[2]],
+      })
     );
 
     // Drop the current (and last) card
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({ id: cards[2].id })
+      Actions.deleteReviewCard({ id: overdue[2].id })
     );
     expect(updatedState.phase).toBe(ReviewPhase.Complete);
     expect(updatedState.position).toBe(2);
   });
 
   it('should do something sensible when all cards are deleted on DELETE_REVIEW_CARD', () => {
-    const [initialState, cards] = newReview({ maxNewCards: 0, maxCards: 1 });
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Drop the only card
     updatedState = subject(
       updatedState,
-      Actions.deleteReviewCard({ id: cards[0].id })
+      Actions.deleteReviewCard({ id: overdue[0].id })
     );
     expect(updatedState.phase).toBe(ReviewPhase.Complete);
     expect(updatedState.position).toBe(0);
   });
 
   it('should integrate changes to the review state on LOAD_REVIEW', () => {
-    const [initialState, cards] = newReview({
+    const [initialState, newCards, overdue] = newReview({
       maxNewCards: 1,
       maxCards: 3,
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     updatedState = subject(
@@ -871,13 +1001,13 @@ describe('reducer:review', () => {
   });
 
   it('should reset the review state on CANCEL_REVIEW', () => {
-    const [initialState, cards] = newReview({
+    const [initialState, newCards, overdue] = newReview({
       maxNewCards: 1,
       maxCards: 3,
     });
     let updatedState = subject(
       initialState,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     updatedState = subject(updatedState, Actions.cancelReview());

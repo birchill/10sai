@@ -7,6 +7,7 @@ import { Card, ReviewCardStatus } from '../model';
 import { reducer } from '../reducer';
 import { DataStore } from '../store/DataStore';
 import { MS_PER_DAY } from '../utils/constants';
+import { generateCards } from '../utils/testing';
 
 import { AvailableCardWatcher } from './available-card-watcher';
 import {
@@ -72,7 +73,6 @@ describe('sagas:review newReview', () => {
   it('respects the limits set for a new review', async () => {
     const newCards = ['New card 1', 'New card 2'];
     const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
-    const allCards = newCards.concat(overdueCards);
     const action = Actions.newReview({ maxNewCards: 2, maxCards: 3 });
 
     return expectSaga(newReviewSaga, dataStore, availableCardWatcher)
@@ -86,7 +86,8 @@ describe('sagas:review newReview', () => {
         action: {
           type: 'REVIEW_CARDS_LOADED',
           history: [],
-          unreviewed: allCards.slice(0, 3),
+          newCards,
+          overdue: overdueCards.slice(0, 1),
         },
       })
       .run();
@@ -106,18 +107,19 @@ describe('sagas:review newReview', () => {
         action: {
           type: 'REVIEW_CARDS_LOADED',
           history: [],
-          unreviewed: newCards,
+          newCards,
+          overdue: [],
         },
       })
       .run();
   });
 
   it('requests more cards if there are not enough new cards', async () => {
-    const overdueCards = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
+    const overdue = ['Overdue card 1', 'Overdue card 2', 'Overdue card 3'];
     const action = Actions.newReview({ maxNewCards: 2, maxCards: 3 });
 
     return expectSaga(newReviewSaga, dataStore, availableCardWatcher)
-      .provide(getCardProvider([], overdueCards))
+      .provide(getCardProvider([], overdue))
       .withState(reducer(undefined, action))
       .call([availableCardWatcher, 'getNewCards'])
       .not.call([dataStore, 'getCardsById'])
@@ -130,7 +132,8 @@ describe('sagas:review newReview', () => {
         action: {
           type: 'REVIEW_CARDS_LOADED',
           history: [],
-          unreviewed: overdueCards,
+          newCards: [],
+          overdue,
         },
       })
       .run();
@@ -284,12 +287,14 @@ describe('sagas:review loadReview', () => {
               previousProgress: { level: 2, due: later },
             },
           ],
-          unreviewed: [
+          newCards: [
             {
               id: 'new-0',
               front: 'New question 1',
               back: 'New answer 1',
             },
+          ],
+          overdue: [
             {
               id: '0',
               front: 'Question 1',
@@ -309,37 +314,19 @@ describe('sagas:review updateProgress', () => {
     finishReview: () => {},
   } as unknown) as DataStore;
 
-  const getCards = (
-    maxNewCards: number,
-    maxExistingCards: number,
-    reviewTime: Date
-  ) => {
-    const cards = new Array(Math.max(maxNewCards, maxExistingCards));
-    for (let i = 0; i < cards.length; i++) {
-      const newCard = i < maxNewCards;
-      cards[i] = {
-        id: i,
-        front: `Question ${i + 1}`,
-        back: `Answer ${i + 1}`,
-        progress: {
-          level: newCard ? 0 : 1,
-          due: newCard ? null : new Date(reviewTime.getTime() - 2 * MS_PER_DAY),
-        },
-      };
-    }
-    return cards;
-  };
-
   it('stores the updated due time of a passed card', async () => {
     let state = reducer(
       undefined,
       Actions.newReview({ maxNewCards: 2, maxCards: 3 })
     );
 
-    const cards = getCards(0, 3, new Date());
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     state = reducer(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     const updatePosition = state.review.position!;
@@ -366,10 +353,13 @@ describe('sagas:review updateProgress', () => {
       Actions.newReview({ maxNewCards: 1, maxCards: 3 })
     );
 
-    const cards = getCards(0, 3, new Date());
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
     state = reducer(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     const updatePosition = state.review.position!;
@@ -396,10 +386,13 @@ describe('sagas:review updateProgress', () => {
       Actions.newReview({ maxNewCards: 2, maxCards: 3 })
     );
 
-    const cards = getCards(0, 1, new Date());
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 0,
+      maxCards: 1,
+    });
     state = reducer(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     const updatePosition = state.review.position!;
@@ -426,10 +419,13 @@ describe('sagas:review updateProgress', () => {
       Actions.newReview({ maxNewCards: 2, maxCards: 3 })
     );
 
-    const cards = getCards(0, 2, new Date());
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 0,
+      maxCards: 2,
+    });
     state = reducer(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     // Pass the first card so it is in history
@@ -460,10 +456,13 @@ describe('sagas:review updateProgress', () => {
       Actions.newReview({ maxNewCards: 2, maxCards: 3 })
     );
 
-    const cards = getCards(1, 3, new Date());
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 1,
+      maxCards: 3,
+    });
     state = reducer(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     state = reducer(state, Actions.passCard());
@@ -478,16 +477,16 @@ describe('sagas:review updateProgress', () => {
         maxCards: 3,
         maxNewCards: 2,
         history: [
-          { id: cards[0].id, status: ReviewCardStatus.Passed },
+          { id: newCards[0].id, status: ReviewCardStatus.Passed },
           {
-            id: cards[1].id,
+            id: overdue[0].id,
             status: ReviewCardStatus.Passed,
-            previousProgress: cards[1].progress,
+            previousProgress: overdue[0].progress,
           },
           {
-            id: cards[2].id,
+            id: overdue[1].id,
             status: ReviewCardStatus.Failed,
-            previousProgress: cards[2].progress,
+            previousProgress: overdue[1].progress,
           },
         ],
       })
@@ -500,10 +499,13 @@ describe('sagas:review updateProgress', () => {
       Actions.newReview({ maxNewCards: 1, maxCards: 1 })
     );
 
-    const cards = getCards(1, 1, new Date());
+    const { newCards, overdue } = generateCards({
+      maxNewCards: 1,
+      maxCards: 1,
+    });
     state = reducer(
       state,
-      Actions.reviewCardsLoaded({ history: [], unreviewed: cards })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
     const action = Actions.passCard();
