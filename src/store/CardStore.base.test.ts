@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 
 import '../../jest/customMatchers';
 
-import { Card, isCardPlaceholder } from '../model';
+import { Card, CardPlaceholder, isCardPlaceholder } from '../model';
 
 import { CardStore, CardContent, CardChange } from './CardStore';
 import { DataStore } from './DataStore';
@@ -93,8 +93,10 @@ describe('CardStore', () => {
       'doily',
     ]);
     expect(isCardPlaceholder(cards[0])).toBe(true);
+    expect((cards[0] as CardPlaceholder).status).toBe('missing');
     expect(isCardPlaceholder(cards[1])).toBe(false);
     expect(isCardPlaceholder(cards[2])).toBe(true);
+    expect((cards[2] as CardPlaceholder).status).toBe('missing');
   });
 
   it('generates unique ascending IDs', () => {
@@ -213,6 +215,7 @@ describe('CardStore', () => {
 
     expect(cards).toHaveLength(2);
     expect(cards[0].id).toBe(deletedCard.id);
+    expect((cards[0] as CardPlaceholder).status).toBe('deleted');
     expect(cards[1].id).toBe(existingCard.id);
   });
 
