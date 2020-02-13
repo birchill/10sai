@@ -462,7 +462,7 @@ describe('sagas:review updateProgress', () => {
     });
     state = reducer(
       state,
-      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue, seed: -1 })
     );
 
     state = reducer(state, Actions.passCard());

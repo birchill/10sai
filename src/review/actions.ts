@@ -41,16 +41,19 @@ export function reviewCardsLoaded({
   history,
   newCards,
   overdue,
+  seed = Math.random(),
 }: {
   history: Array<ReviewedCard>;
   newCards: Array<Card>;
   overdue: Array<Card>;
+  seed?: number;
 }) {
   return {
     type: <const>'REVIEW_CARDS_LOADED',
     history,
     newCards,
     overdue,
+    seed,
   };
 }
 
