@@ -2,8 +2,8 @@ import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import * as Actions from '../actions';
+import { isCardPlaceholder } from '../model';
 import { AppState } from '../reducer';
-import { ReviewPhase } from '../review/review-phase';
 
 import { ReviewPanel } from './ReviewPanel';
 
@@ -14,19 +14,42 @@ interface Props {
 const mapStateToProps = (state: AppState) => {
   const { queue, position } = state.review;
 
-  // XXX Do something sort of error thing if the position is out of range, queue
-  // is empty etc.
+  // XXX Introduce an error boundary to handle this
 
-  // XXX These need to pass on the actual status
-  // --- They should also fail because the types are wrong... ReviewPanel
-  //     doesn't yet take a CardPlaceholder
-  const currentCard = queue[position!].card;
-  const previousCard = position! > 1 ? queue[position! - 1].card : undefined;
+  if (
+    typeof position === 'undefined' ||
+    position < 0 ||
+    position >= queue.length
+  ) {
+    throw new Error(
+      `Invalid queue position: ${position} (queue length: ${queue.length}`
+    );
+  }
+
+  // The navigation actions should always ensure we are pointing to an actual
+  // card.
+  const currentCard = queue[position];
+  if (isCardPlaceholder(currentCard.card)) {
+    throw new Error('Current card is a placeholder');
+  }
+
+  let prevPosition = position - 1;
+  while (prevPosition >= 0 && isCardPlaceholder(queue[prevPosition].card)) {
+    prevPosition--;
+  }
+  const previousCard = prevPosition >= 0 ? queue[prevPosition] : undefined;
+
+  let nextPosition = position + 1;
+  while (
+    nextPosition < queue.length &&
+    isCardPlaceholder(queue[nextPosition].card)
+  ) {
+    nextPosition++;
+  }
   const nextCard =
-    position! < queue.length - 1 ? queue[position! + 1].card : undefined;
+    nextPosition < queue.length ? queue[nextPosition] : undefined;
 
   return {
-    showBack: state.review.phase === ReviewPhase.Back,
     previousCard,
     currentCard,
     nextCard,
