@@ -8,8 +8,16 @@ export interface ReviewContent {
   maxNewCards: number;
   history: Array<{
     id: string;
-    // XXX Do we really want a bool for this? Wouldn't a status value be better?
-    failed?: boolean;
+    // We use the absence of a status field to represent 'passed' and a '1' to
+    // represent 'failed'.
+    //
+    // We use this in preference to a bool since it allows extending with other
+    // codes in future and because it's a little more compact to transfer too.
+    //
+    // We use this in preference to an enum since the order of enums can be
+    // easily changed without realizing that it will affect the serialized
+    // output and cause compatibility problems for existing records.
+    status?: 1;
     previousProgress?: ProgressContent;
   }>;
   finished: boolean;
@@ -46,7 +54,7 @@ const parseReview = (
   const history: ReviewSummary['history'] = result.history.map(item => {
     const parsed: ReviewSummary['history'][0] = {
       id: item.id,
-      status: item.failed ? ReviewCardStatus.Failed : ReviewCardStatus.Passed,
+      status: item.status ? ReviewCardStatus.Failed : ReviewCardStatus.Passed,
     };
     if (item.previousProgress) {
       const { due } = item.previousProgress;
@@ -69,20 +77,12 @@ const toReviewContent = ({
   finished: boolean;
 }): ReviewContent => {
   const history: ReviewContent['history'] = review.history.map(item => {
-    const serialized: ReviewContent['history'][0] = {
-      id: item.id,
-      failed: item.status === ReviewCardStatus.Failed,
-    };
+    const serialized: ReviewContent['history'][0] = { id: item.id };
+    if (item.status === ReviewCardStatus.Failed) {
+      serialized.status = 1;
+    }
     return serialized;
   });
-  /*
-  history: Array<{
-    id: string;
-    // XXX Do we really want a bool for this? Wouldn't a status value be better?
-    failed?: boolean;
-    previousProgress?: ProgressContent;
-  }>;
-  */
 
   return {
     ...review,
