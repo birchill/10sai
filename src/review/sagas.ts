@@ -21,7 +21,7 @@ export function* newReview(
 ): Generator<any, void, any> {
   const reviewState = yield select(getReviewState);
 
-  const unreviewed = yield* getUnreviewedCards({
+  const { newCards, overdue } = yield* getUnreviewedCards({
     dataStore,
     availableCardWatcher,
     maxCards: reviewState.maxCards,
@@ -29,7 +29,7 @@ export function* newReview(
     existingCardIds: [],
     existingNewCards: 0,
   });
-  yield put(Actions.reviewCardsLoaded({ history: [], unreviewed }));
+  yield put(Actions.reviewCardsLoaded({ history: [], newCards, overdue }));
 
   try {
     yield call([dataStore, 'putReview'], yield select(getReviewSummary));
@@ -52,7 +52,7 @@ function* getUnreviewedCards({
   maxNewCards: number;
   existingCardIds: ReadonlyArray<string>;
   existingNewCards: number;
-}): Generator<any, Array<Card>, any> {
+}): Generator<any, { newCards: Array<Card>; overdue: Array<Card> }, any> {
   let freeSlots = Math.max(0, maxCards - existingCardIds.length);
 
   // TODO: Error handling for the below
@@ -64,7 +64,7 @@ function* getUnreviewedCards({
     Math.min(maxNewCards - existingNewCards, freeSlots),
     0
   );
-  let cards: Array<Card> = [];
+  let newCards: Array<Card> = [];
   if (newCardSlots) {
     let newIds: Array<string> = yield call([
       availableCardWatcher,
@@ -74,12 +74,13 @@ function* getUnreviewedCards({
     newIds.splice(newCardSlots);
 
     if (newIds.length) {
-      cards = yield call([dataStore, 'getCardsById'], newIds);
-      freeSlots -= cards.length;
+      newCards = yield call([dataStore, 'getCardsById'], newIds);
+      freeSlots -= newCards.length;
     }
   }
 
   // Now fill up the overdue slots
+  let overdue: Array<Card> = [];
   if (freeSlots) {
     let overdueIds: Array<string> = yield call([
       availableCardWatcher,
@@ -89,11 +90,11 @@ function* getUnreviewedCards({
     overdueIds.splice(freeSlots);
 
     if (overdueIds.length) {
-      cards.push(...(yield call([dataStore, 'getCardsById'], overdueIds)));
+      overdue = yield call([dataStore, 'getCardsById'], overdueIds);
     }
   }
 
-  return cards;
+  return { newCards, overdue };
 }
 
 export function* loadReview(
@@ -137,7 +138,7 @@ export function* loadReview(
     item => !item.previousProgress
   ).length;
 
-  const unreviewed = yield* getUnreviewedCards({
+  const { newCards, overdue } = yield* getUnreviewedCards({
     dataStore,
     availableCardWatcher,
     maxCards: reviewState.maxCards,
@@ -146,9 +147,7 @@ export function* loadReview(
     existingNewCards,
   });
 
-  // XXX This needs to shuffle the cards appropriately
-
-  yield put(Actions.reviewCardsLoaded({ history, unreviewed }));
+  yield put(Actions.reviewCardsLoaded({ history, newCards, overdue }));
 }
 
 export function* updateProgress(

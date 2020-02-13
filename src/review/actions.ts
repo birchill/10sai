@@ -39,15 +39,18 @@ export type ReviewedCard = {
 
 export function reviewCardsLoaded({
   history,
-  unreviewed,
+  newCards,
+  overdue,
 }: {
   history: Array<ReviewedCard>;
-  unreviewed: Array<Card>;
+  newCards: Array<Card>;
+  overdue: Array<Card>;
 }) {
   return {
     type: <const>'REVIEW_CARDS_LOADED',
     history,
-    unreviewed,
+    newCards,
+    overdue,
   };
 }
 

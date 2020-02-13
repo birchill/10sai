@@ -121,7 +121,7 @@ export function review(
 
       // Build up the queue
       const queue: Array<QueuedCard> = action.history.slice();
-      for (const card of action.unreviewed) {
+      for (const card of [...action.newCards, ...action.overdue]) {
         queue.push({
           card,
           status: 'front',
