@@ -184,7 +184,7 @@ export function review(
       const phase =
         currentCard.status === 'front' ? ReviewPhase.Front : ReviewPhase.Back;
 
-      validateQueue(queue);
+      validateQueue(queue, position);
 
       return {
         ...state,
@@ -207,7 +207,7 @@ export function review(
       const queue = state.queue.slice();
       queue[state.position!] = queuedCard;
 
-      validateQueue(queue);
+      validateQueue(queue, state.position);
 
       return {
         ...state,
@@ -318,7 +318,7 @@ export function review(
       });
       position = updatedPosition;
 
-      validateQueue(queue);
+      validateQueue(queue, position);
 
       return {
         ...state,
@@ -406,7 +406,7 @@ export function review(
       });
       position = updatedPosition;
 
-      validateQueue(queue);
+      validateQueue(queue, position);
 
       return {
         ...state,
@@ -491,7 +491,7 @@ export function review(
         }
       }
 
-      validateQueue(queue);
+      validateQueue(queue, state.position);
 
       return {
         ...state,
@@ -541,7 +541,7 @@ export function review(
         phase = ReviewPhase.Complete;
       }
 
-      validateQueue(queue);
+      validateQueue(queue, position);
 
       return {
         ...state,
@@ -609,7 +609,7 @@ function advancePosition({
 
 // We should possibly move this to the saga so we can trigger side effects like
 // reporting to bugsnag etc. if it fails.
-function validateQueue(queue: Array<QueuedCard>) {
+function validateQueue(queue: Array<QueuedCard>, position: number | undefined) {
   const cardMap = new Map<string, string>();
 
   for (const queuedCard of queue) {
@@ -618,10 +618,10 @@ function validateQueue(queue: Array<QueuedCard>) {
         ? 'unreviewed'
         : queuedCard.status;
     if (queuedCard.skipped) {
-      status += '-skipped';
+      status += ':skipped';
     }
     if (isCardPlaceholder(queuedCard.card)) {
-      status = `placeholder-${status}`;
+      status = `placeholder:${status}`;
     }
 
     const existingStatus = cardMap.get(queuedCard.card.id);
@@ -631,24 +631,47 @@ function validateQueue(queue: Array<QueuedCard>) {
     cardMap.set(queuedCard.card.id, status);
   }
 
+  const error = (message: string) => {
+    if (process.env.NODE_ENV === 'development') {
+      throw new Error(message);
+    } else {
+      console.error(message);
+    }
+  };
+
   const VALID_STATUSES = [
     'passed',
     'failed',
     'failed-unreviewed',
     'unreviewed',
-    'unreviewed-skipped-unreviewed',
-    'placeholder-unreviewed',
-    'placeholder-passed',
-    'placeholder-failed',
+    'unreviewed:skipped-unreviewed',
+    'placeholder:passed',
+    'placeholder:failed',
   ];
   for (const [id, status] of cardMap.entries()) {
     if (!VALID_STATUSES.includes(status)) {
-      const message = `Card ${id} has invalid status: ${status}`;
-      if (process.env.NODE_ENV === 'development') {
-        throw new Error(message);
-      } else {
-        console.error(message);
-      }
+      error(`Card ${id} has invalid status: ${status}`);
     }
+  }
+
+  // Check position
+  //
+  // The position is allowed to be equal to the length of the queue when we are
+  // in the completed state.
+  if (
+    typeof position !== 'undefined' &&
+    (position < 0 || position > queue.length)
+  ) {
+    error(`Position out of range: ${position} (queue length: ${queue.length}`);
+  }
+
+  // The position should never point to a placeholder so long as it is in range
+  // of the queue.
+  if (
+    typeof position !== 'undefined' &&
+    position < queue.length &&
+    isCardPlaceholder(queue[position].card)
+  ) {
+    error('The current card should never be a placeholder');
   }
 }

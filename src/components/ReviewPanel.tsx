@@ -1,26 +1,28 @@
 import * as React from 'react';
 
+import { Card } from '../model';
+import { NoteState } from '../notes/reducer';
+import { QueuedCard } from '../review/reducer';
+import { getReviewInterval } from '../review/utils';
 import { hasNoModifiers, isTextBox } from '../utils/keyboard';
+import { Overwrite } from '../utils/type-helpers';
 
 import { DynamicNoteList } from './DynamicNoteList';
 import { OverlayTooltip } from './OverlayTooltip';
 import { ReviewCard } from './ReviewCard';
-import { Card } from '../model';
-import { NoteState } from '../notes/reducer';
-import { getReviewInterval } from '../review/utils';
+
+type QueuedActualCard = Overwrite<QueuedCard, { card: Card }>;
 
 interface Props {
   active: boolean;
   className?: string;
-  showBack?: boolean;
   onShowBack: () => void;
   onPassCard: (options: { confidence: number }) => void;
   onFailCard: () => void;
   onEditCard: (id: string) => void;
-  // XXX These all need to take a placeholder and a status
-  previousCard?: Card;
-  currentCard: Card;
-  nextCard?: Card;
+  previousCard?: QueuedActualCard;
+  currentCard: QueuedActualCard;
+  nextCard?: QueuedActualCard;
   notes: Array<NoteState>;
 }
 
@@ -87,13 +89,16 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       }
 
       // TODO: Eventually we should make space the key for flipping cards
-      if (!props.showBack && (e.key === 'Enter' || e.key === ' ')) {
+      if (
+        props.currentCard.status === 'front' &&
+        (e.key === 'Enter' || e.key === ' ')
+      ) {
         props.onShowBack();
         e.preventDefault();
       } else if (hasNoModifiers(e)) {
         switch (e.key) {
           case 'e':
-            props.onEditCard(props.currentCard.id);
+            props.onEditCard(props.currentCard.card.id);
             break;
 
           case 'x':
@@ -129,7 +134,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     };
   }, [
     props.active,
-    props.showBack,
+    props.currentCard.status,
     props.onShowBack,
     props.onEditCard,
     props.onFailCard,
@@ -233,7 +238,10 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
             origin: passDragState.origin,
           });
           setTooltip(
-            getReviewIntervalString({ card: props.currentCard, confidence })
+            getReviewIntervalString({
+              queuedCard: props.currentCard,
+              confidence,
+            })
           );
         }
         return;
@@ -247,7 +255,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
 
       // Dragging state, update the tooltip.
       setTooltip(
-        getReviewIntervalString({ card: props.currentCard, confidence })
+        getReviewIntervalString({ queuedCard: props.currentCard, confidence })
       );
 
       if (!passButtonRef.current || !reviewPanelRef.current) {
@@ -369,7 +377,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         return;
       }
 
-      if (!props.showBack) {
+      if (props.currentCard.status === 'front') {
         return;
       }
 
@@ -383,13 +391,16 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       const timeout = self.setTimeout(() => {
         setPassDragState({ stage: ButtonDragStage.Dragging, origin });
         setTooltip(
-          getReviewIntervalString({ card: props.currentCard, confidence: 1 })
+          getReviewIntervalString({
+            queuedCard: props.currentCard,
+            confidence: 1,
+          })
         );
       }, 600);
 
       setPassDragState({ stage: ButtonDragStage.PreDrag, origin, timeout });
     },
-    [passDragState.stage, props.showBack, props.currentCard]
+    [passDragState.stage, props.currentCard.status, props.currentCard.card]
   );
 
   // We allow the pass button to be dragged around to vary the confidence level.
@@ -429,12 +440,19 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         cancelDrag();
       }
 
-      if (props.showBack) {
+      if (props.currentCard.status !== 'front') {
         props.onPassCard({ confidence: 1 });
       }
     },
-    [passDragState.stage, cancelDrag, props.onPassCard, props.showBack]
+    [
+      passDragState.stage,
+      cancelDrag,
+      props.onPassCard,
+      props.currentCard.status,
+    ]
   );
+
+  const showBack = props.currentCard.status !== 'front';
 
   // There is one case where both the previous card and the next card might be
   // the same card (if the current card and previous card are the same we
@@ -458,43 +476,45 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     return keyToTry;
   };
 
-  const currentCard = (
+  const renderReviewCard = (
+    queuedCard: QueuedActualCard,
+    position: 'previous' | 'current' | 'next',
+    onClick?: () => void
+  ) => (
     <div
-      className="cardwrapper current"
-      key={getUniqueKey(props.currentCard.id)}
-      onClick={props.showBack ? undefined : props.onShowBack}
+      className={`cardwrapper ${position}`}
+      key={getUniqueKey(queuedCard.card.id)}
+      onClick={onClick}
     >
-      <ReviewCard showBack={props.showBack} {...props.currentCard} />
+      <ReviewCard {...queuedCard.card} />
     </div>
+  );
+
+  const currentCard = renderReviewCard(
+    props.currentCard,
+    'current',
+    showBack ? undefined : props.onShowBack
   );
 
   let nextCard;
   if (props.nextCard) {
-    nextCard = (
-      <div className="cardwrapper next" key={getUniqueKey(props.nextCard.id)}>
-        <ReviewCard {...props.nextCard} />
-      </div>
-    );
+    nextCard = renderReviewCard(props.nextCard, 'next');
   }
 
   let previousCard;
   if (props.previousCard) {
-    previousCard = (
-      <div
-        className="cardwrapper previous"
-        key={getUniqueKey(props.previousCard.id)}
-      >
-        <ReviewCard showBack {...props.previousCard} />
-      </div>
-    );
+    previousCard = renderReviewCard(props.previousCard, 'previous');
   }
 
+  // XXX If the current card has a state of failed or passed we should enlarge
+  // or outline the appropriate button accordingly
+
   const answerButtons = (
-    <div className="answer-buttons" hidden={!props.showBack}>
+    <div className="answer-buttons" hidden={!showBack}>
       <button
         className="fail"
         aria-label="Incorrect"
-        tabIndex={props.showBack ? 0 : -1}
+        tabIndex={showBack ? 0 : -1}
         onClick={props.onFailCard}
       >
         <span className="buttonface">
@@ -513,7 +533,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       <button
         className="pass"
         aria-label="Correct"
-        tabIndex={props.showBack ? 0 : -1}
+        tabIndex={showBack ? 0 : -1}
         ref={passButtonRef}
         onClick={onClickPass}
         onPointerDown={onPassPointerDown}
@@ -543,7 +563,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         {currentCard}
         {nextCard}
       </div>
-      {props.showBack ? (
+      {showBack ? (
         <>
           <div className="notes-header">
             <span className="line" />
@@ -555,7 +575,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
               screen: 'review',
             }}
             notes={props.notes}
-            keywords={props.currentCard.keywords}
+            keywords={props.currentCard.card.keywords}
             priority="reading"
             className="notes"
           />
@@ -571,17 +591,20 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
 };
 
 function getReviewIntervalString({
-  card,
+  queuedCard,
   confidence,
 }: {
-  card: Card;
+  queuedCard: QueuedActualCard;
   confidence: number;
 }): string {
+  const progressToUse = queuedCard.previousProgress || queuedCard.card.progress;
+
   const reviewInterval = getReviewInterval({
-    card,
+    card: { ...queuedCard.card, progress: progressToUse },
     confidence,
     reviewTime: new Date(),
   });
+
   if (reviewInterval < 2) {
     return `Next review in ${Math.round(reviewInterval * 24)} hours`;
   } else {
