@@ -1,12 +1,7 @@
 import { call, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 
 import * as Actions from '../actions';
-import {
-  Card,
-  CardPlaceholder,
-  isCardPlaceholder,
-  ReviewCardStatus,
-} from '../model';
+import { Card, CardPlaceholder, isCardPlaceholder } from '../model';
 import { beforeNotesScreenChange } from '../notes/sagas';
 import { DataStore } from '../store/DataStore';
 
@@ -124,8 +119,7 @@ export function* loadReview(
 
     const reviewedCard: ReviewedCard = {
       card: historyCards[i],
-      status:
-        historyItem.status === ReviewCardStatus.Passed ? 'passed' : 'failed',
+      status: historyItem.status,
     };
     if (historyItem.previousProgress) {
       reviewedCard.previousProgress = historyItem.previousProgress;

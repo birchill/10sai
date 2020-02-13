@@ -1,4 +1,4 @@
-import { ReviewCardStatus, ReviewSummary } from '../model';
+import { ReviewSummary } from '../model';
 import { stripFields } from '../utils/type-helpers';
 
 import { ProgressContent } from './CardStore';
@@ -54,7 +54,7 @@ const parseReview = (
   const history: ReviewSummary['history'] = result.history.map(item => {
     const parsed: ReviewSummary['history'][0] = {
       id: item.id,
-      status: item.status ? ReviewCardStatus.Failed : ReviewCardStatus.Passed,
+      status: item.status ? 'failed' : 'passed',
     };
     if (item.previousProgress) {
       const { due } = item.previousProgress;
@@ -78,7 +78,7 @@ const toReviewContent = ({
 }): ReviewContent => {
   const history: ReviewContent['history'] = review.history.map(item => {
     const serialized: ReviewContent['history'][0] = { id: item.id };
-    if (item.status === ReviewCardStatus.Failed) {
+    if (item.status === 'failed') {
       serialized.status = 1;
     }
     return serialized;
