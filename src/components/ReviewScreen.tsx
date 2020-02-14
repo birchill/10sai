@@ -3,6 +3,7 @@ import DocumentTitle from 'react-document-title';
 
 import { ReviewPhase } from '../review/review-phase';
 
+import { ErrorBoundary } from './ErrorBoundary';
 import { Link } from './Link';
 import { LoadingIndicator } from './LoadingIndicator';
 import { ReviewPanelContainer } from './ReviewPanelContainer';
@@ -118,7 +119,7 @@ export class ReviewScreen extends React.PureComponent<Props> {
             Close
           </Link>
         </div>
-        {this.renderContent()}
+        <ErrorBoundary>{this.renderContent()}</ErrorBoundary>
         {this.renderProgressBar()}
       </section>
     );

@@ -14,10 +14,11 @@ import { TagSuggester } from '../suggestions/TagSuggester';
 import { hasCommandModifier, isTextBox } from '../utils/keyboard';
 import { Return } from '../utils/type-helpers';
 
-import { EditCardScreen } from './EditCardScreen';
-import { HomeScreenContainer } from './HomeScreenContainer';
 import { CardListContext } from './CardListContext';
 import { DataStoreContext } from './DataStoreContext';
+import { EditCardScreen } from './EditCardScreen';
+import { ErrorBoundary } from './ErrorBoundary';
+import { HomeScreenContainer } from './HomeScreenContainer';
 import { KeywordSuggesterContext } from './KeywordSuggesterContext';
 import { LookupScreen } from './LookupScreen';
 import { MainTabBlock, TabName } from './MainTabBlock';
@@ -166,54 +167,56 @@ class AppInner extends React.PureComponent<Props> {
         <DataStoreContext.Provider value={this.props.dataStore}>
           <TagSuggesterContext.Provider value={this.tagSuggester}>
             <KeywordSuggesterContext.Provider value={this.keywordSuggester}>
-              <div className="app">
-                <div className="screens">
-                  <CardListContext.Provider value={this.cardList}>
-                    <HomeScreenContainer />
-                  </CardListContext.Provider>
-                  <TabPanel
-                    id="lookup-page"
-                    role="tabpanel"
-                    aria-labelledby="lookup-tab"
-                    className={tabPanelClass}
-                    hidden={activeTab !== 'lookup'}
+              <ErrorBoundary>
+                <div className="app">
+                  <div className="screens">
+                    <CardListContext.Provider value={this.cardList}>
+                      <HomeScreenContainer />
+                    </CardListContext.Provider>
+                    <TabPanel
+                      id="lookup-page"
+                      role="tabpanel"
+                      aria-labelledby="lookup-tab"
+                      className={tabPanelClass}
+                      hidden={activeTab !== 'lookup'}
+                    >
+                      <LookupScreen active={activeTab === 'lookup'} />
+                    </TabPanel>
+                    <TabPanel
+                      id="edit-page"
+                      role="tabpanel"
+                      aria-labelledby="edit-tab"
+                      className={tabPanelClass}
+                      hidden={activeTab !== 'edit-card'}
+                    >
+                      <EditCardScreen active={activeTab === 'edit-card'} />
+                    </TabPanel>
+                    <TabPanel
+                      id="review-page"
+                      role="tabpanel"
+                      aria-labelledby="review-tab"
+                      className={tabPanelClass}
+                      hidden={activeTab !== 'review'}
+                    >
+                      <ReviewScreenContainer active={activeTab === 'review'} />
+                    </TabPanel>
+                  </div>
+                  <MainTabBlock
+                    className="-white"
+                    activeTab={activeTab}
+                    activeCardId={this.props.activeCardId}
+                    remainingReviews={remainingReviews}
+                  />
+                  <Popup
+                    active={this.props.route.popup === 'settings'}
+                    currentScreenLink={this.currentScreenLink}
                   >
-                    <LookupScreen active={activeTab === 'lookup'} />
-                  </TabPanel>
-                  <TabPanel
-                    id="edit-page"
-                    role="tabpanel"
-                    aria-labelledby="edit-tab"
-                    className={tabPanelClass}
-                    hidden={activeTab !== 'edit-card'}
-                  >
-                    <EditCardScreen active={activeTab === 'edit-card'} />
-                  </TabPanel>
-                  <TabPanel
-                    id="review-page"
-                    role="tabpanel"
-                    aria-labelledby="review-tab"
-                    className={tabPanelClass}
-                    hidden={activeTab !== 'review'}
-                  >
-                    <ReviewScreenContainer active={activeTab === 'review'} />
-                  </TabPanel>
+                    <SettingsPanel heading="Sync">
+                      <SyncSettingsPanelContainer />
+                    </SettingsPanel>
+                  </Popup>
                 </div>
-                <MainTabBlock
-                  className="-white"
-                  activeTab={activeTab}
-                  activeCardId={this.props.activeCardId}
-                  remainingReviews={remainingReviews}
-                />
-                <Popup
-                  active={this.props.route.popup === 'settings'}
-                  currentScreenLink={this.currentScreenLink}
-                >
-                  <SettingsPanel heading="Sync">
-                    <SyncSettingsPanelContainer />
-                  </SettingsPanel>
-                </Popup>
-              </div>
+              </ErrorBoundary>
             </KeywordSuggesterContext.Provider>
           </TagSuggesterContext.Provider>
         </DataStoreContext.Provider>
