@@ -16,11 +16,7 @@ const mapStateToProps = (state: AppState) => {
 
   // XXX Introduce an error boundary to handle this
 
-  if (
-    typeof position === 'undefined' ||
-    position < 0 ||
-    position >= queue.length
-  ) {
+  if (position < 0 || position >= queue.length) {
     throw new Error(
       `Invalid queue position: ${position} (queue length: ${queue.length}`
     );

@@ -50,9 +50,10 @@ export interface ReviewState {
   // Note that placeholder cards only ever appear once.
   queue: ReadonlyArray<QueuedCard>;
 
-  // The position of the current card in the queue or undefined if the queue
-  // is empty.
-  position: number | undefined;
+  // The position of the current card in the queue or queue.length + 1 in the
+  // complete and idle states (and possibly sometimes in the loading state, who
+  // knows).
+  position: number;
 
   // The maximum number of unique cards that will be presented to the user in
   // this review. The actual number presented may be less if there are
@@ -87,7 +88,7 @@ export interface ReviewState {
 const initialState: ReviewState = {
   phase: ReviewPhase.Idle,
   queue: [],
-  position: undefined,
+  position: 0,
   maxCards: 0,
   maxNewCards: 0,
   availableCards: undefined,
@@ -107,7 +108,6 @@ export function review(
         maxCards: action.maxCards,
         maxNewCards: action.maxNewCards,
       };
-      updatedState.position = undefined;
       updatedState.availableCards = undefined;
       return updatedState;
     }
@@ -162,7 +162,7 @@ export function review(
       // We shouldn't typically have an empty queue, but just in case...
       if (!queue.length) {
         const updatedState = { ...state, phase: ReviewPhase.Idle, queue };
-        updatedState.position = undefined;
+        updatedState.position = 0;
         return updatedState;
       }
 
@@ -191,14 +191,14 @@ export function review(
         return state;
       }
 
-      const originalQueuedCard = state.queue[state.position!];
+      const originalQueuedCard = state.queue[state.position];
       if (originalQueuedCard.status !== 'front') {
         return state;
       }
       const queuedCard: QueuedCard = { ...originalQueuedCard, status: 'back' };
 
       const queue = state.queue.slice();
-      queue[state.position!] = queuedCard;
+      queue[state.position] = queuedCard;
 
       validateQueue(queue, state.position);
 
@@ -213,7 +213,7 @@ export function review(
         return state;
       }
 
-      const originalQueuedCard = state.queue[state.position!];
+      const originalQueuedCard = state.queue[state.position];
       const queuedCard: QueuedCard = {
         ...originalQueuedCard,
         status: 'passed',
@@ -276,7 +276,7 @@ export function review(
         };
       }
 
-      let position = state.position!;
+      let { position } = state;
       const queue = state.queue.slice();
       queue[position] = queuedCard;
 
@@ -323,7 +323,7 @@ export function review(
         return state;
       }
 
-      const originalQueuedCard = state.queue[state.position!];
+      const originalQueuedCard = state.queue[state.position];
       const queuedCard: QueuedCard = {
         ...originalQueuedCard,
         status: 'failed',
@@ -357,7 +357,7 @@ export function review(
       }
 
       // Update queue
-      let position = state.position!;
+      let { position } = state;
       const queue = state.queue.slice();
       queue[position] = queuedCard;
 
@@ -463,8 +463,8 @@ export function review(
             // later get synced they don't all end up being inserted at the same
             // point in the queue.
             let insertPoint = Math.floor(i + (queue.length - i) / 2) + 1;
-            if (insertPoint < state.position!) {
-              insertPoint = state.position!;
+            if (insertPoint < state.position) {
+              insertPoint = state.position;
             }
             queue.splice(insertPoint, 0, cardDuplicate);
           }
@@ -487,7 +487,7 @@ export function review(
         return state;
       }
 
-      let position = state.position;
+      let { position } = state;
       const queue = state.queue.slice();
 
       for (const [i, queuedCard] of queue.entries()) {
@@ -496,8 +496,8 @@ export function review(
         }
 
         queue.splice(i, 1);
-        if (i < position!) {
-          position!--;
+        if (i < position) {
+          position--;
         }
 
         // Unless we have are failed or skipped (in which case there will be
@@ -510,7 +510,7 @@ export function review(
       // Update the phase in case the current card was deleted from out
       // underneath us.
       let phase: ReviewPhase = ReviewPhase.Reviewing;
-      if (typeof position === 'number' && position >= queue.length) {
+      if (position >= queue.length) {
         phase = ReviewPhase.Complete;
       }
 
@@ -580,7 +580,7 @@ function advancePosition({
 
 // We should possibly move this to the saga so we can trigger side effects like
 // reporting to bugsnag etc. if it fails.
-function validateQueue(queue: Array<QueuedCard>, position: number | undefined) {
+function validateQueue(queue: Array<QueuedCard>, position: number) {
   const cardMap = new Map<string, string>();
 
   for (const queuedCard of queue) {
@@ -629,20 +629,13 @@ function validateQueue(queue: Array<QueuedCard>, position: number | undefined) {
   //
   // The position is allowed to be equal to the length of the queue when we are
   // in the completed state.
-  if (
-    typeof position !== 'undefined' &&
-    (position < 0 || position > queue.length)
-  ) {
+  if (position < 0 || position > queue.length) {
     error(`Position out of range: ${position} (queue length: ${queue.length}`);
   }
 
   // The position should never point to a placeholder so long as it is in range
   // of the queue.
-  if (
-    typeof position !== 'undefined' &&
-    position < queue.length &&
-    isCardPlaceholder(queue[position].card)
-  ) {
+  if (position < queue.length && isCardPlaceholder(queue[position].card)) {
     error('The current card should never be a placeholder');
   }
 }

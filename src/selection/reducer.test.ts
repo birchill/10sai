@@ -138,7 +138,7 @@ describe('reducer:selection', () => {
     );
     state = subject(state, Actions.navigate({ url: '/review' }));
 
-    const currentCard = state.review.queue[state.review.position!].card;
+    const currentCard = state.review.queue[state.review.position].card;
     expect(state.selection.activeCardId).toBe(currentCard.id);
   });
 
@@ -173,7 +173,7 @@ describe('reducer:selection', () => {
       Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
-    const currentCard = state.review.queue[state.review.position!].card;
+    const currentCard = state.review.queue[state.review.position].card;
     expect(state.selection.activeCardId).toBe(currentCard.id);
   });
 
@@ -190,7 +190,7 @@ describe('reducer:selection', () => {
     );
     state = subject(state, Actions.passCard());
 
-    const currentCard = state.review.queue[state.review.position!].card;
+    const currentCard = state.review.queue[state.review.position].card;
     expect(state.selection.activeCardId).toBe(currentCard.id);
   });
 
@@ -205,7 +205,7 @@ describe('reducer:selection', () => {
       state,
       Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
-    const currentCard = state.review.queue[state.review.position!].card;
+    const currentCard = state.review.queue[state.review.position].card;
     state = subject(state, Actions.deleteReviewCard({ id: currentCard.id }));
 
     expect(state.selection.activeCardId).toBe(undefined);
