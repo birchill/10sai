@@ -70,7 +70,7 @@ describe('reducer:review', () => {
       [...newCards, ...overdue].map(card => ({ card, status: 'front' }))
     );
     expect(updatedState.position).toBe(0);
-    expect(updatedState.phase).toBe(ReviewPhase.Front);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for an in-progress review', () => {
@@ -104,7 +104,7 @@ describe('reducer:review', () => {
       { card: overdue[2], status: 'front' },
     ]);
     expect(updatedState.position).toBe(2);
-    expect(updatedState.phase).toBe(ReviewPhase.Front);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
   });
 
   it('should shuffle the new and overdue cards in the queue on REVIEW_CARDS_LOADED', () => {
@@ -163,7 +163,7 @@ describe('reducer:review', () => {
       { card: history[0].card, status: 'front' },
     ]);
     expect(updatedState.position).toBe(1);
-    expect(updatedState.phase).toBe(ReviewPhase.Front);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for a review with a single failed new card', () => {
@@ -183,7 +183,7 @@ describe('reducer:review', () => {
       { card: history[0].card, status: 'front' },
     ]);
     expect(updatedState.position).toBe(1);
-    expect(updatedState.phase).toBe(ReviewPhase.Front);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
   });
 
   it('should update the queue on REVIEW_CARDS_LOADED for a review with a single passed card', () => {
@@ -267,7 +267,7 @@ describe('reducer:review', () => {
       { card: history[0].card, status: 'front' },
     ]);
     expect(updatedState.position).toBe(3);
-    expect(updatedState.phase).toBe(ReviewPhase.Front);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
   });
 
   it('should ensure repeated cards are added after the current position on REVIEW_CARDS_LOADED', () => {
@@ -300,7 +300,7 @@ describe('reducer:review', () => {
       { card: history[0].card, status: 'front' },
     ]);
     expect(updatedState.position).toBe(5);
-    expect(updatedState.phase).toBe(ReviewPhase.Front);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
   });
 
   it('should update the review state on SHOW_ANSWER', () => {
@@ -315,7 +315,7 @@ describe('reducer:review', () => {
 
     updatedState = subject(updatedState, Actions.showAnswer());
 
-    expect(updatedState.phase).toBe(ReviewPhase.Back);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
     expect(updatedState.queue[0].status).toBe('back');
   });
 
@@ -461,7 +461,7 @@ describe('reducer:review', () => {
     expect(updatedState.queue[updatedState.position!].card.id).toEqual(
       newCards[0].id
     );
-    expect(updatedState.phase).toBe(ReviewPhase.Front);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
 
     // Pass it...
     updatedState = subject(updatedState, Actions.passCard());
@@ -503,7 +503,6 @@ describe('reducer:review', () => {
     // The next card should be the failed card, but let's navigate back to the
     // original instance instead.
     updatedState.position = 0;
-    updatedState.phase = ReviewPhase.Back;
 
     // Pass it...
     updatedState = subject(updatedState, Actions.passCard());
@@ -523,7 +522,7 @@ describe('reducer:review', () => {
       { card: overdue[1], status: 'passed' },
     ]);
     expect(updatedState.position).toBe(1);
-    expect(updatedState.phase).toBe(ReviewPhase.Back);
+    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
   });
 
   it('should update the card level and due time on FAIL_CARD', () => {
@@ -944,35 +943,6 @@ describe('reducer:review', () => {
       overdue[1].id,
       overdue[2].id,
     ]);
-  });
-
-  it('should update the phase when the current card is removed on DELETE_REVIEW_CARD', () => {
-    const [initialState, newCards, overdue] = newReview({
-      maxNewCards: 0,
-      maxCards: 3,
-    });
-    const history = [{ card: overdue[0], status: <const>'passed' }];
-    let updatedState = subject(
-      initialState,
-      Actions.reviewCardsLoaded({
-        history,
-        newCards,
-        overdue: overdue.slice(1, 3),
-        seed: -1,
-      })
-    );
-
-    // Show the back
-    updatedState = subject(updatedState, Actions.showAnswer());
-    expect(updatedState.phase).toBe(ReviewPhase.Back);
-
-    // Then drop the current card
-    updatedState = subject(
-      updatedState,
-      Actions.deleteReviewCard({ id: overdue[1].id })
-    );
-    expect(updatedState.phase).toBe(ReviewPhase.Front);
-    expect(updatedState.position).toBe(1);
   });
 
   it('should go to the completed phase when the last card is removed on DELETE_REVIEW_CARD', () => {

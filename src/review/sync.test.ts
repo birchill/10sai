@@ -392,7 +392,7 @@ describe('review:sync', () => {
         screen: 'review',
         review: {
           ...initialState.review,
-          phase: ReviewPhase.Front,
+          phase: ReviewPhase.Reviewing,
         },
       });
 

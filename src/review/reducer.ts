@@ -29,9 +29,6 @@ export type QueuedCard = {
 };
 
 export interface ReviewState {
-  // TODO: See if we can replace Front/Back with simply Reviewing.
-  // We should be able to get the front/back information by looking at the
-  // current position in the queue.
   phase: ReviewPhase;
 
   // The cards we have shown, are showing, and will show to the user.
@@ -179,30 +176,26 @@ export function review(
         };
       }
 
-      // Work out what phase we're in...
-      const currentCard = queue[position];
-      const phase =
-        currentCard.status === 'front' ? ReviewPhase.Front : ReviewPhase.Back;
-
       validateQueue(queue, position);
 
       return {
         ...state,
-        phase,
+        phase: ReviewPhase.Reviewing,
         queue,
         position,
       };
     }
 
     case 'SHOW_ANSWER': {
-      if (state.phase !== ReviewPhase.Front) {
+      if (state.phase !== ReviewPhase.Reviewing) {
         return state;
       }
 
-      const queuedCard: QueuedCard = {
-        ...state.queue[state.position!],
-        status: 'back',
-      };
+      const originalQueuedCard = state.queue[state.position!];
+      if (originalQueuedCard.status !== 'front') {
+        return state;
+      }
+      const queuedCard: QueuedCard = { ...originalQueuedCard, status: 'back' };
 
       const queue = state.queue.slice();
       queue[state.position!] = queuedCard;
@@ -211,16 +204,12 @@ export function review(
 
       return {
         ...state,
-        phase: ReviewPhase.Back,
         queue,
       };
     }
 
     case 'PASS_CARD': {
-      if (
-        state.phase !== ReviewPhase.Back &&
-        state.phase !== ReviewPhase.Front
-      ) {
+      if (state.phase !== ReviewPhase.Reviewing) {
         return state;
       }
 
@@ -330,10 +319,7 @@ export function review(
     }
 
     case 'FAIL_CARD': {
-      if (
-        state.phase !== ReviewPhase.Back &&
-        state.phase !== ReviewPhase.Front
-      ) {
+      if (state.phase !== ReviewPhase.Reviewing) {
         return state;
       }
 
@@ -436,10 +422,7 @@ export function review(
     }
 
     case 'UPDATE_REVIEW_CARD': {
-      if (
-        state.phase !== ReviewPhase.Back &&
-        state.phase !== ReviewPhase.Front
-      ) {
+      if (state.phase !== ReviewPhase.Reviewing) {
         return state;
       }
 
@@ -500,10 +483,7 @@ export function review(
     }
 
     case 'DELETE_REVIEW_CARD': {
-      if (
-        state.phase !== ReviewPhase.Back &&
-        state.phase !== ReviewPhase.Front
-      ) {
+      if (state.phase !== ReviewPhase.Reviewing) {
         return state;
       }
 
@@ -529,15 +509,8 @@ export function review(
 
       // Update the phase in case the current card was deleted from out
       // underneath us.
-      let phase: ReviewPhase = state.phase;
-      if (position! < queue.length && queue.length) {
-        const currentQueuedCard = queue[position!];
-        phase =
-          currentQueuedCard.status === 'front'
-            ? ReviewPhase.Front
-            : ReviewPhase.Back;
-      } else {
-        position = queue.length;
+      let phase: ReviewPhase = ReviewPhase.Reviewing;
+      if (typeof position === 'number' && position >= queue.length) {
         phase = ReviewPhase.Complete;
       }
 
@@ -596,9 +569,7 @@ function advancePosition({
   let phase: ReviewPhase;
   if (position < queue.length - 1) {
     position++;
-    const nextQueuedCard = queue[position];
-    phase =
-      nextQueuedCard.status === 'front' ? ReviewPhase.Front : ReviewPhase.Back;
+    phase = ReviewPhase.Reviewing;
   } else {
     position = queue.length;
     phase = ReviewPhase.Complete;

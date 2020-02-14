@@ -151,8 +151,7 @@ export class ReviewScreen extends React.PureComponent<Props> {
         subtitle = 'Review complete';
         break;
 
-      case ReviewPhase.Front:
-      case ReviewPhase.Back:
+      case ReviewPhase.Reviewing:
         {
           const {
             failedCards,
@@ -295,10 +294,7 @@ export class ReviewScreen extends React.PureComponent<Props> {
   }
 
   renderProgressBar(): React.ReactNode | null {
-    if (
-      this.props.phase !== ReviewPhase.Front &&
-      this.props.phase !== ReviewPhase.Back
-    ) {
+    if (this.props.phase !== ReviewPhase.Reviewing) {
       return null;
     }
 
