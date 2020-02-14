@@ -329,7 +329,7 @@ describe('sagas:review updateProgress', () => {
       Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
-    const updatePosition = state.review.position!;
+    const updatePosition = state.review.position;
     const action = Actions.passCard();
     state = reducer(state, action);
 
@@ -362,7 +362,7 @@ describe('sagas:review updateProgress', () => {
       Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
-    const updatePosition = state.review.position!;
+    const updatePosition = state.review.position;
     const action = Actions.failCard();
     state = reducer(state, action);
 
@@ -395,7 +395,7 @@ describe('sagas:review updateProgress', () => {
       Actions.reviewCardsLoaded({ history: [], newCards, overdue })
     );
 
-    const updatePosition = state.review.position!;
+    const updatePosition = state.review.position;
     const action = Actions.passCard();
     state = reducer(state, action);
 
@@ -432,7 +432,7 @@ describe('sagas:review updateProgress', () => {
     state = reducer(state, Actions.passCard());
 
     // Now we should have a single card left that we want to fail.
-    const updatePosition = state.review.position!;
+    const updatePosition = state.review.position;
     const action = Actions.failCard();
     state = reducer(state, action);
 

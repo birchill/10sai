@@ -233,7 +233,7 @@ describe('reducer:review', () => {
     );
 
     expect(updatedState.queue).toEqual([]);
-    expect(updatedState.position).toBe(undefined);
+    expect(updatedState.position).toBe(0);
     expect(updatedState.phase).toBe(ReviewPhase.Idle);
   });
 
@@ -458,7 +458,7 @@ describe('reducer:review', () => {
 
     // The next card should be the failed card
     expect(updatedState.position).toEqual(3);
-    expect(updatedState.queue[updatedState.position!].card.id).toEqual(
+    expect(updatedState.queue[updatedState.position].card.id).toEqual(
       newCards[0].id
     );
     expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
