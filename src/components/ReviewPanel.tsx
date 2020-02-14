@@ -486,7 +486,10 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       key={getUniqueKey(queuedCard.card.id)}
       onClick={onClick}
     >
-      <ReviewCard {...queuedCard.card} />
+      <ReviewCard
+        showBack={queuedCard.status !== 'front'}
+        {...queuedCard.card}
+      />
     </div>
   );
 
