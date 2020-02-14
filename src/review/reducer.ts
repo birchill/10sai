@@ -307,7 +307,7 @@ export function review(
       });
       position = updatedPosition;
 
-      validateQueue(queue, position);
+      validateQueue(queue, position, phase);
 
       return {
         ...state,
@@ -392,7 +392,7 @@ export function review(
       });
       position = updatedPosition;
 
-      validateQueue(queue, position);
+      validateQueue(queue, position, phase);
 
       return {
         ...state,
@@ -514,7 +514,7 @@ export function review(
         phase = ReviewPhase.Complete;
       }
 
-      validateQueue(queue, position);
+      validateQueue(queue, position, phase);
 
       return {
         ...state,
@@ -580,7 +580,11 @@ function advancePosition({
 
 // We should possibly move this to the saga so we can trigger side effects like
 // reporting to bugsnag etc. if it fails.
-function validateQueue(queue: Array<QueuedCard>, position: number) {
+function validateQueue(
+  queue: Array<QueuedCard>,
+  position: number,
+  phase: ReviewPhase = ReviewPhase.Reviewing
+) {
   const cardMap = new Map<string, string>();
 
   for (const queuedCard of queue) {
@@ -627,15 +631,34 @@ function validateQueue(queue: Array<QueuedCard>, position: number) {
 
   // Check position
   //
-  // The position is allowed to be equal to the length of the queue when we are
-  // in the completed state.
+  // All states:
   if (position < 0 || position > queue.length) {
     error(`Position out of range: ${position} (queue length: ${queue.length}`);
   }
 
-  // The position should never point to a placeholder so long as it is in range
-  // of the queue.
-  if (position < queue.length && isCardPlaceholder(queue[position].card)) {
+  // Complete / idle:
+  if (
+    (phase === ReviewPhase.Complete || phase === ReviewPhase.Idle) &&
+    position !== queue.length
+  ) {
+    error(
+      `In idle / complete phase, the position should point to the end of the queue (expected: ${queue.length}, got: ${position})`
+    );
+  }
+
+  // Reviewing:
+  if (phase === ReviewPhase.Reviewing && position === queue.length) {
+    error(
+      'In the reviewing phase, the position should NOT point to the end of the queue'
+    );
+  }
+
+  // The position should never point to a placeholder so long as we are
+  // reviewing.
+  if (
+    phase === ReviewPhase.Reviewing &&
+    isCardPlaceholder(queue[position].card)
+  ) {
     error('The current card should never be a placeholder');
   }
 }
