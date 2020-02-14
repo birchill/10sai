@@ -81,6 +81,15 @@ const toReviewContent = ({
     if (item.status === 'failed') {
       serialized.status = 1;
     }
+    if (item.previousProgress) {
+      serialized.previousProgress = {
+        due:
+          item.previousProgress.due === null
+            ? 0
+            : item.previousProgress.due.getTime(),
+        level: item.previousProgress.level,
+      };
+    }
     return serialized;
   });
 
