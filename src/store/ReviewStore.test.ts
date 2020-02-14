@@ -1,6 +1,7 @@
 import PouchDB from 'pouchdb';
 
 import { ReviewSummary } from '../model';
+import { MS_PER_DAY } from '../utils/constants';
 
 import { DataStore } from './DataStore';
 import { ReviewContent, ReviewStore } from './ReviewStore';
@@ -65,6 +66,28 @@ describe('ReviewStore', () => {
     await subject.putReview(typicalReview);
     const gotReview = await subject.getReview();
     expect(gotReview).toEqual(typicalReview);
+  });
+
+  it('stores any previous progress along with a review', async () => {
+    const reviewWithProgress: ReviewSummary = {
+      maxCards: 3,
+      maxNewCards: 2,
+      history: [
+        {
+          id: 'abc',
+          status: 'passed',
+          previousProgress: {
+            due: new Date(Date.now() - 0.5 * MS_PER_DAY),
+            level: 1.5,
+          },
+        },
+        { id: 'def', status: 'failed' },
+      ],
+    };
+
+    await subject.putReview(reviewWithProgress);
+    const gotReview = await subject.getReview();
+    expect(gotReview).toEqual(reviewWithProgress);
   });
 
   it('updates a review', async () => {
