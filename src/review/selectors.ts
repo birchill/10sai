@@ -56,7 +56,19 @@ const getHistorySummary = (
         status: item.status as 'passed' | 'failed',
       };
       if (item.previousProgress) {
-        result.previousProgress = item.previousProgress;
+        // We use getReviewSummary both to prepare the object we write to the
+        // DataStore but also to then compare it to the object in memory so we
+        // know if we need to re-load the review or not.
+        //
+        // Due to the way the reducer simply and the fact that we've changed the
+        // schema for progress records a few times, we can end up with
+        // obsolete fields on the progress object (notably the 'created' field)
+        // which shouldn't affect the result of the comparison. As a result, we
+        // specifically filter out just the fields we expect here.
+        result.previousProgress = {
+          level: item.previousProgress.level,
+          due: item.previousProgress.due,
+        };
       }
       return result;
     });
