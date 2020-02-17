@@ -10196,10 +10196,15 @@ pouchdb-binary-utils@7.2.1:
   dependencies:
     buffer-from "1.1.0"
 
-pouchdb-collate@7.1.1, pouchdb-collate@^7.1.1:
+pouchdb-collate@7.1.1:
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/pouchdb-collate/-/pouchdb-collate-7.1.1.tgz#eac1bc828146bc4226d6e4aa3bdcf6b496fb0f2d"
   integrity sha512-RNe44kHV96AHU22mJHwNX+JkpR5HnJsQdfn+15otq/TZk6GYbVl7LeDgkyZS6BILq6Ms3gzeimpHUP21xswejA==
+
+pouchdb-collate@^7.2.1:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/pouchdb-collate/-/pouchdb-collate-7.2.1.tgz#1e8bcd8c8d007fb93b9e259f18f9525144253102"
+  integrity sha512-vE1wGPOSJy1QLpHG4Jo6c7/Fronc5zEwILP6vMw/tY3BbpRHKVFKcbdf7g1FICR1mb8WPqkSwzlQbniuNMYMGQ==
 
 pouchdb-collections@7.1.1:
   version "7.1.1"
