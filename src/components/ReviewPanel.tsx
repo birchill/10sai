@@ -211,7 +211,12 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     const yDistance = evt.clientY - dragOrigin.y;
     const yRange = panelDimensions.height || 100;
     const yPortion = Math.min(Math.max((yDistance * 2) / yRange, -1), 1);
-    const confidence = Math.pow(8, -yPortion);
+
+    // For the confidence, we use linear interpolation for dragging down such
+    // that the bottom extent is level 0 (and half-way is half the interval)
+    // while when dragging up we use an exponential curve to allow a greater
+    // range of values.
+    const confidence = yPortion > 0 ? 1 - yPortion : Math.pow(16, -yPortion);
 
     return { xDistance, yDistance, yPortion, confidence };
   };
