@@ -73,13 +73,10 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     [cardsRef.current]
   );
 
-  React.useEffect(() => {
-    // We use keyup simply so that if the user holds down Enter too long they
-    // don't end up passing all the cards accidentally.
-    //
-    // TODO: Once we implement flipping back and forth using Space we should
-    // probably use keydown for that.
-    const keyUpHandler = (e: KeyboardEvent) => {
+  // We use keyup simply so that if the user holds down Enter too long they
+  // don't end up passing all the cards accidentally.
+  const keyUpHandler = React.useCallback(
+    (e: KeyboardEvent) => {
       if (!props.active || e.defaultPrevented) {
         return;
       }
@@ -88,7 +85,6 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         return;
       }
 
-      // TODO: Eventually we should make space the key for flipping cards
       if (
         props.currentCard.status === 'front' &&
         (e.key === 'Enter' || e.key === ' ')
@@ -125,21 +121,23 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         }
         e.preventDefault();
       }
-    };
+    },
+    [
+      props.active,
+      props.currentCard.status,
+      props.onShowBack,
+      props.onEditCard,
+      props.onFailCard,
+      props.onPassCard,
+    ]
+  );
 
+  React.useEffect(() => {
     document.documentElement.addEventListener('keyup', keyUpHandler);
-
     return () => {
       document.documentElement.removeEventListener('keyup', keyUpHandler);
     };
-  }, [
-    props.active,
-    props.currentCard.status,
-    props.onShowBack,
-    props.onEditCard,
-    props.onFailCard,
-    props.onPassCard,
-  ]);
+  }, [keyUpHandler]);
 
   // Review interval tooltip
   const [tooltip, setTooltip] = React.useState<string>('');
@@ -431,7 +429,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   //   --> THEN the click event handler would fire (with ignoreClick = false).
   //
   // So instead we simply rely on the fact that there will be a re-render BEFORE
-  // we wun the click event handler so we can just check inside that handler if
+  // we run the click event handler so we can just check inside that handler if
   // we're showing the front of the card or not (and ignore the event if we
   // are).
   const onClickPass = React.useCallback(
