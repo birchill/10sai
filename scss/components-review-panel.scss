@@ -20,6 +20,13 @@
       > .review-card {
         width: calc(100% - 2em);
         max-width: 700px;
+        // The following '8em' is calculated "empirically" :)
+        // I really want to way 100% of the _height_ of the containing block
+        // minus 2 em but I haven't worked out how to do that, hence the
+        // following hack.
+        //
+        // Also SASS's min/max handling is broken so we have to quote it.
+        max-width: unquote('min(700px, 100vh - 8em)');
         box-sizing: border-box;
         transition: transform 0.2s;
       }
