@@ -58,7 +58,10 @@ type PanelDimensions = {
 
 export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   const cardsRef = React.useRef<HTMLDivElement>(null);
+  const passButtonRef = React.useRef<HTMLButtonElement>(null);
+  const failButtonRef = React.useRef<HTMLButtonElement>(null);
 
+  // focus() method
   React.useImperativeHandle(
     ref,
     () => ({
@@ -73,11 +76,58 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     [cardsRef.current]
   );
 
+  // We listen for 'Enter' keyup events and use them to show the back or mark
+  // a card as correct. However, if the user uses 'Enter' to click a button
+  // we'll still get a keyup event in addition to the click event but we
+  // probably want to ignore the keyup event in that case.
+  //
+  // Unfortunately that's a bit hard to detect since the keyup event doesn't
+  // fire until after the click event has fired and the corresponding state has
+  // been updated.
+  //
+  // Instead we simply set a flag whenever we get a click event that appears to
+  // be from the keyboard.
+  //
+  // Note that this currently only actually happens when the user tabs to the
+  // pass/fail button, then presses Enter. In other cases, we clear the focus
+  // from the button so that it doesn't happen.
+  const skipNextKeyUp = React.useRef<boolean>(false);
+  const clickHandler = React.useCallback((e: MouseEvent) => {
+    if (e.screenX === 0 && e.screenY === 0) {
+      skipNextKeyUp.current = true;
+    }
+  }, []);
+  React.useEffect(() => {
+    document.documentElement.addEventListener('click', clickHandler);
+    return () => {
+      document.documentElement.removeEventListener('click', clickHandler);
+    };
+  }, [clickHandler]);
+
+  // We also use the above flag when the component is first loaded to ensure we
+  // ignore the keyup resulting from clicking the "New Review" button if any.
+  React.useEffect(() => {
+    skipNextKeyUp.current = true;
+    const timeout = setTimeout(() => {
+      skipNextKeyUp.current = false;
+    }, 100);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
+
   // We use keyup simply so that if the user holds down Enter too long they
   // don't end up passing all the cards accidentally.
   const keyUpHandler = React.useCallback(
     (e: KeyboardEvent) => {
-      if (!props.active || e.defaultPrevented) {
+      const shouldSkip = skipNextKeyUp.current;
+
+      // It's important we clear this before any of the early returns because
+      // we set it unconditionally on any click event should we should clear it
+      // unconditionally on any keyup event.
+      skipNextKeyUp.current = false;
+
+      if (!props.active || e.defaultPrevented || shouldSkip) {
         return;
       }
 
@@ -139,6 +189,25 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     };
   }, [keyUpHandler]);
 
+  // Clear focus from answer buttons when hiding them or simply when changing
+  // cards.
+  React.useEffect(() => {
+    if (
+      document.activeElement &&
+      (document.activeElement === failButtonRef.current ||
+        document.activeElement === passButtonRef.current)
+    ) {
+      // Try to focus the wrapper element so that, for example, when it becomes
+      // scrollable (e.g. when displaying notes), you can use space to scroll
+      // it.
+      if (cardsRef.current) {
+        cardsRef.current.focus();
+      } else {
+        (document.activeElement as HTMLElement).blur();
+      }
+    }
+  }, [props.currentCard.status]);
+
   // Review interval tooltip
   const [tooltip, setTooltip] = React.useState<string>('');
 
@@ -169,7 +238,6 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   }, [resizeCallback]);
 
   // Dragging effect for the pass button
-  const passButtonRef = React.useRef<HTMLButtonElement>(null);
   const [passDragState, setPassDragState] = React.useState<ButtonDragState>({
     stage: ButtonDragStage.Idle,
   });
@@ -450,8 +518,8 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     [
       passDragState.stage,
       cancelDrag,
-      props.onPassCard,
       props.currentCard.status,
+      props.onPassCard,
     ]
   );
 
@@ -521,6 +589,7 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
         className="fail"
         aria-label="Incorrect"
         tabIndex={showBack ? 0 : -1}
+        ref={failButtonRef}
         onClick={props.onFailCard}
       >
         <span className="buttonface">
