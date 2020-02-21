@@ -66,6 +66,12 @@ const mapDispatchToProps = (dispatch: Dispatch<Actions.Action>) => ({
   onEditCard: (id: string) => {
     dispatch(Actions.followLink(`/cards/${id}`, 'forwards', false));
   },
+  onNavigateBack: () => {
+    dispatch(Actions.navigateReviewBack());
+  },
+  onNavigateForward: () => {
+    dispatch(Actions.navigateReviewForward());
+  },
 });
 
 export const ReviewPanelContainer = connect<

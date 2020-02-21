@@ -141,6 +141,18 @@ export function cancelReview() {
 
 export type CancelReviewAction = ReturnType<typeof cancelReview>;
 
+export function navigateReviewBack() {
+  return { type: <const>'NAVIGATE_REVIEW_BACK' };
+}
+
+export type NavigateReviewBack = ReturnType<typeof navigateReviewBack>;
+
+export function navigateReviewForward() {
+  return { type: <const>'NAVIGATE_REVIEW_FORWARD' };
+}
+
+export type NavigateReviewForward = ReturnType<typeof navigateReviewForward>;
+
 export type ReviewAction =
   | NewReviewAction
   | LoadReviewAction
@@ -152,7 +164,9 @@ export type ReviewAction =
   | UpdateAvailableCardsAction
   | UpdateReviewCardAction
   | DeleteReviewCardAction
-  | CancelReviewAction;
+  | CancelReviewAction
+  | NavigateReviewBack
+  | NavigateReviewForward;
 
 // TODO: failUpdateProgress
 // TODO: failLoadReview (rename reviewLoaded to finishLoadReview?)

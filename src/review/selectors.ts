@@ -22,7 +22,9 @@ export const getReviewProgress = (state: AppState) => {
         break;
 
       default:
-        unreviewedCards++;
+        if (!item.skipped) {
+          unreviewedCards++;
+        }
         break;
     }
   }

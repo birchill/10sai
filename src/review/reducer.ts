@@ -150,6 +150,8 @@ export function review(
 
         // The ideal position to place the card is mid-way between the failure
         // position and the end of the queue.
+        //
+        // We don't, however, want to put it before the current position.
         let insertPoint = Math.floor(i + (queue.length - i) / 2) + 1;
         if (insertPoint < position) {
           insertPoint = position;
@@ -381,9 +383,7 @@ export function review(
       const cardDuplicate: QueuedCard = { ...queuedCard, status: 'front' };
       delete cardDuplicate.previousProgress;
 
-      const insertPoint =
-        Math.floor(position + (queue.length - position) / 2) + 1;
-      queue.splice(insertPoint, 0, cardDuplicate);
+      queue.splice(getInsertPoint(queue), 0, cardDuplicate);
 
       // Advance position
       let { phase, position: updatedPosition } = advancePosition({
@@ -547,6 +547,98 @@ export function review(
         availableCards: state.availableCards,
       };
     }
+
+    case 'NAVIGATE_REVIEW_BACK': {
+      if (
+        state.phase === ReviewPhase.Idle ||
+        state.phase === ReviewPhase.Complete
+      ) {
+        return state;
+      }
+
+      let position = state.position - 1;
+      while (position >= 0 && isCardPlaceholder(state.queue[position].card)) {
+        position--;
+      }
+
+      if (position < 0) {
+        return state;
+      }
+
+      validateQueue(state.queue, position);
+
+      return {
+        ...state,
+        position,
+      };
+    }
+
+    case 'NAVIGATE_REVIEW_FORWARD': {
+      if (
+        state.phase === ReviewPhase.Idle ||
+        state.phase === ReviewPhase.Complete
+      ) {
+        return state;
+      }
+
+      // First check we have room to skip forwards
+      let nextPosition = state.position + 1;
+      while (
+        nextPosition < state.queue.length &&
+        isCardPlaceholder(state.queue[nextPosition].card)
+      ) {
+        nextPosition++;
+      }
+
+      if (nextPosition >= state.queue.length) {
+        return state;
+      }
+
+      // If the current card is unreviewed, mark it as skipped and add
+      // a duplicate copy for later review.
+      let { queue, position } = state;
+      const queuedCard = queue[position];
+      if (queuedCard.status !== 'passed' && queuedCard.status !== 'failed') {
+        queue = queue.slice();
+        const mutableQueue = queue as Array<QueuedCard>;
+
+        // Drop any other copies of this card in the queue leaving only the
+        // skipped one (and the one we are about to add).
+        for (let i = 0; i < mutableQueue.length; i++) {
+          const current = mutableQueue[i];
+          if (current.card.id === queuedCard.card.id && i !== position) {
+            (mutableQueue as Array<QueuedCard>).splice(i, 1);
+            if (i < position) {
+              position--;
+            }
+            i--;
+          }
+        }
+
+        // Add a copy of the card later in the queue.
+        const cardDuplicate: QueuedCard = { ...queuedCard, status: 'front' };
+        delete cardDuplicate.skipped;
+        (mutableQueue as Array<QueuedCard>).splice(
+          getInsertPoint(mutableQueue),
+          0,
+          cardDuplicate
+        );
+
+        // Mark the current card as skipped
+        (mutableQueue as Array<QueuedCard>)[position] = {
+          ...queuedCard,
+          skipped: true,
+        };
+      }
+
+      validateQueue(queue, nextPosition);
+
+      return {
+        ...state,
+        queue,
+        position: nextPosition,
+      };
+    }
   }
 
   if (isNoteAction(action) && action.context.screen === 'review') {
@@ -563,25 +655,50 @@ function advancePosition({
   queue,
   position,
 }: {
-  queue: Array<QueuedCard>;
+  queue: ReadonlyArray<QueuedCard>;
   position: number;
 }) {
   let phase: ReviewPhase;
   if (position < queue.length - 1) {
-    position++;
-    phase = ReviewPhase.Reviewing;
+    position = endOfHistory(queue);
   } else {
     position = queue.length;
-    phase = ReviewPhase.Complete;
   }
 
+  phase =
+    position === queue.length ? ReviewPhase.Complete : ReviewPhase.Reviewing;
+
   return { phase, position };
+}
+
+function endOfHistory(queue: ReadonlyArray<QueuedCard>): number {
+  // Find the item after the last reviewed item
+  let index = queue.length;
+  while (index) {
+    const status = queue[index - 1].status;
+    if (status === 'passed' || status === 'failed') {
+      break;
+    }
+    index--;
+  }
+
+  // Skip over any placeholders
+  while (index < queue.length && isCardPlaceholder(queue[index].card)) {
+    index++;
+  }
+
+  return index;
+}
+
+function getInsertPoint(queue: ReadonlyArray<QueuedCard>): number {
+  const start = endOfHistory(queue);
+  return Math.ceil(start + (queue.length - start) / 2);
 }
 
 // We should possibly move this to the saga so we can trigger side effects like
 // reporting to bugsnag etc. if it fails.
 function validateQueue(
-  queue: Array<QueuedCard>,
+  queue: ReadonlyArray<QueuedCard>,
   position: number,
   phase: ReviewPhase = ReviewPhase.Reviewing
 ) {

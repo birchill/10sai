@@ -24,6 +24,8 @@ interface Props {
   onPassCard: (options: { confidence: number }) => void;
   onFailCard: () => void;
   onEditCard: (id: string) => void;
+  onNavigateBack: () => void;
+  onNavigateForward: () => void;
   previousCard?: QueuedActualCard;
   currentCard: QueuedActualCard;
   nextCard?: QueuedActualCard;
@@ -172,6 +174,14 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
             props.onPassCard({ confidence: 2 });
             break;
 
+          case 'ArrowLeft':
+            props.onNavigateBack();
+            break;
+
+          case 'ArrowRight':
+            props.onNavigateForward();
+            break;
+
           default:
             // Don't call preventDefault
             return;
@@ -186,6 +196,8 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
       props.onEditCard,
       props.onFailCard,
       props.onPassCard,
+      props.onNavigateBack,
+      props.onNavigateForward,
     ]
   );
 

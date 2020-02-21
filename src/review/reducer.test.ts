@@ -521,8 +521,8 @@ describe('reducer:review', () => {
       { card: overdue[0], status: 'passed' },
       { card: overdue[1], status: 'passed' },
     ]);
-    expect(updatedState.position).toBe(1);
-    expect(updatedState.phase).toBe(ReviewPhase.Reviewing);
+    expect(updatedState.position).toBe(3);
+    expect(updatedState.phase).toBe(ReviewPhase.Complete);
   });
 
   it('should update the card level and due time on FAIL_CARD', () => {
@@ -1029,6 +1029,238 @@ describe('reducer:review', () => {
 
     const resetState = subject(undefined, { type: 'none' } as any);
     expect(updatedState).toEqual(resetState);
+  });
+
+  it('should update the position on NAVIGATE_REVIEW_BACK', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 3,
+      maxCards: 6,
+    });
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+    );
+
+    updatedState = subject(updatedState, Actions.passCard());
+    updatedState = subject(updatedState, Actions.passCard());
+    updatedState = subject(updatedState, Actions.passCard());
+
+    expect(updatedState.position).toBe(3);
+
+    updatedState = subject(updatedState, Actions.navigateReviewBack());
+
+    expect(updatedState.position).toBe(2);
+  });
+
+  it('should skip placeholders on NAVIGATE_REVIEW_BACK / NAVIGATE_REVIEW_FORWARD', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
+    const history = [
+      { card: overdue[0], status: <const>'passed' },
+      makeFailedQueuedCardPlaceholder(overdue[1]),
+    ];
+
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({
+        history,
+        newCards,
+        overdue: overdue.slice(2),
+      })
+    );
+
+    expect(updatedState.position).toBe(2);
+
+    updatedState = subject(updatedState, Actions.navigateReviewBack());
+
+    expect(updatedState.position).toBe(0);
+
+    updatedState = subject(updatedState, Actions.navigateReviewForward());
+
+    expect(updatedState.position).toBe(2);
+  });
+
+  it('should update the position on NAVIGATE_REVIEW_FORWARD', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 3,
+      maxCards: 6,
+    });
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+    );
+
+    expect(updatedState.position).toBe(0);
+
+    updatedState = subject(updatedState, Actions.navigateReviewForward());
+
+    expect(updatedState.position).toBe(1);
+  });
+
+  it('should mark an unreviewed cards as skipped on NAVIGATE_REVIEW_FORWARD', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+    );
+
+    expect(updatedState.position).toBe(0);
+    expect(updatedState.queue.length).toBe(3);
+
+    // Show the back just so we can test that the duplicated card is showing the
+    // front.
+    updatedState = subject(updatedState, Actions.showAnswer());
+
+    updatedState = subject(updatedState, Actions.navigateReviewForward());
+
+    expect(updatedState.position).toBe(1);
+    expect(updatedState.queue.length).toBe(4);
+
+    expect(updatedState.queue[0].skipped).toBe(true);
+    expect(updatedState.queue[0].status).toBe('back');
+
+    expect(updatedState.queue[2].card).toEqual(updatedState.queue[0].card);
+    expect(updatedState.queue[2].status).toBe('front');
+    expect(updatedState.queue[2].skipped).toBe(undefined);
+  });
+
+  it('should only add one duplicate card when skipping an unreviewed card on NAVIGATE_REVIEW_FORWARD', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+    );
+
+    expect(updatedState.position).toBe(0);
+    expect(updatedState.queue.length).toBe(3);
+
+    for (let i = 0; i < 10; i++) {
+      updatedState = subject(updatedState, Actions.navigateReviewForward());
+    }
+
+    // This is a bit odd, but basically we'll duplicate the first two cards when
+    // we skip them, but since we can never navigate past the end, we'll never
+    // be able to skip the last card, or something like that.
+    expect(updatedState.queue.length).toBe(5);
+  });
+
+  it('should drop the skipped flag when duplicating a skipped card on NAVIGATE_REVIEW_FORWARD', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+    );
+
+    // Skip the first card
+    updatedState = subject(updatedState, Actions.navigateReviewForward());
+
+    // Then go back to it
+    updatedState = subject(updatedState, Actions.navigateReviewBack());
+
+    // Then skip it again
+    updatedState = subject(updatedState, Actions.navigateReviewForward());
+
+    expect(updatedState.queue[0].skipped).toBe(true);
+    expect(updatedState.queue[2].skipped).toBeUndefined();
+  });
+
+  it('jumps to the next unreviewed card after failing a historical card', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 3,
+    });
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+    );
+
+    // Pass the first and second cards
+    updatedState = subject(updatedState, Actions.passCard());
+    updatedState = subject(updatedState, Actions.passCard());
+
+    // Then navigate back to the first card...
+    updatedState = subject(updatedState, Actions.navigateReviewBack());
+    updatedState = subject(updatedState, Actions.navigateReviewBack());
+    expect(updatedState.position).toBe(0);
+
+    // ... and fail it
+    updatedState = subject(updatedState, Actions.failCard());
+
+    // We should jump to the end of the queue and have a failed card to review
+    expect(updatedState.position).toBe(2);
+    expect(updatedState.queue.length).toBe(4);
+    expect(updatedState.queue[3].card).toEqual(updatedState.queue[0].card);
+    expect(updatedState.queue[3].status).toEqual('front');
+  });
+
+  it('jumps to the next unreviewed card after passing a skipped card', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 8,
+    });
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+    );
+
+    // Skip the first card, pass the second, and skip the next
+    updatedState = subject(updatedState, Actions.navigateReviewForward());
+    updatedState = subject(updatedState, Actions.passCard());
+    updatedState = subject(updatedState, Actions.navigateReviewForward());
+
+    // Then navigate back to the first card...
+    updatedState = subject(updatedState, Actions.navigateReviewBack());
+    updatedState = subject(updatedState, Actions.navigateReviewBack());
+    updatedState = subject(updatedState, Actions.navigateReviewBack());
+    expect(updatedState.position).toBe(0);
+    expect(updatedState.queue[updatedState.position].skipped).toBe(true);
+    expect(updatedState.queue.length).toBe(10);
+
+    // ... and pass it
+    updatedState = subject(updatedState, Actions.passCard());
+
+    // We should jump to the end of the queue and have one less card to review
+    expect(updatedState.position).toBe(2);
+    expect(updatedState.queue.length).toBe(9);
+  });
+
+  it('positions a duplicate card between the end of history and the end of the queue', () => {
+    const [initialState, newCards, overdue] = newReview({
+      maxNewCards: 0,
+      maxCards: 10,
+    });
+    let updatedState = subject(
+      initialState,
+      Actions.reviewCardsLoaded({ history: [], newCards, overdue })
+    );
+
+    // Pass the first seven cards
+    while (updatedState.position < 7) {
+      updatedState = subject(updatedState, Actions.passCard());
+    }
+
+    // Now navigate back to the very beginning
+    while (updatedState.position > 0) {
+      updatedState = subject(updatedState, Actions.navigateReviewBack());
+    }
+
+    // If we fail this card, we should position it between card 7 and card 10
+    updatedState = subject(updatedState, Actions.failCard());
+
+    expect(updatedState.queue.length).toBe(11);
+    expect(updatedState.position).toBe(7);
+    expect(updatedState.queue[9].card).toBe(updatedState.queue[0].card);
   });
 
   it('should update notes when the context matches', () => {
