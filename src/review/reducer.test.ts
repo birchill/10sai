@@ -905,32 +905,21 @@ describe('reducer:review', () => {
   it('should drop a skipped card on DELETE_REVIEW_CARD', () => {
     const [initialState, newCards, overdue] = newReview({
       maxNewCards: 0,
-      maxCards: 4,
+      maxCards: 3,
     });
 
     // Set up a queue with a skipped card.
-    //
-    // We don't have a skip action yet to so use the passed status and the tweak
-    // it later.
-    const history = [{ card: overdue[0], status: <const>'passed' }];
     let updatedState = subject(
       initialState,
       Actions.reviewCardsLoaded({
-        history,
+        history: [],
         newCards,
-        overdue: overdue.slice(1, 3),
+        overdue,
         seed: -1,
       })
     );
-
-    // Add the unreviewed card, update their statuses, then set the skipped
-    // flag.
-    const updatedQueue = updatedState.queue.slice();
-    updatedQueue.splice(2, 0, { ...updatedQueue[0] });
-    updatedQueue[0].status = 'front';
-    updatedQueue[2].status = 'front';
-    updatedQueue[0].skipped = true;
-    updatedState.queue = updatedQueue;
+    updatedState = subject(updatedState, Actions.navigateReviewForward());
+    expect(updatedState.queue.length).toBe(4);
 
     // Delete the skipped card
     updatedState = subject(
