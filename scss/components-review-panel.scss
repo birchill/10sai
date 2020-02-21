@@ -48,6 +48,14 @@
           transform: translate(calc(100vw + 2em));
         }
       }
+      // Make sure the review-status-tooltip doesn't show up on the current card
+      // as it is being transitioned out.
+      & .review-status-tooltip {
+        transition: opacity .5s;
+      }
+      &:not(.current) .review-status-tooltip {
+        opacity: 0;
+      }
     }
   }
 

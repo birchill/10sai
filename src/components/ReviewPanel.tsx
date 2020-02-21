@@ -558,18 +558,25 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
     queuedCard: QueuedActualCard,
     position: 'previous' | 'current' | 'next',
     onClick?: () => void
-  ) => (
-    <div
-      className={`cardwrapper ${position}`}
-      key={getUniqueKey(queuedCard.card.id)}
-      onClick={onClick}
-    >
-      <ReviewCard
-        showBack={queuedCard.status !== 'front'}
-        {...queuedCard.card}
-      />
-    </div>
-  );
+  ) => {
+    const { card, status } = queuedCard;
+    const reviewStatus =
+      status === 'passed' || status === 'failed' ? status : undefined;
+    return (
+      <div
+        className={`cardwrapper ${position}`}
+        key={getUniqueKey(card.id)}
+        onClick={onClick}
+      >
+        <ReviewCard
+          showBack={status !== 'front'}
+          reviewStatus={reviewStatus}
+          due={card.progress.due}
+          {...card}
+        />
+      </div>
+    );
+  };
 
   const currentCard = renderReviewCard(
     props.currentCard,
@@ -586,9 +593,6 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   if (props.previousCard) {
     previousCard = renderReviewCard(props.previousCard, 'previous');
   }
-
-  // XXX If the current card has a state of failed or passed we should enlarge
-  // or outline the appropriate button accordingly
 
   const answerButtons = (
     <div className="answer-buttons" hidden={!showBack}>

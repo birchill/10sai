@@ -1,6 +1,9 @@
 import * as React from 'react';
 
+import { MS_PER_DAY } from '../utils/constants';
+
 import { FormattedText } from './FormattedText';
+import { ReviewStatusTooltip } from './ReviewStatusTooltip';
 import { TextRegion } from './TextRegion';
 
 interface Props {
@@ -8,6 +11,8 @@ interface Props {
   back: string;
   showBack?: boolean | null;
   className?: string | null;
+  reviewStatus?: 'passed' | 'failed';
+  due?: Date | null;
 }
 
 export const ReviewCard: React.FC<Props> = (props: Props) => {
@@ -17,6 +22,27 @@ export const ReviewCard: React.FC<Props> = (props: Props) => {
   }
   if (props.className) {
     className += ` ${props.className}`;
+  }
+
+  let tooltip = null;
+  if (props.reviewStatus === 'passed') {
+    let text = 'This card was marked correct.';
+    if (props.due) {
+      const dueInDays = (props.due.getTime() - Date.now()) / MS_PER_DAY;
+      const dueAsString =
+        dueInDays < 2
+          ? `${Math.round(dueInDays * 24)} hours`
+          : `${Math.round(dueInDays)} days`;
+      text += ` It will next be shown in ${dueAsString}.`;
+    }
+    tooltip = <ReviewStatusTooltip status="passed" text={text} />;
+  } else if (props.reviewStatus === 'failed') {
+    tooltip = (
+      <ReviewStatusTooltip
+        status="failed"
+        text="This card was marked incorrect."
+      />
+    );
   }
 
   return (
@@ -35,6 +61,7 @@ export const ReviewCard: React.FC<Props> = (props: Props) => {
           <FormattedText text={props.back} key={props.back} />
         </TextRegion>
       </div>
+      {tooltip}
     </div>
   );
 };
