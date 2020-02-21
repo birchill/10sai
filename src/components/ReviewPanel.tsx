@@ -6,6 +6,10 @@ import { QueuedCard } from '../review/reducer';
 import { getReviewInterval } from '../review/utils';
 import { hasNoModifiers, isTextBox } from '../utils/keyboard';
 import { Overwrite } from '../utils/type-helpers';
+import {
+  cancelIdleCallback,
+  requestIdleCallback,
+} from '../utils/request-idle-callback';
 
 import { DynamicNoteList } from './DynamicNoteList';
 import { OverlayTooltip } from './OverlayTooltip';
@@ -108,11 +112,14 @@ export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
   // ignore the keyup resulting from clicking the "New Review" button if any.
   React.useEffect(() => {
     skipNextKeyUp.current = true;
-    const timeout = setTimeout(() => {
-      skipNextKeyUp.current = false;
-    }, 100);
+    const handle = requestIdleCallback(
+      () => {
+        skipNextKeyUp.current = false;
+      },
+      { timeout: 500 }
+    );
     return () => {
-      clearTimeout(timeout);
+      cancelIdleCallback(handle);
     };
   }, []);
 
