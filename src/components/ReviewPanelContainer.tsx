@@ -14,8 +14,6 @@ interface Props {
 const mapStateToProps = (state: AppState) => {
   const { queue, position } = state.review;
 
-  // XXX Introduce an error boundary to handle this
-
   if (position < 0 || position >= queue.length) {
     throw new Error(
       `Invalid queue position: ${position} (queue length: ${queue.length}`
