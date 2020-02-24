@@ -31,7 +31,10 @@ export interface EditCardFormInterface {
   focus: () => void;
 }
 
-const EditCardFormImpl: React.FC<Props> = (props, ref) => {
+const EditCardFormImpl: React.ForwardRefRenderFunction<
+  EditCardFormInterface,
+  Props
+> = (props, ref) => {
   const cardControlsRef = React.useRef<CardFaceEditControls>(null);
 
   React.useImperativeHandle(

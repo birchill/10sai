@@ -16,7 +16,10 @@ export interface MenuListInterface {
   contains: (other: Node | null) => boolean;
 }
 
-const MenuListImpl: React.FC<Props> = (props, ref) => {
+const MenuListImpl: React.ForwardRefRenderFunction<MenuListInterface, Props> = (
+  props,
+  ref
+) => {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   React.useImperativeHandle(
@@ -48,9 +51,9 @@ const MenuListImpl: React.FC<Props> = (props, ref) => {
         }
       },
 
-      contains: (other: Node | null) => {
+      contains: (other: Node | null): boolean => {
         return (
-          other && wrapperRef.current && wrapperRef.current.contains(other)
+          !!other && !!wrapperRef.current && wrapperRef.current.contains(other)
         );
       },
     }),

@@ -47,7 +47,10 @@ interface Focusable extends Element {
 const isFocusable = (elem: Element): elem is Focusable =>
   typeof (elem as Focusable).focus === 'function';
 
-const SpeechBubbleImpl: React.FC<Props> = (props, ref) => {
+const SpeechBubbleImpl: React.ForwardRefRenderFunction<
+  SpeechBubbleInterface,
+  Props
+> = (props, ref) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const arrowRef = React.useRef<HTMLDivElement>(null);
   const panelRef = React.useRef<HTMLDivElement>(null);

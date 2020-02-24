@@ -62,7 +62,10 @@ type PanelDimensions = {
   buttonFaceRadius: number;
 };
 
-export const ReviewPanelImpl: React.FC<Props> = (props: Props, ref) => {
+export const ReviewPanelImpl: React.ForwardRefRenderFunction<
+  ReviewPanelInterface,
+  Props
+> = (props: Props, ref) => {
   const cardsRef = React.useRef<HTMLDivElement>(null);
   const passButtonRef = React.useRef<HTMLButtonElement>(null);
   const failButtonRef = React.useRef<HTMLButtonElement>(null);
