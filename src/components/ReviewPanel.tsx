@@ -283,6 +283,11 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
   const [dragState, setDragState] = React.useState<DragState>({
     stage: DragStage.Idle,
   });
+  // Store drag positions and times so we can gauge speed. We use a ref here
+  // so that we don't trigger a re-render on each pointermove event.
+  const previousDragSamples = React.useRef<Array<{ x: number; time: number }>>(
+    []
+  );
 
   const onPointerDown = React.useCallback(
     (evt: React.PointerEvent<Element>) => {
@@ -354,6 +359,9 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
         if (xDistance > dragStartDistance) {
           setDragState({ stage: DragStage.Dragging, origin: dragState.origin });
+          previousDragSamples.current = [
+            { x: evt.clientX, time: window.performance.now() },
+          ];
           evt.preventDefault();
         }
         return;
@@ -366,13 +374,18 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
           card.style.transform = `translate(${xOffset}px)`;
         }
 
+        // Store just the last
+        const lastFewSamples = previousDragSamples.current.slice(-4);
+        lastFewSamples.push({ x: evt.clientX, time: window.performance.now() });
+        previousDragSamples.current = lastFewSamples;
+
         evt.preventDefault();
       }
     },
     [dragState.stage, props.active]
   );
 
-  const restoreDragPositions = () => {
+  const restoreDraggedCards = () => {
     for (const card of getCardsToDrag()) {
       card.style.transform = '';
       card.style.transition = 'transform .2s';
@@ -406,14 +419,17 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
       }
 
       if (dragState.stage === DragStage.Dragging) {
-        restoreDragPositions();
+        restoreDraggedCards();
 
-        // If we are more than half a card's width to the left, go back one
+        // If we have moved more than half a card width, or with sufficient
+        // speed, move back / forwards
         const xOffset = evt.clientX - dragState.origin.x;
-        const threshold = cardDimensions.width / 2;
-        if (xOffset > threshold) {
+        const distanceThreshold = cardDimensions.width / 2;
+        const xSpeed = getDragSpeed(previousDragSamples.current);
+
+        if (xOffset > distanceThreshold || xSpeed > 1) {
           props.onNavigateBack();
-        } else if (xOffset < -threshold) {
+        } else if (xOffset < -distanceThreshold || xSpeed < 1) {
           props.onNavigateForward();
         }
       }
@@ -436,7 +452,7 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
   const onPointerCancel = React.useCallback(
     (evt: React.PointerEvent<Element>) => {
       if (dragState.stage === DragStage.Dragging) {
-        restoreDragPositions();
+        restoreDraggedCards();
       }
 
       setDragState({ stage: DragStage.Idle });
@@ -581,6 +597,16 @@ function getReviewIntervalString({
 
 function getSelectedText(): string {
   return window.getSelection()?.toString() ?? '';
+}
+
+function getDragSpeed(samples: Array<{ x: number; time: number }>): number {
+  if (samples.length < 2) {
+    return 0;
+  }
+  const speeds = samples
+    .slice(1)
+    .map(({ x, time }, i) => (x - samples[i].x) / (time - samples[i].time));
+  return speeds.reduce((a, b) => a + b) / speeds.length;
 }
 
 export const ReviewPanel = React.forwardRef<ReviewPanelInterface, Props>(
