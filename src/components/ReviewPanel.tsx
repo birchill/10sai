@@ -34,7 +34,7 @@ interface Props {
   notes: Array<NoteState>;
 }
 
-type PanelDimensions = {
+type ElementDimensions = {
   width: number;
   height: number;
 };
@@ -246,9 +246,12 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
     setTooltipHidden(true);
   }, []);
 
-  // Record actual panel dimensions
+  // Record various element dimensions
   const reviewPanelRef = React.useRef<HTMLDivElement>(null);
-  const [panelDimensions, setPanelDimensions] = React.useState<PanelDimensions>(
+  const [panelDimensions, setPanelDimensions] = React.useState<
+    ElementDimensions
+  >({ width: 0, height: 0 });
+  const [cardDimensions, setCardDimensions] = React.useState<ElementDimensions>(
     { width: 0, height: 0 }
   );
   const resizeCallback = React.useCallback(() => {
@@ -256,7 +259,16 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
       const { width, height } = reviewPanelRef.current.getBoundingClientRect();
       setPanelDimensions({ width, height });
     }
-  }, [reviewPanelRef.current]);
+    if (cardsRef.current) {
+      const currentCard = cardsRef.current.querySelector(
+        '.current .review-card'
+      );
+      if (currentCard) {
+        const { width, height } = currentCard.getBoundingClientRect();
+        setCardDimensions({ width, height });
+      }
+    }
+  }, [reviewPanelRef.current, cardsRef.current]);
   React.useLayoutEffect(() => {
     resizeCallback();
     window.addEventListener('resize', resizeCallback);
@@ -395,11 +407,30 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
       if (dragState.stage === DragStage.Dragging) {
         restoreDragPositions();
+
+        // If we are more than half a card's width to the left, go back one
+        const xOffset = evt.clientX - dragState.origin.x;
+        const threshold = cardDimensions.width / 2;
+        if (xOffset > threshold) {
+          props.onNavigateBack();
+        } else if (xOffset < -threshold) {
+          props.onNavigateForward();
+        }
       }
 
       setDragState({ stage: DragStage.Idle });
     },
-    [cardsRef.current, dragState.stage, showBack, props.onShowBack]
+    [
+      cardsRef.current,
+      cardDimensions.width,
+      dragState.stage,
+      (dragState as any).selectedText,
+      (dragState as any).origin,
+      showBack,
+      props.onShowBack,
+      props.onNavigateBack,
+      props.onNavigateForward,
+    ]
   );
 
   const onPointerCancel = React.useCallback(
