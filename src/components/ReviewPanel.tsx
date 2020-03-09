@@ -12,6 +12,7 @@ import {
 } from '../utils/request-idle-callback';
 
 import { DynamicNoteList } from './DynamicNoteList';
+import { FailButton } from './FailButton';
 import { OverlayTooltip } from './OverlayTooltip';
 import { PassButton } from './PassButton';
 import { ReviewCard } from './ReviewCard';
@@ -314,26 +315,11 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
   const answerButtons = (
     <div className="answer-buttons" hidden={!showBack}>
-      <button
-        className="fail"
-        aria-label="Incorrect"
-        tabIndex={showBack ? 0 : -1}
+      <FailButton
+        hidden={!showBack}
+        onFailCard={props.onFailCard}
         ref={failButtonRef}
-        onClick={props.onFailCard}
-      >
-        <span className="buttonface">
-          <svg className="icon" viewBox="0 0 100 100">
-            <title>Fail</title>
-            <use
-              width="100"
-              height="100"
-              href="#thumbsup"
-              fill="currentcolor"
-              transform="rotate(180 50 50) translate(0 -10)"
-            />
-          </svg>
-        </span>
-      </button>
+      />
       <PassButton
         hidden={!showBack}
         onDrag={onPassButtonDrag}
