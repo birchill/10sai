@@ -1,15 +1,18 @@
 .review-status-tooltip {
   position: absolute;
   top: 1rem;
-  width: 100%;
+  width: 90%;
+  left: 5%;
   box-sizing: border-box;
   pointer-events: none;
+  opacity: 0.8;
 
   display: flex;
   justify-content: center;
 
   .text {
     padding: 0.5rem 2rem;
+    text-align: center;
     border-radius: 2rem;
     font-size: 1rem;
     font-weight: bold;
