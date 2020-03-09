@@ -15,19 +15,19 @@ const enum DragStage {
   Dragging,
 }
 
-type ButtonDragOrigin = {
+type DragOrigin = {
   x: number;
   y: number;
 };
 
-type ButtonDragState =
+type DragState =
   | { stage: DragStage.Idle }
   | {
       stage: DragStage.PreDrag;
-      origin: ButtonDragOrigin;
+      origin: DragOrigin;
       timeout: number;
     }
-  | { stage: DragStage.Dragging; origin: ButtonDragOrigin };
+  | { stage: DragStage.Dragging; origin: DragOrigin };
 
 const PassButtonImpl: React.ForwardRefRenderFunction<
   HTMLButtonElement,
@@ -53,7 +53,7 @@ const PassButtonImpl: React.ForwardRefRenderFunction<
     };
   }, [resizeCallback]);
 
-  const [dragState, setDragState] = React.useState<ButtonDragState>({
+  const [dragState, setDragState] = React.useState<DragState>({
     stage: DragStage.Idle,
   });
 
@@ -318,7 +318,7 @@ function getDragMeasures({
   panelDimensions,
 }: {
   evt: PointerEvent;
-  dragOrigin: ButtonDragOrigin;
+  dragOrigin: DragOrigin;
   panelDimensions: { width: number; height: number };
 }): {
   xDistance: number;
