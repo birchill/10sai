@@ -429,7 +429,7 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
         if (xOffset > distanceThreshold || xSpeed > 1) {
           props.onNavigateBack();
-        } else if (xOffset < -distanceThreshold || xSpeed < 1) {
+        } else if (xOffset < -distanceThreshold || xSpeed < -1) {
           props.onNavigateForward();
         }
       }
