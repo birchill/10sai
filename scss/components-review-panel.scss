@@ -17,7 +17,10 @@
       justify-content: center;
       align-items: center;
 
-      > .review-card {
+      // We don't strictly need this drag wrapper, but it helps us by reducing
+      // the surface area of content that gets moved when we drag left-right
+      // which should make it a bit smoother.
+      > .dragwrapper {
         width: calc(100% - 2em);
         max-width: 700px;
         // The following '8em' is calculated "empirically" :)
@@ -28,23 +31,26 @@
         // Also SASS's min/max handling is broken so we have to quote it.
         max-width: unquote('min(700px, 100vh - 8em)');
         box-sizing: border-box;
-        transition: transform 0.2s;
-      }
-      // This is what makes it square
-      > .review-card::after {
-        content: '';
-        display: block;
-        padding-bottom: 100%;
+
+        > .review-card {
+          transition: transform 0.2s;
+        }
+        // This is what makes it square
+        > .review-card::after {
+          content: '';
+          display: block;
+          padding-bottom: 100%;
+        }
       }
       &.previous {
         pointer-events: none;
-        > .review-card {
+        > .dragwrapper > .review-card {
           transform: translate(calc(-100vw - 2em));
         }
       }
       &.next {
         pointer-events: none;
-        > .review-card {
+        > .dragwrapper > .review-card {
           transform: translate(calc(100vw + 2em));
         }
       }

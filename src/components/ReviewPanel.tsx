@@ -34,14 +34,30 @@ interface Props {
   notes: Array<NoteState>;
 }
 
-export interface ReviewPanelInterface {
-  focus: () => void;
-}
-
 type PanelDimensions = {
   width: number;
   height: number;
 };
+
+const enum DragStage {
+  Idle,
+  PreDrag,
+  Dragging,
+}
+
+type DragOrigin = {
+  x: number;
+  y: number;
+};
+
+type DragState =
+  | { stage: DragStage.Idle }
+  | { stage: DragStage.PreDrag; origin: DragOrigin; selectedText: string }
+  | { stage: DragStage.Dragging; origin: DragOrigin };
+
+export interface ReviewPanelInterface {
+  focus: () => void;
+}
 
 export const ReviewPanelImpl: React.ForwardRefRenderFunction<
   ReviewPanelInterface,
@@ -251,6 +267,152 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
   const showBack = props.currentCard.status !== 'front';
 
+  // Panel dragging for navigation back and forth
+  const [dragState, setDragState] = React.useState<DragState>({
+    stage: DragStage.Idle,
+  });
+
+  const onPointerDown = React.useCallback(
+    (evt: React.PointerEvent<Element>) => {
+      if (evt.button !== 0 || !props.active) {
+        return;
+      }
+
+      if (dragState.stage !== DragStage.Idle) {
+        console.error('Got pointer down while we are dragging?');
+        return;
+      }
+
+      // Basically everything is draggable except the buttons...
+      if (
+        evt.target instanceof Node &&
+        ((passButtonRef.current &&
+          passButtonRef.current.contains(evt.target)) ||
+          (failButtonRef.current && failButtonRef.current.contains(evt.target)))
+      ) {
+        return;
+      }
+
+      const origin = { x: evt.clientX, y: evt.clientY };
+      const selectedText = getSelectedText();
+      setDragState({ stage: DragStage.PreDrag, origin, selectedText });
+    },
+    [dragState.stage, props.active]
+  );
+
+  const getCardsToDrag = React.useCallback((): Iterable<HTMLDivElement> => {
+    return cardsRef.current?.querySelectorAll('.dragwrapper') ?? [];
+  }, [cardsRef.current]);
+
+  const onPointerMove = React.useCallback(
+    (evt: React.PointerEvent<Element>) => {
+      if (dragState.stage === DragStage.Idle) {
+        return;
+      }
+
+      if (dragState.stage === DragStage.PreDrag) {
+        // If there has been any change to the text selection, don't drag.
+        const selectedText = getSelectedText();
+        if (dragState.selectedText !== selectedText) {
+          setDragState({ stage: DragStage.Idle });
+          return;
+        }
+
+        // Set the minimum distance before we trigger a drag.
+        //
+        // We don't want to start a drag if the user is trying to selected text
+        // so we set a large threshold.
+        //
+        // If it's a touch event, however, and we don't have text selected,
+        // then we can use a smaller threshold.
+        const dragStartDistance =
+          evt.pointerType === 'touch' && !dragState.selectedText.length
+            ? 20
+            : 100;
+
+        const xDistance = Math.abs(evt.clientX - dragState.origin.x);
+        const yDistance = Math.abs(evt.clientY - dragState.origin.y);
+
+        // If we get a significant vertical drag, however, assume we are
+        // scrolling and ignore.
+        if (yDistance > dragStartDistance) {
+          setDragState({ stage: DragStage.Idle });
+          return;
+        }
+
+        if (xDistance > dragStartDistance) {
+          setDragState({ stage: DragStage.Dragging, origin: dragState.origin });
+          evt.preventDefault();
+        }
+        return;
+      }
+
+      if (dragState.stage === DragStage.Dragging) {
+        const xOffset = evt.clientX - dragState.origin.x;
+
+        for (const card of getCardsToDrag()) {
+          card.style.transform = `translate(${xOffset}px)`;
+        }
+
+        evt.preventDefault();
+      }
+    },
+    [dragState.stage, props.active]
+  );
+
+  const restoreDragPositions = () => {
+    for (const card of getCardsToDrag()) {
+      card.style.transform = '';
+      card.style.transition = 'transform .2s';
+      card.ontransitionend = card.ontransitioncancel = () => {
+        card.style.transitionProperty = 'none';
+      };
+    }
+  };
+
+  const onPointerUp = React.useCallback(
+    (evt: React.PointerEvent<Element>) => {
+      if (dragState.stage === DragStage.Idle) {
+        return;
+      }
+
+      // If we got a click on the front of the card, show the back.
+      if (dragState.stage === DragStage.PreDrag) {
+        const currentCard = cardsRef.current?.querySelector('.current');
+        if (
+          currentCard &&
+          evt.target instanceof Node &&
+          currentCard.contains(evt.target) &&
+          !showBack
+        ) {
+          const selectedText = getSelectedText();
+          if (selectedText === dragState.selectedText) {
+            props.onShowBack();
+            evt.preventDefault();
+          }
+        }
+      }
+
+      if (dragState.stage === DragStage.Dragging) {
+        restoreDragPositions();
+      }
+
+      setDragState({ stage: DragStage.Idle });
+    },
+    [cardsRef.current, dragState.stage, showBack, props.onShowBack]
+  );
+
+  const onPointerCancel = React.useCallback(
+    (evt: React.PointerEvent<Element>) => {
+      if (dragState.stage === DragStage.Dragging) {
+        restoreDragPositions();
+      }
+
+      setDragState({ stage: DragStage.Idle });
+    },
+    [dragState.stage]
+  );
+
   // There is one case where both the previous card and the next card might be
   // the same card (if the current card and previous card are the same we
   // remove the current card from the history). In that case we still need
@@ -275,33 +437,26 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
   const renderReviewCard = (
     queuedCard: QueuedActualCard,
-    position: 'previous' | 'current' | 'next',
-    onClick?: () => void
+    position: 'previous' | 'current' | 'next'
   ) => {
     const { card, status } = queuedCard;
     const reviewStatus =
       status === 'passed' || status === 'failed' ? status : undefined;
     return (
-      <div
-        className={`cardwrapper ${position}`}
-        key={getUniqueKey(card.id)}
-        onClick={onClick}
-      >
-        <ReviewCard
-          showBack={status !== 'front'}
-          reviewStatus={reviewStatus}
-          due={card.progress.due}
-          {...card}
-        />
+      <div className={`cardwrapper ${position}`} key={getUniqueKey(card.id)}>
+        <div className="dragwrapper">
+          <ReviewCard
+            showBack={status !== 'front'}
+            reviewStatus={reviewStatus}
+            due={card.progress.due}
+            {...card}
+          />
+        </div>
       </div>
     );
   };
 
-  const currentCard = renderReviewCard(
-    props.currentCard,
-    'current',
-    showBack ? undefined : props.onShowBack
-  );
+  const currentCard = renderReviewCard(props.currentCard, 'current');
 
   let nextCard;
   if (props.nextCard) {
@@ -334,6 +489,12 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
   return (
     <div
       className={`review-panel ${props.className || ''}`}
+      onPointerDown={onPointerDown}
+      onPointerMove={
+        dragState.stage !== DragStage.Idle ? onPointerMove : undefined
+      }
+      onPointerUp={dragState.stage !== DragStage.Idle ? onPointerUp : undefined}
+      onPointerCancel={onPointerCancel}
       ref={reviewPanelRef}
     >
       <div className="cards" ref={cardsRef} tabIndex={0}>
@@ -385,6 +546,10 @@ function getReviewIntervalString({
   } else {
     return `Next review in ${Math.round(reviewInterval)} days`;
   }
+}
+
+function getSelectedText(): string {
+  return window.getSelection()?.toString() ?? '';
 }
 
 export const ReviewPanel = React.forwardRef<ReviewPanelInterface, Props>(
