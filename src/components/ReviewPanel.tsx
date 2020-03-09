@@ -13,6 +13,7 @@ import {
 
 import { DynamicNoteList } from './DynamicNoteList';
 import { OverlayTooltip } from './OverlayTooltip';
+import { PassButton } from './PassButton';
 import { ReviewCard } from './ReviewCard';
 
 type QueuedActualCard = Overwrite<QueuedCard, { card: Card }>;
@@ -36,30 +37,9 @@ export interface ReviewPanelInterface {
   focus: () => void;
 }
 
-const enum ButtonDragStage {
-  Idle,
-  PreDrag,
-  Dragging,
-}
-
-type ButtonDragOrigin = {
-  x: number;
-  y: number;
-};
-
-type ButtonDragState =
-  | { stage: ButtonDragStage.Idle }
-  | {
-      stage: ButtonDragStage.PreDrag;
-      origin: ButtonDragOrigin;
-      timeout: number;
-    }
-  | { stage: ButtonDragStage.Dragging; origin: ButtonDragOrigin };
-
 type PanelDimensions = {
   width: number;
   height: number;
-  buttonFaceRadius: number;
 };
 
 export const ReviewPanelImpl: React.ForwardRefRenderFunction<
@@ -232,23 +212,32 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
   // Review interval tooltip
   const [tooltip, setTooltip] = React.useState<string>('');
+  const [tooltipHidden, setTooltipHidden] = React.useState<boolean>(true);
+  const onPassButtonDrag = React.useCallback(
+    (confidence: number) => {
+      setTooltip(
+        getReviewIntervalString({
+          queuedCard: props.currentCard,
+          confidence,
+        })
+      );
+      setTooltipHidden(false);
+    },
+    [props.currentCard]
+  );
+  const onPassButtonDragEnd = React.useCallback(() => {
+    setTooltipHidden(true);
+  }, []);
 
-  // Store various panel dimensions needed for the drag effect
+  // Record actual panel dimensions
   const reviewPanelRef = React.useRef<HTMLDivElement>(null);
   const [panelDimensions, setPanelDimensions] = React.useState<PanelDimensions>(
-    { width: 0, height: 0, buttonFaceRadius: 0 }
+    { width: 0, height: 0 }
   );
   const resizeCallback = React.useCallback(() => {
     if (reviewPanelRef.current) {
-      const buttonFace = reviewPanelRef.current.querySelector(
-        '.buttonface'
-      ) as HTMLSpanElement;
       const { width, height } = reviewPanelRef.current.getBoundingClientRect();
-      setPanelDimensions({
-        width,
-        height,
-        buttonFaceRadius: parseFloat(getComputedStyle(buttonFace).width) / 2,
-      });
+      setPanelDimensions({ width, height });
     }
   }, [reviewPanelRef.current]);
   React.useLayoutEffect(() => {
@@ -258,292 +247,6 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
       window.removeEventListener('resize', resizeCallback);
     };
   }, [resizeCallback]);
-
-  // Dragging effect for the pass button
-  const [passDragState, setPassDragState] = React.useState<ButtonDragState>({
-    stage: ButtonDragStage.Idle,
-  });
-
-  const cancelDrag = React.useCallback(() => {
-    if (passButtonRef.current) {
-      passButtonRef.current.style.transform = '';
-      passButtonRef.current.style.filter = '';
-      // Animate the reversing
-      passButtonRef.current.style.transition = 'all 0.4s';
-
-      // Revert the icon state too
-      const icon = passButtonRef.current.querySelector('.icon') as SVGElement;
-      icon.style.transform = '';
-      icon.style.marginLeft = '';
-      icon.style.transition = 'all 0.4s';
-    }
-
-    setPassDragState({ stage: ButtonDragStage.Idle });
-  }, [passButtonRef.current]);
-
-  const getDragMeasures = ({
-    evt,
-    dragOrigin,
-    panelDimensions,
-  }: {
-    evt: PointerEvent;
-    dragOrigin: ButtonDragOrigin;
-    panelDimensions: PanelDimensions;
-  }): {
-    xDistance: number;
-    yDistance: number;
-    yPortion: number;
-    confidence: number;
-  } => {
-    const xDistance = evt.clientX - dragOrigin.x;
-    const yDistance = evt.clientY - dragOrigin.y;
-    const yRange = panelDimensions.height || 100;
-    const yPortion = Math.min(Math.max((yDistance * 2) / yRange, -1), 1);
-
-    // For the confidence, we use linear interpolation for dragging down such
-    // that the bottom extent is level 0 (and half-way is half the interval)
-    // while when dragging up we use an exponential curve to allow a greater
-    // range of values.
-    const confidence = yPortion > 0 ? 1 - yPortion : Math.pow(16, -yPortion);
-
-    return { xDistance, yDistance, yPortion, confidence };
-  };
-
-  const onPassPointerMove = React.useCallback(
-    (evt: PointerEvent) => {
-      if (passDragState.stage === ButtonDragStage.Idle) {
-        return;
-      }
-
-      const { xDistance, yDistance, yPortion, confidence } = getDragMeasures({
-        evt,
-        dragOrigin: passDragState.origin,
-        panelDimensions,
-      });
-
-      // If we are in the pre-dragging stage and the distance from the origin is
-      // more than a few pixels, set the state to dragging.
-      if (passDragState.stage === ButtonDragStage.PreDrag) {
-        if (Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2)) > 30) {
-          clearTimeout(passDragState.timeout);
-          setPassDragState({
-            stage: ButtonDragStage.Dragging,
-            origin: passDragState.origin,
-          });
-          setTooltip(
-            getReviewIntervalString({
-              queuedCard: props.currentCard,
-              confidence,
-            })
-          );
-        }
-        return;
-      }
-
-      // If we are more than half way across the screen, cancel the action.
-      if (xDistance < -panelDimensions.width / 2) {
-        cancelDrag();
-        return;
-      }
-
-      // Dragging state, update the tooltip.
-      setTooltip(
-        getReviewIntervalString({ queuedCard: props.currentCard, confidence })
-      );
-
-      if (!passButtonRef.current || !reviewPanelRef.current) {
-        return;
-      }
-
-      passButtonRef.current.style.transform = `translate(${xDistance}px, ${yDistance}px)`;
-      // Don't animate the dragging since Gecko seems to flicker when we do this
-      passButtonRef.current.style.transitionProperty = 'none';
-
-      // Make the color go red / blue based on the vertical position
-      let hueRotateAngle;
-      if (yPortion > 0) {
-        hueRotateAngle = -yPortion * 120;
-      } else {
-        hueRotateAngle = -yPortion * 100;
-      }
-      passButtonRef.current.style.filter = `hue-rotate(${Math.round(
-        hueRotateAngle
-      )}deg)`;
-
-      // Rotate or enlarge the icon accordingly
-      const icon = passButtonRef.current.querySelector('.icon') as SVGElement;
-      if (yPortion > 0) {
-        icon.style.transform = `rotate(${180 * yPortion}deg)`;
-      } else {
-        icon.style.transform = `scale(${-2 * yPortion + 1})`;
-      }
-      // Likewise, don't transition this either
-      icon.style.transitionProperty = 'none';
-
-      // If we are dragging away from the left edge, move the thumb towards the
-      // middle of the circle.
-      if (xDistance < 0) {
-        const marginLeft = Math.round(
-          Math.min(-0.85 * panelDimensions.buttonFaceRadius - xDistance, 0)
-        );
-        icon.style.marginLeft = `${marginLeft}px`;
-      } else {
-        icon.style.marginLeft = '';
-      }
-
-      // If we are approaching the middle, fade the icon so we know it's about
-      // to cancel.
-      const quarterWidth = panelDimensions.width / 4;
-      if (xDistance < -quarterWidth) {
-        const fadeAmount = Math.min(
-          (-xDistance - quarterWidth) / quarterWidth,
-          1
-        );
-        const opacity = Math.round(100 * (1 - fadeAmount));
-        passButtonRef.current.style.filter += ` opacity(${opacity}%)`;
-      }
-    },
-    [
-      passDragState.stage,
-      (passDragState as any).origin,
-      (passDragState as any).timeout,
-      panelDimensions.height,
-      props.currentCard,
-      cancelDrag,
-    ]
-  );
-
-  const onPassPointerUp = React.useCallback(
-    (evt: PointerEvent) => {
-      if (passDragState.stage === ButtonDragStage.PreDrag) {
-        self.clearTimeout(passDragState.timeout);
-      }
-
-      if (passDragState.stage === ButtonDragStage.Dragging) {
-        const { confidence } = getDragMeasures({
-          evt,
-          dragOrigin: passDragState.origin,
-          panelDimensions,
-        });
-        props.onPassCard({ confidence });
-      }
-
-      cancelDrag();
-    },
-    [
-      passDragState.stage,
-      (passDragState as any).timeout,
-      (passDragState as any).origin,
-      panelDimensions,
-      props.onPassCard,
-      cancelDrag,
-    ]
-  );
-
-  const onPassPointerCancel = React.useCallback(
-    (evt: PointerEvent) => {
-      if (passDragState.stage === ButtonDragStage.PreDrag) {
-        self.clearTimeout(passDragState.timeout);
-      }
-
-      cancelDrag();
-    },
-    [passDragState.stage, (passDragState as any).timeout, cancelDrag]
-  );
-
-  React.useEffect(() => {
-    if (passDragState.stage !== ButtonDragStage.Idle) {
-      window.addEventListener('pointerup', onPassPointerUp);
-      window.addEventListener('pointermove', onPassPointerMove);
-      window.addEventListener('pointercancel', onPassPointerCancel);
-    }
-    return () => {
-      window.removeEventListener('pointerup', onPassPointerUp);
-      window.removeEventListener('pointermove', onPassPointerMove);
-      window.removeEventListener('pointercancel', onPassPointerCancel);
-    };
-  }, [passDragState.stage, onPassPointerUp, onPassPointerMove]);
-
-  const onPassPointerDown = React.useCallback(
-    (evt: React.PointerEvent<HTMLButtonElement>) => {
-      if (evt.button !== 0) {
-        return;
-      }
-
-      if (props.currentCard.status === 'front') {
-        return;
-      }
-
-      if (passDragState.stage !== ButtonDragStage.Idle) {
-        console.error('Got pointer down while we are dragging?');
-        return;
-      }
-
-      // Update to dragging state after a moment
-      const origin = { x: evt.clientX, y: evt.clientY };
-      const timeout = self.setTimeout(() => {
-        setPassDragState({ stage: ButtonDragStage.Dragging, origin });
-        setTooltip(
-          getReviewIntervalString({
-            queuedCard: props.currentCard,
-            confidence: 1,
-          })
-        );
-      }, 600);
-
-      setPassDragState({ stage: ButtonDragStage.PreDrag, origin, timeout });
-    },
-    [passDragState.stage, props.currentCard.status, props.currentCard.card]
-  );
-
-  // We allow the pass button to be dragged around to vary the confidence level.
-  // When the user releases it, we'll get a pointerup event and _sometimes_
-  // a click event. The click event tends to be fired on desktop platforms but
-  // not on mobile, although sometimes it is fired on mobile.
-  //
-  // We can't ignore the click event entirely, however, since it will be fired
-  // when the user activates the pass button via the keyboard (pressing space
-  // while it is focussed) or when we press the button without dragging it
-  // (since we mostly ignore the event in that case).
-  //
-  // So we have a situation where we need to handle either case but NOT call
-  // `onPassCard` twice when both events are fired.
-  //
-  // We originally tried to do that by setting an "ignoreClick" flag and
-  // clearing it when we next showed the front of a card, but it turns out that
-  // we would actually get the following sequence:
-  //
-  //   - Call onPassCard
-  //   - Set ignoreClick = true
-  //   - Re-render and reset ignoreClick and re-bind the onClick handler
-  //   --> THEN the click event handler would fire (with ignoreClick = false).
-  //
-  // So instead we simply rely on the fact that there will be a re-render BEFORE
-  // we run the click event handler so we can just check inside that handler if
-  // we're showing the front of the card or not (and ignore the event if we
-  // are).
-  const onClickPass = React.useCallback(
-    (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      // Make sure we reset any dragging state in case we fail to get
-      // a pointerup event.
-      if (passDragState.stage === ButtonDragStage.PreDrag) {
-        self.clearTimeout(passDragState.timeout);
-      }
-      if (passDragState.stage !== ButtonDragStage.Idle) {
-        cancelDrag();
-      }
-
-      if (props.currentCard.status !== 'front') {
-        props.onPassCard({ confidence: 1 });
-      }
-    },
-    [
-      passDragState.stage,
-      cancelDrag,
-      props.currentCard.status,
-      props.onPassCard,
-    ]
-  );
 
   const showBack = props.currentCard.status !== 'front';
 
@@ -631,26 +334,14 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
           </svg>
         </span>
       </button>
-      <button
-        className="pass"
-        aria-label="Correct"
-        tabIndex={showBack ? 0 : -1}
+      <PassButton
+        hidden={!showBack}
+        onDrag={onPassButtonDrag}
+        onDragEnd={onPassButtonDragEnd}
+        onPassCard={props.onPassCard}
+        panelDimensions={panelDimensions}
         ref={passButtonRef}
-        onClick={onClickPass}
-        onPointerDown={onPassPointerDown}
-      >
-        <span className="buttonface">
-          <svg className="icon" viewBox="0 0 100 100">
-            <title>Pass</title>
-            <use
-              width="100"
-              height="100"
-              href="#thumbsup"
-              fill="currentcolor"
-            />
-          </svg>
-        </span>
-      </button>
+      />
     </div>
   );
 
@@ -683,10 +374,7 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
         </>
       ) : null}
       {answerButtons}
-      <OverlayTooltip
-        hidden={passDragState.stage !== ButtonDragStage.Dragging}
-        text={tooltip}
-      />
+      <OverlayTooltip hidden={tooltipHidden} text={tooltip} />
     </div>
   );
 };
