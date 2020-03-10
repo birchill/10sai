@@ -279,6 +279,34 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
   const showBack = props.currentCard.status !== 'front';
 
+  // Event oddness I'm afraid...
+  //
+  // We would _like_ to handle clicks on the card in the pointerup event handler
+  // rather than having a separate click handler for that (because then we can
+  // distinguish between clicks that are the end of a drag and clicks that are
+  // just clicks, in the one place).
+  //
+  // However, it turns out that on touch devices we get into some odd timing
+  // where if the user taps in the area where the answer buttons will show up,
+  // then if we update state in the pointerup event, the browser will end up
+  // later dispatching a click event on the button (despite the fact that they
+  // were hidden with pointer-events: none at the time when the touch happened).
+  //
+  // This happens in both Chrome and Firefox (didn't try Safari, my iPhone
+  // doesn't even support touch events). So instead what we need to do is
+  // register a click handler on the card, and but only enable it after we get
+  // a pointerup event that is _not_ the end of a drag.
+  const handleCardClick = React.useRef<boolean>(false);
+  const onCardClick = React.useCallback(() => {
+    // Ignore this fancy-ness if the browser doesn't support pointer events in
+    // the first place.
+    const handleClick = !('PointerEvent' in window) || handleCardClick.current;
+    if (handleClick && !showBack) {
+      props.onShowBack();
+      handleCardClick.current = false;
+    }
+  }, [showBack]);
+
   // Panel dragging for navigation back and forth
   const [dragState, setDragState] = React.useState<DragState>({
     stage: DragStage.Idle,
@@ -401,7 +429,8 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
         return;
       }
 
-      // If we got a click on the front of the card, show the back.
+      // If we got a click on the front of the card, allow the click handler to
+      // show the card.
       if (dragState.stage === DragStage.PreDrag) {
         const currentCard = cardsRef.current?.querySelector('.current');
         if (
@@ -412,8 +441,7 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
         ) {
           const selectedText = getSelectedText();
           if (selectedText === dragState.selectedText) {
-            props.onShowBack();
-            evt.preventDefault();
+            handleCardClick.current = true;
           }
         }
       }
@@ -484,14 +512,15 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
 
   const renderReviewCard = (
     queuedCard: QueuedActualCard,
-    position: 'previous' | 'current' | 'next'
+    position: 'previous' | 'current' | 'next',
+    onClick?: () => void
   ) => {
     const { card, status } = queuedCard;
     const reviewStatus =
       status === 'passed' || status === 'failed' ? status : undefined;
     return (
       <div className={`cardwrapper ${position}`} key={getUniqueKey(card.id)}>
-        <div className="dragwrapper">
+        <div className="dragwrapper" onClick={onClick}>
           <ReviewCard
             showBack={status !== 'front'}
             reviewStatus={reviewStatus}
@@ -503,7 +532,11 @@ export const ReviewPanelImpl: React.ForwardRefRenderFunction<
     );
   };
 
-  const currentCard = renderReviewCard(props.currentCard, 'current');
+  const currentCard = renderReviewCard(
+    props.currentCard,
+    'current',
+    onCardClick
+  );
 
   let nextCard;
   if (props.nextCard) {
