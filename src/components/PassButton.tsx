@@ -233,7 +233,7 @@ const PassButtonImpl: React.ForwardRefRenderFunction<
 
       setDragState({ stage: DragStage.PreDrag, origin, timeout });
     },
-    [dragState.stage, props.hidden]
+    [dragState.stage, props.onDrag, props.hidden]
   );
 
   React.useEffect(() => {
