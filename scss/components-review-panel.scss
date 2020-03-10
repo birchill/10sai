@@ -91,14 +91,15 @@
   }
 
   > .answer-buttons {
-    transition: opacity 0.2s;
-
     &[hidden] {
       // Override UA style
       display: block;
+    }
 
-      opacity: 0;
+    &[hidden] > .fail,
+    &[hidden] > .pass {
       pointer-events: none;
+      opacity: 0;
     }
 
     > .fail,
@@ -108,6 +109,8 @@
       touch-action: none;
       outline: none;
       position: fixed;
+
+      transition: opacity 0.2s;
 
       --hit-region-width: 8rem;
       --hit-region-height: 18rem;
