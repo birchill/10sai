@@ -1910,10 +1910,10 @@
   resolved "https://registry.yarnpkg.com/@types/deep-equal/-/deep-equal-1.0.1.tgz#71cfabb247c22bcc16d536111f50c0ed12476b03"
   integrity sha512-mMUu4nWHLBlHtxXY17Fg6+ucS/MnndyOWyOe7MmwkoMYxvfQU2ajtRaEvqSUv+aVkMqH/C0NCI8UoVfRNQ10yg==
 
-"@types/draft-js@^0.10.38":
-  version "0.10.38"
-  resolved "https://registry.yarnpkg.com/@types/draft-js/-/draft-js-0.10.38.tgz#19a37d97e696df5749754f8bbd7761a4d56b16b0"
-  integrity sha512-iDg8fJATjGVfQVv/dysAMMcPwORyJix2AyAm8OdwseteYh1jV+Xwlz+1HddoCWxQWqzWf/MDkNQH5sLYG47e0w==
+"@types/draft-js@^0.10.40":
+  version "0.10.40"
+  resolved "https://registry.yarnpkg.com/@types/draft-js/-/draft-js-0.10.40.tgz#d722364aa46f5a998fc22c79a5157edf336c7350"
+  integrity sha512-XMkk8pamH/XwSOpEk/B6wFB0Y6LvMFWQZZaIVjzQUH2GCpFxbugo8gYpETsNMkJrGb3yb7hhFjjT1SyJ8AbXjA==
   dependencies:
     "@types/react" "*"
     immutable "~3.7.4"
