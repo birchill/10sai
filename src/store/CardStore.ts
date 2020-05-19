@@ -149,7 +149,7 @@ export class CardStore {
 
     const getLazyPromise = (): LazyPromise => {
       let resolve: () => void;
-      const promise = new Promise<void>(resolveFn => {
+      const promise = new Promise<void>((resolveFn) => {
         resolve = resolveFn;
       });
       return { promise, resolve: resolve!, resolved: false };
@@ -178,8 +178,8 @@ export class CardStore {
 
     const result = await this.db.query<CardContent>('cards', queryOptions);
     return result.rows
-      .filter(row => row.doc)
-      .map(row => ({
+      .filter((row) => row.doc)
+      .map((row) => ({
         ...parseCard(row.doc!),
         progress: parseProgress(row.value.progress),
       }));
@@ -187,11 +187,11 @@ export class CardStore {
 
   async getCardsById(ids: string[]): Promise<Array<Card | CardPlaceholder>> {
     const progressResult = await this.db.allDocs<ProgressContent>({
-      keys: ids.map(id => PROGRESS_PREFIX + id),
+      keys: ids.map((id) => PROGRESS_PREFIX + id),
       include_docs: true,
     });
     const cardsResult = await this.db.allDocs<CardContent>({
-      keys: ids.map(id => CARD_PREFIX + id),
+      keys: ids.map((id) => CARD_PREFIX + id),
       include_docs: true,
     });
 
@@ -247,7 +247,7 @@ export class CardStore {
       use_index: ['progress_by_due_date', 'due'],
     })) as PouchDB.Find.FindResponse<ProgressContent>;
 
-    const result: Array<[string, Progress]> = findResult.docs.map(doc => [
+    const result: Array<[string, Progress]> = findResult.docs.map((doc) => [
       stripProgressPrefix(doc._id),
       parseProgress(doc),
     ]);
@@ -294,7 +294,7 @@ export class CardStore {
 
     return (async function tryPutNewCard(
       card: CardContent,
-      progress: ProgressContent,
+      progress: Partial<ProgressContent>,
       db,
       id
     ): Promise<Card> {
@@ -347,7 +347,7 @@ export class CardStore {
     let card: CardDoc | undefined;
     let missing = false;
 
-    await this.db.upsert<CardContent>(CARD_PREFIX + id, doc => {
+    await this.db.upsert<CardContent>(CARD_PREFIX + id, (doc) => {
       // Doc was not found -- must have been deleted
       if (!doc.hasOwnProperty('_id')) {
         missing = true;
@@ -390,7 +390,7 @@ export class CardStore {
     let progress: ProgressDoc | undefined;
     let missing = false;
 
-    await this.db.upsert<ProgressContent>(PROGRESS_PREFIX + id, doc => {
+    await this.db.upsert<ProgressContent>(PROGRESS_PREFIX + id, (doc) => {
       // Doc was not found -- must have been deleted
       if (!doc.hasOwnProperty('_id')) {
         missing = true;
@@ -496,7 +496,7 @@ export class CardStore {
     const comparator = CardStore.getKeywordsOrTagsComparator(prefix);
     return result.rows
       .sort(comparator)
-      .map(entry => entry.key[1])
+      .map((entry) => entry.key[1])
       .slice(0, limit);
   }
 
@@ -858,7 +858,7 @@ function normalizeCardForDB<T extends CardContent | CardDoc>(
     delete normalized.keywords;
   }
   if (normalized.keywords) {
-    normalized.keywords = normalized.keywords.map(keyword =>
+    normalized.keywords = normalized.keywords.map((keyword) =>
       keyword.normalize()
     );
   }
@@ -867,7 +867,7 @@ function normalizeCardForDB<T extends CardContent | CardDoc>(
     delete normalized.tags;
   }
   if (normalized.tags) {
-    normalized.tags = normalized.tags.map(tag => tag.normalize());
+    normalized.tags = normalized.tags.map((tag) => tag.normalize());
   }
 
   if (typeof update.starred !== 'undefined' && !update.starred) {

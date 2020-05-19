@@ -43,15 +43,8 @@ const innerReducer = combineReducers<AppState, Action>({
 // review reducer will determine the current card which may become the active
 // card).
 
-const initialSelection: SelectionState = {
-  activeCardId: undefined,
-};
-
 export type AppState = InnerState & { selection: SelectionState };
 
 export function reducer(state: AppState | undefined, action: Action) {
-  return selection(
-    { selection: initialSelection, ...innerReducer(state, action) },
-    action
-  );
+  return selection(innerReducer(state, action), action);
 }
