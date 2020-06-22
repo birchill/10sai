@@ -47,7 +47,7 @@
     "redux": "^4.0.5",
     "redux-saga": "^1.1.3",
     "reselect": "^4.0.0",
-    "rollbar": "^2.16.2",
+    "rollbar": "^2.17.0",
     "terser-webpack-plugin": "^3.0.6",
     "ua-parser-js": "^0.7.21",
     "unicode-substring": "^1.0.0"
