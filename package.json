@@ -23,7 +23,7 @@
     "@birchill/json-equalish": "^1.1.0",
     "@seznam/compose-react-refs": "^1.0.4",
     "@types/deep-equal": "^1.0.1",
-    "@types/draft-js": "^0.10.41",
+    "@types/draft-js": "^0.10.43",
     "@types/event-emitter": "^0.3.3",
     "@types/pouchdb-find": "^6.3.5",
     "@types/pouchdb-upsert": "^2.2.6",
