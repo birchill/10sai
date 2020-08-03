@@ -25,7 +25,7 @@
     "@types/deep-equal": "^1.0.1",
     "@types/draft-js": "^0.10.43",
     "@types/event-emitter": "^0.3.3",
-    "@types/pouchdb-find": "^6.3.5",
+    "@types/pouchdb-find": "^6.3.6",
     "@types/pouchdb-upsert": "^2.2.6",
     "@types/react-document-title": "^2.0.4",
     "@types/ua-parser-js": "^0.7.33",
