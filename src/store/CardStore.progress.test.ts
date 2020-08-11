@@ -11,7 +11,7 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 // Let tests override generateUniqueTimestampId;
 let mockGenerateUniqueTimestampId: (() => string) | undefined;
 jest.mock('./utils', () => {
-  const utils = require.requireActual('./utils');
+  const utils = jest.requireActual('./utils');
   const originalGenerateUniqueTimestampId = utils.generateUniqueTimestampId;
   return {
     ...utils,
@@ -37,7 +37,8 @@ describe('CardStore progress reporting', () => {
       prefetchViews: false,
     });
     subject = dataStore.cardStore;
-    relativeTime = diffInDays => new Date(Date.now() + diffInDays * MS_PER_DAY);
+    relativeTime = (diffInDays) =>
+      new Date(Date.now() + diffInDays * MS_PER_DAY);
   });
 
   afterEach(() => dataStore.destroy());
@@ -238,7 +239,7 @@ describe('CardStore progress reporting', () => {
 
       // Sync it to our subject
       let resolveIdle: () => void;
-      const idlePromise = new Promise(resolve => {
+      const idlePromise = new Promise((resolve) => {
         resolveIdle = resolve;
       });
       await dataStore.setSyncServer(testRemote, {
@@ -316,7 +317,7 @@ describe('CardStore progress reporting', () => {
     });
 
     // Wait a moment for the different stores to update their sequence stores.
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     // Now connect the two...
     const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
