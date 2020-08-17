@@ -30,7 +30,7 @@
     "@types/react-document-title": "^2.0.4",
     "@types/ua-parser-js": "^0.7.33",
     "cross-env": "^7.0.2",
-    "draft-js": "^0.11.6",
+    "draft-js": "^0.11.7",
     "event-emitter": "^0.3.5",
     "memoize-one": "^5.1.1",
     "normalize-css": "^2.3.1",
