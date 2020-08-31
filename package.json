@@ -68,7 +68,7 @@
     "babel-loader": "^8.1.0",
     "bundlesize": "^0.18.0",
     "enzyme": "^3.11.0",
-    "enzyme-adapter-react-16": "^1.15.3",
+    "enzyme-adapter-react-16": "^1.15.4",
     "husky": "^4.2.5",
     "jest": "^25.5.4",
     "lint-staged": "^10.2.13",
