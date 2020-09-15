@@ -1,4 +1,5 @@
 import * as React from 'react';
+import queryString from 'query-string';
 
 import { CardFaceEditControls } from './CardFaceEditControls';
 import { KeywordSuggestionProvider } from './KeywordSuggestionProvider';
@@ -237,14 +238,24 @@ function getAddReverseLink(props: Props): string | null {
     return null;
   }
 
+  const search: queryString.ParsedQuery = {};
+  const { front, back, keywords, tags } = props.card;
+  if (front) {
+    search.front = front;
+  }
+  if (back) {
+    search.back = back;
+  }
+  if (keywords) {
+    search.keywords = keywords;
+  }
+  if (tags) {
+    search.tags = tags;
+  }
+
   return URLFromRoute({
     screen: 'edit-card',
-    search: {
-      front: props.card.back || undefined,
-      back: props.card.front || undefined,
-      keywords: props.card.keywords || undefined,
-      tags: props.card.tags || undefined,
-    },
+    search,
   });
 }
 
