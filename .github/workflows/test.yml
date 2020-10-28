@@ -29,8 +29,10 @@ jobs:
     - name: Lint
       run: yarn lint
 
-    - name: Verify storybook setup
-      run: yarn build:storybook
+    # Disabled until storybook works with Webpack 5
+    # https://github.com/storybookjs/storybook/issues/9216
+    # - name: Verify storybook setup
+    #  run: yarn build:storybook
 
     - name: Check bundle size
       run: |
