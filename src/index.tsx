@@ -106,7 +106,7 @@ store.dispatch(
     fragment: window.location.hash,
   })
 );
-window.addEventListener('popstate', evt => {
+window.addEventListener('popstate', (evt) => {
   // Dispatch before change and navigate actions in parallel. The URL
   // has already been updated so there's no going back and no need to
   // wait to see if any before change screen actions succeed.
