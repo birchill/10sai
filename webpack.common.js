@@ -24,10 +24,7 @@ module.exports = {
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
-            options: {
-              publicPath: '../public/',
-              hmr: process.env.NODE_ENV === 'development',
-            },
+            options: { publicPath: '../public/' },
           },
           {
             loader: 'css-loader',
