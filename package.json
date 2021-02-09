@@ -10,14 +10,15 @@
   "scripts": {
     "build": "cross-env NODE_ENV=development webpack --config webpack.dev.js --color",
     "build:prod": "cross-env NODE_ENV=production webpack --config webpack.prod.js --color",
+    "build:storybook": "build-storybook -c .storybook -s public",
+    "bundlesize": "bundlesize",
+    "lint": "tslint -p tsconfig.json",
+    "postinstall": "husky install",
     "//": "For EACCES errors, try 'yarn start --port 8085'",
     "start": "cross-env NODE_ENV=development webpack serve --config webpack.dev.js --progress --color --history-api-fallback --content-base public/",
     "start:prod": "cross-env NODE_ENV=production webpack serve --config webpack.prod.js --progress --color --history-api-fallback --content-base public/",
     "test": "jest",
-    "lint": "tslint -p tsconfig.json",
-    "storybook": "start-storybook -p 9001 -c .storybook -s public",
-    "build:storybook": "build-storybook -c .storybook -s public",
-    "bundlesize": "bundlesize"
+    "storybook": "start-storybook -p 9001 -c .storybook -s public"
   },
   "dependencies": {
     "@birchill/json-equalish": "^1.1.0",
@@ -125,11 +126,6 @@
     "singleQuote": true,
     "trailingComma": "es5",
     "bracketSpacing": true
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "bundlesize": [
     {
