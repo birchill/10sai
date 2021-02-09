@@ -132,7 +132,7 @@ export function parseRuby(text: string): ParsedRuby {
   while (
     remainder.length &&
     (matches = remainder.match(
-      /(^|[^\\]){((?:\\.|[^\\{}|])+?)\|((?:\\.|[^{}])*?[^\\])}/
+      /(^|[^\\]){((?:\\.|[^\\{}|])+?)\|((?:\\.|[^\\{}])*?)}/
     ))
   ) {
     let leadingText = remainder.substr(0, matches.index!) + matches[1];
@@ -169,12 +169,9 @@ export function parseRuby(text: string): ParsedRuby {
 
   // Strip any escape sequences from brackets
   const stripEscapes = (text: string) =>
-    text
-      .replace('\\{', '{')
-      .replace('\\}', '}')
-      .replace('\\|', '|');
+    text.replace('\\{', '{').replace('\\}', '}').replace('\\|', '|');
 
-  return result.map(piece => {
+  return result.map((piece) => {
     if (typeof piece === 'string') {
       return stripEscapes(piece);
     } else {
@@ -185,6 +182,6 @@ export function parseRuby(text: string): ParsedRuby {
 
 export function stripRuby(text: string): string {
   return parseRuby(text)
-    .map(piece => (typeof piece === 'string' ? piece : piece.base))
+    .map((piece) => (typeof piece === 'string' ? piece : piece.base))
     .join('');
 }
