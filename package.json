@@ -54,7 +54,7 @@
     "unicode-substring": "^1.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.16",
+    "@babel/core": "^7.12.17",
     "@storybook/addon-actions": "^6.1.18",
     "@storybook/addon-notes": "^5.3.21",
     "@storybook/react": "^6.1.18",
