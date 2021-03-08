@@ -57,7 +57,7 @@
     "@babel/core": "^7.13.8",
     "@storybook/addon-actions": "^6.1.20",
     "@storybook/addon-notes": "^5.3.21",
-    "@storybook/react": "^6.1.20",
+    "@storybook/react": "^6.1.21",
     "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/jest": "^26.0.20",
     "@types/memoize-one": "^5.1.2",
