@@ -21,7 +21,7 @@
     "storybook": "start-storybook -p 9001 -c .storybook -s public"
   },
   "dependencies": {
-    "@birchill/json-equalish": "^1.1.0",
+    "@birchill/json-equalish": "^1.1.1",
     "@seznam/compose-react-refs": "^1.0.6",
     "@types/deep-equal": "^1.0.1",
     "@types/draft-js": "^0.11.1",

@@ -1295,10 +1295,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@birchill/json-equalish@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@birchill/json-equalish/-/json-equalish-1.1.0.tgz#cb01ac1ef032209ada516b6a4bf3d7a2306e972d"
-  integrity sha512-p6XZQQVTsqRh5wYg3Rf4EWuynWANMupIHykDS373RSVPzSJiZ2ID9gRvQs7/MZKdW7Ejaw587WLGV8C+wSitzw==
+"@birchill/json-equalish@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@birchill/json-equalish/-/json-equalish-1.1.1.tgz#f46bb7a0bf2d3c6e20893f4e7382be37bbd16927"
+  integrity sha512-t/ppogHvCugjwzYJJM1y5emS5jBBApU8yRKBuKwGnrpWUzUJbqQB4rIutw09w3bfZAk40tIEODl+FgWDYWjTTg==
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.3"
