@@ -1,7 +1,6 @@
 10sai
 =====
 
-[![CircleCI](https://circleci.com/gh/birchill/10sai.svg?style=svg)](https://circleci.com/gh/birtles/10sai)
 ![](https://api.dependabot.com/badges/status?host=github&repo=birchill/10sai)
 
 Setup
