@@ -75,7 +75,7 @@
     "jest": "^25.5.4",
     "lint-staged": "^11.0.0",
     "mini-css-extract-plugin": "^1.6.0",
-    "node-sass": "^6.0.0",
+    "node-sass": "^6.0.1",
     "pouchdb-adapter-memory": "^7.2.2",
     "pre-commit": "^1.2.2",
     "prettier": "^2.3.1",
