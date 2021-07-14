@@ -28,7 +28,7 @@
     "@types/event-emitter": "^0.3.3",
     "@types/pouchdb-find": "^6.3.7",
     "@types/pouchdb-upsert": "^2.2.6",
-    "@types/react-document-title": "^2.0.4",
+    "@types/react-document-title": "^2.0.5",
     "@types/ua-parser-js": "^0.7.36",
     "cross-env": "^7.0.3",
     "draft-js": "^0.11.7",
