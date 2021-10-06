@@ -74,7 +74,7 @@
     "husky": "^7.0.2",
     "jest": "^25.5.4",
     "lint-staged": "^11.1.2",
-    "mini-css-extract-plugin": "^2.3.0",
+    "mini-css-extract-plugin": "^2.4.1",
     "node-sass": "^6.0.1",
     "pouchdb-adapter-memory": "^7.2.2",
     "pre-commit": "^1.2.2",
