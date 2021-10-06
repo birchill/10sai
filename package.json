@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
-    "@storybook/addon-actions": "^6.3.8",
+    "@storybook/addon-actions": "^6.3.9",
     "@storybook/addon-notes": "^5.3.21",
     "@storybook/react": "^6.3.9",
     "@types/enzyme-adapter-react-16": "^1.0.6",
