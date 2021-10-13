@@ -84,7 +84,7 @@
     "redux-logger": "*",
     "redux-saga-test-plan": "^4.0.1",
     "resolve-url-loader": "^4.0.0",
-    "sass-loader": "^12.1.0",
+    "sass-loader": "^12.2.0",
     "ts-jest": "^25.5.1",
     "ts-loader": "^9.2.6",
     "tslint": "^6.1.3",
