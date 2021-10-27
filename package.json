@@ -44,7 +44,7 @@
     "react": "^16.14.0",
     "react-document-title": "*",
     "react-dom": "^16.14.0",
-    "react-redux": "^7.2.5",
+    "react-redux": "^7.2.6",
     "redux": "^4.1.1",
     "redux-saga": "^1.1.3",
     "reselect": "^4.0.0",
