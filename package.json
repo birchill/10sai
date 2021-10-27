@@ -130,7 +130,7 @@
   "bundlesize": [
     {
       "path": "./public/10sai.js",
-      "maxSize": "250 kB"
+      "maxSize": "260 kB"
     },
     {
       "path": "./public/10sai.js",
