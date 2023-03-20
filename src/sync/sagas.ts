@@ -1,4 +1,11 @@
-import { delay, takeEvery, takeLatest, put, select } from 'redux-saga/effects';
+import {
+  delay,
+  takeEvery,
+  takeLatest,
+  put,
+  select,
+  Effect,
+} from 'redux-saga/effects';
 import { Dispatch } from 'redux';
 
 import { waitForDocLoad } from '../utils';
@@ -20,7 +27,7 @@ function* startReplication(
   dataStore: DataStore,
   server: SyncServer | undefined,
   dispatch: Dispatch<Actions.Action>
-) {
+): Generator<Effect | Promise<void>, void, any> {
   if (yield select(getOffline)) {
     return;
   }
@@ -116,13 +123,16 @@ function* setSyncServer(
 function* retrySync(
   dataStore: DataStore,
   dispatch: Dispatch<Actions.Action>,
-  action: never
-) {
+  _action: never
+): Generator<Effect | Promise<void>, void, any> {
   const server = yield select(getServer);
-  yield startReplication(dataStore, server, dispatch);
+  yield* startReplication(dataStore, server, dispatch);
 }
 
-function* finishSync(dataStore: DataStore, action: Actions.FinishSyncAction) {
+function* finishSync(
+  dataStore: DataStore,
+  action: Actions.FinishSyncAction
+): Generator<Effect | Promise<void>, void, any> {
   const server = yield select(getServer);
   const updatedServer: SyncServerSetting = {
     server,
@@ -136,7 +146,10 @@ function* finishSync(dataStore: DataStore, action: Actions.FinishSyncAction) {
   yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 }
 
-function* pauseSync(dataStore: DataStore, action: never) {
+function* pauseSync(
+  dataStore: DataStore,
+  _action: never
+): Generator<Effect | Promise<void>, void, any> {
   // Update stored paused state
   const server = yield select(getServer);
   const lastSyncTime = yield select(getLastSyncTimeAsNumber);
@@ -152,14 +165,14 @@ function* pauseSync(dataStore: DataStore, action: never) {
   };
   yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 
-  yield stopReplication(dataStore);
+  yield* stopReplication(dataStore);
 }
 
 function* resumeSync(
   dataStore: DataStore,
   dispatch: Dispatch<Actions.Action>,
-  action: never
-) {
+  _action: never
+): Generator<Effect | Promise<void>, void, any> {
   // Update stored paused state
   const server = yield select(getServer);
   const lastSyncTime = yield select(getLastSyncTimeAsNumber);
@@ -171,14 +184,14 @@ function* resumeSync(
   const updatedServer: SyncServerSetting = { server, lastSyncTime };
   yield dataStore.updateSetting('syncServer', updatedServer, 'local');
 
-  yield startReplication(dataStore, server, dispatch);
+  yield* startReplication(dataStore, server, dispatch);
 }
 
 function* updateSetting(
   dataStore: DataStore,
   dispatch: Dispatch<Actions.Action>,
   action: Actions.UpdateSettingAction
-) {
+): Generator<Effect | Promise<void>, void, any> {
   if (action.key !== 'syncServer') {
     return;
   }
@@ -241,28 +254,28 @@ function* updateSetting(
       return;
     }
 
-    yield startReplication(dataStore, updatedServer, dispatch);
+    yield* startReplication(dataStore, updatedServer, dispatch);
 
     // And likewise check if we need to stop it
   } else if (updatedPaused && !paused) {
-    yield stopReplication(dataStore);
+    yield* stopReplication(dataStore);
   }
 }
 
 function* goOnline(
   dataStore: DataStore,
   dispatch: Dispatch<Actions.Action>,
-  action: never
-) {
+  _action: never
+): Generator<Effect | Promise<void>, void, any> {
   if (yield select(getPaused)) {
     return;
   }
 
   const server = yield select(getServer);
-  yield startReplication(dataStore, server, dispatch);
+  yield* startReplication(dataStore, server, dispatch);
 }
 
-function* goOffline(dataStore: DataStore, action: never) {
+function* goOffline(dataStore: DataStore, _action: never) {
   yield stopReplication(dataStore);
 }
 

@@ -6,6 +6,7 @@ import {
   take,
   takeEvery,
   CallEffect,
+  Effect,
 } from 'redux-saga/effects';
 import { Store } from 'redux';
 
@@ -30,7 +31,7 @@ const SAVE_DELAY = 5000;
 export function* navigate(
   dataStore: DataStore,
   action: Actions.NavigateAction
-) {
+): Generator<Effect, void, any> {
   // Look for navigation actions that should load a card
   const route = action.url
     ? routeFromURL(action.url)
@@ -222,7 +223,9 @@ export function* beforeEditScreenChange(): Generator<any, boolean, any> {
   return !!saveCardResult && !!saveNotesResult;
 }
 
-function* saveBeforeScreenChange(formId: number) {
+function* saveBeforeScreenChange(
+  formId: number
+): Generator<Effect, boolean, any> {
   if (!(yield select(isDirty))) {
     return true;
   }

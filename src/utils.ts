@@ -1,9 +1,9 @@
 export function waitForDocLoad() {
-  return new Promise(resolve => {
+  return new Promise<void>((resolve) => {
     if (document.readyState === 'complete') {
       resolve();
     } else {
-      window.addEventListener('load', resolve);
+      window.addEventListener('load', () => resolve());
     }
   });
 }
@@ -19,14 +19,14 @@ declare global {
   interface Window {
     requestIdleCallback: (
       callback: IdleRequestCallback,
-      options?: IdleRequestCallback
+      options?: IdleRequestOptions
     ) => number;
     cancelIdleCallback: (handle: number) => void;
   }
 }
 
 export function waitForIdle() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     if (window.requestIdleCallback) {
       window.requestIdleCallback(resolve);
     } else {
@@ -41,7 +41,7 @@ export function waitForIdle() {
 // Ported and simplified from underscore.js
 export function debounce(func: Function, wait: number) {
   let timeout: number | null;
-  return function() {
+  return function () {
     const context = this;
     const args = arguments;
     clearTimeout(timeout as number);

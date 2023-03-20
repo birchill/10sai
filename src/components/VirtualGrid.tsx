@@ -477,7 +477,11 @@ export class VirtualGrid extends React.Component<Props, State> {
     const emptySlots: Array<number> = [];
     const existingItems: Array<number> = [];
     slots.forEach((data, i) => {
-      if (data === null || data.index < startIndex || data.index >= endIndex) {
+      if (
+        data === null ||
+        (typeof data.index === 'number' &&
+          (data.index < startIndex || data.index >= endIndex))
+      ) {
         emptySlots.push(i);
       } else if (
         typeof data.index === 'string' &&
@@ -545,11 +549,14 @@ export class VirtualGrid extends React.Component<Props, State> {
       // Check it is still in range
       const previousIndex = this.state.slots[slot]!.index;
       // Take special care of the case where we deleted an item that is now out
-      // of range because we clamp endIndex to the number of items.
+      // of range because we clamped endIndex to the number of items.
       const inDeletedRange =
-        previousIndex >= items.length && endIndex === items.length;
+        typeof previousIndex === 'number' &&
+        previousIndex >= items.length &&
+        endIndex === items.length;
       if (
         !inDeletedRange &&
+        typeof previousIndex === 'number' &&
         (previousIndex < startIndex || previousIndex >= endIndex)
       ) {
         continue;

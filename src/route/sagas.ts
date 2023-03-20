@@ -1,4 +1,12 @@
-import { takeEvery, call, put, race, select, take } from 'redux-saga/effects';
+import {
+  takeEvery,
+  call,
+  put,
+  race,
+  select,
+  take,
+  Effect,
+} from 'redux-saga/effects';
 import { routeFromURL, routesEqual } from './router';
 import { beforeEditScreenChange } from '../edit/sagas';
 import { beforeReviewScreenChange } from '../review/sagas';
@@ -20,7 +28,9 @@ const getCurrentRoute = (state: AppState): Route | null => {
 
 // Sagas
 
-export function* followLink(action: Actions.FollowLinkAction) {
+export function* followLink(
+  action: Actions.FollowLinkAction
+): Generator<Effect, void, any> {
   const routeState = yield select(getRoute);
   let navigateRoute;
 
@@ -96,7 +106,7 @@ export function* followLink(action: Actions.FollowLinkAction) {
   }
 }
 
-export function* beforeScreenChange(): Generator<any, boolean, any> {
+export function* beforeScreenChange(): Generator<Effect, boolean, any> {
   const currentRoute = yield select(getCurrentRoute);
 
   if (currentRoute && currentRoute.screen === 'edit-card') {
@@ -121,7 +131,9 @@ export function* beforeScreenChange(): Generator<any, boolean, any> {
   return true;
 }
 
-export function* updateUrl(action: Actions.UpdateUrlAction) {
+export function* updateUrl(
+  action: Actions.UpdateUrlAction
+): Generator<Effect, void, any> {
   const routeState = yield select(getRoute);
 
   if (typeof routeState.index === 'number' && routeState.index >= 0) {

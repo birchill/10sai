@@ -7,6 +7,7 @@ import {
   put,
   select,
   CallEffect,
+  Effect,
 } from 'redux-saga/effects';
 import { DataStore } from '../store/DataStore';
 import { Action } from 'redux';
@@ -71,7 +72,7 @@ export function* watchEdits<
     Resource,
     SaveContext
   >
-) {
+): Generator<Effect | undefined, void, any> {
   const autoSaveTasks: Map<string, Task> = new Map();
   const saveTasks: Map<string, Task> = new Map();
 
@@ -84,9 +85,9 @@ export function* watchEdits<
   // newId we maintain a consistent identifer for the resource-context.
   const getContextKey = (context: SaveContext): string => {
     // For objects write out a value-value-value type string
-    if (typeof context === 'object') {
+    if (typeof context === 'object' && context !== null) {
       return Object.values(context)
-        .filter(value => typeof value !== 'undefined')
+        .filter((value) => typeof value !== 'undefined')
         .join('-');
     }
 
@@ -101,9 +102,8 @@ export function* watchEdits<
       params.deleteActionType,
     ]);
 
-    const resourceState:
-      | ResourceState<Resource, SaveContext>
-      | undefined = yield select(params.resourceStateSelector(action));
+    const resourceState: ResourceState<Resource, SaveContext> | undefined =
+      yield select(params.resourceStateSelector(action));
 
     if (!resourceState) {
       continue;
@@ -172,7 +172,7 @@ export function* watchEdits<
         break;
 
       case params.saveActionType:
-        const saveTask = function*() {
+        const saveTask = function* () {
           const result: Partial<Resource> = yield call(
             params.save,
             dataStore,

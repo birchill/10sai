@@ -239,7 +239,7 @@ describe('CardStore progress reporting', () => {
 
       // Sync it to our subject
       let resolveIdle: () => void;
-      const idlePromise = new Promise((resolve) => {
+      const idlePromise = new Promise<void>((resolve) => {
         resolveIdle = resolve;
       });
       await dataStore.setSyncServer(testRemote, {

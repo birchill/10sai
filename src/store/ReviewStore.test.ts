@@ -13,12 +13,12 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 // changes are to the same document they might get batched together.
 const waitForNumReviewChanges = (db: PouchDB.Database, num: number) => {
   let resolver: () => void;
-  const promise = new Promise(resolve => {
+  const promise = new Promise<void>((resolve) => {
     resolver = resolve;
   });
 
   let recordedChanges = 0;
-  db.changes({ since: 'now', live: true }).on('change', change => {
+  db.changes({ since: 'now', live: true }).on('change', (change) => {
     if (!change.id.startsWith('review-')) {
       return;
     }
@@ -145,7 +145,7 @@ describe('ReviewStore', () => {
     // don't do this, we'll sometimes end up with random errors from picking up
     // undefined documents from the sequence store. It appears to be doing some
     // work async so I suspect we just need to let it settle down.)
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     // Now connect the two and let chaos ensue
     const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);
@@ -174,7 +174,7 @@ describe('ReviewStore', () => {
     });
 
     // Wait a moment for the different stores to update their sequence stores.
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     // Now connect the two...
     const waitForIdle = await syncWithWaitableRemote(dataStore, testRemote);

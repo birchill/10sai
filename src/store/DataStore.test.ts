@@ -25,7 +25,7 @@ function idleSync(): [({}) => any, Promise<void>] {
   const idleTimeout = 50; // ms
 
   let resolver: () => void;
-  const idlePromise = new Promise<void>(resolve => {
+  const idlePromise = new Promise<void>((resolve) => {
     resolver = resolve;
   });
 
@@ -93,10 +93,10 @@ describe('DataStore remote sync', () => {
     }
   });
 
-  it('reports an error for an invalid sync server', done => {
+  it('reports an error for an invalid sync server', (done) => {
     subject
       .setSyncServer('http://not.found/', {
-        onError: err => {
+        onError: (err) => {
           expect(err.status).toEqual(500);
           done();
         },
@@ -256,7 +256,7 @@ describe('DataStore remote sync', () => {
     expect(remoteCards.rows.length).toBe(2);
   });
 
-  it('reports when download starts and stops', done => {
+  it('reports when download starts and stops', (done) => {
     subject.setSyncServer(testRemote, {
       onActive: wrapAssertingFunction(
         (info: PouchDB.Replication.SyncResult<{}>) => {
@@ -273,7 +273,7 @@ describe('DataStore remote sync', () => {
     });
   });
 
-  it('reports when uploads starts and stops', done => {
+  it('reports when uploads starts and stops', (done) => {
     subject.setSyncServer(testRemote, {
       onActive: wrapAssertingFunction(
         (info: PouchDB.Replication.SyncResult<{}>) => {
@@ -298,14 +298,14 @@ describe('DataStore remote sync', () => {
     }
 
     let resolveAllDone: () => void;
-    const allDone = new Promise(resolve => {
+    const allDone = new Promise<void>((resolve) => {
       resolveAllDone = resolve;
     });
 
     const progressValues: Array<number | null> = [];
     await testRemote.bulkDocs(docs);
     await subject.setSyncServer(testRemote, {
-      onProgress: progress => progressValues.push(progress),
+      onProgress: (progress) => progressValues.push(progress),
       onIdle: () => resolveAllDone(),
       batchSize: 2,
     });
@@ -337,14 +337,14 @@ describe('DataStore remote sync', () => {
     }
 
     let resolveAllDone: () => void;
-    const allDone = new Promise(resolve => {
+    const allDone = new Promise<void>((resolve) => {
       resolveAllDone = resolve;
     });
 
     const progressValues: Array<number | null> = [];
     await Promise.all(putPromises);
     await subject.setSyncServer(testRemote, {
-      onProgress: progress => progressValues.push(progress),
+      onProgress: (progress) => progressValues.push(progress),
       onIdle: () => resolveAllDone(),
       batchSize: 3,
     });
@@ -385,7 +385,7 @@ describe('DataStore remote sync', () => {
     }
 
     let resolveAllDone: () => void;
-    const allDone = new Promise(resolve => {
+    const allDone = new Promise<void>((resolve) => {
       resolveAllDone = resolve;
     });
 
@@ -393,7 +393,7 @@ describe('DataStore remote sync', () => {
     await Promise.all(putPromises);
     await testRemote.bulkDocs(remoteDocs);
     await subject.setSyncServer(testRemote, {
-      onProgress: progress => progressValues.push(progress),
+      onProgress: (progress) => progressValues.push(progress),
       onIdle: () => resolveAllDone(),
       batchSize: 3,
     });
@@ -420,19 +420,19 @@ describe('DataStore remote sync', () => {
     }
 
     let resolveIdle: () => void;
-    const waitForIdle = new Promise(resolve => {
+    const waitForIdle = new Promise<void>((resolve) => {
       resolveIdle = resolve;
     });
 
     const progressValues: Array<number | null> = [];
     await subject.setSyncServer(testRemote, {
-      onProgress: progress => progressValues.push(progress),
+      onProgress: (progress) => progressValues.push(progress),
       onIdle: () => resolveIdle(),
       batchSize: 2,
     });
     await waitForIdle;
     await testRemote.bulkDocs(docs);
-    await new Promise(resolve => {
+    await new Promise<void>((resolve) => {
       resolveIdle = resolve;
     });
 
