@@ -43,6 +43,7 @@ export class AvailableCardWatcher {
   private queryPromise: Promise<void> | undefined;
   private idleQueryHandle: ReturnType<typeof requestIdleCallback> | null = null;
   private timeoutQueryHandle: ReturnType<typeof setTimeout> | null = null;
+  private reviewTimeUpdateHandle: ReturnType<typeof setTimeout> | null = null;
 
   private listeners: Array<AvailableCardsCallback> = [];
 
@@ -99,6 +100,11 @@ export class AvailableCardWatcher {
     if (this.timeoutQueryHandle !== null) {
       clearTimeout(this.timeoutQueryHandle);
       this.timeoutQueryHandle = null;
+    }
+
+    if (this.reviewTimeUpdateHandle !== null) {
+      clearTimeout(this.reviewTimeUpdateHandle);
+      this.reviewTimeUpdateHandle = null;
     }
 
     this.listeners = [];
@@ -354,11 +360,15 @@ export class AvailableCardWatcher {
 
     const delay = newReviewTime.getTime() - Date.now();
     if (delay <= 0) {
-      console.error(`Got expected delay for updating review time: ${delay}`);
+      console.error(`Got unexpected delay for updating review time: ${delay}`);
       return;
     }
 
-    setTimeout(() => {
+    if (this.reviewTimeUpdateHandle !== null) {
+      clearTimeout(this.reviewTimeUpdateHandle);
+    }
+
+    this.reviewTimeUpdateHandle = setTimeout(() => {
       this.setReviewTime(newReviewTime);
       this.scheduleReviewTimeUpdate();
     }, delay);

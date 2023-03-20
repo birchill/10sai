@@ -187,7 +187,7 @@ export class DataStore {
       include_docs: true,
     });
 
-    dbChanges.on('change', async change => {
+    dbChanges.on('change', async (change) => {
       console.assert(change.changes && change.doc, 'Unexpected changes event');
       await this.cardStore.onChange(change, emit);
       await this.noteStore.onChange(change, emit);
@@ -523,7 +523,7 @@ export class DataStore {
 
     const result = await this.db!.allDocs({ keys: ids });
     await this.db!.bulkDocs(
-      result.rows.map(row => ({
+      result.rows.map((row) => ({
         _id: row.id,
         _rev: row.value.rev,
         _deleted: true,

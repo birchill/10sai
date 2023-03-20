@@ -9,6 +9,7 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 
 describe('AvailableCardWatcher', () => {
   let dataStore: DataStore;
+  let subject: AvailableCardWatcher | undefined;
   let initialReviewTime = new Date();
   initialReviewTime.setMinutes(0, 0, 0);
 
@@ -20,7 +21,11 @@ describe('AvailableCardWatcher', () => {
     });
   });
 
-  afterEach(() => dataStore.destroy());
+  afterEach(async () => {
+    subject?.disconnect();
+    subject = undefined;
+    await dataStore.destroy();
+  });
 
   function relativeTime(diffInDays: number): Date {
     const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -64,7 +69,7 @@ describe('AvailableCardWatcher', () => {
       },
     });
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     const newCards = await subject.getNewCards();
     expect(newCards).toEqual([card3.id]);
@@ -89,7 +94,7 @@ describe('AvailableCardWatcher', () => {
 
   it('returns new cards in oldest first order', async () => {
     const addedCards = await addNewCards(3);
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     const newCards = await subject.getNewCards();
 
@@ -121,7 +126,7 @@ describe('AvailableCardWatcher', () => {
       );
     }
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     const overdueCards = await subject.getOverdueCards();
     expect(overdueCards).toEqual([
@@ -136,7 +141,7 @@ describe('AvailableCardWatcher', () => {
   it('automatically triggers a query', async () => {
     jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     expect(subject.isLoading()).toStrictEqual(true);
 
     // You might think we'd want to mock requestIdleCallback here but actually
@@ -212,7 +217,7 @@ describe('AvailableCardWatcher', () => {
     await addNewCards(3);
 
     jest.useFakeTimers({ doNotFake: ['nextTick'] });
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     const [callbackA, finishedA] = waitForCalls(1);
     subject.addListener(callbackA);
@@ -233,7 +238,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('notifies listeners when there is a new card', async () => {
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
@@ -251,7 +256,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('notifies listeners of all the new cards', async () => {
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(5);
@@ -269,7 +274,7 @@ describe('AvailableCardWatcher', () => {
 
   it('notifies listeners when a card is no longer new', async () => {
     const addedCards = await addNewCards(3);
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     await subject.getNewCards();
 
@@ -292,7 +297,7 @@ describe('AvailableCardWatcher', () => {
 
   it('notifies listeners when a new card is deleted', async () => {
     const addedCards = await addNewCards(3);
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     await subject.getNewCards();
 
@@ -311,7 +316,7 @@ describe('AvailableCardWatcher', () => {
 
   it('notifies listeners when a new card is now overdue', async () => {
     const addedCards = await addNewCards(3);
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     await subject.getNewCards();
 
@@ -342,7 +347,7 @@ describe('AvailableCardWatcher', () => {
 
   it('does NOT notify listeners when the content of a new card changes', async () => {
     const addedCards = await addNewCards(3);
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(0);
@@ -362,7 +367,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('notifies listeners when there is a new overdue card', async () => {
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
@@ -392,7 +397,7 @@ describe('AvailableCardWatcher', () => {
       },
     });
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
@@ -423,7 +428,7 @@ describe('AvailableCardWatcher', () => {
       });
     }
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
@@ -449,7 +454,7 @@ describe('AvailableCardWatcher', () => {
       },
     });
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(1);
@@ -487,7 +492,7 @@ describe('AvailableCardWatcher', () => {
       },
     });
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     expect(await subject.getOverdueCards()).toEqual([cardA.id, cardB.id]);
 
     const [callback, finished] = waitForCalls(1);
@@ -524,7 +529,7 @@ describe('AvailableCardWatcher', () => {
       },
     });
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     expect(await subject.getOverdueCards()).toEqual([cardA.id, cardB.id]);
 
     const [callback, finished] = waitForCalls(0);
@@ -556,7 +561,7 @@ describe('AvailableCardWatcher', () => {
       },
     });
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(0);
@@ -576,7 +581,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('does NOT notify listeners when a card is added that is neither new nor overdue', async () => {
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(0);
@@ -600,7 +605,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('allows unregistering listeners', async () => {
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     await subject.getNewCards();
 
     const [callback, finished] = waitForCalls(3);
@@ -644,7 +649,7 @@ describe('AvailableCardWatcher', () => {
       );
     }
 
-    const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
+    subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     let overdueCards = await subject.getOverdueCards();
     expect(overdueCards).toEqual(addedCards.slice(0, 4).map((card) => card.id));
 
