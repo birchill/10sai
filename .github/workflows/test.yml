@@ -8,38 +8,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v2.4.1
-      with:
-        node-version: '12.x'
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v2.4.1
+        with:
+          node-version: '16.x'
 
-    - name: Check versions
-      run: |
-        node --version
-        yarn --version
+      - name: Check versions
+        run: |
+          node --version
+          yarn --version
 
-    - name: Verify build
-      run: |
-        yarn install
-        yarn build:prod
+      - name: Verify build
+        run: |
+          yarn install
+          yarn build:prod
 
-    - name: Run tests
-      run: yarn test
+      - name: Run tests
+        run: yarn test
 
-    - name: Lint
-      run: yarn lint
+      - name: Lint
+        run: yarn lint
 
-    # Disabled until storybook works with Webpack 5
-    # https://github.com/storybookjs/storybook/issues/9216
-    # - name: Verify storybook setup
-    #  run: yarn build:storybook
+      # Disabled until storybook works with Webpack 5
+      # https://github.com/storybookjs/storybook/issues/9216
+      # - name: Verify storybook setup
+      #  run: yarn build:storybook
 
-    - name: Check bundle size
-      run: |
-        echo \"::set-env name=CI_COMMIT_MESSAGE::$(git show -s --format=%s ${GITHUB_SHA})\"
-        yarn bundlesize
-      env:
-        BUNDLESIZE_GITHUB_TOKEN: ${{ secrets.BUNDLESIZE_GITHUB_TOKEN }}
-        CI_REPO_OWNER: birchill
-        CI_REPO_NAME: 10sai
-        CI_COMMIT_SHA: ${{ github.sha }}
+      - name: Check bundle size
+        run: |
+          echo \"::set-env name=CI_COMMIT_MESSAGE::$(git show -s --format=%s ${GITHUB_SHA})\"
+          yarn bundlesize
+        env:
+          BUNDLESIZE_GITHUB_TOKEN: ${{ secrets.BUNDLESIZE_GITHUB_TOKEN }}
+          CI_REPO_OWNER: birchill
+          CI_REPO_NAME: 10sai
+          CI_COMMIT_SHA: ${{ github.sha }}
