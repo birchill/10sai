@@ -93,7 +93,7 @@ describe('AvailableCardWatcher', () => {
 
     const newCards = await subject.getNewCards();
 
-    expect(newCards).toEqual(addedCards.map(card => card.id));
+    expect(newCards).toEqual(addedCards.map((card) => card.id));
   });
 
   it('returns overdue cards in order of most to least overdue', async () => {
@@ -134,7 +134,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('automatically triggers a query', async () => {
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
     const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     expect(subject.isLoading()).toStrictEqual(true);
@@ -211,7 +211,7 @@ describe('AvailableCardWatcher', () => {
   it('calls all listeners with the initial result', async () => {
     await addNewCards(3);
 
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
     const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
 
     const [callbackA, finishedA] = waitForCalls(1);
@@ -263,7 +263,7 @@ describe('AvailableCardWatcher', () => {
     expect(calls).toHaveLength(5);
     expect(calls[4]).toEqual({ newCards: 5, overdueCards: 0 });
     expect(await subject.getNewCards()).toEqual(
-      addedCards.map(card => card.id)
+      addedCards.map((card) => card.id)
     );
   });
 
@@ -620,7 +620,7 @@ describe('AvailableCardWatcher', () => {
   });
 
   it('updates the review time each hour', async () => {
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
     const dueTimes = [
       relativeTime(-3),
@@ -646,7 +646,7 @@ describe('AvailableCardWatcher', () => {
 
     const subject = new AvailableCardWatcher({ dataStore, initialReviewTime });
     let overdueCards = await subject.getOverdueCards();
-    expect(overdueCards).toEqual(addedCards.slice(0, 4).map(card => card.id));
+    expect(overdueCards).toEqual(addedCards.slice(0, 4).map((card) => card.id));
 
     const [callback, finished] = waitForCalls(1);
     subject.addListener(callback);
@@ -664,7 +664,7 @@ describe('AvailableCardWatcher', () => {
     );
 
     overdueCards = await subject.getOverdueCards();
-    expect(overdueCards).toEqual(addedCards.slice(0, 5).map(card => card.id));
+    expect(overdueCards).toEqual(addedCards.slice(0, 5).map((card) => card.id));
 
     const calls = await finished;
     expect(calls).toEqual([{ newCards: 0, overdueCards: 5 }]);

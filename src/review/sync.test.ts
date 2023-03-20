@@ -12,7 +12,7 @@ import { ReviewPhase } from './review-phase';
 import { getReviewSummary } from './selectors';
 import { sync as subject } from './sync';
 
-jest.useFakeTimers();
+jest.useFakeTimers({ doNotFake: ['nextTick'] });
 
 type ChangeCallback = (change: any) => void;
 
@@ -114,17 +114,12 @@ describe('review:sync', () => {
 
   beforeEach(() => {
     mockDataStore = new MockDataStore();
-    dataStore = (mockDataStore as unknown) as DataStore;
+    dataStore = mockDataStore as unknown as DataStore;
 
     mockStore = new MockStore();
-    store = (mockStore as unknown) as Store;
+    store = mockStore as unknown as Store;
 
     availableCardWatcher = new AvailableCardWatcher({ dataStore });
-
-    // I couldn't work out how to get jest.MockImplementation to work for
-    // this and ultimately I figured it's not worth the time.
-    (setTimeout as any).mockClear();
-    (clearTimeout as any).mockClear();
   });
 
   describe('available cards', () => {

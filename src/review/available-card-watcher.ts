@@ -41,8 +41,8 @@ export class AvailableCardWatcher {
 
   private initialQueryState: QueryState = QueryState.Waiting;
   private queryPromise: Promise<void> | undefined;
-  private idleQueryHandle: number | null = null;
-  private timeoutQueryHandle: number | null = null;
+  private idleQueryHandle: ReturnType<typeof requestIdleCallback> | null = null;
+  private timeoutQueryHandle: ReturnType<typeof setTimeout> | null = null;
 
   private listeners: Array<AvailableCardsCallback> = [];
 
@@ -237,7 +237,7 @@ export class AvailableCardWatcher {
 
     // We set the timeout for the initial query to be 5s so we should wait at
     // least 5s.
-    this.timeoutQueryHandle = self.setTimeout(() => {
+    this.timeoutQueryHandle = setTimeout(() => {
       this.timeoutQueryHandle = null;
       this.runQuery();
     }, 10000);
@@ -307,7 +307,7 @@ export class AvailableCardWatcher {
       const reviewTimeAsNumber = this.reviewTime.getTime();
       this.dataStore
         .getAvailableCards({ reviewTime: this.reviewTime })
-        .then(availableCards => {
+        .then((availableCards) => {
           // If the review time was changed while the query was running, abort.
           if (this.reviewTime.getTime() !== reviewTimeAsNumber) {
             const abortError = new Error('Query aborted');
@@ -340,7 +340,7 @@ export class AvailableCardWatcher {
 
           resolve();
         })
-        .catch(e => reject(e));
+        .catch((e) => reject(e));
     });
     return this.queryPromise;
   }
@@ -358,7 +358,7 @@ export class AvailableCardWatcher {
       return;
     }
 
-    self.setTimeout(() => {
+    setTimeout(() => {
       this.setReviewTime(newReviewTime);
       this.scheduleReviewTimeUpdate();
     }, delay);

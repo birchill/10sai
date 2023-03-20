@@ -14,15 +14,15 @@ export const syncWithWaitableRemote = async (
   });
 
   return () => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // Debounce
       const idleTimeout = 50; // ms
-      let timeout: number | null;
+      let timeout: ReturnType<typeof setTimeout> | null;
       pauseAction = () => {
         if (timeout) {
           clearTimeout(timeout);
         }
-        timeout = window.setTimeout(resolve, idleTimeout);
+        timeout = setTimeout(resolve, idleTimeout);
       };
     });
   };
@@ -36,12 +36,12 @@ export const waitForChangeEvents = <EventType>(
   const events: EventType[] = [];
 
   let resolver: (e: typeof events) => void;
-  const promise = new Promise<typeof events>(resolve => {
+  const promise = new Promise<typeof events>((resolve) => {
     resolver = resolve;
   });
 
   let recordedChanges = 0;
-  dataStore.changes.on(type, change => {
+  dataStore.changes.on(type, (change) => {
     events.push(change);
     if (++recordedChanges === num) {
       resolver(events);

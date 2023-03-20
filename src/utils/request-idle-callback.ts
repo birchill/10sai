@@ -1,8 +1,9 @@
-// This is in part:
+// This helper
 //
-// - Missing typings for requestIdleCallback
-// - Polyfill for browsers that don't support requestIdleCallback
-// - Polyfill for non-Window contexts (e.g. workers)
+// - Adds some missing typings for requestIdleCallback
+// - Adds a polyfill for browsers that don't support requestIdleCallback
+// - Adds a polyfill for non-Window contexts (e.g. workers)
+// - Provides a Promise wrapper
 
 interface IdleDeadline {
   timeRemaining: () => number;
@@ -13,7 +14,7 @@ interface IdleRequestOptions {
   timeout: number;
 }
 
-type IdleCallbackHandle = number;
+type IdleCallbackHandle = ReturnType<typeof setTimeout> | number;
 
 type IdleRequestCallback = (deadline: IdleDeadline) => void;
 
@@ -23,9 +24,13 @@ export let requestIdleCallback: (
 ) => IdleCallbackHandle;
 export let cancelIdleCallback: (handle: IdleCallbackHandle) => void;
 
-if ((self as any).requestIdleCallback && (self as any).cancelIdleCallback) {
-  requestIdleCallback = (self as any).requestIdleCallback;
-  cancelIdleCallback = (self as any).cancelIdleCallback;
+if (
+  typeof self === 'object' &&
+  self.requestIdleCallback &&
+  self.cancelIdleCallback
+) {
+  requestIdleCallback = self.requestIdleCallback;
+  cancelIdleCallback = self.cancelIdleCallback;
 } else {
   requestIdleCallback = (
     callback: IdleRequestCallback,
@@ -34,20 +39,20 @@ if ((self as any).requestIdleCallback && (self as any).cancelIdleCallback) {
     // Use half the specified timeout since it probably represents a worst-case
     // scenario.
     const timeout = options ? options.timeout / 2 : 0;
-    return self.setTimeout(() => {
+    return setTimeout(() => {
       callback({ timeRemaining: () => 0, didTimeout: true });
     }, timeout);
   };
 
   cancelIdleCallback = (handle: IdleCallbackHandle) => {
-    self.clearTimeout(handle);
+    clearTimeout(handle as ReturnType<typeof setTimeout>);
   };
 }
 
 export function requestIdleCallbackPromise(
   options?: IdleRequestOptions
 ): Promise<void> {
-  return new Promise(resolve =>
+  return new Promise((resolve) =>
     requestIdleCallback(() => {
       resolve();
     }, options)
